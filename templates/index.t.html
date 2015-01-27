@@ -6,10 +6,20 @@
 </head>
 
 <body>
-<table>
-{% for task in tasks %}
-    <tr><td>{{task.id}}</td><td>{{task.summary}}</td></tr>
-{% endfor %}
-</table>
+<div>
+    <table>
+        {% for task in tasks %}
+        <tr>
+            <td>{{task.id}}</td>
+            <td>{{task.summary}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div>
+    <form action="/new" method="post">
+        <input type="text" name="summary" />
+    </form>
+</div>
 </body>
 </html>
