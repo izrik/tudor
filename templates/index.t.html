@@ -6,6 +6,10 @@
 </head>
 
 <body>
-hello, world!
+<table>
+{% for task in tasks %}
+    <tr><td>{{task.id}}</td><td>{{task.summary}}</td></tr>
+{% endfor %}
+</table>
 </body>
 </html>
