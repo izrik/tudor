@@ -2,15 +2,11 @@
 
 from flask import Flask, render_template, redirect, url_for,request
 import argparse
+from itertools import count
 
 app = Flask(__name__)
 
-task_id = 0
-def get_next_task_id():
-    global task_id
-    next_task_id = task_id
-    task_id += 1
-    return next_task_id
+get_next_task_id = count().next
 
 class Task(object):
     def __init__(self, summary):
