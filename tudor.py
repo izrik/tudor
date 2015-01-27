@@ -1,12 +1,13 @@
 #!/usr/bin/env python2
 
-from flask import Flask, render_template, redirect, url_for,request
+from flask import Flask, render_template, redirect, url_for, request
 import argparse
 from itertools import count
 
 app = Flask(__name__)
 
 get_next_task_id = count().next
+
 
 class Task(object):
     def __init__(self, summary):
@@ -16,9 +17,11 @@ class Task(object):
 
 tasks = [Task('do something'), Task('do another thing')]
 
+
 @app.route('/')
 def index():
     return render_template('index.t.html', tasks=tasks)
+
 
 @app.route('/new', methods=['POST'])
 def add_new():
