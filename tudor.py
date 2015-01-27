@@ -6,13 +6,15 @@ import argparse
 app = Flask(__name__)
 
 task_id = 0
-
+def get_next_task_id():
+    global task_id
+    next_task_id = task_id
+    task_id += 1
+    return next_task_id
 
 class Task(object):
     def __init__(self, summary):
-        global task_id
-        self.id = task_id
-        task_id += 1
+        self.id = get_next_task_id()
         self.summary = summary
 
 
