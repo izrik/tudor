@@ -8,15 +8,30 @@
 <body>
 <div>
     <table>
+        <thead>
+        <tr>
+            <td>Id</td>
+            <td>Summary</td>
+            <td>Done?</td>
+            <td></td>
+        </tr>
+        </thead>
         {% for task in tasks %}
         <tr>
             <td>{{task.id}}</td>
             <td>{{task.summary}}</td>
             <td>
                 {% if task.is_done %}
-                    done <a href="{{ url_for('task_undo', id=task.id) }}">(undo)</a>
+                    done
                 {% else %}
-                    not done <a href="{{ url_for('task_done', id=task.id) }}">(done)</a>
+                    not done
+                {% endif %}
+            </td>
+            <td>
+                {% if task.is_done %}
+                    <a href="{{ url_for('task_undo', id=task.id) }}">(undo)</a>
+                {% else %}
+                    <a href="{{ url_for('task_done', id=task.id) }}">(done)</a>
                 {% endif %}
             </td>
         </tr>
