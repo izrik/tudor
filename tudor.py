@@ -13,6 +13,7 @@ class Task(object):
     def __init__(self, summary):
         self.id = get_next_task_id()
         self.summary = summary
+        self.is_done = False
 
 
 tasks = [Task('do something'), Task('do another thing')]
@@ -29,6 +30,25 @@ def add_new():
     tasks.append(Task(summary))
     return redirect(url_for('index'))
 
+
+@app.route('/done/<int:id>')
+def task_done(id):
+    found = [t for t in tasks if t.id == id][:1]
+    if not found:
+        return 404
+    t = found[0]
+    t.is_done = True
+    return redirect(url_for('index'))
+
+
+@app.route('/undo/<int:id>')
+def task_undo(id):
+    found = [t for t in tasks if t.id == id][:1]
+    if not found:
+        return 404
+    t = found[0]
+    t.is_done = False
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -12,6 +12,13 @@
         <tr>
             <td>{{task.id}}</td>
             <td>{{task.summary}}</td>
+            <td>
+                {% if task.is_done %}
+                    done <a href="{{ url_for('task_undo', id=task.id) }}">(undo)</a>
+                {% else %}
+                    not done <a href="{{ url_for('task_done', id=task.id) }}">(done)</a>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
