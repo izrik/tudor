@@ -23,11 +23,14 @@ tasks = [Task('do something'), Task('do another thing')]
 def load_tasks():
     try:
         with open('tudor_tasks.p', 'rb') as f:
-            return pickle.load(f)
+            global tasks, get_next_task_id
+            tasks = pickle.load(f)
+            max_id = max(tasks, key=lambda t: t.id).id
+            get_next_task_id = count(max_id+1).next
     except:
         return tasks
 
-tasks = load_tasks()
+load_tasks()
 
 
 @app.route('/')
@@ -71,8 +74,7 @@ def save():
 
 @app.route('/load')
 def load():
-    global tasks
-    tasks = load_tasks()
+    load_tasks()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
