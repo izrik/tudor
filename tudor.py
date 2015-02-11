@@ -3,6 +3,7 @@
 from flask import Flask, render_template, redirect, url_for, request
 import argparse
 from itertools import count
+import pickle
 
 app = Flask(__name__)
 
@@ -17,6 +18,16 @@ class Task(object):
 
 
 tasks = [Task('do something'), Task('do another thing')]
+
+
+def load_tasks():
+    try:
+        with open('tudor_tasks.p', 'rb') as f:
+            return pickle.load(f)
+    except:
+        return tasks
+
+tasks = load_tasks()
 
 
 @app.route('/')
@@ -48,6 +59,20 @@ def task_undo(id):
         return 404
     t = found[0]
     t.is_done = False
+    return redirect(url_for('index'))
+
+
+@app.route('/save')
+def save():
+    with open('tudor_tasks.p', 'wb') as f:
+        pickle.dump(tasks, f)
+    return redirect(url_for('index'))
+
+
+@app.route('/load')
+def load():
+    global tasks
+    tasks = load_tasks()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
