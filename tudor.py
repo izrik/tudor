@@ -15,6 +15,7 @@ class Task(object):
         self.id = get_next_task_id()
         self.summary = summary
         self.is_done = False
+        self.is_deleted = False
 
 
 tasks = [Task('do something'), Task('do another thing')]
@@ -35,7 +36,9 @@ load_tasks()
 
 @app.route('/')
 def index():
-    return render_template('index.t.html', tasks=tasks)
+    show_deleted = request.args.get('show_deleted')
+    return render_template('index.t.html', tasks=tasks,
+                           show_deleted=show_deleted)
 
 
 @app.route('/new', methods=['POST'])
@@ -76,6 +79,27 @@ def save():
 def load():
     load_tasks()
     return redirect(url_for('index'))
+
+
+@app.route('/delete/<int:id>')
+def delete_task(id):
+    found = [t for t in tasks if t.id == id][:1]
+    if not found:
+        return 404
+    t = found[0]
+    t.is_deleted = True
+    return redirect(url_for('index'))
+
+
+@app.route('/undelete/<int:id>')
+def undelete_task(id):
+    found = [t for t in tasks if t.id == id][:1]
+    if not found:
+        return 404
+    t = found[0]
+    t.is_deleted = False
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
