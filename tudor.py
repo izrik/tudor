@@ -101,6 +101,33 @@ def undelete_task(id):
     return redirect(url_for('index'))
 
 
+@app.route('/purge/<int:id>')
+def purge_task(id):
+    global tasks
+    found = [t for t in tasks if t.id == id][:1]
+    if not found:
+        return 404
+    tt = found[0]
+    if not hasattr(tt, 'is_deleted'):
+        tt.is_deleted = False
+    if tt.is_deleted:
+        tasks = [t for t in tasks if t != tt]
+    return redirect(url_for('index'))
+
+
+@app.route('/purge_all')
+def purge_deleted_tasks():
+    are_you_sure = request.args.get('are_you_sure')
+    if are_you_sure:
+        global tasks
+        for t in tasks:
+            if not hasattr(t, 'is_deleted'):
+                t.is_deleted = False
+        tasks = [t for t in tasks if not t.is_deleted]
+        return redirect(url_for('index'))
+    return render_template('purge.t.html')
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
