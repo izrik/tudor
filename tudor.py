@@ -131,7 +131,8 @@ def purge_deleted_tasks():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--port', action='store', default=8304, type=int)
 
     args = parser.parse_args()
 
-    app.run(debug=args.debug)
+    app.run(debug=args.debug, port=args.port)
