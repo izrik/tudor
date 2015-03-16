@@ -95,6 +95,9 @@ def task_undo(id):
 def save():
     with open('tudor_tasks.p', 'wb') as f:
         pickle.dump(tasks, f)
+    for task in tasks:
+        db.session.add(db_from_nondb(task))
+    db.session.commit()
     return redirect(url_for('index'))
 
 
