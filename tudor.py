@@ -155,7 +155,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--port', action='store', default=8304, type=int)
+    parser.add_argument('--create-db', action='store_true')
 
     args = parser.parse_args()
 
-    app.run(debug=args.debug, port=args.port)
+    if args.create_db:
+        db.create_all()
+    else:
+        app.run(debug=args.debug, port=args.port)
