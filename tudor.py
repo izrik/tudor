@@ -4,8 +4,11 @@ from flask import Flask, render_template, redirect, url_for, request
 import argparse
 from itertools import count
 import pickle
+from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = SQLAlchemy(app)
 
 get_next_task_id = count().next
 
@@ -16,6 +19,26 @@ class Task(object):
         self.summary = summary
         self.is_done = False
         self.is_deleted = False
+
+
+class DbTask(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    summary = db.Column(db.String(100))
+    is_done = db.Column(db.Boolean)
+    is_deleted = db.Column(db.Boolean)
+
+    def __init__(self, summary, is_done=False, is_deleted=False):
+        self.summary = summary
+        self.is_done = is_done
+        self.is_deleted = is_deleted
+
+
+def db_from_nondb(nondb):
+    summary = nondb.summary if hasattr(nondb, 'summary') else ''
+    is_done = nondb.is_done if hasattr(nondb, 'is_done') else False
+    is_deleted = nondb.is_deleted if hasattr(nondb, 'is_deleted') else False
+    dbtask = DbTask(summary, is_done, is_deleted)
+    return dbtask
 
 
 tasks = [Task('do something'), Task('do another thing')]
