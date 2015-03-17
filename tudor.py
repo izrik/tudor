@@ -10,8 +10,6 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
 
-get_next_task_id = count().next
-
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
