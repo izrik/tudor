@@ -8,13 +8,18 @@ from os import environ
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
 
 
+args = None
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true')
     parser.add_argument('--port', action='store', default=8304, type=int)
     parser.add_argument('--create-db', action='store_true')
+    parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
 
     args = parser.parse_args()
+
+    TUDOR_DB_URI = args.db_uri
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
