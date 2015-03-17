@@ -41,31 +41,29 @@ def db_from_nondb(nondb):
     return dbtask
 
 
-tasks = [DbTask('do something'), DbTask('do another thing')]
+def save_task(task):
+    db.session.add(task)
+    db.session.commit()
 
 
-def load_tasks():
-    try:
-        with open('tudor_tasks.p', 'rb') as f:
-            global tasks, get_next_task_id
-            tasks = DbTask.query.all()
-            max_id = max(tasks, key=lambda t: t.id).id
-            get_next_task_id = count(max_id+1).next
-    except:
-        return tasks
-
-load_tasks()
-
-
-def save_tasks():
+def purge_tasks(tasks):
     for task in tasks:
-        db.session.add(db_from_nondb(task))
+        db.session.delete(task)
+    db.session.commit()
+
+
+def purge_task_from_db(task):
+    db.session.delete(task)
     db.session.commit()
 
 
 @app.route('/')
 def index():
     show_deleted = request.args.get('show_deleted')
+    if show_deleted:
+        tasks = DbTask.query.all()
+    else:
+        tasks = DbTask.query.filter_by(is_deleted=False).all()
     return render_template('index.t.html', tasks=tasks,
                            show_deleted=show_deleted)
 
@@ -74,75 +72,67 @@ def index():
 def add_new():
     summary = request.form['summary']
     task = DbTask(summary)
-    db.session.add(task)
-    db.session.commit()
-    load_tasks()
+    save_task(task)
     return redirect(url_for('index'))
 
 
 @app.route('/done/<int:id>')
 def task_done(id):
-    found = [t for t in tasks if t.id == id][:1]
-    if not found:
+    task = DbTask.query.filter_by(id=id).first()
+    if not task:
         return 404
-    t = found[0]
-    t.is_done = True
+    task.is_done = True
+    save_task(task)
     return redirect(url_for('index'))
 
 
 @app.route('/undo/<int:id>')
 def task_undo(id):
-    found = [t for t in tasks if t.id == id][:1]
-    if not found:
+    task = DbTask.query.filter_by(id=id).first()
+    if not task:
         return 404
-    t = found[0]
-    t.is_done = False
+    task.is_done = False
+    save_task(task)
     return redirect(url_for('index'))
 
 
 @app.route('/save')
 def save():
-    save_tasks()
     return redirect(url_for('index'))
 
 
 @app.route('/load')
 def load():
-    load_tasks()
     return redirect(url_for('index'))
 
 
 @app.route('/delete/<int:id>')
 def delete_task(id):
-    found = [t for t in tasks if t.id == id][:1]
-    if not found:
+    task = DbTask.query.filter_by(id=id).first()
+    if not task:
         return 404
-    t = found[0]
-    t.is_deleted = True
+    task.is_deleted = True
+    save_task(task)
     return redirect(url_for('index'))
 
 
 @app.route('/undelete/<int:id>')
 def undelete_task(id):
-    found = [t for t in tasks if t.id == id][:1]
-    if not found:
+    task = DbTask.query.filter_by(id=id).first()
+    if not task:
         return 404
-    t = found[0]
-    t.is_deleted = False
+    task.is_deleted = False
+    save_task(task)
     return redirect(url_for('index'))
 
 
 @app.route('/purge/<int:id>')
 def purge_task(id):
     global tasks
-    found = [t for t in tasks if t.id == id][:1]
-    if not found:
+    task = DbTask.query.filter_by(id=id, is_deleted=True).first()
+    if not task:
         return 404
-    tt = found[0]
-    if not hasattr(tt, 'is_deleted'):
-        tt.is_deleted = False
-    if tt.is_deleted:
-        tasks = [t for t in tasks if t != tt]
+    purge_task_from_db(task)
     return redirect(url_for('index'))
 
 
@@ -150,11 +140,8 @@ def purge_task(id):
 def purge_deleted_tasks():
     are_you_sure = request.args.get('are_you_sure')
     if are_you_sure:
-        global tasks
-        for t in tasks:
-            if not hasattr(t, 'is_deleted'):
-                t.is_deleted = False
-        tasks = [t for t in tasks if not t.is_deleted]
+        deleted_tasks = DbTask.query.filter_by(is_deleted=True)
+        purge_tasks(deleted_tasks)
         return redirect(url_for('index'))
     return render_template('purge.t.html')
 
