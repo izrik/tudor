@@ -7,6 +7,15 @@ from os import environ
 
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
 
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--port', action='store', default=8304, type=int)
+    parser.add_argument('--create-db', action='store_true')
+
+    args = parser.parse_args()
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
 db = SQLAlchemy(app)
@@ -128,13 +137,6 @@ def purge_deleted_tasks():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--port', action='store', default=8304, type=int)
-    parser.add_argument('--create-db', action='store_true')
-
-    args = parser.parse_args()
-
     if args.create_db:
         db.create_all()
     else:
