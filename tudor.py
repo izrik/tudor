@@ -5,9 +5,10 @@ import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
 
+TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('TUDOR_DB_URI',
-                                                    'sqlite:////tmp/test.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
 db = SQLAlchemy(app)
 
 
