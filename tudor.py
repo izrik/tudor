@@ -13,14 +13,6 @@ db = SQLAlchemy(app)
 get_next_task_id = count().next
 
 
-class Task(object):
-    def __init__(self, summary):
-        self.id = get_next_task_id()
-        self.summary = summary
-        self.is_done = False
-        self.is_deleted = False
-
-
 class DbTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     summary = db.Column(db.String(100))
