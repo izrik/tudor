@@ -41,20 +41,26 @@ def db_from_nondb(nondb):
     return dbtask
 
 
-tasks = [Task('do something'), Task('do another thing')]
+tasks = [DbTask('do something'), DbTask('do another thing')]
 
 
 def load_tasks():
     try:
         with open('tudor_tasks.p', 'rb') as f:
             global tasks, get_next_task_id
-            tasks = pickle.load(f)
+            tasks = DbTask.query.all()
             max_id = max(tasks, key=lambda t: t.id).id
             get_next_task_id = count(max_id+1).next
     except:
         return tasks
 
 load_tasks()
+
+
+def save_tasks():
+    for task in tasks:
+        db.session.add(db_from_nondb(task))
+    db.session.commit()
 
 
 @app.route('/')
@@ -67,7 +73,10 @@ def index():
 @app.route('/new', methods=['POST'])
 def add_new():
     summary = request.form['summary']
-    tasks.append(Task(summary))
+    task = DbTask(summary)
+    db.session.add(task)
+    db.session.commit()
+    load_tasks()
     return redirect(url_for('index'))
 
 
@@ -93,11 +102,7 @@ def task_undo(id):
 
 @app.route('/save')
 def save():
-    with open('tudor_tasks.p', 'wb') as f:
-        pickle.dump(tasks, f)
-    for task in tasks:
-        db.session.add(db_from_nondb(task))
-    db.session.commit()
+    save_tasks()
     return redirect(url_for('index'))
 
 
