@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 get_next_task_id = count().next
 
 
-class DbTask(db.Model):
+class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     summary = db.Column(db.String(100))
     is_done = db.Column(db.Boolean)
@@ -29,7 +29,7 @@ def db_from_nondb(nondb):
     summary = nondb.summary if hasattr(nondb, 'summary') else ''
     is_done = nondb.is_done if hasattr(nondb, 'is_done') else False
     is_deleted = nondb.is_deleted if hasattr(nondb, 'is_deleted') else False
-    dbtask = DbTask(summary, is_done, is_deleted)
+    dbtask = Task(summary, is_done, is_deleted)
     return dbtask
 
 
@@ -53,9 +53,9 @@ def purge_task_from_db(task):
 def index():
     show_deleted = request.args.get('show_deleted')
     if show_deleted:
-        tasks = DbTask.query.all()
+        tasks = Task.query.all()
     else:
-        tasks = DbTask.query.filter_by(is_deleted=False).all()
+        tasks = Task.query.filter_by(is_deleted=False).all()
     return render_template('index.t.html', tasks=tasks,
                            show_deleted=show_deleted)
 
@@ -63,14 +63,14 @@ def index():
 @app.route('/new', methods=['POST'])
 def add_new():
     summary = request.form['summary']
-    task = DbTask(summary)
+    task = Task(summary)
     save_task(task)
     return redirect(url_for('index'))
 
 
 @app.route('/done/<int:id>')
 def task_done(id):
-    task = DbTask.query.filter_by(id=id).first()
+    task = Task.query.filter_by(id=id).first()
     if not task:
         return 404
     task.is_done = True
@@ -80,7 +80,7 @@ def task_done(id):
 
 @app.route('/undo/<int:id>')
 def task_undo(id):
-    task = DbTask.query.filter_by(id=id).first()
+    task = Task.query.filter_by(id=id).first()
     if not task:
         return 404
     task.is_done = False
@@ -100,7 +100,7 @@ def load():
 
 @app.route('/delete/<int:id>')
 def delete_task(id):
-    task = DbTask.query.filter_by(id=id).first()
+    task = Task.query.filter_by(id=id).first()
     if not task:
         return 404
     task.is_deleted = True
@@ -110,7 +110,7 @@ def delete_task(id):
 
 @app.route('/undelete/<int:id>')
 def undelete_task(id):
-    task = DbTask.query.filter_by(id=id).first()
+    task = Task.query.filter_by(id=id).first()
     if not task:
         return 404
     task.is_deleted = False
@@ -121,7 +121,7 @@ def undelete_task(id):
 @app.route('/purge/<int:id>')
 def purge_task(id):
     global tasks
-    task = DbTask.query.filter_by(id=id, is_deleted=True).first()
+    task = Task.query.filter_by(id=id, is_deleted=True).first()
     if not task:
         return 404
     purge_task_from_db(task)
@@ -132,7 +132,7 @@ def purge_task(id):
 def purge_deleted_tasks():
     are_you_sure = request.args.get('are_you_sure')
     if are_you_sure:
-        deleted_tasks = DbTask.query.filter_by(is_deleted=True)
+        deleted_tasks = Task.query.filter_by(is_deleted=True)
         purge_tasks(deleted_tasks)
         return redirect(url_for('index'))
     return render_template('purge.t.html')
