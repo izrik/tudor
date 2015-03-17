@@ -86,16 +86,6 @@ def task_undo(id):
     return redirect(url_for('index'))
 
 
-@app.route('/save')
-def save():
-    return redirect(url_for('index'))
-
-
-@app.route('/load')
-def load():
-    return redirect(url_for('index'))
-
-
 @app.route('/delete/<int:id>')
 def delete_task(id):
     task = Task.query.filter_by(id=id).first()
