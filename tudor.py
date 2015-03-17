@@ -2,12 +2,12 @@
 
 from flask import Flask, render_template, redirect, url_for, request
 import argparse
-from itertools import count
-import pickle
 from flask.ext.sqlalchemy import SQLAlchemy
+from os import environ
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('TUDOR_DB_URI',
+                                                    'sqlite:////tmp/test.db')
 db = SQLAlchemy(app)
 
 
