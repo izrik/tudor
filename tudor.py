@@ -5,19 +5,24 @@ import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
 
+TUDOR_DEBUG = environ.get('TUDOR_DEBUG', False)
+TUDOR_PORT = environ.get('TUDOR_PORT', 8304)
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
 
 
 args = None
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true')
-    parser.add_argument('--port', action='store', default=8304, type=int)
+    parser.add_argument('--debug', action='store', default=TUDOR_DEBUG,
+                        type=bool)
+    parser.add_argument('--port', action='store', default=TUDOR_PORT, type=int)
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
 
     args = parser.parse_args()
 
+    TUDOR_DEBUG = args.debug
+    TUDOR_PORT = args.port
     TUDOR_DB_URI = args.db_uri
 
 
@@ -145,4 +150,4 @@ if __name__ == '__main__':
     if args.create_db:
         db.create_all()
     else:
-        app.run(debug=args.debug, port=args.port)
+        app.run(debug=TUDOR_DEBUG, port=TUDOR_PORT)
