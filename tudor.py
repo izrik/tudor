@@ -18,6 +18,10 @@ def bool_from_str(s):
 
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', False))
 TUDOR_PORT = environ.get('TUDOR_PORT', 8304)
+try:
+    TUDOR_PORT = int(TUDOR_PORT)
+except:
+    TUDOR_PORT = 8304
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
 
 
