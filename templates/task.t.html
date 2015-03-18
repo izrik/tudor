@@ -15,6 +15,29 @@
     </table>
 </div>
 <div>
+    <h4>Notes</h4>
+    <table>
+        <thead>
+        <tr>
+            <td>ID</td>
+            <td>Timestamp</td>
+            <td>Content</td>
+        </tr>
+        </thead>
+        {% for note in task.notes %}
+        <tr>
+            <td>{{ note.id }}</td>
+            <td>{{ note.timestamp }}</td>
+            <td>{{ note.content }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <form action="{{ url_for('new_note', id=task.id) }}" method="post">
+        <textarea name="content"></textarea><br/>
+        <input type="submit" value="Add New Note">
+    </form>
+</div>
+<div>
     <p><a href="{{ url_for('index') }}">main</a></p>
 </div>
 </body>

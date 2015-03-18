@@ -4,6 +4,7 @@ from flask import Flask, render_template, redirect, url_for, request
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
+import datetime
 
 
 def bool_from_str(s):
@@ -58,6 +59,21 @@ class Task(db.Model):
         self.summary = summary
         self.is_done = is_done
         self.is_deleted = is_deleted
+
+
+class Note(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(4000))
+    timestamp = db.Column(db.DateTime)
+
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    task = db.relationship('Task', backref=db.backref('notes', lazy='dynamic'))
+
+    def __init__(self, content, timestamp=None):
+        self.content = content
+        if timestamp is None:
+            timestamp = datetime.datetime.utcnow()
+        self.timestamp = timestamp
 
 
 def save_task(task):
@@ -161,6 +177,20 @@ def view_task(id):
     if task is None:
         return (('No task found for the id "%s"' % id), 404)
     return render_template('task.t.html', task=task)
+
+
+@app.route('/task/<int:id>/new_note', methods=['POST'])
+def new_note(id):
+    task = Task.query.filter_by(id=id).first()
+    if task is None:
+        return (('No task found for the id "%s"' % id), 404)
+    content = request.form['content']
+    note = Note(content)
+    note.task = task
+
+    save_task(note)
+
+    return redirect(url_for('view_task', id=id))
 
 
 if __name__ == '__main__':
