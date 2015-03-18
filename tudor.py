@@ -60,14 +60,6 @@ class Task(db.Model):
         self.is_deleted = is_deleted
 
 
-def db_from_nondb(nondb):
-    summary = nondb.summary if hasattr(nondb, 'summary') else ''
-    is_done = nondb.is_done if hasattr(nondb, 'is_done') else False
-    is_deleted = nondb.is_deleted if hasattr(nondb, 'is_deleted') else False
-    dbtask = Task(summary, is_done, is_deleted)
-    return dbtask
-
-
 def save_task(task):
     db.session.add(task)
     db.session.commit()
