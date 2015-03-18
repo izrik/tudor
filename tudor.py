@@ -39,6 +39,9 @@ if __name__ == '__main__':
     TUDOR_PORT = args.port
     TUDOR_DB_URI = args.db_uri
 
+print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
+print('TUDOR_PORT: {}'.format(TUDOR_PORT))
+print('TUDOR_DB_URI: {}'.format(TUDOR_DB_URI))
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
