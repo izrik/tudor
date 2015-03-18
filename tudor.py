@@ -163,6 +163,14 @@ def purge_deleted_tasks():
     return render_template('purge.t.html')
 
 
+@app.route('/task/<int:id>')
+def view_task(id):
+    task = Task.query.filter_by(id=id).first()
+    if task is None:
+        return (('No task found for the id "%s"' % id), 404)
+    return render_template('task.t.html', task=task)
+
+
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
