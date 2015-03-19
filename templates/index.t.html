@@ -10,10 +10,10 @@
     <table>
         <thead>
         <tr>
-            <td>Id</td>
-            <td>Summary</td>
-            <td>Done?</td>
-            <td></td>
+            <th>Id</th>
+            <th>Summary</th>
+            <th>Done?</th>
+            <th></th>
         </tr>
         </thead>
         {% for task in tasks if not task.is_deleted or show_deleted %}
@@ -44,12 +44,17 @@
             </td>
         </tr>
         {% endfor %}
+        <tfoot>
+            <td></td>
+            <td>
+                <form action="/new" method="post">
+                    <input type="text" name="summary" />
+                </form>
+            </td>
+            <td></td>
+            <td></td>
+        </tfoot>
     </table>
-</div>
-<div>
-    <form action="/new" method="post">
-        <input type="text" name="summary" />
-    </form>
 </div>
 <div>
     <p><a href="{{ url_for('index') }}">refresh</a></p>
