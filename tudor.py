@@ -52,11 +52,13 @@ db = SQLAlchemy(app)
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     summary = db.Column(db.String(100))
+    description = db.Column(db.String(4000))
     is_done = db.Column(db.Boolean)
     is_deleted = db.Column(db.Boolean)
 
-    def __init__(self, summary, is_done=False, is_deleted=False):
+    def __init__(self, summary, description='', is_done=False, is_deleted=False):
         self.summary = summary
+        self.description = description
         self.is_done = is_done
         self.is_deleted = is_deleted
 
