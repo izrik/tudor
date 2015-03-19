@@ -195,6 +195,30 @@ def new_note(id):
     return redirect(url_for('view_task', id=id))
 
 
+@app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
+def edit_task(id):
+    task = Task.query.filter_by(id=id).first()
+
+    def render_get_response(x=''):
+        return render_template("edit_task.t.html", task=task, x=x)
+
+    if request.method == 'GET':
+        return render_get_response()
+
+    if 'summary' not in request.form or 'description' not in request.form:
+        return render_get_response()
+
+    task.summary = request.form['summary']
+    task.description = request.form['description']
+    task.is_done = 'is_done' in request.form and not not request.form['is_done']
+    task.is_deleted = ('is_deleted' in request.form and
+                       not not request.form['is_deleted'])
+
+    save_task(task)
+
+    return redirect(url_for('view_task', id=task.id))
+
+
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
