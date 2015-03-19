@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Tudor - {{ task.summary }}</title>
+    <title>Tudor - {{ task.summary if task.summary != None }}</title>
 </head>
 
 <body>
 <div>
     <table>
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
-        <tr><td>Summary</td><td>{{ task.summary }}</td></tr>
-        <tr><td>Description</td><td>{{ task.description }}</td></tr>
+        <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>
+        <tr><td>Description</td><td>{{ task.description if task.description != None }}</td></tr>
         <tr><td>Done?</td><td>{{ task.is_done }}</td></tr>
         <tr><td>Deleted?</td><td>{{ task.is_deleted }}</td></tr>
     </table>
@@ -30,7 +30,7 @@
         <tr>
             <td>{{ note.id }}</td>
             <td>{{ note.timestamp }}</td>
-            <td>{{ note.content }}</td>
+            <td>{{ note.content if note.content != None }}</td>
         </tr>
         {% endfor %}
     </table>

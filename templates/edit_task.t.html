@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Tudor - {{ task.summary }}</title>
+    <title>Tudor - Editing "{{ task.summary if task.summary != None }}" (ID {{task.id}})</title>
 </head>
 
 <body>
@@ -10,8 +10,8 @@
     <form action="edit" method="post" enctype="multipart/form-data">
         <table>
             <tr><td>ID</td><td>{{ task.id }}</td></tr>
-            <tr><td>Summary</td><td><input type="text" name="summary" value="{{ task.summary }}" /></td></tr>
-            <tr><td>Description</td><td><textarea name="description">{{ task.description }}</textarea> </td></tr>
+            <tr><td>Summary</td><td><input type="text" name="summary" value="{{ task.summary if task.summary != None }}" /></td></tr>
+            <tr><td>Description</td><td><textarea name="description">{{ task.description if task.description != None }}</textarea> </td></tr>
             <tr><td>Done?</td><td><input type="checkbox" name="is_done" {% if task.is_done %} checked {% endif %} /></td></tr>
             <tr><td>Deleted?</td><td><input type="checkbox" name="is_deleted" {% if task.is_deleted %} checked {% endif %} /></td></tr>
         </table>

@@ -199,8 +199,8 @@ def new_note(id):
 def edit_task(id):
     task = Task.query.filter_by(id=id).first()
 
-    def render_get_response(x=''):
-        return render_template("edit_task.t.html", task=task, x=x)
+    def render_get_response():
+        return render_template("edit_task.t.html", task=task)
 
     if request.method == 'GET':
         return render_get_response()

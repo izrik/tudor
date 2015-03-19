@@ -19,7 +19,7 @@
         {% for task in tasks if not task.is_deleted or show_deleted %}
         <tr>
             <td>{{task.id}}</td>
-            <td><a href="{{ url_for('view_task', id=task.id) }}">{{task.summary}}</a></td>
+            <td><a href="{{ url_for('view_task', id=task.id) }}">{{ task.summary if task.summary != None }}</a></td>
             <td>
                 {% if task.is_done %}
                     done
