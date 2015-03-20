@@ -27,8 +27,7 @@ try:
 except:
     TUDOR_PORT = 8304
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
-
-TUDOR_UPLOAD_FOLDER = '/tmp/tudor/uploads'
+TUDOR_UPLOAD_FOLDER = environ.get('TUDOR_UPLOAD_FOLDER', '/tmp/tudor/uploads')
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 
@@ -39,12 +38,15 @@ if __name__ == '__main__':
     parser.add_argument('--port', action='store', default=TUDOR_PORT, type=int)
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
+    parser.add_argument('--upload-folder', action='store',
+                        default=TUDOR_UPLOAD_FOLDER)
 
     args = parser.parse_args()
 
     TUDOR_DEBUG = args.debug
     TUDOR_PORT = args.port
     TUDOR_DB_URI = args.db_uri
+    TUDOR_UPLOAD_FOLDER = args.upload_folder
 
 print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
 print('TUDOR_PORT: {}'.format(TUDOR_PORT))
