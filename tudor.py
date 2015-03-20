@@ -5,6 +5,7 @@ import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
 import datetime
+import os.path
 
 
 def bool_from_str(s):
@@ -76,6 +77,25 @@ class Note(db.Model):
         if timestamp is None:
             timestamp = datetime.datetime.utcnow()
         self.timestamp = timestamp
+
+
+class Attachment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, nullable=False)
+    path = db.Column(db.String(1000), nullable=False)
+    filename = db.Column(db.String(100), nullable=False)
+
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    task = db.relationship('Task', backref=db.backref('attachments', lazy='dynamic'))
+
+    def __init__(self, path, timestamp=None, filename=None):
+        if timestamp is None:
+            timestamp = datetime.datetime.utcnow()
+        if filename is None:
+            filename = os.path.basename(path)
+        self.timestamp = timestamp
+        self.path = path
+        self.filename = filename
 
 
 def save_task(task):
