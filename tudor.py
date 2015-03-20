@@ -63,7 +63,8 @@ class Task(db.Model):
     is_done = db.Column(db.Boolean)
     is_deleted = db.Column(db.Boolean)
 
-    def __init__(self, summary, description='', is_done=False, is_deleted=False):
+    def __init__(self, summary, description='', is_done=False,
+                 is_deleted=False):
         self.summary = summary
         self.description = description
         self.is_done = is_done
@@ -92,7 +93,8 @@ class Attachment(db.Model):
     filename = db.Column(db.String(100), nullable=False)
 
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-    task = db.relationship('Task', backref=db.backref('attachments', lazy='dynamic'))
+    task = db.relationship('Task', backref=db.backref('attachments',
+                                                      lazy='dynamic'))
 
     def __init__(self, path, timestamp=None, filename=None):
         if timestamp is None:
@@ -236,7 +238,8 @@ def edit_task(id):
 
     task.summary = request.form['summary']
     task.description = request.form['description']
-    task.is_done = 'is_done' in request.form and not not request.form['is_done']
+    task.is_done = ('is_done' in request.form and
+                    not not request.form['is_done'])
     task.is_deleted = ('is_deleted' in request.form and
                        not not request.form['is_deleted'])
 
@@ -247,6 +250,7 @@ def edit_task(id):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 
 @app.route('/task/<int:id>/new_attachment', methods=['POST'])
 def new_attachment(id):
