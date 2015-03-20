@@ -94,12 +94,15 @@ class Attachment(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False)
     path = db.Column(db.String(1000), nullable=False)
     filename = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(100), nullable=False, default='')
 
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
     task = db.relationship('Task', backref=db.backref('attachments',
                                                       lazy='dynamic'))
 
-    def __init__(self, path, timestamp=None, filename=None):
+    def __init__(self, path, description=None, timestamp=None, filename=None):
+        if description is None:
+            description = ''
         if timestamp is None:
             timestamp = datetime.datetime.utcnow()
         if filename is None:
@@ -107,6 +110,7 @@ class Attachment(db.Model):
         self.timestamp = timestamp
         self.path = path
         self.filename = filename
+        self.description = description
 
 
 def save_task(task):
@@ -265,8 +269,12 @@ def new_attachment(id):
         return 400
     path = secure_filename(f.filename)
     f.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
+    if 'description' in request.form:
+        description = request.form['description']
+    else:
+        description = ''
 
-    att = Attachment(path)
+    att = Attachment(path, description)
     att.task = task
 
     save_task(att)
