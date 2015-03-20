@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request
+import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
@@ -269,6 +270,17 @@ def new_attachment(id):
     save_task(att)
 
     return redirect(url_for('view_task', id=id))
+
+
+@app.route('/task/<int:id>/attachment/<int:aid>', defaults={'x': 'x'})
+@app.route('/task/<int:id>/attachment/<int:aid>/', defaults={'x': 'x'})
+@app.route('/task/<int:id>/attachment/<int:aid>/<path:x>')
+def get_attachment(id, aid, x):
+    att = Attachment.query.filter_by(id=aid).first()
+    if att is None:
+        return (('No attachment found for the id "%s"' % aid), 404)
+
+    return flask.send_from_directory(TUDOR_UPLOAD_FOLDER, att.path)
 
 
 if __name__ == '__main__':

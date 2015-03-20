@@ -63,7 +63,7 @@
         <tr>
             <td>{{ att.id }}</td>
             <td>{{ att.timestamp }}</td>
-            <td>{{ att.filename if att.filename != None }}</td>
+            <td><a href="{{ url_for('get_attachment', id=task.id, aid=att.id, x=att.filename) }}">{{ att.filename if att.filename != None }}</a></td>
         </tr>
         {% endfor %}
         <tr>
