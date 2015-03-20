@@ -47,6 +47,36 @@
             </td>
         </tr>
     </table>
+
+</div>
+<div>
+    <h4>Attachments</h4>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Timestamp</th>
+            <th>File</th>
+        </tr>
+        </thead>
+        {% for att in task.attachments %}
+        <tr>
+            <td>{{ att.id }}</td>
+            <td>{{ att.timestamp }}</td>
+            <td>{{ att.filename if att.filename != None }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td>
+                <form action="{{ url_for('new_attachment', id=task.id) }}" method="post" enctype="multipart/form-data">
+                    <input type="file" name="filename">
+                    <input type="submit" value="Attach">
+                </form>
+            </td>
+        </tr>
+    </table>
 </div>
 </body>
 </html>

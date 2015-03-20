@@ -6,6 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
 import datetime
 import os.path
+from werkzeug import secure_filename
 
 
 def bool_from_str(s):
@@ -26,6 +27,9 @@ except:
     TUDOR_PORT = 8304
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
 
+TUDOR_UPLOAD_FOLDER = '/tmp/tudor/uploads'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+
 
 args = None
 if __name__ == '__main__':
@@ -44,9 +48,11 @@ if __name__ == '__main__':
 print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
 print('TUDOR_PORT: {}'.format(TUDOR_PORT))
 print('TUDOR_DB_URI: {}'.format(TUDOR_DB_URI))
+print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
+app.config['UPLOAD_FOLDER'] = TUDOR_UPLOAD_FOLDER
 db = SQLAlchemy(app)
 
 
@@ -237,6 +243,28 @@ def edit_task(id):
     save_task(task)
 
     return redirect(url_for('view_task', id=task.id))
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+@app.route('/task/<int:id>/new_attachment', methods=['POST'])
+def new_attachment(id):
+    task = Task.query.filter_by(id=id).first()
+    if task is None:
+        return (('No task found for the id "%s"' % id), 404)
+    f = request.files['filename']
+    if f is None or not f or not allowed_file(f.filename):
+        return 400
+    path = secure_filename(f.filename)
+    f.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
+
+    att = Attachment(path)
+    att.task = task
+
+    save_task(att)
+
+    return redirect(url_for('view_task', id=id))
 
 
 if __name__ == '__main__':
