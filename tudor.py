@@ -428,7 +428,7 @@ if __name__ == '__main__':
     if args.create_db:
         db.create_all()
     elif args.create_secret_key:
-        digits = ['0123456789abcdef']
+        digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in xrange(48)))
         print(key)
     else:
