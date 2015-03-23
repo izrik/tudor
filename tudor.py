@@ -135,10 +135,11 @@ def purge_task_from_db(task):
 @app.route('/')
 def index():
     show_deleted = request.args.get('show_deleted')
-    if show_deleted:
-        tasks = Task.query.all()
-    else:
-        tasks = Task.query.filter_by(is_deleted=False).all()
+    tasks = Task.query
+    if not show_deleted:
+        tasks = tasks.filter_by(is_deleted=False)
+    tasks = tasks.order_by(Task.order_num.desc())
+    tasks = tasks.all()
     return render_template('index.t.html', tasks=tasks,
                            show_deleted=show_deleted)
 
