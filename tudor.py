@@ -163,6 +163,7 @@ def purge_task_from_db(task):
 
 
 @app.route('/')
+@login_required
 def index():
     show_deleted = request.args.get('show_deleted')
     tasks = Task.query
@@ -175,6 +176,7 @@ def index():
 
 
 @app.route('/new', methods=['POST'])
+@login_required
 def add_new():
     summary = request.form['summary']
     task = Task(summary)
@@ -183,6 +185,7 @@ def add_new():
 
 
 @app.route('/done/<int:id>')
+@login_required
 def task_done(id):
     task = Task.query.filter_by(id=id).first()
     if not task:
@@ -193,6 +196,7 @@ def task_done(id):
 
 
 @app.route('/undo/<int:id>')
+@login_required
 def task_undo(id):
     task = Task.query.filter_by(id=id).first()
     if not task:
@@ -203,6 +207,7 @@ def task_undo(id):
 
 
 @app.route('/delete/<int:id>')
+@login_required
 def delete_task(id):
     task = Task.query.filter_by(id=id).first()
     if not task:
@@ -213,6 +218,7 @@ def delete_task(id):
 
 
 @app.route('/undelete/<int:id>')
+@login_required
 def undelete_task(id):
     task = Task.query.filter_by(id=id).first()
     if not task:
@@ -223,6 +229,7 @@ def undelete_task(id):
 
 
 @app.route('/purge/<int:id>')
+@login_required
 def purge_task(id):
     global tasks
     task = Task.query.filter_by(id=id, is_deleted=True).first()
@@ -233,6 +240,7 @@ def purge_task(id):
 
 
 @app.route('/purge_all')
+@login_required
 def purge_deleted_tasks():
     are_you_sure = request.args.get('are_you_sure')
     if are_you_sure:
@@ -243,6 +251,7 @@ def purge_deleted_tasks():
 
 
 @app.route('/task/<int:id>')
+@login_required
 def view_task(id):
     task = Task.query.filter_by(id=id).first()
     if task is None:
@@ -251,6 +260,7 @@ def view_task(id):
 
 
 @app.route('/task/<int:id>/new_note', methods=['POST'])
+@login_required
 def new_note(id):
     task = Task.query.filter_by(id=id).first()
     if task is None:
@@ -265,6 +275,7 @@ def new_note(id):
 
 
 @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit_task(id):
     task = Task.query.filter_by(id=id).first()
 
@@ -294,6 +305,7 @@ def allowed_file(filename):
 
 
 @app.route('/task/<int:id>/new_attachment', methods=['POST'])
+@login_required
 def new_attachment(id):
     task = Task.query.filter_by(id=id).first()
     if task is None:
@@ -319,6 +331,7 @@ def new_attachment(id):
 @app.route('/task/<int:id>/attachment/<int:aid>', defaults={'x': 'x'})
 @app.route('/task/<int:id>/attachment/<int:aid>/', defaults={'x': 'x'})
 @app.route('/task/<int:id>/attachment/<int:aid>/<path:x>')
+@login_required
 def get_attachment(id, aid, x):
     att = Attachment.query.filter_by(id=aid).first()
     if att is None:
@@ -328,6 +341,7 @@ def get_attachment(id, aid, x):
 
 
 @app.route('/task/<int:id>/up')
+@login_required
 def move_task_up(id):
     task = Task.query.get(id)
     tasks = Task.query.filter(Task.order_num >= task.order_num)
@@ -355,6 +369,7 @@ def move_task_up(id):
 
 
 @app.route('/task/<int:id>/down')
+@login_required
 def move_task_down(id):
     task = Task.query.get(id)
     tasks = Task.query.filter(Task.order_num <= task.order_num)
