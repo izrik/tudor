@@ -34,7 +34,7 @@
         <tr>
             <td>{{ note.id }}</td>
             <td>{{ note.timestamp }}</td>
-            <td>{{ note.content if note.content != None }}</td>
+            <td>{{ note.content|markdown if note.content != None }}</td>
         </tr>
         {% endfor %}
         <tr>
