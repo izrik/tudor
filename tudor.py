@@ -67,6 +67,7 @@ class Task(db.Model):
     description = db.Column(db.String(4000))
     is_done = db.Column(db.Boolean)
     is_deleted = db.Column(db.Boolean)
+    order_num = db.Column(db.Integer, nullable=False, default=0)
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False):
