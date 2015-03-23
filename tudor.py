@@ -8,6 +8,7 @@ from os import environ
 import datetime
 import os.path
 from werkzeug import secure_filename
+from flask.ext.misaka import Misaka
 
 
 def bool_from_str(s):
@@ -57,6 +58,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
 app.config['UPLOAD_FOLDER'] = TUDOR_UPLOAD_FOLDER
 db = SQLAlchemy(app)
+Misaka(app)
 
 
 class Task(db.Model):
