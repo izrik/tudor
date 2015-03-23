@@ -42,6 +42,9 @@
                     <a href="{{ url_for('delete_task', id=task.id) }}">(delete)</a>
                 {% endif %}
             </td>
+            <td>
+                <a href="{{ url_for('move_task_up', id=task.id, show_deleted=show_deleted) }}"><img src="static/up_arrow.png" /></a>
+            </td>
         </tr>
         {% endfor %}
         <tfoot>
