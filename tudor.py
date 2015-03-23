@@ -30,6 +30,7 @@ except:
 TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
 TUDOR_UPLOAD_FOLDER = environ.get('TUDOR_UPLOAD_FOLDER', '/tmp/tudor/uploads')
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+TUDOR_SECRET_KEY = environ.get('TUDOR_SECRET_KEY')
 
 
 args = None
@@ -41,6 +42,8 @@ if __name__ == '__main__':
     parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
     parser.add_argument('--upload-folder', action='store',
                         default=TUDOR_UPLOAD_FOLDER)
+    parser.add_argument('--secret-key', action='store',
+                        default=TUDOR_SECRET_KEY)
 
     args = parser.parse_args()
 
@@ -48,6 +51,7 @@ if __name__ == '__main__':
     TUDOR_PORT = args.port
     TUDOR_DB_URI = args.db_uri
     TUDOR_UPLOAD_FOLDER = args.upload_folder
+    TUDOR_SECRET_KEY = args.secret_key
 
 print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
 print('TUDOR_PORT: {}'.format(TUDOR_PORT))
@@ -57,6 +61,7 @@ print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
 app.config['UPLOAD_FOLDER'] = TUDOR_UPLOAD_FOLDER
+app.secret_key = TUDOR_SECRET_KEY
 db = SQLAlchemy(app)
 Misaka(app)
 
