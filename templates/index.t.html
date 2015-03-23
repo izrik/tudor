@@ -44,6 +44,7 @@
             </td>
             <td>
                 <a href="{{ url_for('move_task_up', id=task.id, show_deleted=show_deleted) }}"><img src="static/up_arrow.png" /></a>
+                <a href="{{ url_for('move_task_down', id=task.id, show_deleted=show_deleted) }}"><img src="static/down_arrow.png" /></a>
             </td>
         </tr>
         {% endfor %}

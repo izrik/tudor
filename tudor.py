@@ -301,7 +301,6 @@ def get_attachment(id, aid, x):
 def move_task_up(id):
     task = Task.query.get(id)
     tasks = Task.query.filter(Task.order_num >= task.order_num)
-    # tasks = tasks.filter(Task.id != task.id)
     show_deleted = request.args.get('show_deleted')
     if not show_deleted:
         tasks = tasks.filter_by(is_deleted=False)
@@ -311,7 +310,34 @@ def move_task_up(id):
         next_task = tasks[i - 1]
         if task.order_num == next_task.order_num:
             # re-calculate all order numbers
-            tasks = Task.query.order_by(Task.order_num.desc())
+            tasks = Task.query.order_by(Task.order_num.desc()).all()
+            N = len(tasks)
+            for i in xrange(N):
+                tasks[i].order_num = N - i
+                db.session.add(tasks[i])
+        a, b = next_task.order_num, task.order_num
+        task.order_num, next_task.order_num = a, b
+        db.session.add(task)
+        db.session.add(next_task)
+        db.session.commit()
+
+    return redirect(url_for('index', show_deleted=show_deleted))
+
+
+@app.route('/task/<int:id>/down')
+def move_task_down(id):
+    task = Task.query.get(id)
+    tasks = Task.query.filter(Task.order_num <= task.order_num)
+    show_deleted = request.args.get('show_deleted')
+    if not show_deleted:
+        tasks = tasks.filter_by(is_deleted=False)
+    tasks = tasks.order_by(Task.order_num.desc()).all()
+    i = tasks.index(task)
+    if i + 1 < len(tasks):
+        next_task = tasks[i + 1]
+        if task.order_num == next_task.order_num:
+            # re-calculate all order numbers
+            tasks = Task.query.order_by(Task.order_num.desc()).all()
             N = len(tasks)
             for i in xrange(N):
                 tasks[i].order_num = N - i
