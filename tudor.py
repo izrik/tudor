@@ -9,6 +9,7 @@ import datetime
 import os.path
 from werkzeug import secure_filename
 from flask.ext.misaka import Misaka
+import random
 
 
 def bool_from_str(s):
@@ -44,6 +45,7 @@ if __name__ == '__main__':
                         default=TUDOR_UPLOAD_FOLDER)
     parser.add_argument('--secret-key', action='store',
                         default=TUDOR_SECRET_KEY)
+    parser.add_argument('--create-secret-key', action='store_true')
 
     args = parser.parse_args()
 
@@ -361,5 +363,9 @@ def move_task_down(id):
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
+    elif args.create_secret_key:
+        digits = ['0123456789abcdef']
+        key = ''.join((random.choice(digits) for x in xrange(48)))
+        print(key)
     else:
         app.run(debug=TUDOR_DEBUG, port=TUDOR_PORT)
