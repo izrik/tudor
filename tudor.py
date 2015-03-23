@@ -83,7 +83,8 @@ class Note(db.Model):
     timestamp = db.Column(db.DateTime)
 
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-    task = db.relationship('Task', backref=db.backref('notes', lazy='dynamic'))
+    task = db.relationship('Task', backref=db.backref('notes', lazy='dynamic',
+                                                      order_by=timestamp))
 
     def __init__(self, content, timestamp=None):
         self.content = content
@@ -101,7 +102,8 @@ class Attachment(db.Model):
 
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
     task = db.relationship('Task', backref=db.backref('attachments',
-                                                      lazy='dynamic'))
+                                                      lazy='dynamic',
+                                                      order_by=timestamp))
 
     def __init__(self, path, description=None, timestamp=None, filename=None):
         if description is None:
