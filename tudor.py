@@ -11,6 +11,7 @@ from werkzeug import secure_filename
 from flask.ext.misaka import Misaka
 import random
 from flask.ext.login import LoginManager, login_user, login_required, logout_user
+from flask.ext.bcrypt import Bcrypt
 
 
 def bool_from_str(s):
@@ -47,6 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('--secret-key', action='store',
                         default=TUDOR_SECRET_KEY)
     parser.add_argument('--create-secret-key', action='store_true')
+    parser.add_argument('--hash-password', action='store')
 
     args = parser.parse_args()
 
@@ -69,6 +71,7 @@ db = SQLAlchemy(app)
 Misaka(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+bcrypt = Bcrypt(app)
 
 
 class Task(db.Model):
@@ -130,7 +133,7 @@ class Attachment(db.Model):
 
 class User(db.Model):
     email = db.Column(db.String(100), primary_key=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    hashed_password = db.Column(db.String(100), nullable=False)
     authenticated = True
 
     def is_active(self):
@@ -407,12 +410,14 @@ def login():
         return render_template('login.t.html')
     email = request.form['email']
     password = request.form['password']
-    registered_user = User.query.filter_by(email=email,
-                                           password=password).first()
-    if registered_user is None:
+    user = User.query.get(email)
+
+    if (user is None or
+            not bcrypt.check_password_hash(user.hashed_password, password)):
         flash('Username or Password is invalid', 'error')
         return redirect(url_for('login'))
-    login_user(registered_user)
+
+    login_user(user)
     flash('Logged in successfully')
     return redirect(request.args.get('next') or url_for('index'))
 
@@ -431,5 +436,7 @@ if __name__ == '__main__':
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in xrange(48)))
         print(key)
+    elif args.hash_password is not None:
+        print(bcrypt.generate_password_hash(args.hash_password))
     else:
         app.run(debug=TUDOR_DEBUG, port=TUDOR_PORT)
