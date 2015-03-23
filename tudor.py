@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -10,6 +10,7 @@ import os.path
 from werkzeug import secure_filename
 from flask.ext.misaka import Misaka
 import random
+from flask.ext.login import LoginManager, login_user, login_required, logout_user
 
 
 def bool_from_str(s):
@@ -66,6 +67,8 @@ app.config['UPLOAD_FOLDER'] = TUDOR_UPLOAD_FOLDER
 app.secret_key = TUDOR_SECRET_KEY
 db = SQLAlchemy(app)
 Misaka(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
 
 
 class Task(db.Model):
