@@ -381,6 +381,34 @@ def move_task_down(id):
     return redirect(url_for('index', show_deleted=show_deleted))
 
 
+@login_manager.user_loader
+def load_user(userid):
+    return User.query.get(userid)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template('login.t.html')
+    email = request.form['email']
+    password = request.form['password']
+    registered_user = User.query.filter_by(email=email,
+                                           password=password).first()
+    if registered_user is None:
+        flash('Username or Password is invalid', 'error')
+        return redirect(url_for('login'))
+    login_user(registered_user)
+    flash('Logged in successfully')
+    return redirect(request.args.get('next') or url_for('index'))
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+login_manager.login_view = 'login'
+
+
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
