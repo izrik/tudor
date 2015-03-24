@@ -150,6 +150,32 @@ class User(db.Model):
         return False
 
 
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime)
+    action = db.Column(db.String(25))
+    target_task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+    target_note_id = db.Column(db.Integer, db.ForeignKey('note.id'))
+    comments = db.Column(db.String(100))
+
+    target_task = db.relationship('Task', foreign_keys=[target_task_id])
+    target_note = db.relationship('Note', foreign_keys=[target_note_id])
+
+    def __init__(self, action, target_task_id=None, target_note_id=None,
+                 timestamp=None, comments=None):
+        self.action = action
+        self.target_task_id = target_task_id
+        self.target_note_id = target_note_id
+        if timestamp is None:
+            timestamp = datetime.utcnow()
+        self.timestamp = datetime.utcnow()
+        self.comments = comments
+
+    def __repr__(self):
+        return '<Event %s %i>' % (self.action, self.target_job_id or
+                                  self.target_account_id)
+
+
 def save_task(task):
     db.session.add(task)
     db.session.commit()
