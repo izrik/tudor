@@ -10,7 +10,8 @@ import os.path
 from werkzeug import secure_filename
 from flask.ext.misaka import Misaka
 import random
-from flask.ext.login import LoginManager, login_user, login_required, logout_user
+from flask.ext.login import LoginManager, login_user, login_required
+from flask.ext.login import logout_user
 from flask.ext.bcrypt import Bcrypt
 
 
