@@ -354,6 +354,7 @@ def get_attachment(id, aid, x):
 def move_task_up(id):
     task = Task.query.get(id)
     tasks = Task.query.filter(Task.order_num >= task.order_num)
+    tasks = tasks.filter(Task.parent_id == task.parent_id)
     show_deleted = request.args.get('show_deleted')
     if not show_deleted:
         tasks = tasks.filter_by(is_deleted=False)
@@ -382,6 +383,7 @@ def move_task_up(id):
 def move_task_down(id):
     task = Task.query.get(id)
     tasks = Task.query.filter(Task.order_num <= task.order_num)
+    tasks = tasks.filter(Task.parent_id == task.parent_id)
     show_deleted = request.args.get('show_deleted')
     if not show_deleted:
         tasks = tasks.filter_by(is_deleted=False)
