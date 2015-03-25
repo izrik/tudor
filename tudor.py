@@ -413,9 +413,6 @@ def move_task_right(id):
     task = Task.query.get(id)
     tasks = Task.query.filter(Task.order_num >= task.order_num)
     tasks = tasks.filter(Task.parent_id == task.parent_id)
-    show_deleted = request.args.get('show_deleted')
-    if not show_deleted:
-        tasks = tasks.filter_by(is_deleted=False)
     tasks = tasks.order_by(Task.order_num.desc()).all()
     i = tasks.index(task)
     if i > 0:
@@ -435,6 +432,7 @@ def move_task_right(id):
         db.session.add(next_task)
         db.session.commit()
 
+    show_deleted = request.args.get('show_deleted')
     return redirect(url_for('index', show_deleted=show_deleted))
 
 
