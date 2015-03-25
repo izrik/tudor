@@ -348,6 +348,14 @@ def get_attachment(id, aid, x):
     return flask.send_from_directory(TUDOR_UPLOAD_FOLDER, att.path)
 
 
+def reorder_tasks(tasks):
+    tasks = list(tasks)
+    N = len(tasks)
+    for i in xrange(N):
+        tasks[i].order_num = 2 * (N - i)
+        db.session.add(tasks[i])
+
+
 @app.route('/task/<int:id>/up')
 @login_required
 def move_task_up(id):
@@ -364,10 +372,7 @@ def move_task_up(id):
         if task.order_num == next_task.order_num:
             # re-calculate all order numbers
             tasks = Task.query.order_by(Task.order_num.desc()).all()
-            N = len(tasks)
-            for i in xrange(N):
-                tasks[i].order_num = N - i
-                db.session.add(tasks[i])
+            reorder_tasks(tasks)
         a, b = next_task.order_num, task.order_num
         task.order_num, next_task.order_num = a, b
         db.session.add(task)
@@ -393,10 +398,7 @@ def move_task_down(id):
         if task.order_num == next_task.order_num:
             # re-calculate all order numbers
             tasks = Task.query.order_by(Task.order_num.desc()).all()
-            N = len(tasks)
-            for i in xrange(N):
-                tasks[i].order_num = N - i
-                db.session.add(tasks[i])
+            reorder_tasks(tasks)
         a, b = next_task.order_num, task.order_num
         task.order_num, next_task.order_num = a, b
         db.session.add(task)
@@ -418,7 +420,7 @@ def move_task_right(id):
         next_task = tasks[i - 1]
         siblings = next_task.children.all()
         if siblings:
-            order_nums = map(lambda t:t.order_num, siblings)
+            order_nums = map(lambda t: t.order_num, siblings)
             new_order_num = min(order_nums) - 1
         else:
             new_order_num = 0
@@ -443,10 +445,8 @@ def move_task_left(id):
 
         siblings = Task.query.filter(Task.parent_id == task.parent.parent_id)
         siblings = siblings.order_by(Task.order_num.desc()).all()
-        N = len(siblings)
-        for i in xrange(N):
-            siblings[i].order_num = 2 * (N - i)
-            db.session.add(siblings[i])
+
+        reorder_tasks(siblings)
 
         new_order_num = task.parent.order_num - 1
         prev_parent = task.parent
