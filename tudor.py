@@ -420,8 +420,15 @@ def move_task_right(id):
     i = tasks.index(task)
     if i > 0:
         next_task = tasks[i - 1]
+        siblings = next_task.children.all()
+        if siblings:
+            order_nums = map(lambda t:t.order_num, siblings)
+            new_order_num = min(order_nums) - 1
+        else:
+            new_order_num = 0
         prev_parent = task.parent
         task.parent = next_task
+        task.order_num = new_order_num
         if prev_parent:
             db.session.add(prev_parent)
         db.session.add(task)
