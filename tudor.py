@@ -240,7 +240,6 @@ def undelete_task(id):
 @app.route('/purge/<int:id>')
 @login_required
 def purge_task(id):
-    global tasks
     task = Task.query.filter_by(id=id, is_deleted=True).first()
     if not task:
         return 404
