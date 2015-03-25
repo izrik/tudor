@@ -83,6 +83,11 @@ class Task(db.Model):
     is_deleted = db.Column(db.Boolean)
     order_num = db.Column(db.Integer, nullable=False, default=0)
 
+    parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
+    parent = db.relationship('Task', remote_side=[id],
+                             backref=db.backref('children', lazy='dynamic',
+                                                order_by=order_num))
+
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False):
         self.summary = summary
