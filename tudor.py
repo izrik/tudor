@@ -86,7 +86,7 @@ class Task(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
     parent = db.relationship('Task', remote_side=[id],
                              backref=db.backref('children', lazy='dynamic',
-                                                order_by=order_num))
+                                                order_by=order_num.desc()))
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False):
