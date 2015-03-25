@@ -438,6 +438,34 @@ def move_task_right(id):
     return redirect(url_for('index', show_deleted=show_deleted))
 
 
+@app.route('/task/<int:id>/left')
+@login_required
+def move_task_left(id):
+    task = Task.query.get(id)
+    if task.parent is not None:
+
+        siblings = Task.query.filter(Task.parent_id == task.parent.parent_id)
+        siblings = siblings.order_by(Task.order_num.desc()).all()
+        N = len(siblings)
+        for i in xrange(N):
+            siblings[i].order_num = 2 * (N - i)
+            db.session.add(siblings[i])
+
+        new_order_num = task.parent.order_num - 1
+        prev_parent = task.parent
+        task.parent = task.parent.parent
+        task.order_num = new_order_num
+
+        db.session.add(prev_parent)
+        if task.parent is not None:
+            db.session.add(task.parent)
+        db.session.add(task)
+        db.session.commit()
+
+    show_deleted = request.args.get('show_deleted')
+    return redirect(url_for('index', show_deleted=show_deleted))
+
+
 @login_manager.user_loader
 def load_user(userid):
     return User.query.get(userid)
