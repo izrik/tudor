@@ -16,9 +16,6 @@
             <th></th>
             <th></th>
             <th></th>
-            <th>Order #</th>
-            <th>Parent</th>
-            <th></th>
         </tr>
         </thead>
         {% macro render_task(task, depth=0) -%}
@@ -50,13 +47,9 @@
                 {% endif %}
             </td>
             <td>
+                <a href="{{ url_for('move_task_left', id=task.id, show_deleted=show_deleted) }}"><img src="static/left_arrow.png" /></a>
                 <a href="{{ url_for('move_task_up', id=task.id, show_deleted=show_deleted) }}"><img src="static/up_arrow.png" /></a>
                 <a href="{{ url_for('move_task_down', id=task.id, show_deleted=show_deleted) }}"><img src="static/down_arrow.png" /></a>
-            </td>
-            <td>{{task.order_num}}</td>
-            <td>{{task.parent_id if parent_id != None}}</td>
-            <td>
-                <a href="{{ url_for('move_task_left', id=task.id, show_deleted=show_deleted) }}"><img src="static/left_arrow.png" /></a>
                 <a href="{{ url_for('move_task_right', id=task.id, show_deleted=show_deleted) }}"><img src="static/right_arrow.png" /></a>
             </td>
         </tr>
@@ -74,8 +67,6 @@
                     <input type="text" name="summary" />
                 </form>
             </td>
-            <td></td>
-            <td></td>
             <td></td>
             <td></td>
             <td></td>
