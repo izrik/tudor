@@ -52,8 +52,9 @@
                 <a href="{{ url_for('move_task_down', id=task.id, show_deleted=show_deleted) }}"><img src="static/down_arrow.png" /></a>
                 <a href="{{ url_for('move_task_right', id=task.id, show_deleted=show_deleted) }}"><img src="static/right_arrow.png" /></a>
             </td>
+            <td>{{ task.order_num }}</td>
         </tr>
-        {% for child in task.children if not child.is_deleted or show_deleted %}
+        {% for child in task.get_children(descending=True) if not child.is_deleted or show_deleted %}
             {{ render_task(child, depth+1) }}
         {% endfor %}
         {%- endmacro %}

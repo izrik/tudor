@@ -85,8 +85,7 @@ class Task(db.Model):
 
     parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
     parent = db.relationship('Task', remote_side=[id],
-                             backref=db.backref('children', lazy='dynamic',
-                                                order_by=order_num.desc()))
+                             backref=db.backref('children', lazy='dynamic'))
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False):
@@ -94,6 +93,38 @@ class Task(db.Model):
         self.description = description
         self.is_done = is_done
         self.is_deleted = is_deleted
+
+    def get_siblings(self, include_deleted=True, descending=False,
+                     ascending=False):
+        if self.parent_id is not None:
+            return self.parent.get_children(include_deleted, descending,
+                                            ascending)
+
+        siblings = Task.query.filter(Task.parent_id == None)
+
+        if not include_deleted:
+            siblings = siblings.filter(Task.is_deleted == False)
+
+        if descending:
+            siblings = siblings.order_by(Task.order_num.desc())
+        elif ascending:
+            siblings = siblings.order_by(Task.order_num.asc())
+
+        return siblings
+
+    def get_children(self, include_deleted=True, descending=False,
+                     ascending=False):
+        children = self.children
+
+        if not include_deleted:
+            children = children.filter(Task.is_deleted == False)
+
+        if descending:
+            children = children.order_by(Task.order_num.desc())
+        elif ascending:
+            children = children.order_by(Task.order_num.asc())
+
+        return children
 
 
 class Note(db.Model):
@@ -360,21 +391,18 @@ def reorder_tasks(tasks):
 @login_required
 def move_task_up(id):
     task = Task.query.get(id)
-    tasks = Task.query.filter(Task.order_num >= task.order_num)
-    tasks = tasks.filter(Task.parent_id == task.parent_id)
     show_deleted = request.args.get('show_deleted')
-    if not show_deleted:
-        tasks = tasks.filter_by(is_deleted=False)
-    tasks = tasks.order_by(Task.order_num.desc()).all()
-    i = tasks.index(task)
-    if i > 0:
-        next_task = tasks[i - 1]
+    siblings = task.get_siblings(show_deleted)
+    higher_siblings = siblings.filter(Task.order_num >= task.order_num)
+    higher_siblings = higher_siblings.filter(Task.id != task.id)
+    next_task = higher_siblings.order_by(Task.order_num.asc()).first()
+
+    if next_task:
         if task.order_num == next_task.order_num:
-            # re-calculate all order numbers
-            tasks = Task.query.order_by(Task.order_num.desc()).all()
-            reorder_tasks(tasks)
-        a, b = next_task.order_num, task.order_num
-        task.order_num, next_task.order_num = a, b
+            reorder_tasks(task.get_siblings(descending=True))
+        new_order_num = next_task.order_num
+        task.order_num, next_task.order_num = new_order_num, task.order_num
+
         db.session.add(task)
         db.session.add(next_task)
         db.session.commit()
@@ -386,21 +414,18 @@ def move_task_up(id):
 @login_required
 def move_task_down(id):
     task = Task.query.get(id)
-    tasks = Task.query.filter(Task.order_num <= task.order_num)
-    tasks = tasks.filter(Task.parent_id == task.parent_id)
     show_deleted = request.args.get('show_deleted')
-    if not show_deleted:
-        tasks = tasks.filter_by(is_deleted=False)
-    tasks = tasks.order_by(Task.order_num.desc()).all()
-    i = tasks.index(task)
-    if i + 1 < len(tasks):
-        next_task = tasks[i + 1]
+    siblings = task.get_siblings(show_deleted)
+    lower_siblings = siblings.filter(Task.order_num <= task.order_num)
+    lower_siblings = lower_siblings.filter(Task.id != task.id)
+    next_task = lower_siblings.order_by(Task.order_num.desc()).first()
+
+    if next_task:
         if task.order_num == next_task.order_num:
-            # re-calculate all order numbers
-            tasks = Task.query.order_by(Task.order_num.desc()).all()
-            reorder_tasks(tasks)
-        a, b = next_task.order_num, task.order_num
-        task.order_num, next_task.order_num = a, b
+            reorder_tasks(task.get_siblings(descending=True))
+        new_order_num = next_task.order_num
+        task.order_num, next_task.order_num = new_order_num, task.order_num
+
         db.session.add(task)
         db.session.add(next_task)
         db.session.commit()
@@ -412,28 +437,30 @@ def move_task_down(id):
 @login_required
 def move_task_right(id):
     task = Task.query.get(id)
-    tasks = Task.query.filter(Task.order_num >= task.order_num)
-    tasks = tasks.filter(Task.parent_id == task.parent_id)
-    tasks = tasks.order_by(Task.order_num.desc()).all()
-    i = tasks.index(task)
-    if i > 0:
-        next_task = tasks[i - 1]
-        siblings = next_task.children.all()
-        if siblings:
-            order_nums = map(lambda t: t.order_num, siblings)
-            new_order_num = min(order_nums) - 1
+    show_deleted = request.args.get('show_deleted')
+    siblings = task.get_siblings(show_deleted)
+    higher_siblings = siblings.filter(Task.order_num >= task.order_num)
+    higher_siblings = higher_siblings.filter(Task.id != task.id)
+    next_task = higher_siblings.order_by(Task.order_num.asc()).first()
+
+    if next_task:
+        if next_task.children.count() > 0:
+            reorder_tasks(next_task.get_children(descending=True))
+            children = next_task.get_children(ascending=True)
+            next_sibling = children.first()
+            new_order_num = next_sibling.order_num - 1
         else:
             new_order_num = 0
         prev_parent = task.parent
         task.parent = next_task
         task.order_num = new_order_num
+
         if prev_parent:
             db.session.add(prev_parent)
         db.session.add(task)
         db.session.add(next_task)
         db.session.commit()
 
-    show_deleted = request.args.get('show_deleted')
     return redirect(url_for('index', show_deleted=show_deleted))
 
 
@@ -441,17 +468,14 @@ def move_task_right(id):
 @login_required
 def move_task_left(id):
     task = Task.query.get(id)
-    if task.parent is not None:
+    show_deleted = request.args.get('show_deleted')
 
-        siblings = Task.query.filter(Task.parent_id == task.parent.parent_id)
-        siblings = siblings.order_by(Task.order_num.desc()).all()
+    if task.parent:
+        reorder_tasks(task.parent.get_siblings(descending=True))
 
-        reorder_tasks(siblings)
-
-        new_order_num = task.parent.order_num - 1
         prev_parent = task.parent
         task.parent = task.parent.parent
-        task.order_num = new_order_num
+        task.order_num = prev_parent.order_num - 1
 
         db.session.add(prev_parent)
         if task.parent is not None:
@@ -459,7 +483,6 @@ def move_task_left(id):
         db.session.add(task)
         db.session.commit()
 
-    show_deleted = request.args.get('show_deleted')
     return redirect(url_for('index', show_deleted=show_deleted))
 
 

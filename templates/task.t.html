@@ -40,10 +40,10 @@
             <th>Summary</th>
         </tr>
         </thead>
-        {% for child in task.children %}
+        {% for child in task.get_children(descending=True) %}
         <tr>
             <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.id }}</a></td>
-            <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}</a></td>
+            <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}{% if child.is_deleted %} (deleted){% endif %}</a></td>
         </tr>
         {% endfor %}
     </table>
