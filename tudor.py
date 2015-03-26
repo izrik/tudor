@@ -206,7 +206,12 @@ def purge_task_from_db(task):
 @login_required
 def index():
     show_deleted = request.args.get('show_deleted')
-    tasks = Task.query.filter(Task.parent_id == None)
+    roots = request.args.get('roots')
+    if roots is not None:
+        root_ids = roots.split(',')
+        tasks = Task.query.filter(Task.id.in_(root_ids))
+    else:
+        tasks = Task.query.filter(Task.parent_id == None)
     if not show_deleted:
         tasks = tasks.filter_by(is_deleted=False)
     tasks = tasks.order_by(Task.order_num.desc())
