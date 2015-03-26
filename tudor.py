@@ -208,10 +208,13 @@ def purge_task_from_db(task):
 def index():
     show_deleted = request.args.get('show_deleted')
     roots = request.args.get('roots') or request.cookies.get('roots')
+    tasks = None
     if roots is not None:
         root_ids = roots.split(',')
-        tasks = Task.query.filter(Task.id.in_(root_ids))
-    else:
+        if root_ids:
+            tasks = Task.query.filter(Task.id.in_(root_ids))
+
+    if tasks is None:
         tasks = Task.query.filter(Task.parent_id == None)
     if not show_deleted:
         tasks = tasks.filter_by(is_deleted=False)
@@ -535,6 +538,14 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 login_manager.login_view = 'login'
+
+
+@app.route('/clear_roots')
+def clear_roots():
+    show_deleted = request.args.get('show_deleted')
+    resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
+    resp.set_cookie('roots', '', expires=0)
+    return resp
 
 
 if __name__ == '__main__':
