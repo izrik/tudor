@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import make_response
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -206,7 +207,7 @@ def purge_task_from_db(task):
 @login_required
 def index():
     show_deleted = request.args.get('show_deleted')
-    roots = request.args.get('roots')
+    roots = request.cookies.get('roots') or request.args.get('roots')
     if roots is not None:
         root_ids = roots.split(',')
         tasks = Task.query.filter(Task.id.in_(root_ids))
@@ -216,8 +217,12 @@ def index():
         tasks = tasks.filter_by(is_deleted=False)
     tasks = tasks.order_by(Task.order_num.desc())
     tasks = tasks.all()
-    return render_template('index.t.html', tasks=tasks,
-                           show_deleted=show_deleted)
+
+    resp = make_response(render_template('index.t.html', tasks=tasks,
+                                         show_deleted=show_deleted))
+    if roots:
+        resp.set_cookie('roots', roots)
+    return resp
 
 
 @app.route('/new', methods=['POST'])
