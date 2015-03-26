@@ -14,6 +14,8 @@
             <tr><td>Description</td><td><textarea name="description" rows="24" cols="80">{{ task.description if task.description != None }}</textarea> </td></tr>
             <tr><td>Done?</td><td><input type="checkbox" name="is_done" {% if task.is_done %} checked {% endif %} /></td></tr>
             <tr><td>Deleted?</td><td><input type="checkbox" name="is_deleted" {% if task.is_deleted %} checked {% endif %} /></td></tr>
+            <tr><td>Order #</td><td><input type="text" name="order_num" value="{{ task.order_num if task.order_num != None }}" /></td></tr>
+            <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ task.parent_id if task.parent_id != None }}" /></td></tr>
         </table>
         <input type="submit" />
     </form>
