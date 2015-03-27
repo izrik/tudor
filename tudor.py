@@ -14,6 +14,8 @@ import random
 from flask.ext.login import LoginManager, login_user, login_required
 from flask.ext.login import logout_user
 from flask.ext.bcrypt import Bcrypt
+import re
+import itertools
 
 
 def bool_from_str(s):
@@ -208,9 +210,22 @@ def get_roots_str():
     return roots
 
 
+def flatten(lst):
+    gen = (x if isinstance(x,list) else [x] for x in lst)
+    flattened = itertools.chain.from_iterable(gen)
+    return list(flattened)
+
+
 def get_root_ids_from_str(roots):
     root_ids = roots.split(',')
+    for i in xrange(len(root_ids)):
+        m = re.match(r'(\d+)\*', root_ids[i])
+        if m:
+            id = m.group(1)
+            task = Task.query.get(id)
+            root_ids[i] = map(lambda c: c.id, task.children)
     if root_ids:
+        root_ids = flatten(root_ids)
         return root_ids
     return None
 
