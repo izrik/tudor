@@ -210,7 +210,9 @@ def get_roots_str():
 
 def get_root_ids_from_str(roots):
     root_ids = roots.split(',')
-    return root_ids
+    if root_ids:
+        return root_ids
+    return None
 
 
 @app.route('/')
@@ -232,7 +234,8 @@ def index():
     tasks = tasks.all()
 
     resp = make_response(render_template('index.t.html', tasks=tasks,
-                                         show_deleted=show_deleted))
+                                         show_deleted=show_deleted,
+                                         roots=roots))
     if roots:
         resp.set_cookie('roots', roots)
     return resp
@@ -555,6 +558,18 @@ def clear_roots():
     show_deleted = request.args.get('show_deleted')
     resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
     resp.set_cookie('roots', '', expires=0)
+    return resp
+
+
+@app.route('/set_roots')
+def set_roots():
+    roots = request.args.get('roots')
+    show_deleted = request.args.get('show_deleted')
+    resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
+    if roots is not None and roots != '':
+        resp.set_cookie('roots', roots)
+    else:
+        resp.set_cookie('roots', '', expires=0)
     return resp
 
 

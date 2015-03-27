@@ -79,6 +79,12 @@
     <p><a href="{{ url_for('index', show_deleted=1) }}">show deleted</a></p>
     <p><a href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
     <p><a href="{{ url_for('clear_roots') }}">clear roots</a></p>
+    <p>
+        <form action="set_roots" method="get">
+            <input name="roots" type="text" size="35" value="{{roots if roots}}">
+            <input type="submit" value="Set Roots">
+        </form>
+    </p>
 </div>
 </body>
 </html>
