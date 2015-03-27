@@ -76,7 +76,13 @@
 </div>
 <div>
     <p><a href="{{ url_for('index') }}">refresh</a></p>
-    <p><a href="{{ url_for('index', show_deleted=1) }}">show deleted</a></p>
+    <p>
+        {%- if show_deleted %}
+        <a href="{{ url_for('show_hide_deleted', show_deleted=0) }}">hide deleted</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_deleted', show_deleted=1) }}">show deleted</a>
+        {% endif -%}
+    </p>
     <p><a href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
     <p><a href="{{ url_for('clear_roots') }}">clear roots</a></p>
     <p>

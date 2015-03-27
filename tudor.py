@@ -233,7 +233,7 @@ def get_root_ids_from_str(roots):
 @app.route('/')
 @login_required
 def index():
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
     roots = get_roots_str()
     tasks = None
     if roots is not None:
@@ -443,7 +443,7 @@ def reorder_tasks(tasks):
 @login_required
 def move_task_up(id):
     task = Task.query.get(id)
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
     siblings = task.get_siblings(show_deleted)
     higher_siblings = siblings.filter(Task.order_num >= task.order_num)
     higher_siblings = higher_siblings.filter(Task.id != task.id)
@@ -466,7 +466,7 @@ def move_task_up(id):
 @login_required
 def move_task_down(id):
     task = Task.query.get(id)
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
     siblings = task.get_siblings(show_deleted)
     lower_siblings = siblings.filter(Task.order_num <= task.order_num)
     lower_siblings = lower_siblings.filter(Task.id != task.id)
@@ -489,7 +489,7 @@ def move_task_down(id):
 @login_required
 def move_task_right(id):
     task = Task.query.get(id)
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
     siblings = task.get_siblings(show_deleted)
     higher_siblings = siblings.filter(Task.order_num >= task.order_num)
     higher_siblings = higher_siblings.filter(Task.id != task.id)
@@ -520,7 +520,7 @@ def move_task_right(id):
 @login_required
 def move_task_left(id):
     task = Task.query.get(id)
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
 
     if task.parent:
         reorder_tasks(task.parent.get_siblings(descending=True))
@@ -570,7 +570,7 @@ login_manager.login_view = 'login'
 
 @app.route('/clear_roots')
 def clear_roots():
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
     resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
     resp.set_cookie('roots', '', expires=0)
     return resp
@@ -579,12 +579,23 @@ def clear_roots():
 @app.route('/set_roots')
 def set_roots():
     roots = request.args.get('roots')
-    show_deleted = request.args.get('show_deleted')
+    show_deleted = request.cookies.get('show_deleted')
     resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
     if roots is not None and roots != '':
         resp.set_cookie('roots', roots)
     else:
         resp.set_cookie('roots', '', expires=0)
+    return resp
+
+
+@app.route('/show_hide_deleted')
+def show_hide_deleted():
+    show_deleted = request.args.get('show_deleted')
+    resp = make_response(redirect(url_for('index')))
+    if show_deleted and show_deleted != '0':
+        resp.set_cookie('show_deleted', '1')
+    else:
+        resp.set_cookie('show_deleted', '')
     return resp
 
 
