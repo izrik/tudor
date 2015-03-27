@@ -203,14 +203,24 @@ def purge_task_from_db(task):
     db.session.commit()
 
 
+def get_roots_str():
+    roots = request.args.get('roots') or request.cookies.get('roots')
+    return roots
+
+
+def get_root_ids_from_str(roots):
+    root_ids = roots.split(',')
+    return root_ids
+
+
 @app.route('/')
 @login_required
 def index():
     show_deleted = request.args.get('show_deleted')
-    roots = request.args.get('roots') or request.cookies.get('roots')
+    roots = get_roots_str()
     tasks = None
     if roots is not None:
-        root_ids = roots.split(',')
+        root_ids = get_root_ids_from_str(roots)
         if root_ids:
             tasks = Task.query.filter(Task.id.in_(root_ids))
 
