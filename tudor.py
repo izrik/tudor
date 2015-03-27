@@ -249,7 +249,6 @@ def index():
     tasks = tasks.all()
 
     resp = make_response(render_template('index.t.html', tasks=tasks,
-                                         show_deleted=show_deleted,
                                          roots=roots))
     if roots:
         resp.set_cookie('roots', roots)
@@ -459,7 +458,7 @@ def move_task_up(id):
         db.session.add(next_task)
         db.session.commit()
 
-    return redirect(url_for('index', show_deleted=show_deleted))
+    return redirect(url_for('index'))
 
 
 @app.route('/task/<int:id>/down')
@@ -482,7 +481,7 @@ def move_task_down(id):
         db.session.add(next_task)
         db.session.commit()
 
-    return redirect(url_for('index', show_deleted=show_deleted))
+    return redirect(url_for('index'))
 
 
 @app.route('/task/<int:id>/right')
@@ -513,7 +512,7 @@ def move_task_right(id):
         db.session.add(next_task)
         db.session.commit()
 
-    return redirect(url_for('index', show_deleted=show_deleted))
+    return redirect(url_for('index'))
 
 
 @app.route('/task/<int:id>/left')
@@ -535,7 +534,7 @@ def move_task_left(id):
         db.session.add(task)
         db.session.commit()
 
-    return redirect(url_for('index', show_deleted=show_deleted))
+    return redirect(url_for('index'))
 
 
 @login_manager.user_loader
@@ -570,8 +569,7 @@ login_manager.login_view = 'login'
 
 @app.route('/clear_roots')
 def clear_roots():
-    show_deleted = request.cookies.get('show_deleted')
-    resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
+    resp = make_response(redirect(url_for('index')))
     resp.set_cookie('roots', '', expires=0)
     return resp
 
@@ -579,8 +577,7 @@ def clear_roots():
 @app.route('/set_roots')
 def set_roots():
     roots = request.args.get('roots')
-    show_deleted = request.cookies.get('show_deleted')
-    resp = make_response(redirect(url_for('index', show_deleted=show_deleted)))
+    resp = make_response(redirect(url_for('index')))
     if roots is not None and roots != '':
         resp.set_cookie('roots', roots)
     else:
