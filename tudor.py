@@ -249,6 +249,7 @@ def index():
     tasks = tasks.all()
 
     resp = make_response(render_template('index.t.html', tasks=tasks,
+                                         show_deleted=show_deleted,
                                          roots=roots))
     if roots:
         resp.set_cookie('roots', roots)
