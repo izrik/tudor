@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response
+from flask import make_response, Markup
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -16,6 +16,8 @@ from flask.ext.login import logout_user
 from flask.ext.bcrypt import Bcrypt
 import re
 import itertools
+import gfm
+import markdown
 
 
 def bool_from_str(s):
@@ -627,6 +629,13 @@ def set_view(id):
     if view is None:
         return (('No view found for the id "%s"' % id), 404)
     return redirect(url_for('set_roots', roots=view.roots))
+
+
+@app.template_filter(name='gfm')
+def render_gfm(s):
+    output = markdown.markdown(s, extensions=['gfm'])
+    moutput = Markup(output)
+    return moutput
 
 
 if __name__ == '__main__':
