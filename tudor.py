@@ -189,6 +189,16 @@ class User(db.Model):
         return False
 
 
+class View(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    roots = db.Column(db.String(100), nullable=False)
+
+    def __init__(self, name, roots):
+        self.name = name
+        self.roots = roots
+
+
 def save_task(task):
     db.session.add(task)
     db.session.commit()
