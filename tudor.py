@@ -607,6 +607,20 @@ def show_hide_deleted():
     return resp
 
 
+@app.route('/view/new', methods=['POST'])
+def new_view():
+    if 'view_name' not in request.form or 'view_roots' not in request.form:
+        return redirect(url_for('index'))
+
+    name = request.form['view_name']
+    roots = request.form['view_roots']
+    view = View(name, roots)
+
+    db.session.add(view)
+    db.session.commit()
+    return redirect(url_for('index'))
+
+
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
