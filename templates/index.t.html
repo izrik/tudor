@@ -103,13 +103,13 @@
         </tr>
         {% for view in views %}
         <tr>
-            <td><a href="{ { url_for(set_view, id=view.id) }}" >{{ view.id }}</a></td>
-            <td><a href="{ { url_for(set_view, id=view.id) }}" >{{ view.name }}</a></td>
-            <td><a href="{ { url_for(set_view, id=view.id) }}" >{{ view.roots }}</a></td>
+            <td><a href="{{ url_for('set_view', id=view.id) }}" >{{ view.id }}</a></td>
+            <td><a href="{{ url_for('set_view', id=view.id) }}" >{{ view.name }}</a></td>
+            <td><a href="{{ url_for('set_view', id=view.id) }}" >{{ view.roots }}</a></td>
             <td></td>
         </tr>
         {% endfor %}
-        <form action="/view/new" method="post">
+        <form action="{{ url_for('new_view') }}" method="post">
         <tr>
             <td></td>
             <td><input name="view_name" type="text" size="35" maxlength="100"></td>

@@ -621,6 +621,14 @@ def new_view():
     return redirect(url_for('index'))
 
 
+@app.route('/view/<int:id>')
+def set_view(id):
+    view = View.query.get(id)
+    if view is None:
+        return (('No view found for the id "%s"' % id), 404)
+    return redirect(url_for('set_roots', roots=view.roots))
+
+
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
