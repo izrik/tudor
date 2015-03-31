@@ -262,7 +262,8 @@ def index():
 
     resp = make_response(render_template('index.t.html', tasks=tasks,
                                          show_deleted=show_deleted,
-                                         roots=roots, views=View.query))
+                                         roots=roots, views=View.query,
+                                         cycle=itertools.cycle))
     if roots:
         resp.set_cookie('roots', roots)
     return resp

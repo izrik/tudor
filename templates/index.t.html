@@ -3,11 +3,12 @@
 <head>
     <meta charset="utf-8">
     <title>Tudor</title>
+    <link rel="stylesheet" type="text/css" href="static/tudor.css">
 </head>
-
 <body>
 <div>
-    <table>
+    <table class="tasks">
+        {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
         <tr>
             <th>Id</th>
@@ -19,7 +20,7 @@
         </tr>
         </thead>
         {% macro render_task(task, depth=0) -%}
-        <tr>
+        <tr class="{{ odd_even() }}">
             <td>{{task.id}}</td>
             <td style="padding-left: {{depth*1.5}}em">
                 <a href="{{ url_for('view_task', id=task.id) }}">{{ task.summary if task.summary != None }}</a>
