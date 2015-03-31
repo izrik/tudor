@@ -582,6 +582,7 @@ login_manager.login_view = 'login'
 
 
 @app.route('/clear_roots')
+@login_required
 def clear_roots():
     resp = make_response(redirect(url_for('index')))
     resp.set_cookie('roots', '', expires=0)
@@ -589,6 +590,7 @@ def clear_roots():
 
 
 @app.route('/set_roots')
+@login_required
 def set_roots():
     roots = request.args.get('roots')
     resp = make_response(redirect(url_for('index')))
@@ -600,6 +602,7 @@ def set_roots():
 
 
 @app.route('/show_hide_deleted')
+@login_required
 def show_hide_deleted():
     show_deleted = request.args.get('show_deleted')
     resp = make_response(redirect(url_for('index')))
@@ -611,6 +614,7 @@ def show_hide_deleted():
 
 
 @app.route('/view/new', methods=['POST'])
+@login_required
 def new_view():
     if 'view_name' not in request.form or 'view_roots' not in request.form:
         return redirect(url_for('index'))
@@ -625,6 +629,7 @@ def new_view():
 
 
 @app.route('/view/<int:id>')
+@login_required
 def set_view(id):
     view = View.query.get(id)
     if view is None:
