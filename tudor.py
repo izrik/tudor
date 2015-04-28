@@ -416,7 +416,7 @@ def new_attachment(id):
         return (('No task found for the id "%s"' % id), 404)
     f = request.files['filename']
     if f is None or not f or not allowed_file(f.filename):
-        return 400
+        return 'Invalid file', 400
     path = secure_filename(f.filename)
     f.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
     if 'description' in request.form:
