@@ -652,6 +652,15 @@ def render_gfm(s):
     return moutput
 
 
+@app.route('/note/<int:id>')
+@login_required
+def get_note(id):
+    note = Note.query.get(id)
+    if note is None:
+        return (('No note found for the id "%s"' % id), 404)
+    return render_template('note.t.html', note=note)
+
+
 if __name__ == '__main__':
     if args.create_db:
         db.create_all()
