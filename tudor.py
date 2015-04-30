@@ -292,8 +292,13 @@ def add_new():
     else:
         task.parent_id = None
 
+    if 'next_url' in request.form:
+        next_url = request.form['next_url']
+    else:
+        next_url = url_for('index')
+
     save_task(task)
-    return redirect(url_for('index'))
+    return redirect(next_url)
 
 
 @app.route('/done/<int:id>')

@@ -52,6 +52,7 @@
                 <form action="/new" method="post">
                     <input type="text" name="summary" />
                     <input type="hidden" name="parent_id" value="{{ task.id }}" />
+                    <input type="hidden" name="next_url" value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
             </td>
         </tfoot>
