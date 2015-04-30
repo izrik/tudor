@@ -282,6 +282,16 @@ def index():
 def add_new():
     summary = request.form['summary']
     task = Task(summary)
+
+    if 'parent_id' in request.form:
+        parent_id = request.form['parent_id']
+        if parent_id is None or parent_id == '':
+            task.parent_id = None
+        elif Task.query.filter_by(id=parent_id).count() > 0:
+            task.parent_id = parent_id
+    else:
+        task.parent_id = None
+
     save_task(task)
     return redirect(url_for('index'))
 

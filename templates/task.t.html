@@ -46,6 +46,15 @@
             <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}{% if child.is_deleted %} (deleted){% endif %}</a></td>
         </tr>
         {% endfor %}
+        <tfoot>
+            <td></td>
+            <td>
+                <form action="/new" method="post">
+                    <input type="text" name="summary" />
+                    <input type="hidden" name="parent_id" value="{{ task.id }}" />
+                </form>
+            </td>
+        </tfoot>
     </table>
 </div>
 <div>
