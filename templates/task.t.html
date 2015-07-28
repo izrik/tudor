@@ -12,6 +12,7 @@
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
         <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>
         <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
+        <tr><td>Deadline</td><td>{{ task.deadline|d }}</td></tr>
         <tr><td>Done?</td><td>{{ task.is_done }}</td></tr>
         <tr><td>Deleted?</td><td>{{ task.is_deleted }}</td></tr>
         <tr><td>Order #</td><td>{{ task.order_num if task.order_num != None }}</td></tr>
