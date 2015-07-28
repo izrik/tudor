@@ -13,6 +13,7 @@
         <tr>
             <th>Id</th>
             <th>Summary</th>
+            <th>Deadline</th>
             <th>Done?</th>
             <th></th>
             <th></th>
@@ -24,6 +25,9 @@
             <td>{{task.id}}</td>
             <td style="padding-left: {{depth*1.5}}em">
                 <a href="{{ url_for('view_task', id=task.id) }}">{{ task.summary if task.summary != None }}</a>
+            </td>
+            <td>
+                {{ task.deadline if task.deadline != None }}
             </td>
             <td>
                 {% if task.is_done %}
