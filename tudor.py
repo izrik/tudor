@@ -95,17 +95,19 @@ class Task(db.Model):
     is_done = db.Column(db.Boolean)
     is_deleted = db.Column(db.Boolean)
     order_num = db.Column(db.Integer, nullable=False, default=0)
+    deadline = db.Column(db.DateTime)
 
     parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
     parent = db.relationship('Task', remote_side=[id],
                              backref=db.backref('children', lazy='dynamic'))
 
     def __init__(self, summary, description='', is_done=False,
-                 is_deleted=False):
+                 is_deleted=False, deadline=None):
         self.summary = summary
         self.description = description
         self.is_done = is_done
         self.is_deleted = is_deleted
+        self.deadline = deadline
 
     def get_siblings(self, include_deleted=True, descending=False,
                      ascending=False):
