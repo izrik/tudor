@@ -669,6 +669,7 @@ def render_gfm(s):
 
 if __name__ == '__main__':
     if args.create_db:
+        print('Setting up the database')
         db.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
