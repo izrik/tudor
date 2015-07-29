@@ -18,6 +18,8 @@ import re
 import itertools
 import gfm
 import markdown
+import dateutil.parser
+from dateutil.parser import parse as dparse
 
 
 def bool_from_str(s):
@@ -408,6 +410,12 @@ def edit_task(id):
 
     task.summary = request.form['summary']
     task.description = request.form['description']
+    deadline = request.form['deadline']
+    if deadline:
+        task.deadline = dparse(deadline)
+    else:
+        task.deadline = None
+
     task.is_done = ('is_done' in request.form and
                     not not request.form['is_done'])
     task.is_deleted = ('is_deleted' in request.form and
