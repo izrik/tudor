@@ -124,5 +124,44 @@
         </form>
     </table>
 </div>
+{% if all_tasks != None %}
+<div>
+    <h3>Deadlines</h3>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Summary</th>
+            <th>Deadline</th>
+            <th>Done?</th>
+            <th></th>
+        </tr>
+        {% for task in deadline_tasks if (not task.is_deleted or show_deleted) and (task.deadline != None) %}
+        <tr>
+            <td>{{task.id}}</td>
+            <td {% if task.is_deleted %}style="text-decoration: line-through; "{% endif %}>
+                <a href="{{ url_for('view_task', id=task.id) }}">{{ task.summary if task.summary != None }}</a>
+            </td>
+            <td>
+                {{ task.deadline if task.deadline != None }}
+            </td>
+            <td>
+                {% if task.is_done %}
+                    done
+                {% else %}
+                    not done
+                {% endif %}
+            </td>
+            <td>
+                {% if task.is_done %}
+                    <a href="{{ url_for('task_undo', id=task.id) }}">(undo)</a>
+                {% else %}
+                    <a href="{{ url_for('task_done', id=task.id) }}">(done)</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
 </body>
 </html>

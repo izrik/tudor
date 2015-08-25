@@ -143,6 +143,23 @@ class Task(db.Model):
 
         return children
 
+    def get_all_descendants(self, include_deleted=True, descending=False,
+                            ascending=False, visited=None, result=None):
+        if visited is None:
+            visited = set()
+        if result is None:
+            result = []
+
+        if self not in visited:
+            visited.add(self)
+            result.append(self)
+            for child in self.get_children(include_deleted, descending,
+                                           ascending):
+                child.get_all_descendants(include_deleted, descending,
+                                          ascending, visited, result)
+
+        return result
+
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -254,6 +271,14 @@ def get_root_ids_from_str(roots):
     return None
 
 
+def get_tasks_and_all_descendants_from_tasks(tasks):
+    visited = set()
+    result = []
+    for task in tasks:
+        task.get_all_descendants(visited=visited, result=result)
+    return result
+
+
 @app.route('/')
 @login_required
 def index():
@@ -272,10 +297,16 @@ def index():
     tasks = tasks.order_by(Task.order_num.desc())
     tasks = tasks.all()
 
+    all_tasks = get_tasks_and_all_descendants_from_tasks(tasks)
+    deadline_tasks = [t for t in all_tasks if t.deadline is not None]
+    deadline_tasks = sorted(deadline_tasks, key=lambda task: task.deadline)
+
     resp = make_response(render_template('index.t.html', tasks=tasks,
                                          show_deleted=show_deleted,
                                          roots=roots, views=View.query,
-                                         cycle=itertools.cycle))
+                                         cycle=itertools.cycle,
+                                         all_tasks=all_tasks,
+                                         deadline_tasks=deadline_tasks))
     if roots:
         resp.set_cookie('roots', roots)
     return resp
