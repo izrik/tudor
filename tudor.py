@@ -298,7 +298,8 @@ def index():
     tasks = tasks.all()
 
     all_tasks = get_tasks_and_all_descendants_from_tasks(tasks)
-    deadline_tasks = [t for t in all_tasks if t.deadline is not None]
+    deadline_tasks = [t for t in all_tasks if t.deadline is not None and
+                      not t.is_done]
     deadline_tasks = sorted(deadline_tasks, key=lambda task: task.deadline)
 
     resp = make_response(render_template('index.t.html', tasks=tasks,
