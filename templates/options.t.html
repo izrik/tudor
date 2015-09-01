@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tudor - Options</title>
+    <link rel="stylesheet" href="../static/tudor.css" />
+</head>
+<body>
+<div>
+    <h4>Options</h4>
+    <table class="options">
+        <thead>
+        <tr>
+            <th>Key</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        {% for option in options %}
+        <tr>
+            <td>{{ option.key }}</td>
+            <td>{{ option.value }}</td>
+        </tr>
+        {% endfor %}
+        <tfoot>
+            <!--<form action="/options" method="post">-->
+                <!--<input type="hidden" name="next_url" value="{{ url_for('view_options') }}" />-->
+                <td>
+                    <input type="text" name="key" />
+                </td>
+                <td>
+                    <input type="text" name="value" />
+                </td>
+            <!--</form>-->
+        </tfoot>
+    </table>
+</div>
+</body>
+</html>

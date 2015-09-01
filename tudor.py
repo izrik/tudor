@@ -711,6 +711,25 @@ def set_view(id):
     return redirect(url_for('set_roots', roots=view.roots))
 
 
+@app.route('/options', methods=['GET','POST'])
+@login_required
+def view_options():
+    if request.method == 'GET' or 'key' not in request.form or 'value':
+        return render_template('options.t.html', options=Option.query)
+
+    key = request.form['key']
+    value = ''
+    if 'value' in request.form:
+        value = request.form['value']
+
+    if Option.query.get(key) is None:
+        option = Option(key, value)
+        db.session.add(option)
+        db.session.commit()
+
+    return redirect(request.args.get('next') or url_for('view_options'))
+
+
 @app.template_filter(name='gfm')
 def render_gfm(s):
     output = markdown.markdown(s, extensions=['gfm'])
