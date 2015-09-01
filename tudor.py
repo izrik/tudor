@@ -230,6 +230,15 @@ class View(db.Model):
         self.roots = roots
 
 
+class Option(db.Model):
+    key = db.Column(db.String(100), primary_key=True)
+    value = db.Column(db.String(100), nullable=True)
+
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+
 def save_task(task):
     db.session.add(task)
     db.session.commit()
