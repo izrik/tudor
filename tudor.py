@@ -714,7 +714,7 @@ def set_view(id):
 @app.route('/options', methods=['GET','POST'])
 @login_required
 def view_options():
-    if request.method == 'GET' or 'key' not in request.form or 'value':
+    if request.method == 'GET' or 'key' not in request.form:
         return render_template('options.t.html', options=Option.query)
 
     key = request.form['key']
@@ -722,10 +722,14 @@ def view_options():
     if 'value' in request.form:
         value = request.form['value']
 
-    if Option.query.get(key) is None:
+    option = Option.query.get(key)
+    if option is not None:
+        option.value = value
+    else:
         option = Option(key, value)
-        db.session.add(option)
-        db.session.commit()
+
+    db.session.add(option)
+    db.session.commit()
 
     return redirect(request.args.get('next') or url_for('view_options'))
 

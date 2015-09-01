@@ -17,20 +17,25 @@
         </thead>
         {% for option in options %}
         <tr>
-            <td>{{ option.key }}</td>
-            <td>{{ option.value }}</td>
+            <form action="/options" method="post">
+                <input type="hidden" name="key" value="{{ option.key }}" />
+                <td>{{ option.key }}</td>
+                <td>
+                    <input type="text" name="value" value="{{ option.value }}" />
+                </td>
+            </form>
         </tr>
         {% endfor %}
         <tfoot>
-            <!--<form action="/options" method="post">-->
-                <!--<input type="hidden" name="next_url" value="{{ url_for('view_options') }}" />-->
+            <form action="/options" method="post">
                 <td>
                     <input type="text" name="key" />
                 </td>
                 <td>
                     <input type="text" name="value" />
                 </td>
-            <!--</form>-->
+                <td><input type="submit" value="new" /></td>
+            </form>
         </tfoot>
     </table>
 </div>
