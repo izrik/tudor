@@ -372,7 +372,7 @@ def task_done(id):
         return 404
     task.is_done = True
     save_task(task)
-    return redirect(url_for('index'))
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 @app.route('/undo/<int:id>')
@@ -383,8 +383,7 @@ def task_undo(id):
         return 404
     task.is_done = False
     save_task(task)
-    return redirect(url_for('index'))
-
+    return redirect(request.args.get('next') or url_for('index'))
 
 @app.route('/delete/<int:id>')
 @login_required
@@ -394,7 +393,7 @@ def delete_task(id):
         return 404
     task.is_deleted = True
     save_task(task)
-    return redirect(url_for('index'))
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 @app.route('/undelete/<int:id>')
@@ -405,7 +404,7 @@ def undelete_task(id):
         return 404
     task.is_deleted = False
     save_task(task)
-    return redirect(url_for('index'))
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 @app.route('/purge/<int:id>')
@@ -415,7 +414,7 @@ def purge_task(id):
     if not task:
         return 404
     purge_task_from_db(task)
-    return redirect(url_for('index'))
+    return redirect(request.args.get('next') or url_for('index'))
 
 
 @app.route('/purge_all')
@@ -425,7 +424,7 @@ def purge_deleted_tasks():
     if are_you_sure:
         deleted_tasks = Task.query.filter_by(is_deleted=True)
         purge_tasks(deleted_tasks)
-        return redirect(url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
     return render_template('purge.t.html')
 
 
