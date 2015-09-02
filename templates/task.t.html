@@ -19,7 +19,18 @@
                 </small>
             </td>
         </tr>
-        <tr><td>Deleted?</td><td>{{ task.is_deleted }}</td></tr>
+        <tr>
+            <td>Deleted?</td>
+            <td>{{ task.is_deleted }}
+                <small>
+                    {% if task.is_deleted %}
+                        <a href="{{ url_for('undelete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(undelete)</a>
+                    {% else %}
+                        <a href="{{ url_for('delete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(delete)</a>
+                    {% endif %}
+                </small>
+            </td>
+        </tr>
         <tr><td>Order #</td><td>{{ task.order_num if task.order_num != None }}</td></tr>
         <tr>
             <td>Parent Task</td>
