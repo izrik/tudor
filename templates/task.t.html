@@ -7,7 +7,18 @@
         <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>
         <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
         <tr><td>Deadline</td><td>{{ task.deadline|d }}</td></tr>
-        <tr><td>Done?</td><td>{{ task.is_done }}</td></tr>
+        <tr>
+            <td>Done?</td>
+            <td>{{ task.is_done }}
+                <small>
+                    {% if task.is_done %}
+                        <a href="{{ url_for('task_undo', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as not done)</a>
+                    {% else %}
+                        <a href="{{ url_for('task_done', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as done)</a>
+                    {% endif %}
+                </small>
+            </td>
+        </tr>
         <tr><td>Deleted?</td><td>{{ task.is_deleted }}</td></tr>
         <tr><td>Order #</td><td>{{ task.order_num if task.order_num != None }}</td></tr>
         <tr>
