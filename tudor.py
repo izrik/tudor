@@ -734,6 +734,17 @@ def view_options():
     return redirect(request.args.get('next') or url_for('view_options'))
 
 
+@app.route('/option/<path:key>/delete')
+@login_required
+def delete_option(key):
+    option = Option.query.get(key)
+    if option is not None:
+        db.session.delete(option)
+        db.session.commit()
+
+    return redirect(request.args.get('next') or url_for('view_options'))
+
+
 @app.template_filter(name='gfm')
 def render_gfm(s):
     output = markdown.markdown(s, extensions=['gfm'])

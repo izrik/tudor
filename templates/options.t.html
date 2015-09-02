@@ -23,6 +23,11 @@
                 <td>
                     <input type="text" name="value" value="{{ option.value }}" />
                 </td>
+                <td>
+                    <a href="{{ url_for('delete_option', key=option.key) }}">
+                        <img src="static/delete.png" />
+                    </a>
+                </td>
             </form>
         </tr>
         {% endfor %}
