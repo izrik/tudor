@@ -239,6 +239,19 @@ class Option(db.Model):
         self.value = value
 
 
+class Options(object):
+    @staticmethod
+    def get(key, default_value=None):
+        option = Option.query.get(key)
+        if option is None:
+            return default_value
+        return option.value
+
+    @staticmethod
+    def get_title():
+        return Options.get('title', 'Tudor')
+
+
 def save_task(task):
     db.session.add(task)
     db.session.commit()
@@ -286,6 +299,11 @@ def get_tasks_and_all_descendants_from_tasks(tasks):
     for task in tasks:
         task.get_all_descendants(visited=visited, result=result)
     return result
+
+
+@app.context_processor
+def setup_options():
+    return {'opts': Options}
 
 
 @app.route('/')
