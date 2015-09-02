@@ -1,11 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Tudor - Options</title>
-    <link rel="stylesheet" href="../static/tudor.css" />
-</head>
-<body>
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Options{% endblock %}
+{% block content %}
 <div>
     <h4>Options</h4>
     <table class="options">
@@ -47,5 +42,4 @@
 <div>
     <p><a href="{{ url_for('index') }}">main</a></p>
 </div>
-</body>
-</html>
+{% endblock %}

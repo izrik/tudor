@@ -1,12 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Tudor - {{ task.summary if task.summary != None }}</title>
-    <link rel="stylesheet" href="../static/tudor.css" />
-</head>
-
-<body>
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - {{ task.summary if task.summary != None }}{% endblock %}
+{% block content %}
 <div>
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
@@ -123,5 +117,4 @@
         </tr>
     </table>
 </div>
-</body>
-</html>
+{% endblock %}

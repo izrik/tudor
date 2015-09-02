@@ -1,15 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Tudor - Purge Deleted Tasks</title>
-</head>
-
-<body>
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Purge Deleted Tasks{% endblock %}
+{% block content %}
 <div>
     <h1>Are you sure?</h1>
     <p><a href="{{ url_for('purge_deleted_tasks', are_you_sure=1) }}">Yes</a></p>
     <p><a href="{{ url_for('index') }}">No</a></p>
 </div>
-</body>
-</html>
+{% endblock %}

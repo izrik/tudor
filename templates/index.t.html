@@ -1,11 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Tudor</title>
-    <link rel="stylesheet" type="text/css" href="static/tudor.css">
-</head>
-<body>
+{% extends "base.t.html" %}
+{% block content scoped %}
 <div>
     <table class="tasks">
         {% set odd_even = cycle(['odd', 'even']).next %}
@@ -20,7 +14,7 @@
             <th></th>
         </tr>
         </thead>
-        {% macro render_task(task, depth=0) -%}
+        {% macro render_task(self, task, depth=0) -%}
         <tr class="{{ odd_even() }}">
             <td>{{task.id}}</td>
             <td style="padding-left: {{depth*1.5}}em">
@@ -59,11 +53,11 @@
             </td>
         </tr>
         {% for child in task.get_children(descending=True) if not child.is_deleted or show_deleted %}
-            {{ render_task(child, depth+1) }}
+            {{ self(self, child, depth+1) }}
         {% endfor %}
         {%- endmacro %}
         {% for task in tasks if not task.is_deleted or show_deleted %}
-            {{ render_task(task) }}
+            {{ render_task(render_task, task) }}
         {% endfor %}
         <tfoot>
             <td></td>
@@ -164,5 +158,4 @@
     </table>
 </div>
 {% endif %}
-</body>
-</html>
+{% endblock %}
