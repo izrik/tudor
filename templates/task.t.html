@@ -98,7 +98,7 @@
             <td></td>
             <td></td>
             <td>
-                <form action="{{ url_for('new_note', id=task.id) }}" method="post">
+                <form action="{{ url_for('new_note') }}" method="post">
                     <input type="hidden" name="task_id" value="{{ task.id }}" />
                     <textarea name="content"></textarea><br/>
                     <input type="submit" value="Add New Note">
