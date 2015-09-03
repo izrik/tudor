@@ -452,9 +452,9 @@ def view_task(id):
     return render_template('task.t.html', task=task)
 
 
-@app.route('/task/<int:id>/new_note', methods=['POST'])
+@app.route('/note/new', methods=['POST'])
 @login_required
-def new_note(id):
+def new_note():
     if 'task_id' not in request.form:
         return ('No task_id specified', 400)
     task_id = request.form['task_id']
