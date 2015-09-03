@@ -357,7 +357,7 @@ def index():
 
 @app.route('/new', methods=['POST'])
 @login_required
-def add_new():
+def new_task():
     summary = request.form['summary']
     task = Task(summary)
 
