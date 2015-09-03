@@ -289,7 +289,7 @@ def get_roots_str():
 
 
 def flatten(lst):
-    gen = (x if isinstance(x,list) else [x] for x in lst)
+    gen = (x if isinstance(x, list) else [x] for x in lst)
     flattened = itertools.chain.from_iterable(gen)
     return list(flattened)
 
@@ -399,6 +399,7 @@ def task_undo(id):
     task.is_done = False
     save_task(task)
     return redirect(request.args.get('next') or url_for('index'))
+
 
 @app.route('/task/<int:id>/delete')
 @login_required
@@ -749,7 +750,7 @@ def set_view(id):
     return redirect(url_for('set_roots', roots=view.roots))
 
 
-@app.route('/options', methods=['GET','POST'])
+@app.route('/options', methods=['GET', 'POST'])
 @login_required
 def view_options():
     if request.method == 'GET' or 'key' not in request.form:
