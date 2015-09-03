@@ -12,7 +12,7 @@
         </thead>
         {% for option in options %}
         <tr>
-            <form action="/options" method="post">
+            <form action="{{ url_for('view_options') }}" method="post">
                 <input type="hidden" name="key" value="{{ option.key }}" />
                 <td>{{ option.key }}</td>
                 <td>
@@ -27,7 +27,7 @@
         </tr>
         {% endfor %}
         <tfoot>
-            <form action="/options" method="post">
+            <form action="{{ url_for('view_options') }}" method="post">
                 <td>
                     <input type="text" name="key" />
                 </td>
