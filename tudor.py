@@ -455,16 +455,19 @@ def view_task(id):
 @app.route('/task/<int:id>/new_note', methods=['POST'])
 @login_required
 def new_note(id):
-    task = Task.query.filter_by(id=id).first()
+    if 'task_id' not in request.form:
+        return ('No task_id specified', 400)
+    task_id = request.form['task_id']
+    task = Task.query.filter_by(id=task_id).first()
     if task is None:
-        return (('No task found for the id "%s"' % id), 404)
+        return (('No task found for the id "%s"' % task_id), 404)
     content = request.form['content']
     note = Note(content)
     note.task = task
 
     save_task(note)
 
-    return redirect(url_for('view_task', id=id))
+    return redirect(url_for('view_task', id=task_id))
 
 
 @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
