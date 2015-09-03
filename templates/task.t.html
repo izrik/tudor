@@ -122,14 +122,15 @@
         <tr>
             <td>{{ att.id }}</td>
             <td>{{ att.timestamp }}</td>
-            <td><a href="{{ url_for('get_attachment', id=task.id, aid=att.id, x=att.filename) }}">{{ att.filename if att.filename != None }}</a></td>
+            <td><a href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">{{ att.filename if att.filename != None }}</a></td>
             <td>{{ att.description }}</td>
         </tr>
         {% endfor %}
         <tr>
             <td></td>
             <td></td>
-            <form action="{{ url_for('new_attachment', id=task.id) }}" method="post" enctype="multipart/form-data">
+            <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="task_id" value="{{ task.id }}">
                 <td>
                     <input type="file" name="filename" />
                 </td>

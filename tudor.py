@@ -514,12 +514,15 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
-@app.route('/task/<int:id>/new_attachment', methods=['POST'])
+@app.route('/attachment/new', methods=['POST'])
 @login_required
-def new_attachment(id):
-    task = Task.query.filter_by(id=id).first()
+def new_attachment():
+    if 'task_id' not in request.form:
+        return ('No task_id specified', 400)
+    task_id = request.form['task_id']
+    task = Task.query.filter_by(id=task_id).first()
     if task is None:
-        return (('No task found for the id "%s"' % id), 404)
+        return (('No task found for the task_id "%s"' % task_id), 404)
     f = request.files['filename']
     if f is None or not f or not allowed_file(f.filename):
         return 'Invalid file', 400
@@ -535,14 +538,14 @@ def new_attachment(id):
 
     save_task(att)
 
-    return redirect(url_for('view_task', id=id))
+    return redirect(url_for('view_task', id=task_id))
 
 
-@app.route('/task/<int:id>/attachment/<int:aid>', defaults={'x': 'x'})
-@app.route('/task/<int:id>/attachment/<int:aid>/', defaults={'x': 'x'})
-@app.route('/task/<int:id>/attachment/<int:aid>/<path:x>')
+@app.route('/attachment/<int:aid>', defaults={'x': 'x'})
+@app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
+@app.route('/attachment/<int:aid>/<path:x>')
 @login_required
-def get_attachment(id, aid, x):
+def get_attachment(aid, x):
     att = Attachment.query.filter_by(id=aid).first()
     if att is None:
         return (('No attachment found for the id "%s"' % aid), 404)
