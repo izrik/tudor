@@ -42,3 +42,18 @@ thead {
 .task_attachments td {
     border: 1px solid #e9e9e9;
 }
+
+.done-not-deleted {
+    text-decoration-line: line-through;
+    text-decoration-style: solid;
+}
+
+.done-deleted {
+    text-decoration-line: line-through;
+    text-decoration-style: double;
+}
+
+.not-done-deleted {
+    text-decoration-line: overline underline;
+    text-decoration-style: wavy;
+}

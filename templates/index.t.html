@@ -17,10 +17,10 @@
         {% macro render_task(self, task, depth=0) -%}
         <tr class="{{ odd_even() }}">
             <td>{{task.id}}</td>
-            <td style="padding-left: {{depth*1.5}}em">
+            <td style="padding-left: {{depth*1.5}}em" {{ task.get_css_class_attr()|safe }}>
                 <a href="{{ url_for('view_task', id=task.id) }}">{{ task.summary if task.summary != None }}</a>
             </td>
-            <td>
+            <td {{ task.get_css_class_attr()|safe }}>
                 {{ task.deadline if task.deadline != None }}
             </td>
             <td>
@@ -133,7 +133,7 @@
         {% for task in deadline_tasks if (not task.is_deleted or show_deleted) and (task.deadline != None) %}
         <tr>
             <td>{{task.id}}</td>
-            <td {% if task.is_deleted %}style="text-decoration: line-through; "{% endif %}>
+            <td {{ task.get_css_class_attr()|safe }}>
                 <a href="{{ url_for('view_task', id=task.id) }}">{{ task.summary if task.summary != None }}</a>
             </td>
             <td>

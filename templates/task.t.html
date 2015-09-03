@@ -60,7 +60,9 @@
         {% for child in task.get_children(descending=True) %}
         <tr>
             <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.id }}</a></td>
-            <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}{% if child.is_deleted %} (deleted){% endif %}</a></td>
+            <td {{ child.get_css_class_attr()|safe }}>
+                <a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}</a>
+            </td>
         </tr>
         {% endfor %}
         <tfoot>

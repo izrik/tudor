@@ -160,6 +160,21 @@ class Task(db.Model):
 
         return result
 
+    def get_css_class(self):
+        if self.is_deleted and self.is_done:
+            return 'done-deleted'
+        if self.is_deleted:
+            return 'not-done-deleted'
+        if self.is_done:
+            return 'done-not-deleted'
+        return ''
+
+    def get_css_class_attr(self):
+        cls = self.get_css_class()
+        if cls:
+            return ' class="{}" '.format(cls)
+        return ''
+
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
