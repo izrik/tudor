@@ -355,7 +355,7 @@ def index():
     return resp
 
 
-@app.route('/new', methods=['POST'])
+@app.route('/task/new', methods=['POST'])
 @login_required
 def new_task():
     summary = request.form['summary']
