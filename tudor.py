@@ -379,7 +379,7 @@ def new_task():
     return redirect(next_url)
 
 
-@app.route('/done/<int:id>')
+@app.route('/task/<int:id>/mark_done')
 @login_required
 def task_done(id):
     task = Task.query.filter_by(id=id).first()
@@ -390,7 +390,7 @@ def task_done(id):
     return redirect(request.args.get('next') or url_for('index'))
 
 
-@app.route('/undo/<int:id>')
+@app.route('/task/<int:id>/mark_undone')
 @login_required
 def task_undo(id):
     task = Task.query.filter_by(id=id).first()
@@ -400,7 +400,7 @@ def task_undo(id):
     save_task(task)
     return redirect(request.args.get('next') or url_for('index'))
 
-@app.route('/delete/<int:id>')
+@app.route('/task/<int:id>/delete')
 @login_required
 def delete_task(id):
     task = Task.query.filter_by(id=id).first()
@@ -411,7 +411,7 @@ def delete_task(id):
     return redirect(request.args.get('next') or url_for('index'))
 
 
-@app.route('/undelete/<int:id>')
+@app.route('/task/<int:id>/undelete')
 @login_required
 def undelete_task(id):
     task = Task.query.filter_by(id=id).first()
@@ -422,7 +422,7 @@ def undelete_task(id):
     return redirect(request.args.get('next') or url_for('index'))
 
 
-@app.route('/purge/<int:id>')
+@app.route('/task/<int:id>/purge')
 @login_required
 def purge_task(id):
     task = Task.query.filter_by(id=id, is_deleted=True).first()
