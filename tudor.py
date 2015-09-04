@@ -330,6 +330,13 @@ def setup_options():
     return {'opts': Options}
 
 
+@app.route('/new_loader')
+@login_required
+def new_loader_page():
+    tasks = Task.load()
+    return render_template('new_loader.t.html', tasks=tasks, cycle=itertools.cycle)
+
+
 @app.route('/')
 @login_required
 def index():
