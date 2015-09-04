@@ -103,6 +103,8 @@ class Task(db.Model):
     parent = db.relationship('Task', remote_side=[id],
                              backref=db.backref('children', lazy='dynamic'))
 
+    depth = 0
+
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None):
         self.summary = summary
