@@ -177,6 +177,10 @@ class Task(db.Model):
             return ' class="{}" '.format(cls)
         return ''
 
+    @staticmethod
+    def load():
+        return Task.query.all()
+
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
