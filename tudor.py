@@ -179,7 +179,10 @@ class Task(db.Model):
 
     @staticmethod
     def load():
-        return Task.query.all()
+        tasks = Task.query.all()
+        for task in tasks:
+            task.depth = 0
+        return tasks
 
 
 class Note(db.Model):
