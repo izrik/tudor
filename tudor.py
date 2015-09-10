@@ -22,6 +22,15 @@ import dateutil.parser
 from dateutil.parser import parse as dparse
 
 
+
+DEFAULT_TUDOR_DEBUG = False
+DEFAULT_TUDOR_PORT = 8304
+DEFAULT_TUDOR_DB_URI = 'sqlite:////tmp/test.db'
+DEFAULT_TUDOR_UPLOAD_FOLDER = '/tmp/tudor/uploads'
+DEFAULT_TUDOR_ALLOWED_EXTENSIONS = 'txt,pdf,png,jpg,jpeg,gif'
+DEFAULT_TUDOR_SECRET_KEY = None
+
+
 def bool_from_str(s):
     if isinstance(s, basestring):
         s = s.lower()
@@ -32,16 +41,17 @@ def bool_from_str(s):
     return bool(s)
 
 
-TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', False))
-TUDOR_PORT = environ.get('TUDOR_PORT', 8304)
+TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
+TUDOR_PORT = environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT)
 try:
     TUDOR_PORT = int(TUDOR_PORT)
 except:
-    TUDOR_PORT = 8304
-TUDOR_DB_URI = environ.get('TUDOR_DB_URI', 'sqlite:////tmp/test.db')
-TUDOR_UPLOAD_FOLDER = environ.get('TUDOR_UPLOAD_FOLDER', '/tmp/tudor/uploads')
+    TUDOR_PORT = DEFAULT_TUDOR_PORT
+TUDOR_DB_URI = environ.get('TUDOR_DB_URI', DEFAULT_TUDOR_DB_URI)
+TUDOR_UPLOAD_FOLDER = environ.get('TUDOR_UPLOAD_FOLDER',
+                                  DEFAULT_TUDOR_UPLOAD_FOLDER)
 TUDOR_ALLOWED_EXTENSIONS = environ.get('TUDOR_ALLOWED_EXTENSIONS',
-                                       'txt,pdf,png,jpg,jpeg,gif')
+                                       DEFAULT_TUDOR_ALLOWED_EXTENSIONS)
 TUDOR_SECRET_KEY = environ.get('TUDOR_SECRET_KEY')
 
 
@@ -77,14 +87,17 @@ print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
 
 
-def generate_app(db_uri, upload_folder, secret_key, allowed_extensions):
+def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
+                 upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
+                 secret_key=DEFAULT_TUDOR_SECRET_KEY,
+                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
 
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = TUDOR_DB_URI
-    app.config['UPLOAD_FOLDER'] = TUDOR_UPLOAD_FOLDER
-    app.secret_key = TUDOR_SECRET_KEY
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    app.config['UPLOAD_FOLDER'] = upload_folder
+    app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
-                                                     TUDOR_ALLOWED_EXTENSIONS)
+                                                     allowed_extensions)
                              if ext is not None and ext != '')
     db = SQLAlchemy(app)
     app.db = db
@@ -582,7 +595,7 @@ def generate_app(db_uri, upload_folder, secret_key, allowed_extensions):
         if att is None:
             return (('No attachment found for the id "%s"' % aid), 404)
 
-        return flask.send_from_directory(TUDOR_UPLOAD_FOLDER, att.path)
+        return flask.send_from_directory(upload_folder, att.path)
 
 
     def reorder_tasks(tasks):
