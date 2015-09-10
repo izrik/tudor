@@ -833,11 +833,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     return app
 
-app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
-                   secret_key=TUDOR_SECRET_KEY,
-                   allowed_extensions=TUDOR_ALLOWED_EXTENSIONS)
-
 if __name__ == '__main__':
+    app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
+                       secret_key=TUDOR_SECRET_KEY,
+                       allowed_extensions=TUDOR_ALLOWED_EXTENSIONS)
+
     if args.create_db:
         print('Setting up the database')
         app.db.create_all()
