@@ -19,12 +19,16 @@ class DbLoaderTest(unittest.TestCase):
         # is_done=False,
         # is_deleted=False,
         # deadline=None):
-        db.session.add(Task(summary='normal'))
+        normal = Task(summary='normal')
+        db.session.add(normal)
         parent = Task(summary='parent')
         child = Task(summary='child')
         child.parent = parent
         db.session.add(parent)
         db.session.add(child)
+        db.session.commit()
+
+        self.parent_id = parent.id
 
     def test_loader_no_params(self):
         tasks = self.app.Task.load()
@@ -32,6 +36,13 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
+
+    def test_loader_with_roots(self):
+        all_tasks = self.app.Task.load()
+        tasks = self.app.Task.load(roots=[self.parent_id])
+        self.assertEqual(1, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertEqual(self.parent_id, tasks[0].id)
 
 
 def run():

@@ -196,8 +196,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return ''
 
         @staticmethod
-        def load():
-            tasks = Task.query.all()
+        def load(roots=None):
+            query = Task.query
+            if roots is not None:
+                query = query.filter(Task.id.in_(roots))
+            tasks = query.all()
             for task in tasks:
                 task.depth = 0
             return tasks
@@ -358,7 +361,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/new_loader')
     @login_required
     def new_loader_page():
-        tasks = Task.load()
+        roots = request.args.get('roots')
+        if roots is not None:
+            roots = roots.split(',')
+        tasks = Task.load(roots=roots)
         return render_template('new_loader.t.html', tasks=tasks, cycle=itertools.cycle)
 
 
