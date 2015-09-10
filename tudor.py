@@ -198,7 +198,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         @staticmethod
         def load(roots=None):
             query = Task.query
-            if roots is not None:
+            if roots is None:
+                query = query.filter(Task.parent_id.is_(None))
+            else:
                 query = query.filter(Task.id.in_(roots))
             tasks = query.all()
             for task in tasks:
