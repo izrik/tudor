@@ -197,35 +197,48 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         @staticmethod
         def load(roots=None, max_depth=0, include_done=False):
+
             query = Task.query
+
             if not include_done:
                 query = query.filter_by(is_done=True)
+
             if roots is None:
                 query = query.filter(Task.parent_id.is_(None))
             else:
                 if not hasattr(roots, '__iter__'):
                     roots = [roots]
                 query = query.filter(Task.id.in_(roots))
+
             tasks = query.all()
+
             depth = 0
             for task in tasks:
                 task.depth = depth
+
             if max_depth is None or max_depth > 0:
+
                 buckets = [tasks]
                 next_ids = map(lambda t: t.id, tasks)
                 already_ids = set()
                 already_ids.update(next_ids)
+
                 while ((max_depth is None or depth < max_depth) and
                         len(next_ids) > 0):
+
                     depth += 1
+
                     query = Task.query
                     query = query.filter(Task.parent_id.in_(next_ids),
                                          Task.id.notin_(already_ids))
                     if not include_done:
                         query = query.filter_by(is_done=True)
+
                     children = query.all()
+
                     for child in children:
                         child.depth = depth
+
                     child_ids = set(map(lambda t: t.id, children))
                     next_ids = child_ids - already_ids
                     already_ids.update(child_ids)
