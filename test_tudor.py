@@ -63,14 +63,9 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
 
-        ids = [self.task_ids['normal'], self.task_ids['parent'],
-               self.task_ids['parent2']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
+        expected_summaries = {'normal', 'parent', 'parent2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_single_root(self):
         tasks = self.app.Task.load(roots=[self.task_ids['parent']])
@@ -85,9 +80,8 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertIsInstance(tasks[1], self.app.Task)
 
-        self.assertIn(tasks[0].id, roots)
-        self.assertIn(tasks[1].id, roots)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
+        ids = set(t.id for t in tasks)
+        self.assertEqual(set(roots), ids)
 
     def test_loader_with_max_depth_1(self):
 
@@ -100,14 +94,9 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['child3']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
+        expected_summaries = {'parent2', 'child2', 'child3'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_max_depth_2(self):
 
@@ -121,18 +110,9 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[2], self.app.Task)
         self.assertIsInstance(tasks[3], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['child3'], self.task_ids['grandchild']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertIn(tasks[3].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[0].id, tasks[3].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[3].id)
-        self.assertNotEqual(tasks[2].id, tasks[3].id)
+        expected_summaries = {'parent2', 'child2', 'child3', 'grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_max_depth_3(self):
 
@@ -147,24 +127,10 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[3], self.app.Task)
         self.assertIsInstance(tasks[4], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['child3'], self.task_ids['grandchild'],
-               self.task_ids['great_grandchild']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertIn(tasks[3].id, ids)
-        self.assertIn(tasks[4].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[0].id, tasks[3].id)
-        self.assertNotEqual(tasks[0].id, tasks[4].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[3].id)
-        self.assertNotEqual(tasks[1].id, tasks[4].id)
-        self.assertNotEqual(tasks[2].id, tasks[3].id)
-        self.assertNotEqual(tasks[2].id, tasks[4].id)
-        self.assertNotEqual(tasks[3].id, tasks[4].id)
+        expected_summaries = {'parent2', 'child2', 'child3', 'grandchild',
+                              'great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_max_depth_4(self):
 
@@ -180,31 +146,10 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[4], self.app.Task)
         self.assertIsInstance(tasks[5], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['child3'], self.task_ids['grandchild'],
-               self.task_ids['great_grandchild'],
-               self.task_ids['great_great_grandchild']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertIn(tasks[3].id, ids)
-        self.assertIn(tasks[4].id, ids)
-        self.assertIn(tasks[5].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[0].id, tasks[3].id)
-        self.assertNotEqual(tasks[0].id, tasks[4].id)
-        self.assertNotEqual(tasks[0].id, tasks[5].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[3].id)
-        self.assertNotEqual(tasks[1].id, tasks[4].id)
-        self.assertNotEqual(tasks[1].id, tasks[5].id)
-        self.assertNotEqual(tasks[2].id, tasks[3].id)
-        self.assertNotEqual(tasks[2].id, tasks[4].id)
-        self.assertNotEqual(tasks[2].id, tasks[5].id)
-        self.assertNotEqual(tasks[3].id, tasks[4].id)
-        self.assertNotEqual(tasks[3].id, tasks[5].id)
-        self.assertNotEqual(tasks[4].id, tasks[5].id)
+        expected_summaries = {'parent2', 'child2', 'child3', 'grandchild',
+                              'great_grandchild', 'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_max_depth_None(self):
 
@@ -221,31 +166,10 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[4], self.app.Task)
         self.assertIsInstance(tasks[5], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['child3'], self.task_ids['grandchild'],
-               self.task_ids['great_grandchild'],
-               self.task_ids['great_great_grandchild']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertIn(tasks[3].id, ids)
-        self.assertIn(tasks[4].id, ids)
-        self.assertIn(tasks[5].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[0].id, tasks[3].id)
-        self.assertNotEqual(tasks[0].id, tasks[4].id)
-        self.assertNotEqual(tasks[0].id, tasks[5].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[3].id)
-        self.assertNotEqual(tasks[1].id, tasks[4].id)
-        self.assertNotEqual(tasks[1].id, tasks[5].id)
-        self.assertNotEqual(tasks[2].id, tasks[3].id)
-        self.assertNotEqual(tasks[2].id, tasks[4].id)
-        self.assertNotEqual(tasks[2].id, tasks[5].id)
-        self.assertNotEqual(tasks[3].id, tasks[4].id)
-        self.assertNotEqual(tasks[3].id, tasks[5].id)
-        self.assertNotEqual(tasks[4].id, tasks[5].id)
+        expected_summaries = {'parent2', 'child2', 'child3', 'grandchild',
+                              'great_grandchild', 'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_max_depth_None_2(self):
 
@@ -258,10 +182,9 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertIsInstance(tasks[1], self.app.Task)
 
-        ids = [self.task_ids['parent'], self.task_ids['child']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
+        expected_summaries = {'parent', 'child'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
 
 class DbLoaderDoneDeletedTest(unittest.TestCase):
@@ -275,11 +198,6 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         db = app.db
         db.create_all()
         Task = app.Task
-        # summary,
-        # description='',
-        # is_done=False,
-        # is_deleted=False,
-        # deadline=None):
 
         normal = Task(summary='normal')
         db.session.add(normal)
@@ -333,24 +251,10 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertIsInstance(tasks[3], self.app.Task)
         self.assertIsInstance(tasks[4], self.app.Task)
 
-        ids = [self.task_ids['normal'], self.task_ids['done'],
-               self.task_ids['parent1'], self.task_ids['parent2'],
-               self.task_ids['parent3']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertIn(tasks[3].id, ids)
-        self.assertIn(tasks[4].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[0].id, tasks[3].id)
-        self.assertNotEqual(tasks[0].id, tasks[4].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[3].id)
-        self.assertNotEqual(tasks[1].id, tasks[4].id)
-        self.assertNotEqual(tasks[2].id, tasks[3].id)
-        self.assertNotEqual(tasks[2].id, tasks[4].id)
-        self.assertNotEqual(tasks[3].id, tasks[4].id)
+        expected_summaries = {'normal', 'done', 'parent1', 'parent2',
+                              'parent3'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_dont_include_done_no_roots(self):
         tasks = self.app.Task.load(include_done=False)
@@ -359,14 +263,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
 
-        ids = [self.task_ids['normal'], self.task_ids['parent1'],
-               self.task_ids['parent2']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
+        expected_summaries = {'normal', 'parent1', 'parent2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_done_children_stop_search(self):
         tasks = self.app.Task.load(roots=[self.task_ids['parent2']],
@@ -376,14 +275,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['grandchild2']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
+        expected_summaries = {'parent2', 'child2', 'grandchild2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_done_children_dont_stop_search_if_included(self):
         tasks = self.app.Task.load(roots=[self.task_ids['parent2']],
