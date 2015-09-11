@@ -201,7 +201,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             query = Task.query
 
             if not include_done:
-                query = query.filter_by(is_done=True)
+                query = query.filter_by(is_done=False)
 
             if roots is None:
                 query = query.filter(Task.parent_id.is_(None))
@@ -232,7 +232,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     query = query.filter(Task.parent_id.in_(next_ids),
                                          Task.id.notin_(already_ids))
                     if not include_done:
-                        query = query.filter_by(is_done=True)
+                        query = query.filter_by(is_done=False)
 
                     children = query.all()
 
