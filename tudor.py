@@ -205,25 +205,29 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     roots = [roots]
                 query = query.filter(Task.id.in_(roots))
             tasks = query.all()
+            depth = 0
             for task in tasks:
-                task.depth = 0
+                task.depth = depth
             if max_depth is None or max_depth > 0:
                 buckets = [tasks]
                 next_ids = map(lambda t: t.id, tasks)
                 already_ids = set()
                 already_ids.update(next_ids)
-                n = 0
-                while ((max_depth is None or n < max_depth) and
+                while ((max_depth is None or depth < max_depth) and
                         len(next_ids) > 0):
+                    depth += 1
                     children = Task.query.filter(
                         Task.parent_id.in_(next_ids),
                         Task.id.notin_(already_ids)).all()
+                    for child in children:
+                        child.depth = depth
                     child_ids = set(map(lambda t: t.id, children))
                     next_ids = child_ids - already_ids
                     already_ids.update(child_ids)
                     buckets.append(children)
-                    n += 1
-                tasks = [task for bucket in buckets for task in bucket]
+                tasks = list(
+                    set([task for bucket in buckets for task in bucket]))
+
             return tasks
 
     class Note(db.Model):
