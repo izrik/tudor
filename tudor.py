@@ -196,8 +196,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return ''
 
         @staticmethod
-        def load(roots=None, max_depth=0):
+        def load(roots=None, max_depth=0, include_done=False):
             query = Task.query
+            if not include_done:
+                query = query.filter_by(is_done=True)
             if roots is None:
                 query = query.filter(Task.parent_id.is_(None))
             else:
@@ -216,9 +218,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 while ((max_depth is None or depth < max_depth) and
                         len(next_ids) > 0):
                     depth += 1
-                    children = Task.query.filter(
-                        Task.parent_id.in_(next_ids),
-                        Task.id.notin_(already_ids)).all()
+                    query = Task.query
+                    query = query.filter(Task.parent_id.in_(next_ids),
+                                         Task.id.notin_(already_ids))
+                    if not include_done:
+                        query = query.filter_by(is_done=True)
+                    children = query.all()
                     for child in children:
                         child.depth = depth
                     child_ids = set(map(lambda t: t.id, children))
