@@ -396,25 +396,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertIsInstance(tasks[3], self.app.Task)
         self.assertIsInstance(tasks[4], self.app.Task)
 
-        ids = [self.task_ids['parent2'], self.task_ids['child2'],
-               self.task_ids['grandchild2'],
-               self.task_ids['great_grandchild2'],
-               self.task_ids['great_great_grandchild2']]
-        self.assertIn(tasks[0].id, ids)
-        self.assertIn(tasks[1].id, ids)
-        self.assertIn(tasks[2].id, ids)
-        self.assertIn(tasks[3].id, ids)
-        self.assertIn(tasks[4].id, ids)
-        self.assertNotEqual(tasks[0].id, tasks[1].id)
-        self.assertNotEqual(tasks[0].id, tasks[2].id)
-        self.assertNotEqual(tasks[0].id, tasks[3].id)
-        self.assertNotEqual(tasks[0].id, tasks[4].id)
-        self.assertNotEqual(tasks[1].id, tasks[2].id)
-        self.assertNotEqual(tasks[1].id, tasks[3].id)
-        self.assertNotEqual(tasks[1].id, tasks[4].id)
-        self.assertNotEqual(tasks[2].id, tasks[3].id)
-        self.assertNotEqual(tasks[2].id, tasks[4].id)
-        self.assertNotEqual(tasks[3].id, tasks[4].id)
+        expected_summaries = {'parent2', 'child2', 'grandchild2',
+                              'great_grandchild2', 'great_great_grandchild2'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
 
 def run():
     parser = argparse.ArgumentParser()
