@@ -22,7 +22,6 @@ import dateutil.parser
 from dateutil.parser import parse as dparse
 
 
-
 DEFAULT_TUDOR_DEBUG = False
 DEFAULT_TUDOR_PORT = 8304
 DEFAULT_TUDOR_DB_URI = 'sqlite:////tmp/test.db'
@@ -107,7 +106,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
-
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -117,9 +115,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
 
-        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
+        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                              nullable=True)
         parent = db.relationship('Task', remote_side=[id],
-                                 backref=db.backref('children', lazy='dynamic'))
+                                 backref=db.backref('children',
+                                                    lazy='dynamic'))
 
         depth = 0
 
@@ -207,22 +207,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 task.depth = 0
             return tasks
 
-
     class Note(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.String(4000))
         timestamp = db.Column(db.DateTime)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-        task = db.relationship('Task', backref=db.backref('notes', lazy='dynamic',
-                                                          order_by=timestamp))
+        task = db.relationship('Task',
+                               backref=db.backref('notes', lazy='dynamic',
+                                                  order_by=timestamp))
 
         def __init__(self, content, timestamp=None):
             self.content = content
             if timestamp is None:
                 timestamp = datetime.datetime.utcnow()
             self.timestamp = timestamp
-
 
     class Attachment(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -236,7 +235,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                                           lazy='dynamic',
                                                           order_by=timestamp))
 
-        def __init__(self, path, description=None, timestamp=None, filename=None):
+        def __init__(self, path, description=None, timestamp=None,
+                     filename=None):
             if description is None:
                 description = ''
             if timestamp is None:
@@ -247,7 +247,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.path = path
             self.filename = filename
             self.description = description
-
 
     class User(db.Model):
         email = db.Column(db.String(100), primary_key=True, nullable=False)
@@ -266,7 +265,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def is_anonymous(self):
             return False
 
-
     class View(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100), nullable=False)
@@ -276,7 +274,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.name = name
             self.roots = roots
 
-
     class Option(db.Model):
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)
@@ -284,7 +281,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def __init__(self, key, value):
             self.key = key
             self.value = value
-
 
     class Options(object):
         @staticmethod
@@ -298,7 +294,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_title():
             return Options.get('title', 'Tudor')
 
-
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
@@ -310,28 +305,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db.session.add(task)
         db.session.commit()
 
-
     def purge_tasks(tasks):
         for task in tasks:
             db.session.delete(task)
         db.session.commit()
 
-
     def purge_task_from_db(task):
         db.session.delete(task)
         db.session.commit()
-
 
     def get_roots_str():
         roots = request.args.get('roots') or request.cookies.get('roots')
         return roots
 
-
     def flatten(lst):
         gen = (x if isinstance(x, list) else [x] for x in lst)
         flattened = itertools.chain.from_iterable(gen)
         return list(flattened)
-
 
     def get_root_ids_from_str(roots):
         root_ids = roots.split(',')
@@ -346,7 +336,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return root_ids
         return None
 
-
     def get_tasks_and_all_descendants_from_tasks(tasks):
         visited = set()
         result = []
@@ -354,11 +343,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             task.get_all_descendants(visited=visited, result=result)
         return result
 
-
     @app.context_processor
     def setup_options():
         return {'opts': Options}
-
 
     @app.route('/new_loader')
     @login_required
@@ -367,8 +354,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if roots is not None:
             roots = roots.split(',')
         tasks = Task.load(roots=roots)
-        return render_template('new_loader.t.html', tasks=tasks, cycle=itertools.cycle)
-
+        return render_template('new_loader.t.html', tasks=tasks,
+                               cycle=itertools.cycle)
 
     @app.route('/')
     @login_required
@@ -403,7 +390,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             resp.set_cookie('roots', roots)
         return resp
 
-
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
@@ -427,7 +413,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         save_task(task)
         return redirect(next_url)
 
-
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
@@ -437,7 +422,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task.is_done = True
         save_task(task)
         return redirect(request.args.get('next') or url_for('index'))
-
 
     @app.route('/task/<int:id>/mark_undone')
     @login_required
@@ -449,7 +433,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         save_task(task)
         return redirect(request.args.get('next') or url_for('index'))
 
-
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
@@ -459,7 +442,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task.is_deleted = True
         save_task(task)
         return redirect(request.args.get('next') or url_for('index'))
-
 
     @app.route('/task/<int:id>/undelete')
     @login_required
@@ -471,7 +453,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         save_task(task)
         return redirect(request.args.get('next') or url_for('index'))
 
-
     @app.route('/task/<int:id>/purge')
     @login_required
     def purge_task(id):
@@ -480,7 +461,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return 404
         purge_task_from_db(task)
         return redirect(request.args.get('next') or url_for('index'))
-
 
     @app.route('/purge_all')
     @login_required
@@ -492,7 +472,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return redirect(request.args.get('next') or url_for('index'))
         return render_template('purge.t.html')
 
-
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
@@ -500,7 +479,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return (('No task found for the id "%s"' % id), 404)
         return render_template('task.t.html', task=task)
-
 
     @app.route('/note/new', methods=['POST'])
     @login_required
@@ -518,7 +496,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         save_task(note)
 
         return redirect(url_for('view_task', id=task_id))
-
 
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
@@ -546,8 +523,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                         not not request.form['is_done'])
         task.is_deleted = ('is_deleted' in request.form and
                            not not request.form['is_deleted'])
-        task.order_num = (request.form['order_num'] if 'order_num' in request.form
-                          else 0)
+
+        if 'order_num' in request.form:
+            task.order_num = request.form['order_num']
+        else:
+            task.order_num = 0
 
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
@@ -562,10 +542,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('view_task', id=task.id))
 
-
     def allowed_file(filename):
-        return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
+        if '.' not in filename:
+            return False
+        ext = filename.rsplit('.', 1)[1]
+        return (ext in allowed_extensions)
 
     @app.route('/attachment/new', methods=['POST'])
     @login_required
@@ -593,7 +574,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('view_task', id=task_id))
 
-
     @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/<path:x>')
@@ -605,14 +585,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return flask.send_from_directory(upload_folder, att.path)
 
-
     def reorder_tasks(tasks):
         tasks = list(tasks)
         N = len(tasks)
         for i in xrange(N):
             tasks[i].order_num = 2 * (N - i)
             db.session.add(tasks[i])
-
 
     @app.route('/task/<int:id>/up')
     @login_required
@@ -636,7 +614,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('index'))
 
-
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
@@ -658,7 +635,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.commit()
 
         return redirect(url_for('index'))
-
 
     @app.route('/task/<int:id>/right')
     @login_required
@@ -690,7 +666,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('index'))
 
-
     @app.route('/task/<int:id>/left')
     @login_required
     def move_task_left(id):
@@ -712,11 +687,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('index'))
 
-
     @login_manager.user_loader
     def load_user(userid):
         return User.query.get(userid)
-
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -727,7 +700,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         user = User.query.get(email)
 
         if (user is None or
-                not bcrypt.check_password_hash(user.hashed_password, password)):
+                not bcrypt.check_password_hash(user.hashed_password,
+                                               password)):
             flash('Username or Password is invalid', 'error')
             return redirect(url_for('login'))
 
@@ -735,13 +709,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         flash('Logged in successfully')
         return redirect(request.args.get('next') or url_for('index'))
 
-
     @app.route('/logout')
     def logout():
         logout_user()
         return redirect(url_for('index'))
     login_manager.login_view = 'login'
-
 
     @app.route('/clear_roots')
     @login_required
@@ -749,7 +721,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         resp = make_response(redirect(url_for('index')))
         resp.set_cookie('roots', '', expires=0)
         return resp
-
 
     @app.route('/set_roots')
     @login_required
@@ -762,7 +733,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             resp.set_cookie('roots', '', expires=0)
         return resp
 
-
     @app.route('/show_hide_deleted')
     @login_required
     def show_hide_deleted():
@@ -773,7 +743,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             resp.set_cookie('show_deleted', '')
         return resp
-
 
     @app.route('/view/new', methods=['POST'])
     @login_required
@@ -789,7 +758,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db.session.commit()
         return redirect(url_for('index'))
 
-
     @app.route('/view/<int:id>')
     @login_required
     def set_view(id):
@@ -797,7 +765,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if view is None:
             return (('No view found for the id "%s"' % id), 404)
         return redirect(url_for('set_roots', roots=view.roots))
-
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
@@ -821,7 +788,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('view_options'))
 
-
     @app.route('/option/<path:key>/delete')
     @login_required
     def delete_option(key):
@@ -831,7 +797,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.commit()
 
         return redirect(request.args.get('next') or url_for('view_options'))
-
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
