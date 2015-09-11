@@ -374,9 +374,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @login_required
     def new_loader_page():
         roots = request.args.get('roots')
+        max_depth = int(request.args.get('max_depth'))
         if roots is not None:
             roots = roots.split(',')
-        tasks = Task.load(roots=roots)
+        if max_depth is None:
+            tasks = Task.load(roots=roots)
+        else:
+            tasks = Task.load(roots=roots, max_depth=max_depth)
         return render_template('new_loader.t.html', tasks=tasks,
                                cycle=itertools.cycle)
 
