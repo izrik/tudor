@@ -196,12 +196,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return ''
 
         @staticmethod
-        def load(roots=None, max_depth=0, include_done=False):
+        def load(roots=None, max_depth=0, include_done=False,
+                 include_deleted=False):
 
             query = Task.query
 
             if not include_done:
                 query = query.filter_by(is_done=False)
+
+            if not include_deleted:
+                query = query.filter_by(is_deleted=False)
 
             if roots is None:
                 query = query.filter(Task.parent_id.is_(None))
@@ -233,6 +237,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                          Task.id.notin_(already_ids))
                     if not include_done:
                         query = query.filter_by(is_done=False)
+                    if not include_deleted:
+                        query = query.filter_by(is_deleted=False)
 
                     children = query.all()
 
