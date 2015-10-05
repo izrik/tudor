@@ -206,6 +206,15 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         done.is_done = True
         db.session.add(done)
 
+        deleted = Task(summary='deleted')
+        deleted.is_deleted = True
+        db.session.add(deleted)
+
+        done_and_deleted = Task(summary='done_and_deleted')
+        done_and_deleted.is_done = True
+        done_and_deleted.is_deleted = True
+        db.session.add(done_and_deleted)
+
         parent1 = Task(summary='parent1')
         child1 = Task(summary='child1')
         child1.parent = parent1
@@ -242,7 +251,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         grandchild4 = Task(summary='grandchild4')
         grandchild4.parent = child4
         great_grandchild4 = Task(summary='great_grandchild4')
-        great_grandchild4.id_deleted = True
+        great_grandchild4.is_deleted = True
         great_grandchild4.parent = grandchild4
         great_great_grandchild4 = Task(summary='great_great_grandchild4')
         great_great_grandchild4.parent = great_grandchild4
@@ -269,12 +278,47 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         db.session.add(great_grandchild5)
         db.session.add(great_great_grandchild5)
 
+        parent6 = Task(summary='parent6')
+        parent6.is_deleted = True
+        child6 = Task(summary='child6')
+        child6.parent = parent6
+        db.session.add(parent6)
+        db.session.add(child6)
+
         db.session.commit()
 
-        for t in [normal, done, parent1, child1, parent2, child2, parent3,
-                  child3, grandchild3, great_grandchild3,
-                  great_great_grandchild3]:
+        for t in [normal, done, deleted, done_and_deleted,
+
+                  parent1, child1,
+
+                  parent2, child2,
+
+                  parent3, child3, grandchild3, great_grandchild3,
+                  great_great_grandchild3,
+
+                  parent4, child4, grandchild4, great_grandchild4,
+                  great_great_grandchild4,
+
+                  parent5, child5, grandchild5, great_grandchild5,
+                  great_great_grandchild5,
+
+                  parent6, child6]:
+
             self.task_ids[t.summary] = t.id
+
+    def test_loader_do_not_include_no_roots(self):
+        tasks = self.app.Task.load()
+        self.assertEqual(5, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+
+        expected_summaries = {'normal', 'parent1',
+                              'parent3', 'parent4', 'parent5'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
 
     def test_loader_include_done_no_roots(self):
         tasks = self.app.Task.load(include_done=True)
@@ -331,6 +375,121 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
 
         expected_summaries = {'parent3', 'child3', 'grandchild3',
                               'great_grandchild3', 'great_great_grandchild3'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_include_deleted_no_roots(self):
+        tasks = self.app.Task.load(include_deleted=True)
+        self.assertEqual(7, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+
+        expected_summaries = {'normal', 'deleted', 'parent1',
+                              'parent3', 'parent4', 'parent5', 'parent6'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_do_not_include_deleted_no_roots(self):
+        tasks = self.app.Task.load(include_deleted=False)
+        self.assertEqual(5, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+
+        expected_summaries = {'normal', 'parent1', 'parent3', 'parent4',
+                              'parent5'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_include_done_and_deleted_no_roots(self):
+        tasks = self.app.Task.load(include_done=True, include_deleted=True)
+        self.assertEqual(10, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+        self.assertIsInstance(tasks[8], self.app.Task)
+        self.assertIsInstance(tasks[9], self.app.Task)
+
+        expected_summaries = {'normal', 'done', 'deleted', 'done_and_deleted',
+                              'parent1', 'parent2', 'parent3', 'parent4',
+                              'parent5', 'parent6'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_deleted_children_stop_search(self):
+        tasks = self.app.Task.load(roots=[self.task_ids['parent3'],
+                                          self.task_ids['parent4'],
+                                          self.task_ids['parent5']],
+                                   max_depth=None)
+        self.assertEqual(9, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+        self.assertIsInstance(tasks[8], self.app.Task)
+
+        expected_summaries = {'parent3', 'child3', 'grandchild3',
+                              'parent4', 'child4', 'grandchild4',
+                              'parent5', 'child5', 'grandchild5'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_deleted_children_do_not_stop_search_if_included(self):
+        tasks = self.app.Task.load(roots=[self.task_ids['parent3'],
+                                          self.task_ids['parent4'],
+                                          self.task_ids['parent5']],
+                                   max_depth=None,
+                                   include_deleted=True)
+        # self.assertEqual(5, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+
+        expected_summaries = {'parent3', 'child3', 'grandchild3',
+                              'parent4', 'child4', 'grandchild4',
+                              'great_grandchild4', 'great_great_grandchild4',
+                              'parent5', 'child5', 'grandchild5'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_done_and_deleted_children_do_not_stop_search_if_included(self):
+        tasks = self.app.Task.load(roots=[self.task_ids['parent3'],
+                                          self.task_ids['parent4'],
+                                          self.task_ids['parent5']],
+                                   max_depth=None,
+                                   include_done=True,
+                                   include_deleted=True)
+        # self.assertEqual(5, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+
+        expected_summaries = {'parent3', 'child3', 'grandchild3',
+                              'great_grandchild3', 'great_great_grandchild3',
+                              'parent4', 'child4', 'grandchild4',
+                              'great_grandchild4', 'great_great_grandchild4',
+                              'parent5', 'child5', 'grandchild5',
+                              'great_grandchild5', 'great_great_grandchild5'}
         summaries = set((t.summary for t in tasks))
         self.assertEqual(expected_summaries, summaries)
 
