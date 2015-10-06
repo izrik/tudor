@@ -129,6 +129,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.description = description
             self.is_done = is_done
             self.is_deleted = is_deleted
+            if isinstance(deadline, str):
+                deadline = dparse(deadline)
             self.deadline = deadline
 
         def get_siblings(self, include_deleted=True, descending=False,
