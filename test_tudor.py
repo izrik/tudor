@@ -494,6 +494,130 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
 
+class DbLoaderDeadlinedTest(unittest.TestCase):
+
+    task_ids = None
+
+    def setUp(self):
+        app = generate_app(db_uri='sqlite://')
+        self.app = app
+        self.task_ids = {}
+        db = app.db
+        db.create_all()
+        Task = app.Task
+
+        no_deadline = Task(summary='no_deadline')
+        db.session.add(no_deadline)
+
+        with_deadline = Task(summary='with_deadline', deadline='2015-10-05')
+        db.session.add(with_deadline)
+
+        parent1 = Task(summary='parent1')
+        child1 = Task(summary='child1')
+        child1.parent = parent1
+        grandchild1 = Task(summary='grandchild1')
+        grandchild1.parent = child1
+        great_grandchild1 = Task(summary='great_grandchild1', deadline='2015-10-05')
+        great_grandchild1.parent = grandchild1
+        great_great_grandchild1 = Task(summary='great_great_grandchild1')
+        great_great_grandchild1.parent = great_grandchild1
+        db.session.add(parent1)
+        db.session.add(child1)
+        db.session.add(grandchild1)
+        db.session.add(great_grandchild1)
+        db.session.add(great_great_grandchild1)
+
+        parent2 = Task(summary='parent2', deadline='2015-10-05')
+        child2 = Task(summary='child2', deadline='2015-10-05')
+        child2.parent = parent2
+        grandchild2 = Task(summary='grandchild2', deadline='2015-10-05')
+        grandchild2.parent = child2
+        great_grandchild2 = Task(summary='great_grandchild2')
+        great_grandchild2.parent = grandchild2
+        great_great_grandchild2 = Task(summary='great_great_grandchild2',
+                                       deadline='2015-10-05')
+        great_great_grandchild2.parent = great_grandchild2
+        db.session.add(parent2)
+        db.session.add(child2)
+        db.session.add(grandchild2)
+        db.session.add(great_grandchild2)
+        db.session.add(great_great_grandchild2)
+
+        db.session.commit()
+
+        for t in [no_deadline, with_deadline,
+
+                  parent1, child1, grandchild1, great_grandchild1,
+                  great_great_grandchild1,
+
+                  parent2, child2, grandchild2, great_grandchild2,
+                  great_great_grandchild2]:
+
+            self.task_ids[t.summary] = t.id
+
+    def test_loader_do_not_exclude_no_roots(self):
+        tasks = self.app.Task.load()
+        self.assertEqual(4, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+
+        expected_summaries = {'no_deadline', 'with_deadline', 'parent1',
+                              'parent2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_explicit_do_not_exclude_no_roots(self):
+        tasks = self.app.Task.load(exclude_undeadlined=False)
+        self.assertEqual(4, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+
+        expected_summaries = {'no_deadline', 'with_deadline', 'parent1',
+                              'parent2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_exclude_undeadlined_no_roots(self):
+        tasks = self.app.Task.load(exclude_undeadlined=True)
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'with_deadline', 'parent2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_undeadlined_do_not_stop_search_if_not_excluded(self):
+        tasks = self.app.Task.load(roots=[self.task_ids['parent1'],
+                                          self.task_ids['parent2']],
+                                   max_depth=None)
+        self.assertEqual(10, len(tasks))
+        self.assertTrue(all(isinstance(t, self.app.Task) for t in tasks))
+
+        expected_summaries = {'parent1', 'child1', 'grandchild1',
+                              'great_grandchild1', 'great_great_grandchild1',
+                              'parent2', 'child2', 'grandchild2',
+                              'great_grandchild2', 'great_great_grandchild2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_loader_undeadlined_stop_search_if_excluded(self):
+        tasks = self.app.Task.load(roots=[self.task_ids['parent1'],
+                                          self.task_ids['parent2']],
+                                   max_depth=None,
+                                   exclude_undeadlined=True)
+        self.assertEqual(3, len(tasks))
+        self.assertTrue(all(isinstance(t, self.app.Task) for t in tasks))
+
+        expected_summaries = {'parent2', 'child2', 'grandchild2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--print-log', action='store_true',
