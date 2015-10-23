@@ -9,7 +9,6 @@ from os import environ
 import datetime
 import os.path
 from werkzeug import secure_filename
-from flask.ext.misaka import Misaka
 import random
 from flask.ext.login import LoginManager, login_user, login_required
 from flask.ext.login import logout_user
@@ -100,7 +99,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                              if ext is not None and ext != '')
     db = SQLAlchemy(app)
     app.db = db
-    Misaka(app)
     login_manager = LoginManager()
     login_manager.init_app(app)
     bcrypt = Bcrypt(app)
