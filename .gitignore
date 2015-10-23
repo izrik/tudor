@@ -59,5 +59,10 @@ target/
 # virtualenv
 bin
 include
+Scripts
 
+# tudor test things
 tudor_tasks.p
+test.db
+set_env.sh
+set-env.sh
