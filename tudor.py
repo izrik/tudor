@@ -402,14 +402,33 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/new_loader')
     @login_required
     def new_loader_page():
+
+        kwargs = {}
+
         roots = request.args.get('roots')
-        max_depth = int(request.args.get('max_depth'))
         if roots is not None:
-            roots = roots.split(',')
-        if max_depth is None:
-            tasks = Task.load(roots=roots)
+            kwargs['roots'] = roots.split(',')
+
+        max_depth = request.args.get('max_depth')
+        if max_depth is not None:
+            kwargs['max_depth'] = int(max_depth)
         else:
-            tasks = Task.load(roots=roots, max_depth=max_depth)
+            kwargs['max_depth'] = None
+
+        include_done = request.args.get('include_done')
+        if include_done is not None:
+            kwargs['include_done'] = bool_from_str(include_done)
+
+        include_deleted = request.args.get('include_deleted')
+        if include_deleted is not None:
+            kwargs['include_deleted'] = bool_from_str(include_deleted)
+
+        exclude_undeadlined = request.args.get('exclude_undeadlined')
+        if exclude_undeadlined is not None:
+            kwargs['exclude_undeadlined'] = bool_from_str(exclude_undeadlined)
+
+        tasks = Task.load(**kwargs)
+
         return render_template('new_loader.t.html', tasks=tasks,
                                cycle=itertools.cycle)
 
