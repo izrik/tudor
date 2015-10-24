@@ -432,6 +432,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return render_template('new_loader.t.html', tasks=tasks,
                                cycle=itertools.cycle)
 
+    @app.route('/new_loader/task_with_children/<int:id>')
+    @login_required
+    def new_loader_task_with_children(id):
+        task = Task.query.get(id)
+        if task is None:
+            return '', 404
+        descendants = Task.load(roots=task.id, max_depth=None,
+                                include_done=True, include_deleted=True)
+        return render_template('new_loader_task_with_children.t.html',
+                               task=task, descendants=descendants)
+
     @app.route('/')
     @login_required
     def index():
