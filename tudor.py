@@ -99,8 +99,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                              if ext is not None and ext != '')
     db = SQLAlchemy(app)
     app.db = db
+
     login_manager = LoginManager()
     login_manager.init_app(app)
+    app.login_manager = login_manager
+
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
@@ -799,6 +802,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def logout():
         logout_user()
         return redirect(url_for('index'))
+
     login_manager.login_view = 'login'
 
     @app.route('/clear_roots')
