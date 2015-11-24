@@ -1,0 +1,29 @@
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Users{% endblock %}
+{% block content scoped %}
+<div>
+    <table class="tasks">
+        {% set odd_even = cycle(['odd', 'even']).next %}
+        <thead>
+        <tr>
+            <th>Email</th>
+        </tr>
+        </thead>
+        {% for user in users %}
+        <tr class="{{ odd_even() }}">
+            <td>{{ user.email }}</td>
+        </tr>
+        {% endfor %}
+        <tfoot>
+            <td>
+                <!--<form action="{{ url_for('new_task') }}" method="post">-->
+                    <!--<input type="text" name="summary" />-->
+                <!--</form>-->
+            </td>
+        </tfoot>
+    </table>
+</div>
+<div>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+{% endblock %}

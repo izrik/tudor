@@ -805,6 +805,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     login_manager.login_view = 'login'
 
+    @app.route('/users')
+    @login_required
+    def list_users():
+        return render_template('list_users.t.html', users=User.query,
+                               cycle=itertools.cycle)
+
     @app.route('/clear_roots')
     @login_required
     def clear_roots():
