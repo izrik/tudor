@@ -905,6 +905,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
+    @admin_required
     def view_options():
         if request.method == 'GET' or 'key' not in request.form:
             return render_template('options.t.html', options=Option.query)
@@ -927,6 +928,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     @app.route('/option/<path:key>/delete')
     @login_required
+    @admin_required
     def delete_option(key):
         option = Option.query.get(key)
         if option is not None:
