@@ -847,7 +847,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('list_users'))
 
-
     @app.route('/clear_roots')
     @login_required
     def clear_roots():

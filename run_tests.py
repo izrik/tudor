@@ -517,7 +517,8 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         child1.parent = parent1
         grandchild1 = Task(summary='grandchild1')
         grandchild1.parent = child1
-        great_grandchild1 = Task(summary='great_grandchild1', deadline='2015-10-05')
+        great_grandchild1 = Task(summary='great_grandchild1',
+                                 deadline='2015-10-05')
         great_grandchild1.parent = grandchild1
         great_great_grandchild1 = Task(summary='great_great_grandchild1')
         great_great_grandchild1.parent = great_grandchild1
