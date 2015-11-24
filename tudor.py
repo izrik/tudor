@@ -372,15 +372,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db.session.add(task)
         db.session.commit()
 
-    def purge_tasks(tasks):
-        for task in tasks:
-            db.session.delete(task)
-        db.session.commit()
-
-    def purge_task_from_db(task):
-        db.session.delete(task)
-        db.session.commit()
-
     def get_roots_str():
         roots = request.args.get('roots') or request.cookies.get('roots')
         return roots
@@ -561,7 +552,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task = Task.query.filter_by(id=id, is_deleted=True).first()
         if not task:
             return 404
-        purge_task_from_db(task)
+        db.session.delete(task)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/purge_all')
@@ -570,7 +562,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
             deleted_tasks = Task.query.filter_by(is_deleted=True)
-            purge_tasks(deleted_tasks)
+            for task in deleted_tasks:
+                db.session.delete(task)
+            db.session.commit()
             return redirect(request.args.get('next') or url_for('index'))
         return render_template('purge.t.html')
 
