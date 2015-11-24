@@ -60,9 +60,11 @@ target/
 bin
 include
 Scripts
+.venv
 
 # tudor test things
 tudor_tasks.p
 test.db
 set_env.sh
+.tudor
 set-env.sh
