@@ -306,6 +306,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     class User(db.Model):
         email = db.Column(db.String(100), primary_key=True, nullable=False)
         hashed_password = db.Column(db.String(100), nullable=False)
+        is_admin = db.Column(db.Boolean, nullable=False, default=False)
         authenticated = True
 
         def is_active(self):
