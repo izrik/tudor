@@ -17,11 +17,14 @@
         </tr>
         {% endfor %}
         <tfoot>
+        <form action="{{ url_for('list_users') }}" method="post">
             <td>
-                <!--<form action="{{ url_for('new_task') }}" method="post">-->
-                    <!--<input type="text" name="summary" />-->
-                <!--</form>-->
+                <input type="text" name="email"/>
             </td>
+            <td>
+                <input type="checkbox" name="is_admin"/>
+            </td>
+        </form>
         </tfoot>
     </table>
 </div>

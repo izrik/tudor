@@ -309,6 +309,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         is_admin = db.Column(db.Boolean, nullable=False, default=False)
         authenticated = True
 
+        def __init__(self, email, hashed_password=None, is_admin=False):
+            if hashed_password is None:
+                digits = '0123456789abcdef'
+                key = ''.join((random.choice(digits) for x in xrange(48)))
+                hashed_password = app.bcrypt.generate_password_hash(key)
+
+            self.email = email
+            self.hashed_password = hashed_password
+            self.is_admin = is_admin
+
         def is_active(self):
             return True
 
@@ -806,11 +816,29 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     login_manager.login_view = 'login'
 
-    @app.route('/users')
+    @app.route('/users', methods=['GET', 'POST'])
     @login_required
     def list_users():
-        return render_template('list_users.t.html', users=User.query,
-                               cycle=itertools.cycle)
+        if request.method == 'GET':
+            return render_template('list_users.t.html', users=User.query,
+                                   cycle=itertools.cycle)
+
+        email = request.form['email']
+        user = User.query.get(email)
+        if user is not None:
+            return ('A user already exists with the email '
+                    'address {}'.format(email), 409)
+        is_admin = False
+        if 'is_admin' in request.form:
+            is_admin = bool_from_str(request.form['is_admin'])
+
+        user = User(email=email, is_admin=is_admin)
+
+        db.session.add(user)
+        db.session.commit()
+
+        return redirect(url_for('list_users'))
+
 
     @app.route('/clear_roots')
     @login_required
