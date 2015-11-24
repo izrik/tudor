@@ -11,7 +11,7 @@ import os.path
 from werkzeug import secure_filename
 import random
 from flask.ext.login import LoginManager, login_user, login_required
-from flask.ext.login import logout_user
+from flask.ext.login import logout_user, current_user
 from flask.ext.bcrypt import Bcrypt
 import re
 import itertools
@@ -819,6 +819,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
     def list_users():
+
+        if not current_user.is_admin:
+            return ('You are not authorized to view this page', 403)
+
         if request.method == 'GET':
             return render_template('list_users.t.html', users=User.query,
                                    cycle=itertools.cycle)
