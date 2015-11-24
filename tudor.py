@@ -19,6 +19,7 @@ import gfm
 import markdown
 import dateutil.parser
 from dateutil.parser import parse as dparse
+from functools import wraps
 
 
 DEFAULT_TUDOR_DEBUG = False
@@ -816,12 +817,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     login_manager.login_view = 'login'
 
+    def admin_required(func):
+        @wraps(func)
+        def decorated_view(*args, **kwargs):
+            if not current_user.is_admin:
+                return ('You are not authorized to view this page', 403)
+            return func(*args, **kwargs)
+        return decorated_view
+
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
+    @admin_required
     def list_users():
-
-        if not current_user.is_admin:
-            return ('You are not authorized to view this page', 403)
 
         if request.method == 'GET':
             return render_template('list_users.t.html', users=User.query,
