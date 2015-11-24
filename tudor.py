@@ -368,6 +368,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.View = View
     app.Option = Option
 
+    def admin_required(func):
+        @wraps(func)
+        def decorated_view(*args, **kwargs):
+            if not current_user.is_admin:
+                return ('You are not authorized to view this page', 403)
+            return func(*args, **kwargs)
+        return decorated_view
+
     def save_task(task):
         db.session.add(task)
         db.session.commit()
@@ -548,6 +556,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     @app.route('/task/<int:id>/purge')
     @login_required
+    @admin_required
     def purge_task(id):
         task = Task.query.filter_by(id=id, is_deleted=True).first()
         if not task:
@@ -558,6 +567,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     @app.route('/purge_all')
     @login_required
+    @admin_required
     def purge_deleted_tasks():
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
@@ -811,14 +821,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return redirect(url_for('index'))
 
     login_manager.login_view = 'login'
-
-    def admin_required(func):
-        @wraps(func)
-        def decorated_view(*args, **kwargs):
-            if not current_user.is_admin:
-                return ('You are not authorized to view this page', 403)
-            return func(*args, **kwargs)
-        return decorated_view
 
     @app.route('/users', methods=['GET', 'POST'])
     @login_required

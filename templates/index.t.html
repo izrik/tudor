@@ -40,7 +40,9 @@
             <td>
                 {% if task.is_deleted %}
                     <a href="{{ url_for('undelete_task', id=task.id) }}">(undelete)</a>
-                    <a href="{{ url_for('purge_task', id=task.id) }}"><small>(purge)</small></a>
+                    {% if user.is_admin %}
+                        <a href="{{ url_for('purge_task', id=task.id) }}"><small>(purge)</small></a>
+                    {% endif %}
                 {% else %}
                     <a href="{{ url_for('delete_task', id=task.id) }}">(delete)</a>
                 {% endif %}
@@ -82,7 +84,9 @@
         <a href="{{ url_for('show_hide_deleted', show_deleted=1) }}">show deleted</a>
         {% endif -%}
     </p>
+    {% if user.is_admin %}
     <p><a href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
+    {% endif %}
     <p><a href="{{ url_for('clear_roots') }}">clear roots</a></p>
     <p>
         <form action="set_roots" method="get">
