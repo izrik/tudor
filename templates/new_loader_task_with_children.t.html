@@ -47,6 +47,7 @@
 </div>
 <div>
     <h4>Child Tasks</h4>
+    {% macro render_task_table(descendants, root, cycle) -%}
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
@@ -61,7 +62,7 @@
             <th>Depth</th>
         </tr>
         </thead>
-        {% for child in descendants if child != task %}
+        {% for child in descendants if child != root %}
         <tr class="{{ odd_even() }}">
             <td><a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.id }}</a></td>
             <td style="padding-left: {{(child.depth-1)*1.5}}em" {{ child.get_css_class_attr()|safe }}>
@@ -86,6 +87,8 @@
             </td>
         </tfoot>
     </table>
+    {%- endmacro %}
+    {{ render_task_table(descendants, task, cycle) }}
 </div>
 
 {% endblock %}
