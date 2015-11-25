@@ -68,3 +68,6 @@ test.db
 set_env.sh
 .tudor
 set-env.sh
+
+# scratch files
+_scratch*
