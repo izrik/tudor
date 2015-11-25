@@ -479,7 +479,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             descendants = list(get_sorted_order(task))
 
         return render_template('new_loader_task_with_children.t.html',
-                               task=task, descendants=descendants)
+                               task=task, descendants=descendants,
+                               cycle=itertools.cycle)
 
     @app.route('/')
     @login_required

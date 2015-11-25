@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     {% block head %}
-    <link rel="stylesheet" href="../static/tudor.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='tudor.css') }}" />
     <title>{% block title %}{{ opts.get_title() }}{% endblock %}</title>
     {% endblock %}
 </head>

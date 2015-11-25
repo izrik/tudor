@@ -16,11 +16,11 @@ thead {
     background-color: #d0d0d0;
 }
 
-.tasks .odd {
+.tasks .odd, .task_children .odd {
     background-color: #f0f0f0;
 }
 
-.tasks .even {
+.tasks .even, .task_children .even {
     background-color: #e0e0e0;
 }
 
@@ -32,10 +32,6 @@ thead {
 }
 
 .task_notes td {
-    border: 1px solid #e9e9e9;
-}
-
-.task_children td {
     border: 1px solid #e9e9e9;
 }
 
