@@ -36,7 +36,7 @@
             <td>Parent Task</td>
             <td>
                 {% if task.parent_id != None %}
-                <a href="{{ url_for('view_task', id=task.parent_id) }}">{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
+                <a href="{{ url_for('new_loader_task_with_children', id=task.parent_id) }}">{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
                 {% else %}
                 None
                 {% endif %}
@@ -63,9 +63,9 @@
         </thead>
         {% for child in descendants if child != task %}
         <tr class="{{ odd_even() }}">
-            <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.id }}</a></td>
+            <td><a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.id }}</a></td>
             <td style="padding-left: {{(child.depth-1)*1.5}}em" {{ child.get_css_class_attr()|safe }}>
-                <a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}</a>
+                <a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.summary }}</a>
             </td>
             <td>{{ child.deadline }}</td>
             <td>{{ child.is_done }}</td>
