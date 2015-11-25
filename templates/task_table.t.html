@@ -1,0 +1,41 @@
+    {% macro render_task_table(descendants, root, cycle) -%}
+    <table class="task_children">
+        {% set odd_even = cycle(['odd', 'even']).next %}
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Summary</th>
+            <th>Deadline</th>
+            <th>Done?</th>
+            <th>Deleted?</th>
+            <th>Order #</th>
+            <th>Parent ID</th>
+            <th>Depth</th>
+        </tr>
+        </thead>
+        {% for child in descendants if child != root %}
+        <tr class="{{ odd_even() }}">
+            <td><a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.id }}</a></td>
+            <td style="padding-left: {{(child.depth-1)*1.5}}em" {{ child.get_css_class_attr()|safe }}>
+                <a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.summary }}</a>
+            </td>
+            <td>{{ child.deadline }}</td>
+            <td>{{ child.is_done }}</td>
+            <td>{{ child.is_deleted }}</td>
+            <td>{{ child.order_num }}</td>
+            <td>{{ child.parent_id }}</td>
+            <td>{{ child.depth }}</td>
+        </tr>
+        {% endfor %}
+        <tfoot>
+            <td></td>
+            <td>
+                <form action="{{ url_for('new_task') }}" method="post">
+                    <input type="text" name="summary" />
+                    <input type="hidden" name="parent_id" value="{{ root.id }}" />
+                    <input type="hidden" name="next_url" value="{{ url_for('view_task', id=root.id) }}" />
+                </form>
+            </td>
+        </tfoot>
+    </table>
+    {%- endmacro %}
