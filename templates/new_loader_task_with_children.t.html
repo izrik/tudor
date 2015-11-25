@@ -5,7 +5,6 @@
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
         <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>
-        <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
         <tr><td>Deadline</td><td>{{ task.deadline|d }}</td></tr>
         <tr>
             <td>Done?</td>
@@ -42,6 +41,7 @@
                 {% endif %}
             </td>
         </tr>
+        <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
     </table>
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>
