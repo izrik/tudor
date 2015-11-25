@@ -454,6 +454,30 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return '', 404
         descendants = Task.load(roots=task.id, max_depth=None,
                                 include_done=True, include_deleted=True)
+
+        hierarchy_sort = True
+        if hierarchy_sort:
+            tasks_by_parent = {}
+
+            for d in descendants:
+                if d.parent not in tasks_by_parent:
+                    tasks_by_parent[d.parent] = []
+                tasks_by_parent[d.parent].append(d)
+
+            for parent in tasks_by_parent:
+                tasks_by_parent[parent] = sorted(tasks_by_parent[parent],
+                                                 key=lambda t: t.order_num,
+                                                 reverse=True)
+
+            def get_sorted_order(p):
+                yield p
+                if p in tasks_by_parent:
+                    for c in tasks_by_parent[p]:
+                        for x in get_sorted_order(c):
+                            yield x
+
+            descendants = list(get_sorted_order(task))
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants)
 
