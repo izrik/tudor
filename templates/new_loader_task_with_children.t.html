@@ -50,7 +50,8 @@
     <h4>Child Tasks</h4>
 
     {{ render_task_table(descendants, task, cycle, show_is_done=show_is_done,
-        show_is_deleted=show_is_deleted, show_deadline=show_deadline) }}
+        show_is_deleted=show_is_deleted, show_deadline=show_deadline,
+        show_order_num=show_order_num) }}
 </div>
 
 {% endblock %}

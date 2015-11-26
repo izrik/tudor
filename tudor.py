@@ -496,12 +496,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             show_deadline = bool_from_str(show_deadline)
 
+        show_order_num = bool_from_str(request.args.get('show_order_num'))
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants,
                                cycle=itertools.cycle,
                                show_is_done=show_is_done,
                                show_is_deleted=show_is_deleted,
-                               show_deadline=show_deadline)
+                               show_deadline=show_deadline,
+                               show_order_num=show_order_num)
 
     @app.route('/')
     @login_required
