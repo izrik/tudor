@@ -478,9 +478,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             descendants = list(get_sorted_order(task))
 
+        show_is_done = bool_from_str(request.args.get('show_is_done'))
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants,
-                               cycle=itertools.cycle)
+                               cycle=itertools.cycle,
+                               show_is_done=show_is_done)
 
     @app.route('/')
     @login_required

@@ -49,7 +49,7 @@
 <div>
     <h4>Child Tasks</h4>
 
-    {{ render_task_table(descendants, task, cycle) }}
+    {{ render_task_table(descendants, task, cycle, show_is_done=show_is_done) }}
 </div>
 
 {% endblock %}
