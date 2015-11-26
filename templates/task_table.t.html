@@ -1,6 +1,7 @@
     {% macro render_task_table(descendants, root, cycle, show_is_done=True,
                 show_is_deleted=True, show_deadline=True,
-                show_order_num=False, show_parent_id=False) -%}
+                show_order_num=False, show_parent_id=False,
+                show_depth=False) -%}
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
@@ -22,7 +23,9 @@
             {% if show_parent_id %}
                 <th>Parent ID</th>
             {% endif %}
-            <th>Depth</th>
+            {% if show_depth %}
+                <th>Depth</th>
+            {% endif %}
         </tr>
         </thead>
         {% for child in descendants if child != root %}
@@ -46,7 +49,9 @@
             {% if show_parent_id %}
                 <td>{{ child.parent_id }}</td>
             {% endif %}
-            <td>{{ child.depth }}</td>
+            {% if show_depth %}
+                <td>{{ child.depth }}</td>
+            {% endif %}
         </tr>
         {% endfor %}
         <tfoot>
