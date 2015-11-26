@@ -1,11 +1,14 @@
-    {% macro render_task_table(descendants, root, cycle, show_is_done=True, show_is_deleted=True) -%}
+    {% macro render_task_table(descendants, root, cycle, show_is_done=True,
+                show_is_deleted=True, show_deadline=True) -%}
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
         <tr>
             <th>ID</th>
             <th>Summary</th>
-            <th>Deadline</th>
+            {% if show_deadline %}
+                <th>Deadline</th>
+            {% endif %}
             {% if show_is_done %}
                 <th>Done?</th>
             {% endif %}
@@ -23,7 +26,9 @@
             <td style="padding-left: {{(child.depth-1)*1.5}}em" {{ child.get_css_class_attr()|safe }}>
                 <a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.summary }}</a>
             </td>
-            <td>{{ child.deadline }}</td>
+            {% if show_deadline %}
+                <td>{{ child.deadline }}</td>
+            {% endif %}
             {% if show_is_done %}
                 <td>{{ child.is_done }}</td>
             {% endif %}

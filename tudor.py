@@ -490,11 +490,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             show_is_deleted = bool_from_str(show_is_deleted)
 
+        show_deadline = request.args.get('show_deadline')
+        if show_deadline is None:
+            show_deadline = True
+        else:
+            show_deadline = bool_from_str(show_deadline)
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants,
                                cycle=itertools.cycle,
                                show_is_done=show_is_done,
-                               show_is_deleted=show_is_deleted)
+                               show_is_deleted=show_is_deleted,
+                               show_deadline=show_deadline)
 
     @app.route('/')
     @login_required
