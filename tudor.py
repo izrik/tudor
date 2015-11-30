@@ -500,6 +500,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         show_parent_id = bool_from_str(request.args.get('show_parent_id'))
         show_depth = bool_from_str(request.args.get('show_depth'))
 
+        show_move_links = bool_from_str(request.args.get('show_move_links'))
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants,
                                cycle=itertools.cycle,
@@ -508,7 +510,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                show_deadline=show_deadline,
                                show_order_num=show_order_num,
                                show_parent_id=show_parent_id,
-                               show_depth=show_depth)
+                               show_depth=show_depth,
+                               show_move_links=show_move_links)
 
     @app.route('/')
     @login_required
@@ -771,7 +774,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(next_task)
             db.session.commit()
 
-        return redirect(url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/down')
     @login_required
@@ -793,7 +796,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(next_task)
             db.session.commit()
 
-        return redirect(url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/right')
     @login_required
@@ -823,7 +826,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(next_task)
             db.session.commit()
 
-        return redirect(url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/left')
     @login_required
@@ -844,7 +847,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(task)
             db.session.commit()
 
-        return redirect(url_for('index'))
+        return redirect(request.args.get('next') or url_for('index'))
 
     @login_manager.user_loader
     def load_user(userid):
