@@ -515,6 +515,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             show_delete_links = bool_from_str(show_delete_links)
 
+        show_done_tasks = request.args.get('show_done_tasks')
+        if show_done_tasks is None:
+            show_done_tasks = True
+        else:
+            show_done_tasks = bool_from_str(show_done_tasks)
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants,
                                cycle=itertools.cycle,
@@ -526,7 +532,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                show_depth=show_depth,
                                show_move_links=show_move_links,
                                show_done_links=show_done_links,
-                               show_delete_links=show_delete_links)
+                               show_delete_links=show_delete_links,
+                               show_done_tasks=show_done_tasks)
 
     @app.route('/')
     @login_required
