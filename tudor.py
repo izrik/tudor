@@ -508,6 +508,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             show_done_links = bool_from_str(show_done_links)
 
+        # show_delete_links = bool_from_str(request.args.get('show_delete_links'))
+        show_delete_links = request.args.get('show_delete_links')
+        if show_delete_links is None:
+            show_delete_links = True
+        else:
+            show_delete_links = bool_from_str(show_delete_links)
+
         return render_template('new_loader_task_with_children.t.html',
                                task=task, descendants=descendants,
                                cycle=itertools.cycle,
@@ -518,7 +525,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                show_parent_id=show_parent_id,
                                show_depth=show_depth,
                                show_move_links=show_move_links,
-                               show_done_links=show_done_links)
+                               show_done_links=show_done_links,
+                               show_delete_links=show_delete_links)
 
     @app.route('/')
     @login_required
