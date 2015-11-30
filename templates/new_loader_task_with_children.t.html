@@ -42,7 +42,7 @@
                 {% endif %}
             </td>
         </tr>
-        <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
+        <!--<tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>-->
     </table>
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>
