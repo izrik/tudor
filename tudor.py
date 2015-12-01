@@ -40,6 +40,12 @@ def bool_from_str(s):
     return bool(s)
 
 
+def int_from_str(s):
+    try:
+        return int(s)
+    except:
+        return None
+
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
 TUDOR_PORT = environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT)
 try:
@@ -452,7 +458,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task = Task.query.get(id)
         if task is None:
             return '', 404
-        descendants = Task.load(roots=task.id, max_depth=None,
+
+        max_depth = int_from_str(request.args.get('max_depth'))
+        descendants = Task.load(roots=task.id, max_depth=max_depth,
                                 include_done=True, include_deleted=True)
 
         hierarchy_sort = True
