@@ -478,17 +478,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             descendants = list(get_sorted_order(task))
 
-        show_is_done = request.args.get('show_is_done')
-        if show_is_done is None:
-            show_is_done = True
-        else:
-            show_is_done = bool_from_str(show_is_done)
+        show_is_done = bool_from_str(request.args.get('show_is_done'))
+        # show_is_done = request.args.get('show_is_done')
+        # if show_is_done is None:
+        #     show_is_done = True
+        # else:
+        #     show_is_done = bool_from_str(show_is_done)
 
-        show_is_deleted = request.args.get('show_is_deleted')
-        if show_is_deleted is None:
-            show_is_deleted = True
-        else:
-            show_is_deleted = bool_from_str(show_is_deleted)
+        show_is_deleted = bool_from_str(request.args.get('show_is_deleted'))
+        # show_is_deleted = request.args.get('show_is_deleted')
+        # if show_is_deleted is None:
+        #     show_is_deleted = True
+        # else:
+        #     show_is_deleted = bool_from_str(show_is_deleted)
 
         show_deadline = request.args.get('show_deadline')
         if show_deadline is None:

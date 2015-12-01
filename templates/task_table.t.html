@@ -1,5 +1,5 @@
-    {% macro render_task_table(descendants, root, cycle, show_is_done=True,
-                show_is_deleted=True, show_deadline=True,
+    {% macro render_task_table(descendants, root, cycle, show_is_done=False,
+                show_is_deleted=False, show_deadline=True,
                 show_order_num=False, show_parent_id=False,
                 show_depth=False, show_move_links=False,
                 show_done_links=True, show_delete_links=True) -%}
