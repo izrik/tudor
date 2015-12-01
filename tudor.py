@@ -269,6 +269,29 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             return tasks
 
+        @staticmethod
+        def load_no_hierarchy(include_done=False, include_deleted=False,
+                              exclude_undeadlined=False):
+
+            query = Task.query
+
+            if not include_done:
+                query = query.filter_by(is_done=False)
+
+            if not include_deleted:
+                query = query.filter_by(is_deleted=False)
+
+            if exclude_undeadlined:
+                query = query.filter(Task.deadline.isnot(None))
+
+            tasks = query.all()
+
+            depth = 0
+            for task in tasks:
+                task.depth = depth
+
+            return tasks
+
     class Note(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.String(4000))
