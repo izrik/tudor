@@ -518,7 +518,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             show_done_links = bool_from_str(show_done_links)
 
-        # show_delete_links = bool_from_str(request.args.get('show_delete_links'))
+        # show_delete_links = bool_from_str(
+        #     request.args.get('show_delete_links'))
         show_delete_links = request.args.get('show_delete_links')
         if show_delete_links is None:
             show_delete_links = True
