@@ -562,6 +562,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                show_done_links=show_done_links,
                                show_delete_links=show_delete_links)
 
+    @app.route('/new_loader/deadlines')
+    @login_required
+    def new_loader_deadlines():
+
+        tasks = Task.load_no_hierarchy(exclude_undeadlined=True)
+
+        return render_template('new_loader_deadlines.t.html', tasks=tasks,
+                               cycle=itertools.cycle)
+
     @app.route('/')
     @login_required
     def index():

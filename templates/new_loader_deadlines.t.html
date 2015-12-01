@@ -1,0 +1,14 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block title %}{{ super() }} - New Loader Test - Task with children{% endblock %}
+{% block content %}
+<div>
+    <h4>Tasks by deadline</h4>
+
+    {{ render_task_table(tasks, None, cycle,
+        page_url=url_for('new_loader_deadlines'),
+        show_deadline=True,
+        show_parent_id=True, show_done_links=True, show_delete_links=True) }}
+</div>
+
+{% endblock %}
