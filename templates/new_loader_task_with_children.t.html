@@ -49,7 +49,9 @@
 <div>
     <h4>Child Tasks</h4>
 
-    {{ render_task_table(descendants, task, cycle, show_is_done=show_is_done,
+    {{ render_task_table(descendants, task, cycle,
+        page_url=url_for('new_loader_task_with_children', id=task.id),
+        show_is_done=show_is_done,
         show_is_deleted=show_is_deleted, show_deadline=show_deadline,
         show_order_num=show_order_num, show_parent_id=show_parent_id,
         show_depth=show_depth, show_move_links=show_move_links,
