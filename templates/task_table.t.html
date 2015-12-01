@@ -45,7 +45,7 @@
                 <a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.summary }}</a>
             </td>
             {% if show_deadline %}
-                <td>{{ child.deadline }}</td>
+                <td>{{ child.deadline if child.deadline != None }}</td>
             {% endif %}
             {% if show_is_done %}
                 <td>{{ child.is_done }}</td>
