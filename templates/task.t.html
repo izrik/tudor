@@ -53,7 +53,8 @@
     <h4>Child Tasks</h4>
 
     {{ render_task_table(descendants, task, cycle,
-        page_url=url_for('view_task', id=task.id)) }}
+        page_url=url_for('view_task', id=task.id),
+        child_task_view='view_task') }}
 </div>
 <div>
     <h4>Notes</h4>

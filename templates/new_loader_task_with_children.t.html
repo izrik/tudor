@@ -51,6 +51,7 @@
 
     {{ render_task_table(descendants, task, cycle,
         page_url=url_for('new_loader_task_with_children', id=task.id),
+        child_task_view='new_loader_task_with_children',
         show_is_done=show_is_done,
         show_is_deleted=show_is_deleted, show_deadline=show_deadline,
         show_order_num=show_order_num, show_parent_id=show_parent_id,

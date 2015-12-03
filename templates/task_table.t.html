@@ -1,4 +1,5 @@
     {% macro render_task_table(descendants, root, cycle, page_url,
+                child_task_view,
                 show_is_done=False,
                 show_is_deleted=False, show_deadline=True,
                 show_order_num=False, show_parent_id=False,
@@ -41,9 +42,9 @@
         </thead>
         {% for child in descendants if child != root %}
         <tr class="{{ odd_even() }}">
-            <td><a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.id }}</a></td>
+            <td><a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.id }}</a></td>
             <td style="padding-left: {{(child.depth-1)*1.5}}em" {{ child.get_css_class_attr()|safe }}>
-                <a href="{{ url_for('new_loader_task_with_children', id=child.id) }}">{{ child.summary }}</a>
+                <a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.summary }}</a>
             </td>
             {% if show_deadline %}
                 <td>{{ child.deadline if child.deadline != None }}</td>
