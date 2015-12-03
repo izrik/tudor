@@ -43,7 +43,8 @@
         {% for child in descendants if child != root %}
         <tr class="{{ odd_even() }}">
             <td><a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.id }}</a></td>
-            <td style="padding-left: {{(child.depth-1)*1.5}}em" {{ child.get_css_class_attr()|safe }}>
+            {% set depth = child.depth-1 if root != None else child.depth %}
+            <td style="padding-left: {{depth*1.5}}em" {{ child.get_css_class_attr()|safe }}>
                 <a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.summary }}</a>
             </td>
             {% if show_deadline %}
