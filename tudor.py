@@ -707,7 +707,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         hierarchy_sort = True
         if hierarchy_sort:
-            descendants = sort_by_hierarchy(descendants)
+            descendants = sort_by_hierarchy(descendants, root=task)
 
         return render_template('task.t.html', task=task,
                                descendants=descendants, cycle=itertools.cycle)
