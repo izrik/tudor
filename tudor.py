@@ -475,6 +475,28 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return render_template('new_loader.t.html', tasks=tasks,
                                cycle=itertools.cycle)
 
+    def sort_by_hierarchy(tasks, root=None):
+        tasks_by_parent = {}
+
+        for d in tasks:
+            if d.parent not in tasks_by_parent:
+                tasks_by_parent[d.parent] = []
+            tasks_by_parent[d.parent].append(d)
+
+        for parent in tasks_by_parent:
+            tasks_by_parent[parent] = sorted(tasks_by_parent[parent],
+                                             key=lambda t: t.order_num,
+                                             reverse=True)
+
+        def get_sorted_order(p):
+            yield p
+            if p in tasks_by_parent:
+                for c in tasks_by_parent[p]:
+                    for x in get_sorted_order(c):
+                        yield x
+
+        return list(get_sorted_order(root))
+
     @app.route('/new_loader/task_with_children/<int:id>')
     @login_required
     def new_loader_task_with_children(id):
@@ -488,26 +510,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         hierarchy_sort = True
         if hierarchy_sort:
-            tasks_by_parent = {}
-
-            for d in descendants:
-                if d.parent not in tasks_by_parent:
-                    tasks_by_parent[d.parent] = []
-                tasks_by_parent[d.parent].append(d)
-
-            for parent in tasks_by_parent:
-                tasks_by_parent[parent] = sorted(tasks_by_parent[parent],
-                                                 key=lambda t: t.order_num,
-                                                 reverse=True)
-
-            def get_sorted_order(p):
-                yield p
-                if p in tasks_by_parent:
-                    for c in tasks_by_parent[p]:
-                        for x in get_sorted_order(c):
-                            yield x
-
-            descendants = list(get_sorted_order(task))
+            descendants = sort_by_hierarchy(descendants, root=task)
 
         show_is_done = bool_from_str(request.args.get('show_is_done'))
         # show_is_done = request.args.get('show_is_done')
