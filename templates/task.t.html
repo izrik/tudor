@@ -1,4 +1,5 @@
 {% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ super() }} - {{ task.summary if task.summary != None }}{% endblock %}
 {% block content %}
 <div>
@@ -50,32 +51,9 @@
 </div>
 <div>
     <h4>Child Tasks</h4>
-    <table class="task_children">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Summary</th>
-        </tr>
-        </thead>
-        {% for child in task.get_children(descending=True) %}
-        <tr>
-            <td><a href="{{ url_for('view_task', id=child.id) }}">{{ child.id }}</a></td>
-            <td {{ child.get_css_class_attr()|safe }}>
-                <a href="{{ url_for('view_task', id=child.id) }}">{{ child.summary }}</a>
-            </td>
-        </tr>
-        {% endfor %}
-        <tfoot>
-            <td></td>
-            <td>
-                <form action="{{ url_for('new_task') }}" method="post">
-                    <input type="text" name="summary" />
-                    <input type="hidden" name="parent_id" value="{{ task.id }}" />
-                    <input type="hidden" name="next_url" value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-            </td>
-        </tfoot>
-    </table>
+
+    {{ render_task_table(descendants, task, cycle,
+        page_url=url_for('new_loader_task_with_children', id=task.id)) }}
 </div>
 <div>
     <h4>Notes</h4>

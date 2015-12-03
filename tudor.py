@@ -701,7 +701,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task = Task.query.filter_by(id=id).first()
         if task is None:
             return (('No task found for the id "%s"' % id), 404)
-        return render_template('task.t.html', task=task)
+
+        descendants = Task.load(roots=task.id, max_depth=None,
+                                include_done=True, include_deleted=True)
+
+        hierarchy_sort = True
+        if hierarchy_sort:
+            descendants = sort_by_hierarchy(descendants)
+
+        return render_template('task.t.html', task=task,
+                               descendants=descendants, cycle=itertools.cycle)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
