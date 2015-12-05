@@ -1,6 +1,14 @@
 {% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
 {% block content scoped %}
 <div>
+
+    {{ render_task_table(tasks_h, root=None, cycle=cycle,
+        page_url=url_for('index'),
+        child_task_view='view_task',
+        show_order_num=True,
+        show_move_links=True) }}
+
     <table class="tasks">
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
@@ -8,7 +16,6 @@
             <th>Id</th>
             <th>Summary</th>
             <th>Deadline</th>
-            <th>Done?</th>
             <th></th>
             <th></th>
             <th></th>
@@ -22,13 +29,6 @@
             </td>
             <td {{ task.get_css_class_attr()|safe }}>
                 {{ task.deadline if task.deadline != None }}
-            </td>
-            <td>
-                {% if task.is_done %}
-                    done
-                {% else %}
-                    not done
-                {% endif %}
             </td>
             <td>
                 {% if task.is_done %}

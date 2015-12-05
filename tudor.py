@@ -227,6 +227,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     roots = [roots]
                 query = query.filter(Task.id.in_(roots))
 
+            query = query.order_by(Task.id.asc())
+            query = query.order_by(Task.order_num.desc())
+
             tasks = query.all()
 
             depth = 0
@@ -597,13 +600,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                           not t.is_done]
         deadline_tasks = sorted(deadline_tasks, key=lambda task: task.deadline)
 
+        tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
+                            include_deleted=show_deleted)
+        tasks_h = sort_by_hierarchy(tasks_h)
+
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
                                              roots=roots, views=View.query,
                                              cycle=itertools.cycle,
                                              all_tasks=all_tasks,
                                              deadline_tasks=deadline_tasks,
-                                             user=current_user))
+                                             user=current_user,
+                                             tasks_h=tasks_h))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
