@@ -55,6 +55,7 @@
     {{ render_task_table(descendants, task, cycle,
         page_url=url_for('view_task', id=task.id),
         child_task_view='view_task',
+        show_move_links=True,
         show_new_task_form=True, new_task_parent=task) }}
 </div>
 <div>
