@@ -54,7 +54,8 @@
 
     {{ render_task_table(descendants, task, cycle,
         page_url=url_for('view_task', id=task.id),
-        child_task_view='view_task') }}
+        child_task_view='view_task',
+        show_new_task_form=True, new_task_parent=task) }}
 </div>
 <div>
     <h4>Notes</h4>
