@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response, Markup
+from flask import make_response, Markup, jsonify
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -1133,6 +1133,28 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/export', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def export_data():
+        if request.method == 'GET':
+            return render_template('export.t.html', results=None)
+        results = {}
+        if 'tasks' in request.form and request.form['tasks'] == 'all':
+            results['tasks'] = [t.to_dict() for t in Task.query.all()]
+        if 'notes' in request.form and request.form['notes'] == 'all':
+            results['notes'] = [t.to_dict() for t in Note.query.all()]
+        if 'attachments' in request.form and request.form['attachments'] == 'all':
+            results['attachments'] = [t.to_dict() for t in Attachment.query.all()]
+        if 'users' in request.form and request.form['users'] == 'all':
+            results['users'] = [t.to_dict() for t in User.query.all()]
+        if 'views' in request.form and request.form['views'] == 'all':
+            results['views'] = [t.to_dict() for t in View.query.all()]
+        if 'options' in request.form and request.form['options'] == 'all':
+            results['options'] = [t.to_dict() for t in Option.query.all()]
+
+        return jsonify(results)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):

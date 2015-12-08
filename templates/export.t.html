@@ -1,0 +1,69 @@
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Export{% endblock %}
+{% block content %}
+<div>
+    <h4>Export</h4>
+    <form action="{{ url_for('export_data') }}" method="post">
+        <table class="export">
+            <thead>
+            <tr>
+                <th>Category</th>
+                <th colspan="2">Export Options</th>
+            </tr>
+            </thead>
+            <tr class="odd">
+                <td>Tasks</td>
+                <td><input type="radio" name="tasks" value="all" checked/>Export all tasks</td>
+                <td><input type="radio" name="tasks" value="none"/>Do not export</td>
+                <!--<td><input type="radio" name="tasks" value="choose"/>Choose which tasks to export</td>-->
+            </tr>
+            <tr class="even">
+                <td>Notes</td>
+                <td><input type="radio" name="notes" value="all" checked/>Export all notes</td>
+                <td><input type="radio" name="notes" value="none"/>Do not export</td>
+                <!--<td><input type="radio" name="notes" value="choose"/>Choose which notes to export</td>-->
+                </td>
+            </tr>
+            <tr class="odd">
+                <td>Attachments</td>
+                <td><input type="radio" name="attachments" value="all" checked/>Export all attachments</td>
+                <td><input type="radio" name="attachments" value="none"/>Do not export</td>
+                <!--<td><input type="radio" name="attachments" value="choose"/>Choose which attachments to export</td>-->
+                </td>
+            </tr>
+            <tr class="even">
+                <td>Users</td>
+                <td><input type="radio" name="users" value="all"/>Export all users</td>
+                <td><input type="radio" name="users" value="none" checked/>Do not export</td>
+                <!--<td><input type="radio" name="users" value="choose"/>Choose which users to export</td>-->
+                </td>
+            </tr>
+            <tr class="odd">
+                <td>Views</td>
+                <td><input type="radio" name="views" value="all" checked/>Export all views</td>
+                <td><input type="radio" name="views" value="none"/>Do not export</td>
+                <!--<td><input type="radio" name="views" value="choose"/>Choose which views to export</td>-->
+                </td>
+            </tr>
+            <tr class="even">
+                <td>Options</td>
+                <td><input type="radio" name="options" value="all"/>Export all options</td>
+                <td><input type="radio" name="options" value="none" checked/>Do not export</td>
+                <!--<td><input type="radio" name="options" value="choose"/>Choose which options to export</td>-->
+                </td>
+            </tr>
+        </table>
+        <input type="submit" value="Export" />
+    </form>
+</div>
+{% if results != None %}
+<div>
+<pre>
+Results: {{ results }}
+</pre>
+</div>
+{% endif %}
+<div>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+{% endblock %}
