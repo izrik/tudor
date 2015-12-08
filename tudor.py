@@ -141,6 +141,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 deadline = dparse(deadline)
             self.deadline = deadline
 
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'summary': self.summary,
+                'description': self.description,
+                'is_done': self.is_done,
+                'is_deleted': self.is_deleted,
+                'order_num': self.order_num,
+                'deadline': str(self.deadline),
+                'parent_id': self.parent_id
+            }
+
         def get_siblings(self, include_deleted=True, descending=False,
                          ascending=False):
             if self.parent_id is not None:
@@ -311,6 +323,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 timestamp = datetime.datetime.utcnow()
             self.timestamp = timestamp
 
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'content': self.content,
+                'timestamp': str(self.timestamp),
+                'task_id': self.task_id
+            }
+
     class Attachment(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         timestamp = db.Column(db.DateTime, nullable=False)
@@ -336,6 +356,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.filename = filename
             self.description = description
 
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'timestamp': str(self.timestamp),
+                'path': self.path,
+                'filename': self.filename,
+                'description': self.description,
+                'task_id': self.task_id
+            }
+
     class User(db.Model):
         email = db.Column(db.String(100), primary_key=True, nullable=False)
         hashed_password = db.Column(db.String(100), nullable=False)
@@ -351,6 +381,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.email = email
             self.hashed_password = hashed_password
             self.is_admin = is_admin
+
+        def to_dict(self):
+            return {
+                'email': self.email,
+                'hashed_password': self.hashed_password,
+                'is_admin': self.is_admin
+            }
 
         def is_active(self):
             return True
@@ -373,6 +410,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.name = name
             self.roots = roots
 
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'name': self.name,
+                'roots': self.roots
+            }
+
     class Option(db.Model):
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)
@@ -380,6 +424,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def __init__(self, key, value):
             self.key = key
             self.value = value
+
+        def to_dict(self):
+            return {
+                'key': self.key,
+                'value': self.value
+            }
 
     class Options(object):
         @staticmethod
