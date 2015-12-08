@@ -97,17 +97,17 @@
             {% endif %}
         </tr>
         {% endfor %}
-        {% if root != None %}
-            <tfoot>
-                <td></td>
-                <td>
+        <tfoot>
+            <td></td>
+            <td>
+                {% if root != None %}
                     <form action="{{ url_for('new_task') }}" method="post">
                         <input type="text" name="summary" />
                         <input type="hidden" name="parent_id" value="{{ root.id }}" />
                         <input type="hidden" name="next_url" value="{{ page_url }}" />
                     </form>
-                </td>
-            </tfoot>
-        {% endif %}
+                {% endif %}
+            </td>
+        </tfoot>
     </table>
     {%- endmacro %}
