@@ -1066,6 +1066,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('view_options'))
 
+    @app.route('/reset_order_nums')
+    @login_required
+    def reset_order_nums():
+        tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
+                            include_deleted=True)
+        tasks_h = sort_by_hierarchy(tasks_h)
+
+        k = len(tasks_h) + 1
+        for task in tasks_h:
+            if task is None:
+                continue
+            task.order_num = 2 * k
+            db.session.add(task)
+            k -= 1
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
