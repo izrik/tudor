@@ -7,6 +7,7 @@
 
     {{ render_task_table(tasks, None, cycle,
         page_url=url_for('new_loader_deadlines'),
+        child_task_view='new_loader_task_with_children',
         show_deadline=True,
         show_parent_id=True, show_done_links=True, show_delete_links=True) }}
 </div>
