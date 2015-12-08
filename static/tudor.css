@@ -16,11 +16,11 @@ thead {
     background-color: #d0d0d0;
 }
 
-.tasks .odd, .task_children .odd {
+.tasks .odd, .task_children .odd, tr.odd {
     background-color: #f0f0f0;
 }
 
-.tasks .even, .task_children .even {
+.tasks .even, .task_children .even, tr.even {
     background-color: #e0e0e0;
 }
 
