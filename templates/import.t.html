@@ -1,0 +1,18 @@
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Import{% endblock %}
+{% block content %}
+<div>
+    <h4>Import</h4>
+    <form action="{{ url_for('import_data') }}" method="post" enctype="multipart/form-data">
+        <table>
+            <thead><tr><th>Source</th></tr></thead>
+            <tr class="odd"><td>Specify a file: <br/><input type="file" name="file" /></td></tr>
+            <tr class="even"><td>Or enter the raw data: <br/><textarea name="raw"></textarea></td></tr>
+            <tr class="odd"><td><input type="submit" value="Import" /></td></tr>
+        </table>
+    </form>
+</div>
+<div>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+{% endblock %}

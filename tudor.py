@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response, Markup, jsonify
+from flask import make_response, Markup, jsonify, json
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -1155,6 +1155,67 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             results['options'] = [t.to_dict() for t in Option.query.all()]
 
         return jsonify(results)
+
+    @app.route('/import', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def import_data():
+        if request.method == 'GET':
+            return render_template('import.t.html')
+
+        f = request.files['file']
+        if f is None or not f:
+            r = request.form['raw']
+            src = json.loads(r)
+        else:
+            src = json.load(f)
+
+        # check
+        errors = []
+
+        if 'tasks' in src:
+            k = 0
+            ids = set()
+            for task in src['tasks']:
+                k += 1
+                if 'id' not in task:
+                    errors.append('Task #{} has no id'.format(k))
+                    task_id = 'missing'
+                else:
+                    task_id = task['id']
+                    if task_id in ids:
+                        errors.append(
+                            'Task #{} has duplicate id {}'.format(k, task_id))
+                    else:
+                        ids.add(task_id)
+                if 'summary' not in task:
+                    errors.append(
+                        'Task #{} (id {}) has no summary'.format(k, task_id))
+                del task_id
+            existing_tasks = Task.query.filter(Task.id.in_(ids)).all()
+            if len(existing_tasks) > 0:
+                existing_ids = map(lambda t: t.id, existing_tasks)
+                errors.append('Tasks with the following ids already exist in '
+                              'the database: '.format(existing_ids))
+
+        if 'notes' in src:
+            k = 0
+            ids = set()
+            for note in src['notes']:
+                k += 1
+                if 'id' not in note:
+                    errors.append('Note #{} has no id'.format(k))
+                    note_id = 'missing'
+                else:
+                    note_id = note['id']
+                    if note_id in ids:
+                        errors.append(
+                            'Task #{} has duplicate id {}'.format(k, note_id))
+                    else:
+                        ids.add(note_id)
+
+
+        return render_template('import.t.html')
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
