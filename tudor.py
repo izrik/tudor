@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response, Markup, jsonify
+from flask import make_response, Markup, jsonify, json
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -144,7 +144,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.description = description
             self.is_done = is_done
             self.is_deleted = is_deleted
-            if isinstance(deadline, str):
+            if isinstance(deadline, basestring):
                 deadline = dparse(deadline)
             self.deadline = deadline
 
@@ -328,6 +328,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.content = content
             if timestamp is None:
                 timestamp = datetime.datetime.utcnow()
+            if isinstance(timestamp, basestring):
+                timestamp = dparse(timestamp)
             self.timestamp = timestamp
 
         def to_dict(self):
@@ -356,6 +358,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 description = ''
             if timestamp is None:
                 timestamp = datetime.datetime.utcnow()
+            if isinstance(timestamp, basestring):
+                timestamp = dparse(timestamp)
             if filename is None:
                 filename = os.path.basename(path)
             self.timestamp = timestamp
@@ -1168,6 +1172,146 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             results['options'] = [t.to_dict() for t in Option.query.all()]
 
         return jsonify(results)
+
+    @app.route('/import', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def import_data():
+        if request.method == 'GET':
+            return render_template('import.t.html')
+
+        f = request.files['file']
+        if f is None or not f:
+            r = request.form['raw']
+            src = json.loads(r)
+        else:
+            src = json.load(f)
+
+        db_objects = []
+
+        try:
+            if 'tasks' in src:
+                ids = set()
+                for task in src['tasks']:
+                    ids.add(task['id'])
+                existing_tasks = Task.query.filter(Task.id.in_(ids)).count()
+                if existing_tasks > 0:
+                    return ('Some specified task id\'s already exist in the '
+                            'database', 400)
+                for task in src['tasks']:
+                    id = task['id']
+                    summary = task['summary']
+                    description = task.get('description', '')
+                    is_done = task.get('is_done', False)
+                    is_deleted = task.get('is_deleted', False)
+                    deadline = task.get('deadline', None)
+                    parent_id = task.get('parent_id', None)
+                    order_num = task.get('order_num', None)
+                    t = Task(summary=summary, description=description,
+                             is_done=is_done, is_deleted=is_deleted,
+                             deadline=deadline)
+                    t.id = id
+                    t.parent_id = parent_id
+                    t.order_num = order_num
+                    db_objects.append(t)
+
+            if 'notes' in src:
+                ids = set()
+                for note in src['notes']:
+                    ids.add(note['id'])
+                existing_notes = Note.query.filter(Note.id.in_(ids)).count()
+                if existing_notes > 0:
+                    return ('Some specified note id\'s already exist in the '
+                            'database', 400)
+                for note in src['notes']:
+                    id = note['id']
+                    content = note['content']
+                    timestamp = note['timestamp']
+                    task_id = note['task_id']
+                    n = Note(content=content, timestamp=timestamp)
+                    n.id = id
+                    n.task_id = task_id
+                    db_objects.append(n)
+
+            if 'attachments' in src:
+                attachments = src['attachments']
+                ids = set()
+                for attachment in attachments:
+                    ids.add(attachment['id'])
+                existing_attachments = Attachment.query.filter(Attachment.id.in_(ids)).count()
+                if existing_attachments > 0:
+                    return ('Some specified attachment id\'s already exist in the '
+                            'database', 400)
+                for attachment in attachments:
+                    id = attachment['id']
+                    timestamp = attachment['timestamp']
+                    path = attachment['path']
+                    filename = attachment['filename']
+                    description = attachment['description']
+                    task_id = attachment['task_id']
+                    a = Attachment(path=path, description=description,
+                                   timestamp=timestamp, filename=filename)
+                    a.id = id
+                    a.task_id = task_id
+                    db_objects.append(a)
+
+            if 'users' in src:
+                users = src['users']
+                emails = set()
+                for user in users:
+                    emails.add(user['email'])
+                existing_users = User.query.filter(User.id.in_(emails)).count()
+                if existing_users > 0:
+                    return ('Some specified user email addresses already exist in '
+                            'the database', 400)
+                for user in users:
+                    email = attachment['email']
+                    hashed_password = attachment['hashed_password']
+                    is_admin = attachment['is_admin']
+                    u = User(email=email, hashed_password=hashed_password,
+                             is_admin=is_admin)
+                    db_objects.append(u)
+
+            if 'views' in src:
+                ids = set()
+                for view in src['views']:
+                    ids.add(view['id'])
+                existing_views = View.query.filter(View.id.in_(ids)).count()
+                if existing_views > 0:
+                    return ('Some specified view id\'s already exist in the '
+                            'database', 400)
+                for view in src['views']:
+                    id = view['id']
+                    name = view['name']
+                    roots = view['roots']
+                    v = View(name=name, roots=roots)
+                    v.id = id
+                    db_objects.append(v)
+
+            if 'options' in src:
+                keys = set()
+                for option in src['options']:
+                    keys.add(option['key'])
+                existing_options = Option.query.filter(Option.id.in_(keys)).count()
+                if existing_options > 0:
+                    return ('Some specified option keys already exist in the '
+                            'database', 400)
+                for option in src['options']:
+                    key = option['key']
+                    value = option['value']
+                    t = Option(key, value)
+                    db_objects.append(t)
+        except:
+            return ('The data was incorrect', 400)
+
+        try:
+            for dbo in db_objects:
+                db.session.add(dbo)
+            db.session.commit()
+        except Exception as e:
+            return ('There was an error: {}'.format(e), 500)
+
+        return redirect(url_for('index'))
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
