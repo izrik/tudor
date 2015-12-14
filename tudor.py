@@ -46,6 +46,13 @@ def int_from_str(s):
     except:
         return None
 
+
+def str_from_datetime(dt):
+    if dt is None:
+        return None
+    return str(dt)
+
+
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
 TUDOR_PORT = environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT)
 try:
@@ -149,7 +156,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'is_done': self.is_done,
                 'is_deleted': self.is_deleted,
                 'order_num': self.order_num,
-                'deadline': str(self.deadline),
+                'deadline': str_from_datetime(self.deadline),
                 'parent_id': self.parent_id
             }
 
@@ -327,7 +334,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return {
                 'id': self.id,
                 'content': self.content,
-                'timestamp': str(self.timestamp),
+                'timestamp': str_from_datetime(self.timestamp),
                 'task_id': self.task_id
             }
 
@@ -359,7 +366,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def to_dict(self):
             return {
                 'id': self.id,
-                'timestamp': str(self.timestamp),
+                'timestamp': str_from_datetime(self.timestamp),
                 'path': self.path,
                 'filename': self.filename,
                 'description': self.description,
