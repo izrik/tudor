@@ -672,6 +672,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         summary = request.form['summary']
         task = Task(summary)
 
+        query = Task.query.order_by(Task.order_num.asc()).limit(1)
+        lowest_order_num_tasks = query.all()
+        task.order_num = 0
+        if len(lowest_order_num_tasks) > 0:
+            task.order_num = lowest_order_num_tasks[0].order_num - 2
+
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
             if parent_id is None or parent_id == '':
