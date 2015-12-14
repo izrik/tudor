@@ -137,7 +137,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.description = description
             self.is_done = is_done
             self.is_deleted = is_deleted
-            if isinstance(deadline, str):
+            if isinstance(deadline, basestring):
                 deadline = dparse(deadline)
             self.deadline = deadline
 
@@ -321,6 +321,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.content = content
             if timestamp is None:
                 timestamp = datetime.datetime.utcnow()
+            if isinstance(timestamp, basestring):
+                timestamp = dparse(timestamp)
             self.timestamp = timestamp
 
         def to_dict(self):
@@ -349,6 +351,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 description = ''
             if timestamp is None:
                 timestamp = datetime.datetime.utcnow()
+            if isinstance(timestamp, basestring):
+                timestamp = dparse(timestamp)
             if filename is None:
                 filename = os.path.basename(path)
             self.timestamp = timestamp
