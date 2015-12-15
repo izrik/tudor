@@ -20,6 +20,11 @@ import markdown
 import dateutil.parser
 from dateutil.parser import parse as dparse
 from functools import wraps
+import git
+import os
+
+__revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
+                                          abbrev=40)
 
 
 DEFAULT_TUDOR_DEBUG = False
@@ -92,6 +97,7 @@ if __name__ == '__main__':
     TUDOR_SECRET_KEY = args.secret_key
     TUDOR_ALLOWED_EXTENSIONS = args.allowed_extensions
 
+print('__revision__: {}'.format(__revision__))
 print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
 print('TUDOR_PORT: {}'.format(TUDOR_PORT))
 print('TUDOR_DB_URI: {}'.format(TUDOR_DB_URI))
