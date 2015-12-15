@@ -18,7 +18,8 @@
             {% if current_user.is_authenticated() %}
               <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
             {% endif %}
-            <small>Tudor is &copy; Copyright 2015 by <a href="http://metaindu.com/">metaindu</a> and <a href="http://izrik.com">izrik</a>.</small>
+            <small>Tudor is &copy; Copyright 2015 by <a href="http://metaindu.com/">metaindu</a> and <a href="http://izrik.com">izrik</a>.</small><br/>
+            <small>Revision: <code>{{ opts.get_revision() }}</code></small>
         {% endblock %}
     </div>
 </body>

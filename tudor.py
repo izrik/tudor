@@ -460,6 +460,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_title():
             return Options.get('title', 'Tudor')
 
+        @staticmethod
+        def get_revision():
+            return __revision__
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
