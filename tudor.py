@@ -329,6 +329,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             return tasks
 
+        def get_tag_values(self):
+            for tag in self.tags:
+                yield tag.value
+
     class Tag(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
@@ -856,7 +860,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task = Task.query.filter_by(id=id).first()
 
         def render_get_response():
-            return render_template("edit_task.t.html", task=task)
+            tag_list = ','.join(task.get_tag_values())
+            return render_template("edit_task.t.html", task=task,
+                                   tag_list=tag_list)
 
         if request.method == 'GET':
             return render_get_response()
@@ -891,7 +897,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             task.parent_id = None
 
-        save_task(task)
+        tags = request.form['tags']
+        if tags is not None:
+            values = tags.split(',')
+            for tag in task.tags:
+                db.session.delete(tag)
+            for value in values:
+                if value is None or value == '':
+                    continue
+                tag = Tag(task.id, value)
+                db.session.add(tag)
+
+        db.session.add(task)
+        db.session.commit()
 
         return redirect(url_for('view_task', id=task.id))
 

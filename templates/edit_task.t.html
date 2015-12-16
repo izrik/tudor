@@ -12,6 +12,7 @@
             <tr><td>Deleted?</td><td><input type="checkbox" name="is_deleted" {% if task.is_deleted %} checked {% endif %} /></td></tr>
             <tr><td>Order #</td><td><input type="text" name="order_num" value="{{ task.order_num if task.order_num != None }}" /></td></tr>
             <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ task.parent_id if task.parent_id != None }}" /></td></tr>
+            <tr><td>Tags</td><td><input type="text" name="tags" value="{{ tag_list }}" /></td></tr>
         </table>
         <input type="submit" value="Save"/>
     </form>
