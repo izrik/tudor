@@ -1076,9 +1076,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = Tag(id, value)
-        db.session.add(tag)
-        db.session.commit()
+        tag = Tag.query.get((id, value))
+        if tag is None:
+            tag = Tag(id, value)
+            db.session.add(tag)
+            db.session.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
