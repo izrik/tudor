@@ -1083,6 +1083,32 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
 
+    @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
+               defaults={'value': None})
+    @app.route('/task/<int:id>/delete_tag/', methods=['GET', 'POST'],
+               defaults={'value': None})
+    @app.route('/task/<int:id>/delete_tag/<value>', methods=['GET', 'POST'])
+    @login_required
+    def delete_tag_from_task(id, value):
+
+        if value is None:
+            value = get_form_or_arg('value')
+        if value is None or value == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=id)))
+
+        task = Task.query.get(id)
+        if task is None:
+            return '', 404
+
+        tag = Tag.query.get((id, value))
+        if tag is not None:
+            db.session.delete(tag)
+            db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=id)))
+
     @login_manager.user_loader
     def load_user(userid):
         return User.query.get(userid)

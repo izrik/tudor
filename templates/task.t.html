@@ -45,7 +45,7 @@
         </tr>
         <tr>
             <td>Tags</td>
-            <td>{% for tag in task.tags %}{{ tag.value }} {% endfor %}
+            <td>{% for tag in task.tags %}{{ tag.value }}<a href="{{ url_for('delete_tag_from_task', id=task.id, value=tag.value) }}"><img src="{{ url_for('static', filename='delete.png') }}" /></a> {% endfor %}
                 <form action="{{ url_for('add_tag_to_task', id=task.id) }}" method="post">
                     <input type="text" name="value" />
                     <input type="hidden" name="next_url"
