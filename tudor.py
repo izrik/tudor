@@ -1040,6 +1040,31 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('index'))
 
+    def get_form_or_arg(name):
+        if name in request.form:
+            return request.form[name]
+        return request.args.get(name)
+
+    @app.route('/task/<int:id>/add_tag', methods=['GET','POST'])
+    @login_required
+    def add_tag_to_task(id):
+
+        value = get_form_or_arg('value')
+        if value is None or value == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=id)))
+
+        task = Task.query.get(id)
+        if task is None:
+            return '', 404
+
+        tag = Tag(id, value)
+        db.session.add(tag)
+        db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=id)))
+
     @login_manager.user_loader
     def load_user(userid):
         return User.query.get(userid)

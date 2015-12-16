@@ -43,7 +43,16 @@
                 {% endif %}
             </td>
         </tr>
-        <tr><td>Tags</td><td>{% for tag in task.tags %}{{ tag.value }} {% endfor %}</td></tr>
+        <tr>
+            <td>Tags</td>
+            <td>{% for tag in task.tags %}{{ tag.value }} {% endfor %}
+                <form action="{{ url_for('add_tag_to_task', id=task.id) }}" method="post">
+                    <input type="text" name="value" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+            </td>
+        </tr>
     </table>
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>
