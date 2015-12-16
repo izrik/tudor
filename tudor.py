@@ -299,7 +299,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         @staticmethod
         def load_no_hierarchy(include_done=False, include_deleted=False,
-                              exclude_undeadlined=False):
+                              exclude_undeadlined=False, tags=None):
 
             query = Task.query
 
@@ -311,6 +311,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             if exclude_undeadlined:
                 query = query.filter(Task.deadline.isnot(None))
+
+            if tags is not None:
+                if not hasattr(tags, '__iter__'):
+                    tags = [tags]
+                if len(tags) < 1:
+                    tags = None
+
+            if tags is not None:
+                query = query.join(Tag).filter(Tag.value.in_(tags))
 
             tasks = query.all()
 
