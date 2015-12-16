@@ -320,6 +320,25 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             return tasks
 
+    class Tag(db.Model):
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                            primary_key=True)
+        value = db.Column(db.String(100), primary_key=True)
+
+        task = db.relationship('Task',
+                               backref=db.backref('tags', lazy='dynamic',
+                                                  order_by=value))
+
+        def __init__(self, task_id, value):
+            self.task_id = task_id
+            self.value = value
+
+        def to_dict(self):
+            return {
+                'task_id': self.task_id,
+                'value': self.value
+            }
+
     class Note(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.String(4000))
