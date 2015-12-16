@@ -699,9 +699,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                           not t.is_done]
         deadline_tasks = sorted(deadline_tasks, key=lambda task: task.deadline)
 
-        tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
-                            include_deleted=show_deleted)
-        tasks_h = sort_by_hierarchy(tasks_h)
+        tags = request.args.get('tags') or request.cookies.get('tags')
+
+        if tags is not None and len(tags) > 0:
+            tags = tags.split(',')
+            tasks_h = Task.load_no_hierarchy(include_done=True,
+                                             include_deleted=show_deleted,
+                                             tags=tags)
+        else:
+            tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
+                                include_deleted=show_deleted)
+            tasks_h = sort_by_hierarchy(tasks_h)
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
