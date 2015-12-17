@@ -1277,6 +1277,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         results = {}
         if 'tasks' in request.form and request.form['tasks'] == 'all':
             results['tasks'] = [t.to_dict() for t in Task.query.all()]
+        if 'tags' in request.form and request.form['tags'] == 'all':
+            results['tags'] = [t.to_dict() for t in Tag.query.all()]
         if 'notes' in request.form and request.form['notes'] == 'all':
             results['notes'] = [t.to_dict() for t in Note.query.all()]
         if 'attachments' in request.form and request.form['attachments'] == 'all':
