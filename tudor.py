@@ -1063,7 +1063,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return request.form[name]
         return request.args.get(name)
 
-    @app.route('/task/<int:id>/add_tag', methods=['GET','POST'])
+    @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required
     def add_tag_to_task(id):
 
@@ -1281,8 +1281,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             results['tags'] = [t.to_dict() for t in Tag.query.all()]
         if 'notes' in request.form and request.form['notes'] == 'all':
             results['notes'] = [t.to_dict() for t in Note.query.all()]
-        if 'attachments' in request.form and request.form['attachments'] == 'all':
-            results['attachments'] = [t.to_dict() for t in Attachment.query.all()]
+        if ('attachments' in request.form and
+                request.form['attachments'] == 'all'):
+            results['attachments'] = [t.to_dict() for t in
+                                      Attachment.query.all()]
         if 'users' in request.form and request.form['users'] == 'all':
             results['users'] = [t.to_dict() for t in User.query.all()]
         if 'views' in request.form and request.form['views'] == 'all':
@@ -1364,10 +1366,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 ids = set()
                 for attachment in attachments:
                     ids.add(attachment['id'])
-                existing_attachments = Attachment.query.filter(Attachment.id.in_(ids)).count()
+                existing_attachments = Attachment.query.filter(
+                    Attachment.id.in_(ids)).count()
                 if existing_attachments > 0:
-                    return ('Some specified attachment id\'s already exist in the '
-                            'database', 400)
+                    return ('Some specified attachment id\'s already exist in '
+                            'the database', 400)
                 for attachment in attachments:
                     id = attachment['id']
                     timestamp = attachment['timestamp']
@@ -1388,8 +1391,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     emails.add(user['email'])
                 existing_users = User.query.filter(User.id.in_(emails)).count()
                 if existing_users > 0:
-                    return ('Some specified user email addresses already exist in '
-                            'the database', 400)
+                    return ('Some specified user email addresses already '
+                            'exist in the database', 400)
                 for user in users:
                     email = attachment['email']
                     hashed_password = attachment['hashed_password']
@@ -1418,7 +1421,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 keys = set()
                 for option in src['options']:
                     keys.add(option['key'])
-                existing_options = Option.query.filter(Option.id.in_(keys)).count()
+                existing_options = Option.query.filter(
+                    Option.id.in_(keys)).count()
                 if existing_options > 0:
                     return ('Some specified option keys already exist in the '
                             'database', 400)
