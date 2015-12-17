@@ -1334,6 +1334,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     t.order_num = order_num
                     db_objects.append(t)
 
+            if 'tags' in src:
+                for tag in src['tags']:
+                    task_id = tag['task_id']
+                    value = tag['value']
+                    t = Tag(task_id=task_id, value=value)
+                    db_objects.append(t)
+
             if 'notes' in src:
                 ids = set()
                 for note in src['notes']:
