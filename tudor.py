@@ -496,6 +496,49 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_revision():
             return __revision__
 
+    class TaskTable(db.Model):
+
+        id = db.Column(db.Integer, primary_key=True)
+
+        heading = db.Column(db.String(100))
+        show_is_done = db.Column(db.Boolean)
+        show_is_deleted = db.Column(db.Boolean)
+        show_deadline = db.Column(db.Boolean)
+        show_order_num = db.Column(db.Boolean)
+        show_parent_id = db.Column(db.Boolean)
+        show_depth = db.Column(db.Boolean)
+        show_move_links = db.Column(db.Boolean)
+        show_done_links = db.Column(db.Boolean)
+        show_delete_links = db.Column(db.Boolean)
+        show_new_task_form = db.Column(db.Boolean)
+        indent = db.Column(db.Boolean)
+
+        def __init__(self,
+                     heading=None,
+                     show_is_done=False,
+                     show_is_deleted=False,
+                     show_deadline=True,
+                     show_order_num=False,
+                     show_parent_id=False,
+                     show_depth=False,
+                     show_move_links=False,
+                     show_done_links=True,
+                     show_delete_links=True,
+                     show_new_task_form=False,
+                     indent=True):
+            self.heading = heading
+            self.show_is_done = show_is_done
+            self.show_is_deleted = show_is_deleted
+            self.show_deadline = show_deadline
+            self.show_order_num = show_order_num
+            self.show_parent_id = show_parent_id
+            self.show_depth = show_depth
+            self.show_move_links = show_move_links
+            self.show_done_links = show_done_links
+            self.show_delete_links = show_delete_links
+            self.show_new_task_form = show_new_task_form
+            self.indent = indent
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
@@ -713,6 +756,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                 include_deleted=show_deleted)
             tasks_h = sort_by_hierarchy(tasks_h)
 
+        control = TaskTable.query.first()
+        if control is None:
+            control = TaskTable()
+            db.session.add(control)
+            db.session.commit()
+
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
                                              roots=roots, views=View.query,
@@ -720,7 +769,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                              all_tasks=all_tasks,
                                              deadline_tasks=deadline_tasks,
                                              user=current_user,
-                                             tasks_h=tasks_h))
+                                             tasks_h=tasks_h,
+                                             control=control))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
