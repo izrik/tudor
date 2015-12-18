@@ -78,8 +78,8 @@
     {% endif %}
 
     {{ render_task_table(
-        descendants=tasks_h,
-        root=None,
+        descendants=control.get_tasks(),
+        root=control.root,
         cycle=cycle,
         page_url=url_for('index'),
         child_task_view='view_task',

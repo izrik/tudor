@@ -501,6 +501,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         id = db.Column(db.Integer, primary_key=True)
 
         heading = db.Column(db.String(100))
+
+        # data source options
+        is_hierarchical = db.Column(db.Boolean)
+        root = db.Column(db.Integer, db.ForeignKey('task.id'))
+        max_depth = db.Column(db.Integer)
+        include_done = db.Column(db.Boolean)
+        include_deleted = db.Column(db.Boolean)
+        exclude_undeadlined = db.Column(db.Boolean)
+        tags = db.Column(db.String(100))
+
+        # presentation options
         show_is_done = db.Column(db.Boolean)
         show_is_deleted = db.Column(db.Boolean)
         show_deadline = db.Column(db.Boolean)
@@ -515,6 +526,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         def __init__(self,
                      heading=None,
+
+                     is_hierarchical=True,
+                     root=None,
+                     max_depth=None,
+                     include_done=False,
+                     include_deleted=False,
+                     exclude_undeadlined=False,
+                     tags=None,
+
                      show_is_done=False,
                      show_is_deleted=False,
                      show_deadline=True,
@@ -526,7 +546,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                      show_delete_links=True,
                      show_new_task_form=False,
                      indent=True):
+
             self.heading = heading
+
+            self.is_hierarchical = is_hierarchical
+            self.root = root
+            self.max_depth = max_depth
+            self.include_done = include_done
+            self.include_deleted = include_deleted
+            self.exclude_undeadlined = exclude_undeadlined
+            self.tags = tags
+
             self.show_is_done = show_is_done
             self.show_is_deleted = show_is_deleted
             self.show_deadline = show_deadline
@@ -538,6 +568,29 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.show_delete_links = show_delete_links
             self.show_new_task_form = show_new_task_form
             self.indent = indent
+
+        def get_tasks(self):
+            if self.is_hierarchical:
+                if self.root is None:
+                    roots = None
+                else:
+                    roots = [self.root]
+                tasks = Task.load(roots=roots,
+                                  max_depth=self.max_depth,
+                                  include_done=self.include_done,
+                                  include_deleted=self.include_deleted,
+                                  exclude_undeadlined=self.exclude_undeadlined)
+                tasks = sort_by_hierarchy(tasks, root=self.root)
+                return tasks
+            else:
+                tags = self.tags
+                if tags is not None:
+                    tags = tags.split(',')
+                return Task.load_no_hierarchy(
+                        include_done=self.include_done,
+                        include_deleted=self.include_deleted,
+                        exclude_undeadlined=self.exclude_undeadlined,
+                        tags=tags)
 
     app.Task = Task
     app.Note = Note
