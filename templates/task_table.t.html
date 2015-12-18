@@ -5,7 +5,8 @@
                 show_order_num=False, show_parent_id=False,
                 show_depth=False, show_move_links=False,
                 show_done_links=True, show_delete_links=True,
-                show_new_task_form=False, new_task_parent=None) -%}
+                show_new_task_form=False, new_task_parent=None,
+                indent=True) -%}
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
@@ -44,7 +45,12 @@
         {% for child in descendants if child != root %}
         <tr class="{{ odd_even() }}">
             <td><a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.id }}</a></td>
-            {% set depth = child.depth-1 if root != None else child.depth %}
+            {% set depth =
+                    (child.depth-1
+                        if root != None
+                        else child.depth)
+                            if indent
+                            else 0 %}
             <td style="padding-left: {{depth*1.5}}em" {{ child.get_css_class_attr()|safe }}>
                 <a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.summary }}</a>
             </td>

@@ -699,9 +699,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         tasks = tasks.all()
 
         all_tasks = get_tasks_and_all_descendants_from_tasks(tasks)
-        deadline_tasks = [t for t in all_tasks if t.deadline is not None and
-                          not t.is_done]
-        deadline_tasks = sorted(deadline_tasks, key=lambda task: task.deadline)
+        deadline_tasks = Task.load_no_hierarchy(exclude_undeadlined=True)
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
