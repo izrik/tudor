@@ -43,12 +43,7 @@
 </div>
 {% if all_tasks != None %}
 <div>
-    {% if control.heading != None and control.heading != '' %}
-        <h3>{{ control.heading }}</h3>
-    {% endif %}
-
     {{ control.render(cycle, roots) }}
-
 </div>
 {% endif %}
 {% endblock %}

@@ -1,5 +1,6 @@
     {% macro render_task_table(descendants, root, cycle, page_url,
                 child_task_view,
+                heading,
                 show_is_done=False,
                 show_is_deleted=False, show_deadline=True,
                 show_order_num=False, show_parent_id=False,
@@ -7,6 +8,9 @@
                 show_done_links=True, show_delete_links=True,
                 show_new_task_form=False, new_task_parent=None,
                 indent=True) -%}
+    {% if heading != None and heading != '' %}
+    <h3>{{ heading }}</h3>
+    {% endif %}
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>

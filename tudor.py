@@ -619,6 +619,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     cycle=cycle,
                     page_url=url_for('index'),
                     child_task_view='view_task',
+                    heading=self.heading,
 
                     show_is_done=self.show_is_done,
                     show_is_deleted=self.show_is_deleted,
