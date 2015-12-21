@@ -1,4 +1,7 @@
-    {% macro render_view_table(views, cycle, roots) -%}
+    {% macro render_view_table(heading, views, cycle, roots) -%}
+    {% if heading != None and heading != '' %}
+    <h3>{{ heading }}</h3>
+    {% endif %}
     <table>
         <tr>
             <th>Id</th>

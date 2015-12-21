@@ -651,7 +651,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def render(self, cycle, roots, **kwargs):
             macro = get_template_attribute(self.template_name,
                                            self.macro_name)
-            return macro(self.get_views(), cycle, roots)
+            return macro(self.heading, self.get_views(), cycle, roots)
 
     app.Task = Task
     app.Note = Note
