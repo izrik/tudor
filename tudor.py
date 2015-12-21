@@ -610,7 +610,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                         exclude_undeadlined=self.exclude_undeadlined,
                         tags=tags)
 
-        def render(self, cycle, roots, **kwargs):
+        def render(self, cycle, roots, user, show_deleted, **kwargs):
             macro = get_template_attribute(self.template_name,
                                            self.macro_name)
             return macro(
@@ -649,10 +649,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_views(self):
             return View.query
 
-        def render(self, cycle, roots, **kwargs):
+        def render(self, cycle, roots, user, show_deleted, **kwargs):
             macro = get_template_attribute(self.template_name,
                                            self.macro_name)
             return macro(self.heading, self.get_views(), cycle, roots)
+
+    class FrontLinks(Control):
+        id = db.Column(db.Integer, db.ForeignKey('control.id'),
+                       primary_key=True)
+
+        template_name = 'front_links.t.html'
+        macro_name = 'render_front_links'
+
+        __mapper_args__ = {'polymorphic_identity': 'front_links'}
+
+        def __init__(self, heading=None):
+            super(FrontLinks, self).__init__(heading)
+
+        def render(self, cycle, roots, user, show_deleted, **kwargs):
+            macro = get_template_attribute(self.template_name,
+                                           self.macro_name)
+            return macro(self.heading, cycle, roots, user, show_deleted)
 
     app.Task = Task
     app.Note = Note
@@ -886,7 +903,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(control2)
             db.session.commit()
 
-        controls = [control2, control]
+        control3 = FrontLinks.query.first()
+        if control3 is None:
+            control3 = FrontLinks()
+            db.session.add(control3)
+            db.session.commit()
+
+        controls = [control3, control2, control]
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
