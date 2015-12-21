@@ -40,8 +40,7 @@
 </div>
 <div>
     <h3>{{ control2.heading }}</h3>
-    {{ control2.macro_name |
-        call_macro(control2.get_views(), cycle, roots) }}
+    {{ control2.render(cycle, roots) }}
 </div>
 {% if all_tasks != None %}
 <div>
@@ -76,6 +75,8 @@
         show_new_task_form=control.show_new_task_form,
         indent=control.indent
     ) }}
+
+    {{ control.render(cycle, roots) }}
 
 </div>
 {% endif %}

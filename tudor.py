@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 
 from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response, Markup, jsonify, json
+from flask import make_response, Markup, jsonify, json, get_template_attribute
 import flask
 import argparse
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -534,6 +534,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         show_new_task_form = db.Column(db.Boolean)
         indent = db.Column(db.Boolean)
 
+        template_name = 'task_table.t.html'
         macro_name = 'render_task_table'
 
         __mapper_args__ = {'polymorphic_identity': 'task_table'}
@@ -606,6 +607,28 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                         exclude_undeadlined=self.exclude_undeadlined,
                         tags=tags)
 
+        def render(self, cycle, roots, **kwargs):
+            macro = get_template_attribute(self.template_name,
+                                           self.macro_name)
+            return macro(
+                    descendants=self.get_tasks(),
+                    root=self.root,
+                    cycle=cycle,
+                    page_url=url_for('index'),
+                    child_task_view='view_task',
+
+                    show_is_done=self.show_is_done,
+                    show_is_deleted=self.show_is_deleted,
+                    show_deadline=self.show_deadline,
+                    show_order_num=self.show_order_num,
+                    show_parent_id=self.show_parent_id,
+                    show_depth=self.show_depth,
+                    show_move_links=self.show_move_links,
+                    show_done_links=self.show_done_links,
+                    show_delete_links=self.show_delete_links,
+                    show_new_task_form=self.show_new_task_form,
+                    indent=self.indent)
+
     class ViewTable(Control):
 
         id = db.Column(db.Integer, db.ForeignKey('control.id'),
@@ -613,6 +636,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         heading = db.Column(db.String(100))
 
+        template_name = 'view_table.t.html'
         macro_name = 'render_view_table'
 
         __mapper_args__ = {'polymorphic_identity': 'view_table'}
@@ -622,6 +646,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         def get_views(self):
             return View.query
+
+        def render(self, cycle, roots, **kwargs):
+            macro = get_template_attribute(self.template_name,
+                                           self.macro_name)
+            return macro(self.get_views(), cycle, roots)
 
     app.Task = Task
     app.Note = Note
