@@ -606,6 +606,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                         exclude_undeadlined=self.exclude_undeadlined,
                         tags=tags)
 
+    class ViewTable(Control):
+
+        id = db.Column(db.Integer, db.ForeignKey('control.id'),
+                       primary_key=True)
+
+        heading = db.Column(db.String(100))
+
+        macro_name = 'render_view_table'
+
+        __mapper_args__ = {'polymorphic_identity': 'view_table'}
+
+        def __init__(self):
+            pass
+
+        def get_views(self):
+            return View.query
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
