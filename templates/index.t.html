@@ -39,8 +39,9 @@
     {% endif %}
 </div>
 <div>
-    <h3>Views</h3>
-    {{ 'render_view_table' | call_macro(views, cycle, roots) }}
+    <h3>{{ control2.heading }}</h3>
+    {{ control2.macro_name |
+        call_macro(control2.get_views(), cycle, roots) }}
 </div>
 {% if all_tasks != None %}
 <div>

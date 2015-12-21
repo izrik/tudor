@@ -846,6 +846,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(control)
             db.session.commit()
 
+        control2 = ViewTable.query.first()
+        if control2 is None:
+            control2 = ViewTable()
+            control2.heading = 'Views'
+            db.session.add(control2)
+            db.session.commit()
+
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
                                              roots=roots, views=View.query,
@@ -854,7 +861,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                              deadline_tasks=deadline_tasks,
                                              user=current_user,
                                              tasks_h=tasks_h,
-                                             control=control))
+                                             control=control,
+                                             control2=control2))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
