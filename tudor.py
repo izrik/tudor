@@ -525,6 +525,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         show_new_task_form = db.Column(db.Boolean)
         indent = db.Column(db.Boolean)
 
+        macro_name = 'render_task_table'
+
         def __init__(self,
                      heading=None,
 

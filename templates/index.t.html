@@ -67,7 +67,7 @@
 {% if all_tasks != None %}
 <div>
     <h3>Deadlines</h3>
-    {{ 'render_task_table'|
+    {{ control.macro_name |
         call_macro(deadline_tasks, root=None, cycle=cycle,
             page_url=url_for('index'),
             child_task_view='view_task',
@@ -78,7 +78,7 @@
         <h3>{{ control.heading }}</h3>
     {% endif %}
 
-    {{ render_task_table(
+    {{ control.macro_name|call_macro(
         descendants=control.get_tasks(),
         root=control.root,
         cycle=cycle,
