@@ -502,15 +502,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         id = db.Column(db.Integer, primary_key=True)
         type = db.Column(db.String(20))
 
+        heading = db.Column(db.String(100))
+
         __mapper_args__ = {'polymorphic_identity': 'employee',
                            'polymorphic_on': type}
+
+        def __init__(self, heading=None):
+            self.heading = heading
 
     class TaskTable(Control):
 
         id = db.Column(db.Integer, db.ForeignKey('control.id'),
                        primary_key=True)
-
-        heading = db.Column(db.String(100))
 
         # data source options
         is_hierarchical = db.Column(db.Boolean)
@@ -562,7 +565,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                      show_new_task_form=False,
                      indent=True):
 
-            self.heading = heading
+            super(TaskTable, self).__init__(heading)
 
             self.is_hierarchical = is_hierarchical
             self.root = root
@@ -634,15 +637,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         id = db.Column(db.Integer, db.ForeignKey('control.id'),
                        primary_key=True)
 
-        heading = db.Column(db.String(100))
-
         template_name = 'view_table.t.html'
         macro_name = 'render_view_table'
 
         __mapper_args__ = {'polymorphic_identity': 'view_table'}
 
-        def __init__(self):
-            pass
+        def __init__(self, heading=None):
+            super(ViewTable, self).__init__(heading)
 
         def get_views(self):
             return View.query
