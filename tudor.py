@@ -497,9 +497,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_revision():
             return __revision__
 
-    class TaskTable(db.Model):
+    class Control(db.Model):
 
         id = db.Column(db.Integer, primary_key=True)
+        type = db.Column(db.String(20))
+
+        __mapper_args__ = {'polymorphic_identity': 'employee',
+                           'polymorphic_on': type}
+
+    class TaskTable(Control):
+
+        id = db.Column(db.Integer, db.ForeignKey('control.id'),
+                       primary_key=True)
 
         heading = db.Column(db.String(100))
 
@@ -526,6 +535,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         indent = db.Column(db.Boolean)
 
         macro_name = 'render_task_table'
+
+        __mapper_args__ = {'polymorphic_identity': 'task_table'}
 
         def __init__(self,
                      heading=None,
