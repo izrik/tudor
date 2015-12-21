@@ -1,0 +1,26 @@
+    {% macro render_view_table(views, cycle, roots) -%}
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Roots</th>
+            <th></th>
+        </tr>
+        {% for view in views %}
+        <tr>
+            <td><a href="{{ url_for('set_view', id=view.id) }}" >{{ view.id }}</a></td>
+            <td><a href="{{ url_for('set_view', id=view.id) }}" >{{ view.name }}</a></td>
+            <td><a href="{{ url_for('set_view', id=view.id) }}" >{{ view.roots }}</a></td>
+            <td></td>
+        </tr>
+        {% endfor %}
+        <form action="{{ url_for('new_view') }}" method="post">
+        <tr>
+            <td></td>
+            <td><input name="view_name" type="text" size="35" maxlength="100"></td>
+            <td><input name="view_roots" type="text" size="35" maxlength="100" value="{{roots if roots}}"></td>
+            <td><input type="submit" value="Create new view"></td>
+        </tr>
+        </form>
+    </table>
+    {%- endmacro %}
