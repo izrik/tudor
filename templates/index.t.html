@@ -44,37 +44,9 @@
 </div>
 {% if all_tasks != None %}
 <div>
-    <h3>Deadlines</h3>
-    {{ control.macro_name |
-        call_macro(deadline_tasks, root=None, cycle=cycle,
-            page_url=url_for('index'),
-            child_task_view='view_task',
-            indent=False) }}
-</div>
-<div>
     {% if control.heading != None and control.heading != '' %}
         <h3>{{ control.heading }}</h3>
     {% endif %}
-
-    {{ control.macro_name|call_macro(
-        descendants=control.get_tasks(),
-        root=control.root,
-        cycle=cycle,
-        page_url=url_for('index'),
-        child_task_view='view_task',
-
-        show_is_done=control.show_is_done,
-        show_is_deleted=control.show_is_deleted,
-        show_deadline=control.show_deadline,
-        show_order_num=control.show_order_num,
-        show_parent_id=control.show_parent_id,
-        show_depth=control.show_depth,
-        show_move_links=control.show_move_links,
-        show_done_links=control.show_done_links,
-        show_delete_links=control.show_delete_links,
-        show_new_task_form=control.show_new_task_form,
-        indent=control.indent
-    ) }}
 
     {{ control.render(cycle, roots) }}
 

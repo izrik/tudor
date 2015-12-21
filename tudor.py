@@ -871,7 +871,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         control = TaskTable.query.first()
         if control is None:
-            control = TaskTable()
+            control = TaskTable(heading='Deadlines', indent=False,
+                                is_hierarchical=False,
+                                exclude_undeadlined=True)
             db.session.add(control)
             db.session.commit()
 
