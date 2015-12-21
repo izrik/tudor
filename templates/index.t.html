@@ -38,12 +38,9 @@
     <p><a href="{{ url_for('import_data') }}">import</a></p>
     {% endif %}
 </div>
-<div>
-    {{ control2.render(cycle, roots) }}
-</div>
-{% if all_tasks != None %}
+{% for control in controls %}
 <div>
     {{ control.render(cycle, roots) }}
 </div>
-{% endif %}
+{% endfor %}
 {% endblock %}

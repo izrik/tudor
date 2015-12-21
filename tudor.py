@@ -886,6 +886,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(control2)
             db.session.commit()
 
+        controls = [control2, control]
+
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
                                              roots=roots, views=View.query,
@@ -894,8 +896,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                              deadline_tasks=deadline_tasks,
                                              user=current_user,
                                              tasks_h=tasks_h,
-                                             control=control,
-                                             control2=control2))
+                                             controls=controls))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
