@@ -22,6 +22,7 @@ from dateutil.parser import parse as dparse
 from functools import wraps
 import git
 import os
+from jinja2 import contextfilter
 
 __revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
                                           abbrev=40)
@@ -1549,6 +1550,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         output = markdown.markdown(s, extensions=['gfm'])
         moutput = Markup(output)
         return moutput
+
+    @contextfilter
+    def call_macro_by_name(context, macro_name, *args, **kwargs):
+        return context.vars[macro_name](*args, **kwargs)
+
+    app.jinja_env.filters['call_macro'] = call_macro_by_name
 
     return app
 
