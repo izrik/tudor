@@ -1,0 +1,34 @@
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Task CRUD (Bulk Edit){% endblock %}
+{% block content scoped %}
+<div>
+    <form action="{{ url_for('task_crud') }}" method="post">
+        <table class="task_crud">
+            {% set odd_even = cycle(['odd', 'even']).next %}
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Summary</th>
+                <th>Deadline</th>
+                <th>Done?</th>
+                <th>Deleted?</th>
+                <th>Order #</th>
+                <th>Parent ID</th>
+            </tr>
+            </thead>
+            {% for task in tasks %}
+            <tr class="{{ odd_even() }}">
+                <td>{{ task.id }}</td>
+                <td><input type="text" name="task_{{task.id}}_summary" value="{{ task.summary if task.summary != None }}" maxlength="100"/></td>
+                <td><input type="text" name="task_{{task.id}}_deadline" value="{{ task.deadline if task.deadline != None }}"/></td>
+                <td><input type="checkbox" name="task_{{task.id}}_is_done" {% if task.is_done %}checked{% endif %}/></td>
+                <td><input type="checkbox" name="task_{{task.id}}_is_deleted" {% if task.is_deleted %}checked{% endif %}/></td>
+                <td><input type="text" name="task_{{task.id}}_order_num" value="{{ task.order_num }}"/></td>
+                <td><input type="text" name="task_{{task.id}}_parent_id" value="{{ task.parent_id if task.parent_id != None }}"/></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <input type="submit" value="Update Tasks" />
+    </form>
+</div>
+{% endblock %}

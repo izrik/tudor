@@ -1441,6 +1441,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('index'))
 
+    @app.route('/task_crud', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def task_crud():
+        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True)
+        return render_template('task_crud.t.html', tasks=tasks,
+                               cycle=itertools.cycle)
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
