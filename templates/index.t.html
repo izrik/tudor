@@ -1,6 +1,6 @@
 {% extends "base.t.html" %}
 {% block content scoped %}
-{% for control in controls %}
+{% for control in view.controls %}
 <div>
     {{ control.render(cycle, roots, user, show_deleted) }}
 </div>
