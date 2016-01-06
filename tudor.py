@@ -454,7 +454,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     class View(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         name = db.Column(db.String(100), nullable=False)
-        roots = db.Column(db.String(100), nullable=False)
+        roots = db.Column(db.String(100))
 
         def __init__(self, name, roots):
             self.name = name
