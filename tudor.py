@@ -926,6 +926,20 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(control4)
             db.session.commit()
 
+        view = View.query.filter_by(name='$main').first()
+        if view is None:
+            view = View('$main', None)
+            control.view = view
+            control2.view = view
+            control3.view = view
+            control4.view = view
+            db.session.add(view)
+            db.session.add(control)
+            db.session.add(control2)
+            db.session.add(control3)
+            db.session.add(control4)
+            db.session.commit()
+
         controls = Control.query.order_by(Control.order_num).all()
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
