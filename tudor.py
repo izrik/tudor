@@ -909,21 +909,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         roots = get_roots_str()
-        tasks = None
-        if roots is not None:
-            root_ids = get_root_ids_from_str(roots)
-            if root_ids:
-                tasks = Task.query.filter(Task.id.in_(root_ids))
-
-        if tasks is None:
-            tasks = Task.query.filter(Task.parent_id == None)
-        if not show_deleted:
-            tasks = tasks.filter_by(is_deleted=False)
-        tasks = tasks.order_by(Task.order_num.desc())
-        tasks = tasks.all()
-
-        all_tasks = get_tasks_and_all_descendants_from_tasks(tasks)
-        deadline_tasks = Task.load_no_hierarchy(exclude_undeadlined=True)
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
