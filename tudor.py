@@ -505,6 +505,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         heading = db.Column(db.String(100))
 
+        view_id = db.Column(db.Integer, db.ForeignKey('view.id'))
+        view = db.relationship('View',
+                               backref=db.backref('controls', lazy='dynamic',
+                                                  order_by=order_num))
+
         __mapper_args__ = {'polymorphic_identity': 'control',
                            'polymorphic_on': type}
 
