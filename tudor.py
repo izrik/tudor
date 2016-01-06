@@ -942,17 +942,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             set_up_builtin_views()
             view = View.query.filter_by(name='$main').first()
 
-        controls = view.controls
-
-        resp = make_response(render_template('index.t.html', tasks=tasks,
+        resp = make_response(render_template('index.t.html',
                                              show_deleted=show_deleted,
-                                             roots=roots, views=View.query,
                                              cycle=itertools.cycle,
-                                             all_tasks=all_tasks,
-                                             deadline_tasks=deadline_tasks,
                                              user=current_user,
-                                             tasks_h=tasks_h,
-                                             controls=controls,
                                              view=view))
         if roots:
             resp.set_cookie('roots', roots)
