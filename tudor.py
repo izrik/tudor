@@ -937,51 +937,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                 include_deleted=show_deleted)
             tasks_h = sort_by_hierarchy(tasks_h)
 
-        control = TaskTable.query.filter_by(heading='Deadlines').first()
-        if control is None:
-            control = TaskTable(heading='Deadlines', indent=False,
-                                is_hierarchical=False,
-                                exclude_undeadlined=True)
-            control.order_num = 4
-            db.session.add(control)
-            db.session.commit()
-
-        control2 = ViewTable.query.first()
-        if control2 is None:
-            control2 = ViewTable(heading='Views')
-            control2.order_num = 3
-            db.session.add(control2)
-            db.session.commit()
-
-        control3 = FrontLinks.query.first()
-        if control3 is None:
-            control3 = FrontLinks()
-            control3.order_num = 2
-            db.session.add(control3)
-            db.session.commit()
-
-        control4 = TaskTable.query.filter(TaskTable.heading.is_(None)).first()
-        if control4 is None:
-            control4 = TaskTable(heading=None, show_move_links=True,
-                                 show_new_task_form=True, include_done=True,
-                                 include_deleted=True)
-            control4.order_num = 1
-            db.session.add(control4)
-            db.session.commit()
-
         view = View.query.filter_by(name='$main').first()
         if view is None:
-            view = View('$main', None)
-            control.view = view
-            control2.view = view
-            control3.view = view
-            control4.view = view
-            db.session.add(view)
-            db.session.add(control)
-            db.session.add(control2)
-            db.session.add(control3)
-            db.session.add(control4)
-            db.session.commit()
+            set_up_builtin_views()
+            view = View.query.filter_by(name='$main').first()
 
         controls = view.controls
 
