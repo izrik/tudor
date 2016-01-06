@@ -1683,6 +1683,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     app.jinja_env.filters['call_macro'] = call_macro_by_name
 
+    def set_up_database():
+        app.db.create_all()
+
+    app.set_up_database = set_up_database
+
     return app
 
 if __name__ == '__main__':
@@ -1692,7 +1697,7 @@ if __name__ == '__main__':
 
     if args.create_db:
         print('Setting up the database')
-        app.db.create_all()
+        app.set_up_database()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in xrange(48)))
