@@ -940,7 +940,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(control4)
             db.session.commit()
 
-        controls = Control.query.order_by(Control.order_num).all()
+        controls = view.controls
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
