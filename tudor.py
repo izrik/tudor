@@ -894,18 +894,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             control = TaskTable(heading='Deadlines', indent=False,
                                 is_hierarchical=False,
                                 exclude_undeadlined=True)
+            control.order_num = 4
             db.session.add(control)
             db.session.commit()
 
         control2 = ViewTable.query.first()
         if control2 is None:
             control2 = ViewTable(heading='Views')
+            control2.order_num = 3
             db.session.add(control2)
             db.session.commit()
 
         control3 = FrontLinks.query.first()
         if control3 is None:
             control3 = FrontLinks()
+            control3.order_num = 2
             db.session.add(control3)
             db.session.commit()
 
@@ -914,10 +917,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             control4 = TaskTable(heading=None, show_move_links=True,
                                  show_new_task_form=True, include_done=True,
                                  include_deleted=True)
+            control4.order_num = 1
             db.session.add(control4)
             db.session.commit()
 
-        controls = [control4, control3, control2, control]
+        controls = Control.query.order_by(Control.order_num).all()
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
