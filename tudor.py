@@ -1441,6 +1441,48 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('index'))
 
+    @app.route('/task_crud', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def task_crud():
+
+        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True)
+
+        if request.method == 'GET':
+            return render_template('task_crud.t.html', tasks=tasks,
+                                   cycle=itertools.cycle)
+
+        for task in tasks:
+            summary = request.form.get('task_{}_summary'.format(task.id))
+            deadline = request.form.get('task_{}_deadline'.format(task.id))
+            is_done = request.form.get('task_{}_is_done'.format(task.id))
+            is_deleted = request.form.get('task_{}_is_deleted'.format(task.id))
+            order_num = request.form.get('task_{}_order_num'.format(task.id))
+            parent_id = request.form.get('task_{}_parent_id'.format(task.id))
+
+            if deadline:
+                deadline = dparse(deadline)
+            else:
+                deadline = None
+            is_done = (True if is_done else False)
+            is_deleted = (True if is_deleted else False)
+            order_num = int_from_str(order_num)
+            parent_id = int_from_str(parent_id)
+
+            if summary is not None:
+                task.summary = summary
+            task.deadline = deadline
+            task.is_done = is_done
+            task.is_deleted = is_deleted
+            task.order_num = order_num
+            task.parent_id = parent_id
+
+            db.session.add(task)
+
+        db.session.commit()
+
+        return redirect(url_for('task_crud'))
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
