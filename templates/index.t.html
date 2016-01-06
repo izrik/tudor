@@ -1,16 +1,5 @@
 {% extends "base.t.html" %}
-{% from 'view_table.t.html' import render_view_table %}
-{% from 'task_table.t.html' import render_task_table %}
 {% block content scoped %}
-<div>
-
-    {{ render_task_table(tasks_h, root=None, cycle=cycle,
-        page_url=url_for('index'),
-        child_task_view='view_task',
-        show_move_links=True,
-        show_new_task_form=True) }}
-
-</div>
 {% for control in controls %}
 <div>
     {{ control.render(cycle, roots, user, show_deleted) }}
