@@ -1683,8 +1683,46 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     app.jinja_env.filters['call_macro'] = call_macro_by_name
 
+    def set_up_builtin_views():
+
+        main_view = View.query.filter_by(name='$main').first()
+        if main_view is None:
+
+            main_tasks = TaskTable(heading=None, show_move_links=True,
+                                   show_new_task_form=True, include_done=True,
+                                   include_deleted=True)
+            main_tasks.order_num = 1
+
+            front_links = FrontLinks()
+            front_links.order_num = 2
+
+            view_table = ViewTable(heading='Views')
+            view_table.order_num = 3
+
+            deadlines = TaskTable(heading='Deadlines', indent=False,
+                                  is_hierarchical=False,
+                                  exclude_undeadlined=True)
+            deadlines.order_num = 4
+
+            main_view = View('$main', None)
+
+            deadlines.view = main_view
+            view_table.view = main_view
+            front_links.view = main_view
+            main_tasks.view = main_view
+
+            db.session.add(main_view)
+            db.session.add(deadlines)
+            db.session.add(view_table)
+            db.session.add(front_links)
+            db.session.add(main_tasks)
+            db.session.commit()
+
+    app.set_up_builtin_views = set_up_builtin_views
+
     def set_up_database():
-        app.db.create_all()
+        db.create_all()
+        set_up_builtin_views()
 
     app.set_up_database = set_up_database
 
