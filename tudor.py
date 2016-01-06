@@ -952,7 +952,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                              deadline_tasks=deadline_tasks,
                                              user=current_user,
                                              tasks_h=tasks_h,
-                                             controls=controls))
+                                             controls=controls,
+                                             view=view))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
