@@ -505,7 +505,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         heading = db.Column(db.String(100))
 
-        __mapper_args__ = {'polymorphic_identity': 'employee',
+        __mapper_args__ = {'polymorphic_identity': 'control',
                            'polymorphic_on': type}
 
         def __init__(self, heading=None):
