@@ -501,6 +501,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         id = db.Column(db.Integer, primary_key=True)
         type = db.Column(db.String(20))
+        order_num = db.Column(db.Integer, nullable=False, default=0)
 
         heading = db.Column(db.String(100))
 
