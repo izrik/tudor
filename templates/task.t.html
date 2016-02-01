@@ -2,6 +2,11 @@
 {% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ super() }} - {{ task.summary if task.summary != None }}{% endblock %}
 {% block content %}
+{% for control in view.controls %}
+<div>
+    {{ control.render(task, user) }}
+</div>
+{% endfor %}
 <div>
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
