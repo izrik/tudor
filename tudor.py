@@ -677,6 +677,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                            self.macro_name)
             return macro(self.heading, cycle, roots, user, show_deleted)
 
+    class TaskDetails(Control):
+        id = db.Column(db.Integer, db.ForeignKey('control.id'),
+                       primary_key=True)
+
+        template_name = 'task_details.t.html'
+        macro_name = 'render_task_details'
+
+        __mapper_args__ = {'polymorphic_identity': 'task_details'}
+
+        def __init__(self, heading=None):
+            super(TaskDetails, self).__init__(heading)
+
+        def render(self, task, user, **kwargs):
+            macro = get_template_attribute(self.template_name,
+                                           self.macro_name)
+            return macro(task, user)
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
