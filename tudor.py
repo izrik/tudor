@@ -694,6 +694,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                                            self.macro_name)
             return macro(task, user)
 
+    class TaskLinks(Control):
+        id = db.Column(db.Integer, db.ForeignKey('control.id'),
+                       primary_key=True)
+
+        template_name = 'task_links.t.html'
+        macro_name = 'render_task_links'
+
+        __mapper_args__ = {'polymorphic_identity': 'task_links'}
+
+        def __init__(self, heading=None):
+            super(TaskLinks, self).__init__(heading)
+
+        def render(self, task, user, **kwargs):
+            macro = get_template_attribute(self.template_name,
+                                           self.macro_name)
+            return macro(task, user)
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
@@ -745,10 +762,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             task_details.order_num = 1
             task_details.view = task_view
 
-            # task_links = TaskLinks()
-            # task_links.order_num = 2
-            # task_links.view = task_view
-            #
+            task_links = TaskLinks()
+            task_links.order_num = 2
+            task_links.view = task_view
+
             # child_tasks = TaskTable(heading='Child Tasks', show_move_links=True,
             #                         show_new_task_form=True, include_done=True,
             #                         include_deleted=True)
@@ -764,7 +781,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             # task_atts.view = task_view
 
             db.session.add(task_details)
-            # db.session.add(task_links)
+            db.session.add(task_links)
             # db.session.add(child_tasks)
             # db.session.add(task_notes)
             # db.session.add(task_atts)
