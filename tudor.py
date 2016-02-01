@@ -736,6 +736,42 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             db.session.add(main_tasks)
             db.session.commit()
 
+        task_view = View.query.filter_by(name='$task').first()
+        if task_view is None:
+
+            task_view = View('$task', None)
+
+            task_details = TaskDetails()
+            task_details.order_num = 1
+            task_details.view = task_view
+
+            # task_links = TaskLinks()
+            # task_links.order_num = 2
+            # task_links.view = task_view
+            #
+            # child_tasks = TaskTable(heading='Child Tasks', show_move_links=True,
+            #                         show_new_task_form=True, include_done=True,
+            #                         include_deleted=True)
+            # child_tasks.order_num = 3
+            # child_tasks.view = task_view
+            #
+            # task_notes = TaskNotes()
+            # task_notes.order_num = 4
+            # task_notes.view = task_view
+            #
+            # task_atts = TaskAttachments()
+            # task_atts.order_num = 5
+            # task_atts.view = task_view
+
+            db.session.add(task_details)
+            # db.session.add(task_links)
+            # db.session.add(child_tasks)
+            # db.session.add(task_notes)
+            # db.session.add(task_atts)
+            db.session.add(task_view)
+            db.session.commit()
+
+
     app.set_up_builtin_views = set_up_builtin_views
 
     def set_up_database():
