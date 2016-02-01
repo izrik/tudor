@@ -1096,8 +1096,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if hierarchy_sort:
             descendants = sort_by_hierarchy(descendants, root=task)
 
+        task_view = View.query.filter_by(name='$task').first()
+
         return render_template('task.t.html', task=task,
-                               descendants=descendants, cycle=itertools.cycle)
+                               descendants=descendants, cycle=itertools.cycle,
+                               view=task_view)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
