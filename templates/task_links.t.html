@@ -1,4 +1,4 @@
-    {% macro render_task_links(task, user) -%}
+    {% macro render_task_links(task, user, cycle) -%}
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
     <p><a href="{{ url_for('index') }}">main</a></p>
     {%- endmacro %}

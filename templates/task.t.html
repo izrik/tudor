@@ -4,7 +4,7 @@
 {% block content %}
 {% for control in view.controls %}
 <div>
-    {{ control.render(task, user) }}
+    {{ control.render(cycle, roots=task, user=user, show_deleted=show_deleted, task=task) }}
 </div>
 {% endfor %}
 <div>

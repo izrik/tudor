@@ -1,4 +1,4 @@
-    {% macro render_task_details(task, user) -%}
+    {% macro render_task_details(task, user, cycle) -%}
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
         <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>

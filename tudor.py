@@ -689,10 +689,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def __init__(self, heading=None):
             super(TaskDetails, self).__init__(heading)
 
-        def render(self, task, user, **kwargs):
+        def render(self, cycle, roots, user, show_deleted, **kwargs):
+            task = kwargs['task']
             macro = get_template_attribute(self.template_name,
                                            self.macro_name)
-            return macro(task, user)
+            return macro(task, user, cycle)
 
     class TaskLinks(Control):
         id = db.Column(db.Integer, db.ForeignKey('control.id'),
@@ -706,10 +707,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def __init__(self, heading=None):
             super(TaskLinks, self).__init__(heading)
 
-        def render(self, task, user, **kwargs):
+        def render(self, cycle, roots, user, show_deleted, **kwargs):
+            task = kwargs['task']
             macro = get_template_attribute(self.template_name,
                                            self.macro_name)
-            return macro(task, user)
+            return macro(task, user, cycle)
 
     app.Task = Task
     app.Note = Note
@@ -766,12 +768,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             task_links.order_num = 2
             task_links.view = task_view
 
-            # child_tasks = TaskTable(heading='Child Tasks', show_move_links=True,
-            #                         show_new_task_form=True, include_done=True,
-            #                         include_deleted=True)
-            # child_tasks.order_num = 3
-            # child_tasks.view = task_view
-            #
+            child_tasks = TaskTable(heading='Child Tasks', show_move_links=True,
+                                    show_new_task_form=True, include_done=True,
+                                    include_deleted=True)
+            child_tasks.order_num = 3
+            child_tasks.view = task_view
+
             # task_notes = TaskNotes()
             # task_notes.order_num = 4
             # task_notes.view = task_view
