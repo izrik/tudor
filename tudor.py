@@ -897,6 +897,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             task.order_num = 0
 
+        duration = int_from_str(request.form['expected_duration_minutes'])
+        task.expected_duration_minutes = duration
+
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
             if parent_id is None or parent_id == '':
