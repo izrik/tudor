@@ -135,6 +135,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         is_deleted = db.Column(db.Boolean)
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
+        expected_duration_minutes = db.Column(db.Integer)
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -145,7 +146,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         depth = 0
 
         def __init__(self, summary, description='', is_done=False,
-                     is_deleted=False, deadline=None):
+                     is_deleted=False, deadline=None,
+                     expected_duration_minutes=None):
             self.summary = summary
             self.description = description
             self.is_done = is_done
@@ -153,6 +155,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             if isinstance(deadline, basestring):
                 deadline = dparse(deadline)
             self.deadline = deadline
+            self.expected_duration_minutes = expected_duration_minutes
 
         def to_dict(self):
             return {
@@ -163,7 +166,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'is_deleted': self.is_deleted,
                 'order_num': self.order_num,
                 'deadline': str_from_datetime(self.deadline),
-                'parent_id': self.parent_id
+                'parent_id': self.parent_id,
+                'expected_duration_minutes': self.expected_duration_minutes
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
