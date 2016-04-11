@@ -337,6 +337,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             for tag in self.tags:
                 yield tag.value
 
+        def get_expected_duration_for_viewing(self):
+            if self.expected_duration_minutes is None:
+                return ''
+            if self.expected_duration_minutes == 1:
+                return '1 minute'
+            return '{} minutes'.format(self.expected_duration_minutes)
+
     class Tag(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
