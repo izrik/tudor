@@ -1338,11 +1338,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     is_done = task.get('is_done', False)
                     is_deleted = task.get('is_deleted', False)
                     deadline = task.get('deadline', None)
+                    exp_dur_min = task.get('expected_duration_minutes')
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
                     t = Task(summary=summary, description=description,
                              is_done=is_done, is_deleted=is_deleted,
-                             deadline=deadline)
+                             deadline=deadline,
+                             expected_duration_minutes=exp_dur_min)
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
