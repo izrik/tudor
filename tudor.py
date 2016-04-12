@@ -1474,6 +1474,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             is_done = request.form.get('task_{}_is_done'.format(task.id))
             is_deleted = request.form.get('task_{}_is_deleted'.format(task.id))
             order_num = request.form.get('task_{}_order_num'.format(task.id))
+            duration = request.form.get('task_{}_duration'.format(task.id))
             parent_id = request.form.get('task_{}_parent_id'.format(task.id))
 
             if deadline:
@@ -1483,6 +1484,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             is_done = (True if is_done else False)
             is_deleted = (True if is_deleted else False)
             order_num = int_from_str(order_num)
+            duration = int_from_str(duration)
             parent_id = int_from_str(parent_id)
 
             if summary is not None:
@@ -1491,6 +1493,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             task.is_done = is_done
             task.is_deleted = is_deleted
             task.order_num = order_num
+            task.expected_duration_minutes = duration
             task.parent_id = parent_id
 
             db.session.add(task)
