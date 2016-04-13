@@ -135,6 +135,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         is_deleted = db.Column(db.Boolean)
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
+        expected_duration_minutes = db.Column(db.Integer)
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -145,7 +146,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         depth = 0
 
         def __init__(self, summary, description='', is_done=False,
-                     is_deleted=False, deadline=None):
+                     is_deleted=False, deadline=None,
+                     expected_duration_minutes=None):
             self.summary = summary
             self.description = description
             self.is_done = is_done
@@ -153,6 +155,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             if isinstance(deadline, basestring):
                 deadline = dparse(deadline)
             self.deadline = deadline
+            self.expected_duration_minutes = expected_duration_minutes
 
         def to_dict(self):
             return {
@@ -163,7 +166,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'is_deleted': self.is_deleted,
                 'order_num': self.order_num,
                 'deadline': str_from_datetime(self.deadline),
-                'parent_id': self.parent_id
+                'parent_id': self.parent_id,
+                'expected_duration_minutes': self.expected_duration_minutes
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
@@ -332,6 +336,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_tag_values(self):
             for tag in self.tags:
                 yield tag.value
+
+        def get_expected_duration_for_viewing(self):
+            if self.expected_duration_minutes is None:
+                return ''
+            if self.expected_duration_minutes == 1:
+                return '1 minute'
+            return '{} minutes'.format(self.expected_duration_minutes)
 
     class Tag(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
@@ -886,6 +897,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             task.order_num = 0
 
+        duration = int_from_str(request.form['expected_duration_minutes'])
+        task.expected_duration_minutes = duration
+
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
             if parent_id is None or parent_id == '':
@@ -1324,11 +1338,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     is_done = task.get('is_done', False)
                     is_deleted = task.get('is_deleted', False)
                     deadline = task.get('deadline', None)
+                    exp_dur_min = task.get('expected_duration_minutes')
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
                     t = Task(summary=summary, description=description,
                              is_done=is_done, is_deleted=is_deleted,
-                             deadline=deadline)
+                             deadline=deadline,
+                             expected_duration_minutes=exp_dur_min)
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
@@ -1458,6 +1474,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             is_done = request.form.get('task_{}_is_done'.format(task.id))
             is_deleted = request.form.get('task_{}_is_deleted'.format(task.id))
             order_num = request.form.get('task_{}_order_num'.format(task.id))
+            duration = request.form.get('task_{}_duration'.format(task.id))
             parent_id = request.form.get('task_{}_parent_id'.format(task.id))
 
             if deadline:
@@ -1467,6 +1484,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             is_done = (True if is_done else False)
             is_deleted = (True if is_deleted else False)
             order_num = int_from_str(order_num)
+            duration = int_from_str(duration)
             parent_id = int_from_str(parent_id)
 
             if summary is not None:
@@ -1475,6 +1493,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             task.is_done = is_done
             task.is_deleted = is_deleted
             task.order_num = order_num
+            task.expected_duration_minutes = duration
             task.parent_id = parent_id
 
             db.session.add(task)

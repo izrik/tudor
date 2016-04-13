@@ -33,6 +33,7 @@
             </td>
         </tr>
         <tr><td>Order #</td><td>{{ task.order_num if task.order_num != None }}</td></tr>
+        <tr><td>Expected duration</td><td>{{ task.get_expected_duration_for_viewing() }}</td></tr>
         <tr>
             <td>Parent Task</td>
             <td>
