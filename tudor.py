@@ -136,6 +136,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
+        expected_cost = db.Column(db.Numeric);
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -147,7 +148,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         def __init__(self, summary, description='', is_done=False,
                      is_deleted=False, deadline=None,
-                     expected_duration_minutes=None):
+                     expected_duration_minutes=None, expected_cost=None):
             self.summary = summary
             self.description = description
             self.is_done = is_done
@@ -156,6 +157,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 deadline = dparse(deadline)
             self.deadline = deadline
             self.expected_duration_minutes = expected_duration_minutes
+            self.expected_cost = expected_cost
 
         def to_dict(self):
             return {
