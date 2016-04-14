@@ -347,6 +347,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 return '1 minute'
             return '{} minutes'.format(self.expected_duration_minutes)
 
+        def get_expected_cost_for_viewing(self):
+            if self.expected_cost is None:
+                return ''
+            return '{:.2f}'.format(self.expected_cost)
+
     class Tag(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
