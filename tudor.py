@@ -169,7 +169,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'order_num': self.order_num,
                 'deadline': str_from_datetime(self.deadline),
                 'parent_id': self.parent_id,
-                'expected_duration_minutes': self.expected_duration_minutes
+                'expected_duration_minutes': self.expected_duration_minutes,
+                'expected_cost': self.expected_cost
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
