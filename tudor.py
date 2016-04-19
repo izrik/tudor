@@ -180,7 +180,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'deadline': str_from_datetime(self.deadline),
                 'parent_id': self.parent_id,
                 'expected_duration_minutes': self.expected_duration_minutes,
-                'expected_cost': self.expected_cost
+                'expected_cost': self.get_expected_cost_for_export()
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
@@ -360,6 +360,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_expected_cost_for_viewing(self):
             if self.expected_cost is None:
                 return ''
+            return '{:.2f}'.format(self.expected_cost)
+
+        def get_expected_cost_for_export(self):
+            if self.expected_cost is None:
+                return None
             return '{:.2f}'.format(self.expected_cost)
 
     class Tag(db.Model):
