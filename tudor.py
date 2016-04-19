@@ -22,6 +22,7 @@ from dateutil.parser import parse as dparse
 from functools import wraps
 import git
 import os
+from decimal import Decimal
 
 __revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
                                           abbrev=40)
@@ -56,6 +57,15 @@ def str_from_datetime(dt):
     if dt is None:
         return None
     return str(dt)
+
+
+def money_from_str(s):
+    try:
+        d = Decimal(s)
+        d = round(d, 2)
+        return d
+    except:
+        return None
 
 
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
@@ -907,6 +917,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         duration = int_from_str(request.form['expected_duration_minutes'])
         task.expected_duration_minutes = duration
+
+        task.expected_cost = money_from_str(request.form['expected_cost'])
 
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
