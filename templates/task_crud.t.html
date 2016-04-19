@@ -13,7 +13,8 @@
                 <th>Done?</th>
                 <th>Deleted?</th>
                 <th>Order #</th>
-                <th>Duration</th>
+                <th>Exp. Duration</th>
+                <th>Exp. Cost</th>
                 <th>Parent ID</th>
             </tr>
             </thead>
@@ -26,6 +27,7 @@
                 <td><input type="checkbox" name="task_{{task.id}}_is_deleted" {% if task.is_deleted %}checked{% endif %}/></td>
                 <td><input type="text" name="task_{{task.id}}_order_num" value="{{ task.order_num }}"/></td>
                 <td><input type="text" name="task_{{task.id}}_duration" value="{{ task.expected_duration_minutes }}"/></td>
+                <td><input type="text" name="task_{{task.id}}_cost" value="{{ task.expected_cost }}"/></td>
                 <td><input type="text" name="task_{{task.id}}_parent_id" value="{{ task.parent_id if task.parent_id != None }}"/></td>
             </tr>
             {% endfor %}

@@ -22,6 +22,7 @@ from dateutil.parser import parse as dparse
 from functools import wraps
 import git
 import os
+from decimal import Decimal
 
 __revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
                                           abbrev=40)
@@ -56,6 +57,15 @@ def str_from_datetime(dt):
     if dt is None:
         return None
     return str(dt)
+
+
+def money_from_str(s):
+    try:
+        d = Decimal(s)
+        d = round(d, 2)
+        return d
+    except:
+        return None
 
 
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
@@ -136,6 +146,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
+        expected_cost = db.Column(db.Numeric);
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -147,7 +158,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         def __init__(self, summary, description='', is_done=False,
                      is_deleted=False, deadline=None,
-                     expected_duration_minutes=None):
+                     expected_duration_minutes=None, expected_cost=None):
             self.summary = summary
             self.description = description
             self.is_done = is_done
@@ -156,6 +167,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 deadline = dparse(deadline)
             self.deadline = deadline
             self.expected_duration_minutes = expected_duration_minutes
+            self.expected_cost = expected_cost
 
         def to_dict(self):
             return {
@@ -167,7 +179,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'order_num': self.order_num,
                 'deadline': str_from_datetime(self.deadline),
                 'parent_id': self.parent_id,
-                'expected_duration_minutes': self.expected_duration_minutes
+                'expected_duration_minutes': self.expected_duration_minutes,
+                'expected_cost': self.get_expected_cost_for_export()
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
@@ -343,6 +356,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             if self.expected_duration_minutes == 1:
                 return '1 minute'
             return '{} minutes'.format(self.expected_duration_minutes)
+
+        def get_expected_cost_for_viewing(self):
+            if self.expected_cost is None:
+                return ''
+            return '{:.2f}'.format(self.expected_cost)
+
+        def get_expected_cost_for_export(self):
+            if self.expected_cost is None:
+                return None
+            return '{:.2f}'.format(self.expected_cost)
 
     class Tag(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
@@ -900,6 +923,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         duration = int_from_str(request.form['expected_duration_minutes'])
         task.expected_duration_minutes = duration
 
+        task.expected_cost = money_from_str(request.form['expected_cost'])
+
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
             if parent_id is None or parent_id == '':
@@ -1339,12 +1364,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     is_deleted = task.get('is_deleted', False)
                     deadline = task.get('deadline', None)
                     exp_dur_min = task.get('expected_duration_minutes')
+                    expected_cost = task.get('expected_cost')
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
                     t = Task(summary=summary, description=description,
                              is_done=is_done, is_deleted=is_deleted,
                              deadline=deadline,
-                             expected_duration_minutes=exp_dur_min)
+                             expected_duration_minutes=exp_dur_min,
+                             expected_cost=expected_cost)
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
@@ -1475,6 +1502,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             is_deleted = request.form.get('task_{}_is_deleted'.format(task.id))
             order_num = request.form.get('task_{}_order_num'.format(task.id))
             duration = request.form.get('task_{}_duration'.format(task.id))
+            cost = request.form.get('task_{}_cost'.format(task.id))
             parent_id = request.form.get('task_{}_parent_id'.format(task.id))
 
             if deadline:
@@ -1485,6 +1513,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             is_deleted = (True if is_deleted else False)
             order_num = int_from_str(order_num)
             duration = int_from_str(duration)
+            cost = money_from_str(cost)
             parent_id = int_from_str(parent_id)
 
             if summary is not None:
@@ -1494,6 +1523,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             task.is_deleted = is_deleted
             task.order_num = order_num
             task.expected_duration_minutes = duration
+            task.expected_cost = cost
             task.parent_id = parent_id
 
             db.session.add(task)
