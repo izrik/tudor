@@ -1573,6 +1573,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def sort_for_priority(tasks):
         return tasks
 
+    @app.route('/priority')
+    def view_tasks_in_priority_order():
+        tasks = Task.load_no_hierarchy()
+        sorted_tasks = sort_for_priority(tasks)
+        return render_template('tasks_in_priority_order.t.html',
+                               tasks=sorted_tasks, cycle=itertools.cycle)
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])

@@ -1,0 +1,14 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block title %}{{ super() }} - Tasks in Priority Order{% endblock %}
+{% block content scoped %}
+<div>
+    {{ render_task_table(tasks, root=None, cycle=cycle,
+        page_url=url_for('view_tasks_in_priority_order'),
+        child_task_view='view_task',
+        indent=False, show_expected_duration=True) }}
+</div>
+<div>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+{% endblock %}
