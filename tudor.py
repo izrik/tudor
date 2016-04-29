@@ -540,11 +540,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         a_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                          primary_key=True)
-        a = db.relationship('Task', remote_side=[id])
+        a = db.relationship('Task', foreign_keys=[a_id])
 
         b_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                          primary_key=True)
-        b = db.relationship('Task', remote_side=[id])
+        b = db.relationship('Task', foreign_keys=[b_id])
 
         comparison = db.Column(db.Integer, nullable=False)
 
