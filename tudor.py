@@ -530,6 +530,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_revision():
             return __revision__
 
+    class PriorityPair(db.Model):
+        lesser_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                              primary_key=True)
+        lesser = db.relationship('Task', remote_side=[id]
+                                 # ,
+                                 # backref=db.backref('greaters',
+                                 #                    lazy='dynamic')
+                                 )
+        greater_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                               primary_key=True)
+        greater = db.relationship('Task', remote_side=[id])
+
+        def __init__(self, lesser, greater):
+            if lesser is None or not isinstance(lesser, Task):
+                raise ValueError("lesser must be of type Task")
+            if greater is None or not isinstance(greater, Task):
+                raise ValueError("greater must be of type Task")
+
+            self.lesser = lesser
+            self.greater = greater
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
