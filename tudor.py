@@ -1560,6 +1560,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return render_template('view_categories.t.html', categories=categories,
                                cycle=itertools.cycle)
 
+    @app.route('/categories/<int:id>')
+    def view_category(id):
+        category = Category.query.get(id)
+        return render_template('view_category.t.html', category=category,
+                               cycle=itertools.cycle)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):

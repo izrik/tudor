@@ -1,0 +1,19 @@
+{% extends "base.t.html" %}
+<!--{ % from 'task_table.t.html' import render_task_table % }-->
+{% block title %}{{ super() }} - {{ category.name }} Category{% endblock %}
+{% block content %}
+<table class="task_info">
+    <tr>
+        <td>ID</td>
+        <td>{{ category.id }}</td>
+    </tr>
+    <tr>
+        <td>Name</td>
+        <td>{{ category.name }}</td>
+    </tr>
+    <tr>
+        <td>Description</td>
+        <td>{{ category.description }}</td>
+    </tr>
+</table>
+{% endblock %}
