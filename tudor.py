@@ -530,26 +530,42 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_revision():
             return __revision__
 
+    class Ordering(object):
+        less_than = -1
+        equal_to = 0
+        greater_than = 1
+        values = [-1, 0, 1]
+
     class PriorityPair(db.Model):
-        lesser_id = db.Column(db.Integer, db.ForeignKey('task.id'),
-                              primary_key=True)
-        lesser = db.relationship('Task', remote_side=[id]
-                                 # ,
-                                 # backref=db.backref('greaters',
-                                 #                    lazy='dynamic')
-                                 )
-        greater_id = db.Column(db.Integer, db.ForeignKey('task.id'),
-                               primary_key=True)
-        greater = db.relationship('Task', remote_side=[id])
 
-        def __init__(self, lesser, greater):
-            if lesser is None or not isinstance(lesser, Task):
-                raise ValueError("lesser must be of type Task")
-            if greater is None or not isinstance(greater, Task):
-                raise ValueError("greater must be of type Task")
+        a_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                         primary_key=True)
+        a = db.relationship('Task', remote_side=[id])
 
-            self.lesser = lesser
-            self.greater = greater
+        b_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                         primary_key=True)
+        b = db.relationship('Task', remote_side=[id])
+
+        comparison = db.Column(db.Integer, nullable=False)
+
+        def __init__(self, a, b, comparison):
+            if a is None or not isinstance(a, Task):
+                raise ValueError("a must be of type Task")
+            if b is None or not isinstance(b, Task):
+                raise ValueError("b must be of type Task")
+            if comparison is None or comparison not in Ordering.values:
+                raise ValueError("comparison must be -1, or 0, or 1")
+
+            if a == b and comparison != 0:
+                raise ValueError("A task can't be unequal with itself")
+
+            if a.id > b.id:
+                a, b = b, a
+                comparison = -comparison
+
+            self.a = a
+            self.b = b
+            self.comparison = comparison
 
     app.Task = Task
     app.Note = Note
