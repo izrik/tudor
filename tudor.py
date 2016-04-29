@@ -573,6 +573,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.User = User
     app.View = View
     app.Option = Option
+    app.PriorityPair = PriorityPair
 
     def admin_required(func):
         @wraps(func)
