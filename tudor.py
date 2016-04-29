@@ -530,12 +530,33 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_revision():
             return __revision__
 
+    class Category(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100))
+        description = db.Column(db.String(4000))
+
+        def __init__(self, name, description=''):
+            self.name = name
+            self.description = description
+
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'name': self.name,
+                'description': self.description,
+            }
+
+        @property
+        def summary(self):
+            return self.name
+
     app.Task = Task
     app.Note = Note
     app.Attachment = Attachment
     app.User = User
     app.View = View
     app.Option = Option
+    app.Category = Category
 
     def admin_required(func):
         @wraps(func)
