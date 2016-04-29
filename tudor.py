@@ -1570,6 +1570,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('task_crud'))
 
+    def sort_for_priority(tasks):
+        return tasks
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
