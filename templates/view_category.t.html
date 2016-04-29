@@ -2,6 +2,7 @@
 <!--{ % from 'task_table.t.html' import render_task_table % }-->
 {% block title %}{{ super() }} - {{ category.name }} Category{% endblock %}
 {% block content %}
+<div>
 <table class="task_info">
     <tr>
         <td>ID</td>
@@ -16,4 +17,9 @@
         <td>{{ category.description }}</td>
     </tr>
 </table>
+</div>
+<div>
+    <p><a href="{{ url_for('view_categories') }}">categories</a></p>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
 {% endblock %}
