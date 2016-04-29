@@ -1,0 +1,21 @@
+{% extends "base.t.html" %}
+<!--{ % from 'task_table.t.html' import render_task_table % }-->
+{% block title %}{{ super() }} - Categories{% endblock %}
+{% block content %}
+<table>
+    <thead>
+    <tr>
+        <td>ID</td>
+        <td>Name</td>
+        <td>Description</td>
+    </tr>
+    </thead>
+{% for category in categories %}
+    <tr>
+        <td>{{ category.id }}</td>
+        <td>{{ category.name }}</td>
+        <td>{{ category.description }}</td>
+    </tr>
+{% endfor %}
+</table>
+{% endblock %}

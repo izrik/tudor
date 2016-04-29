@@ -1553,6 +1553,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(url_for('task_crud'))
 
+    @app.route('/categories')
+    @login_required
+    def view_categories():
+        categories = Category.query.all()
+        return render_template('view_categories.t.html', categories=categories,
+                               cycle=itertools.cycle)
+
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
