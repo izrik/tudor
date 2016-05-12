@@ -962,13 +962,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         tags = request.form['tags']
         if tags is not None:
             values = tags.split(',')
-            for tag in task.tags:
-                db.session.delete(tag)
+            for ttl in task.tags:
+                db.session.delete(ttl)
             for value in values:
                 if value is None or value == '':
                     continue
-                tag = TaskTagLink(task.id, value)
-                db.session.add(tag)
+
+                tag = Tag.query.filter_by(value=value).first()
+                if tag is None:
+                    tag = Tag(value)
+                    db.session.add(tag)
+
+                ttl = TaskTagLink.query.get((task.id, tag.id))
+                if ttl is None:
+                    ttl = TaskTagLink(task.id, tag.id)
+                    db.session.add(ttl)
 
         db.session.add(task)
         db.session.commit()
