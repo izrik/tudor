@@ -401,9 +401,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task = db.relationship('Task',
                                backref=db.backref('tags', lazy='dynamic'))
 
-        def __init__(self, task_id, value):
+        def __init__(self, task_id, tag_id):
             self.task_id = task_id
-            self.value = value
+            self.tag_id = tag_id
 
         def to_dict(self):
             return {
