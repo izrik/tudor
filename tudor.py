@@ -180,7 +180,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'deadline': str_from_datetime(self.deadline),
                 'parent_id': self.parent_id,
                 'expected_duration_minutes': self.expected_duration_minutes,
-                'expected_cost': self.get_expected_cost_for_export()
+                'expected_cost': self.get_expected_cost_for_export(),
+                'tag_ids': [ttl.tag_id for ttl in self.tags]
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
@@ -388,6 +389,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             self.value = value
             self.description = description
 
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'value': self.value,
+                'description': self.description,
+            }
+
     class TaskTagLink(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
@@ -407,12 +415,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def __init__(self, task_id, tag_id):
             self.task_id = task_id
             self.tag_id = tag_id
-
-        def to_dict(self):
-            return {
-                'task_id': self.task_id,
-                'value': self.value
-            }
 
     class Note(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -1359,7 +1361,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if 'tasks' in request.form and request.form['tasks'] == 'all':
             results['tasks'] = [t.to_dict() for t in Task.query.all()]
         if 'tags' in request.form and request.form['tags'] == 'all':
-            results['tags'] = [t.to_dict() for t in TaskTagLink.query.all()]
+            results['tags'] = [t.to_dict() for t in Tag.query.all()]
         if 'notes' in request.form and request.form['notes'] == 'all':
             results['notes'] = [t.to_dict() for t in Note.query.all()]
         if ('attachments' in request.form and
