@@ -367,6 +367,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 return None
             return '{:.2f}'.format(self.expected_cost)
 
+    class Tag(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
+
+        def __init__(self, value, description=None):
+            self.value = value
+            self.description = description
+
     class TaskTagLink(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)

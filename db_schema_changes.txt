@@ -1,1 +1,4 @@
 alter table tag rename to task_tag_link;
+drop table if exists tag;
+# run tudor.py --create-db
+insert into tag (value) select distinct value from task_tag_link;
