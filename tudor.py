@@ -1138,11 +1138,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = TaskTagLink.query.get((id, value))
+        tag = Tag.query.filter_by(value=value).first()
         if tag is None:
-            tag = TaskTagLink(id, value)
+            tag = Tag(value)
             db.session.add(tag)
-            db.session.commit()
+
+        ttl = TaskTagLink.query.get((task.id, tag.id))
+        if ttl is None:
+            ttl = TaskTagLink(task.id, tag.id)
+            db.session.add(ttl)
+
+        db.session.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
