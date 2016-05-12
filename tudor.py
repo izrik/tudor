@@ -393,7 +393,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
                             primary_key=True)
 
-        tag = db.relationship('Tag')
+        tag = db.relationship('Tag',
+                              backref=db.backref('tasks', lazy='dynamic'))
         @property
         def value(self):
             return self.tag.value
@@ -556,6 +557,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return __revision__
 
     app.Task = Task
+    app.Tag = Tag
+    app.TaskTagLink = TaskTagLink
     app.Note = Note
     app.Attachment = Attachment
     app.User = User
@@ -1614,6 +1617,44 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         db.session.add(tag)
         db.session.commit()
+
+        return redirect(url_for('view_tag', id=tag.id))
+
+    def _convert_task_to_tag(task):
+
+        tag = Tag(task.summary, task.description)
+        db.session.add(tag)
+
+        for child in task.children:
+            ttl = TaskTagLink(child.id, tag.id)
+            db.session.add(ttl)
+            child.parent = task.parent
+            db.session.add(child)
+            for ttl2 in task.tags:
+                ttl3 = TaskTagLink(child.id, ttl2.tag_id)
+                db.session.add(ttl3)
+
+        for ttl2 in task.tags:
+            db.session.delete(ttl2)
+
+        task.parent = None
+        db.session.add(task)
+
+        db.session.delete(task)
+
+        db.session.commit()
+
+        return tag
+
+    app._convert_task_to_tag = _convert_task_to_tag
+
+    @app.route('/task/<int:id>/convert_to_tag')
+    def convert_task_to_tag(id):
+        task = Task.query.get(id)
+        if task is None:
+            return (('No task found for the id "%s"' % id), 404)
+
+        tag = _convert_task_to_tag(task)
 
         return redirect(url_for('view_tag', id=tag.id))
 
