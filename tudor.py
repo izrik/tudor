@@ -336,7 +336,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     tags = None
 
             if tags is not None:
-                query = query.join(Tag).filter(Tag.value.in_(tags))
+                query = query.join(TaskTagLink).filter(TaskTagLink.value.in_(tags))
 
             tasks = query.all()
 
@@ -367,7 +367,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 return None
             return '{:.2f}'.format(self.expected_cost)
 
-    class Tag(db.Model):
+    class TaskTagLink(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
         value = db.Column(db.String(100), primary_key=True)
@@ -942,7 +942,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             for value in values:
                 if value is None or value == '':
                     continue
-                tag = Tag(task.id, value)
+                tag = TaskTagLink(task.id, value)
                 db.session.add(tag)
 
         db.session.add(task)
@@ -1113,9 +1113,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = Tag.query.get((id, value))
+        tag = TaskTagLink.query.get((id, value))
         if tag is None:
-            tag = Tag(id, value)
+            tag = TaskTagLink(id, value)
             db.session.add(tag)
             db.session.commit()
 
@@ -1140,7 +1140,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = Tag.query.get((id, value))
+        tag = TaskTagLink.query.get((id, value))
         if tag is not None:
             db.session.delete(tag)
             db.session.commit()
@@ -1315,7 +1315,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if 'tasks' in request.form and request.form['tasks'] == 'all':
             results['tasks'] = [t.to_dict() for t in Task.query.all()]
         if 'tags' in request.form and request.form['tags'] == 'all':
-            results['tags'] = [t.to_dict() for t in Tag.query.all()]
+            results['tags'] = [t.to_dict() for t in TaskTagLink.query.all()]
         if 'notes' in request.form and request.form['notes'] == 'all':
             results['notes'] = [t.to_dict() for t in Note.query.all()]
         if ('attachments' in request.form and
@@ -1381,7 +1381,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 for tag in src['tags']:
                     task_id = tag['task_id']
                     value = tag['value']
-                    t = Tag(task_id=task_id, value=value)
+                    t = TaskTagLink(task_id=task_id, value=value)
                     db_objects.append(t)
 
             if 'notes' in src:
