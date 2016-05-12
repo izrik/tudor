@@ -2,3 +2,10 @@ alter table tag rename to task_tag_link;
 drop table if exists tag;
 # run tudor.py --create-db
 insert into tag (value) select distinct value from task_tag_link;
+
+alter table task_tag_link rename to task_tag_link2;
+# run tudor.py --create-db
+insert into task_tag_link (task_id, tag_id, value)
+    select  task_tag_link2.task_id, tag.id, tag.value from task_tag_link2
+     inner join tag on (task_tag_link2.value = tag.value)
+drop table task_tag_link2

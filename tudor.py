@@ -379,7 +379,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     class TaskTagLink(db.Model):
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
-        value = db.Column(db.String(100), primary_key=True)
+        tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
+                            primary_key=True)
+        value = db.Column(db.String(100))
 
         task = db.relationship('Task',
                                backref=db.backref('tags', lazy='dynamic',
