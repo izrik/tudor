@@ -1,0 +1,25 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block title %}{{ super() }} - {{ tag.value if tag.value != None }}{% endblock %}
+{% block content %}
+<div>
+    <table class="task_info">
+        <tr><td>ID</td><td>{{ tag.id }}</td></tr>
+        <tr><td>Value</td><td>{{ tag.value|d }}</td></tr>
+        <tr><td>Description</td><td><div class="task_description">{{ tag.description|gfm if tag.description != None }}</div></td></tr>
+    </table>
+    <!--<p><a href="{ { url_for('edit_tag', id=tag.id) } }">edit</a></p>-->
+</div>
+<div>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+<div>
+    <h4>Tasks</h4>
+
+    {{ render_task_table(tasks, None, cycle,
+        page_url=url_for('view_tag', id=tag.id),
+        child_task_view='view_task',
+        show_move_links=False,
+        show_new_task_form=True) }}
+</div>
+{% endblock %}

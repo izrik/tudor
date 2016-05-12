@@ -336,7 +336,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     tags = None
 
             if tags is not None:
-                query = query.join(TaskTagLink).filter(TaskTagLink.value.in_(tags))
+                def get_tag_id(tag):
+                    if tag is None:
+                        return None
+                    if tag == str(tag):
+                        return Tag.query.filter_by(value=tag).all()[0].id
+                    if isinstance(tag, Tag):
+                        return tag.id
+                    raise TypeError(
+                        "Unknown type ('{}') of argument 'tag'".format(
+                            type(tag)))
+                tag_ids = map(get_tag_id, tags)
+                query = query.join(TaskTagLink).filter(TaskTagLink.tag_id.in_(tag_ids))
 
             tasks = query.all()
 
@@ -1545,6 +1556,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db.session.commit()
 
         return redirect(url_for('task_crud'))
+
+    @app.route('/tags/<int:id>')
+    def view_tag(id):
+        tag = Tag.query.get(id)
+        if tag is None:
+            return (('No tag found for the id "%s"' % id), 404)
+
+        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True,
+                                       tags=tag)
+
+        return render_template('tag.t.html', tag=tag, tasks=tasks,
+                               cycle=itertools.cycle)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
