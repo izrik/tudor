@@ -1394,6 +1394,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db_objects = []
 
         try:
+
+            if 'tags' in src:
+                for tag in src['tags']:
+                    task_id = tag['id']
+                    value = tag['value']
+                    description = tag.get('description', '')
+                    t = Tag(value=value, description=description)
+                    t.id = task_id
+                    db_objects.append(t)
+
             if 'tasks' in src:
                 ids = set()
                 for task in src['tasks']:
@@ -1413,6 +1423,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     expected_cost = task.get('expected_cost')
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
+                    tag_ids = task.get('tag_ids', [])
                     t = Task(summary=summary, description=description,
                              is_done=is_done, is_deleted=is_deleted,
                              deadline=deadline,
@@ -1421,13 +1432,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
-                    db_objects.append(t)
-
-            if 'tags' in src:
-                for tag in src['tags']:
-                    task_id = tag['task_id']
-                    value = tag['value']
-                    t = TaskTagLink(task_id=task_id, value=value)
+                    for tag_id in tag_ids:
+                        ttl = TaskTagLink(t.id, tag_id)
+                        db_objects.append(ttl)
                     db_objects.append(t)
 
             if 'notes' in src:
