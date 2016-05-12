@@ -146,7 +146,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
-        expected_cost = db.Column(db.Numeric);
+        expected_cost = db.Column(db.Numeric)
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -347,7 +347,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                         "Unknown type ('{}') of argument 'tag'".format(
                             type(tag)))
                 tag_ids = map(get_tag_id, tags)
-                query = query.join(TaskTagLink).filter(TaskTagLink.tag_id.in_(tag_ids))
+                query = query.join(TaskTagLink).filter(
+                    TaskTagLink.tag_id.in_(tag_ids))
 
             tasks = query.all()
 
@@ -391,10 +392,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                             primary_key=True)
         tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
-                            primary_key=True)
+                           primary_key=True)
 
         tag = db.relationship('Tag',
                               backref=db.backref('tasks', lazy='dynamic'))
+
         @property
         def value(self):
             return self.tag.value
