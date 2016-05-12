@@ -381,11 +381,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                             primary_key=True)
         tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
                             primary_key=True)
-        value = db.Column(db.String(100))
+
+        tag = db.relationship('Tag')
+        @property
+        def value(self):
+            return self.tag.value
 
         task = db.relationship('Task',
-                               backref=db.backref('tags', lazy='dynamic',
-                                                  order_by=value))
+                               backref=db.backref('tags', lazy='dynamic'))
 
         def __init__(self, task_id, value):
             self.task_id = task_id
