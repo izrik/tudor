@@ -48,9 +48,9 @@
         <tr>
             <td>Tags</td>
             <td>
-                {% for tag in task.tags %}
-                    <a href="{{ url_for('view_tag', id=tag.tag_id) }}">{{ tag.value }}</a>
-                    <a href="{{ url_for('delete_tag_from_task', id=task.id, value=tag.value) }}">
+                {% for ttl in task.tags %}
+                    <a href="{{ url_for('view_tag', id=ttl.tag_id) }}">{{ ttl.value }}</a>
+                    <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=ttl.tag_id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
                 {% endfor %}

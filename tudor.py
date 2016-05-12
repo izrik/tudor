@@ -1162,16 +1162,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                          url_for('view_task', id=id)))
 
     @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
-               defaults={'value': None})
+               defaults={'tag_id': None})
     @app.route('/task/<int:id>/delete_tag/', methods=['GET', 'POST'],
-               defaults={'value': None})
-    @app.route('/task/<int:id>/delete_tag/<value>', methods=['GET', 'POST'])
+               defaults={'tag_id': None})
+    @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
     @login_required
-    def delete_tag_from_task(id, value):
+    def delete_tag_from_task(id, tag_id):
 
-        if value is None:
-            value = get_form_or_arg('value')
-        if value is None or value == '':
+        if tag_id is None:
+            tag_id = get_form_or_arg('tag_id')
+        if tag_id is None:
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
 
@@ -1179,9 +1179,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = TaskTagLink.query.get((id, value))
-        if tag is not None:
-            db.session.delete(tag)
+        ttl = TaskTagLink.query.get((id, tag_id))
+        if ttl is not None:
+            db.session.delete(ttl)
             db.session.commit()
 
         return (redirect(request.args.get('next') or
