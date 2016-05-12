@@ -8,7 +8,7 @@
         <tr><td>Value</td><td>{{ tag.value|d }}</td></tr>
         <tr><td>Description</td><td><div class="task_description">{{ tag.description|gfm if tag.description != None }}</div></td></tr>
     </table>
-    <!--<p><a href="{ { url_for('edit_tag', id=tag.id) } }">edit</a></p>-->
+    <p><a href="{{ url_for('edit_tag', id=tag.id) }}">edit</a></p>
 </div>
 <div>
     <p><a href="{{ url_for('index') }}">main</a></p>

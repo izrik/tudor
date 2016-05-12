@@ -1592,6 +1592,31 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return render_template('tag.t.html', tag=tag, tasks=tasks,
                                cycle=itertools.cycle)
 
+    @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_tag(id):
+
+        tag = Tag.query.get(id)
+        if tag is None:
+            return (('No tag found for the id "%s"' % id), 404)
+
+        def render_get_response():
+            return render_template("edit_tag.t.html", tag=tag)
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'value' not in request.form or 'description' not in request.form:
+            return render_get_response()
+
+        tag.value = request.form['value']
+        tag.description = request.form['description']
+
+        db.session.add(tag)
+        db.session.commit()
+
+        return redirect(url_for('view_tag', id=tag.id))
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
