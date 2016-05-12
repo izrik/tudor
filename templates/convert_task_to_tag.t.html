@@ -1,0 +1,30 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block title %}{{ super() }} - Convert "{{ tag_value }}" to a tag?{% endblock %}
+{% block content %}
+<div>
+    <h1>Are you sure you want to convert the "{{ tag_value }}" task into the following tag?</h1>
+    <table class="task_info">
+        <tr><td>ID</td><td></td></tr>
+        <tr><td>Value</td><td>{{ tag_value|d }}</td></tr>
+        <tr><td>Description</td><td><div class="task_description">{{ tag_description|gfm if tag_description != None }}</div></td></tr>
+    </table>
+</div>
+<div>
+    <h4>Tasks</h4>
+
+    {{ render_task_table(tasks, None, cycle,
+        page_url=url_for('view_tag', id=task_id),
+        child_task_view='view_task',
+        show_move_links=False,
+        show_new_task_form=False,
+        show_done_links=False,
+        show_delete_links=False,
+        show_deadline=False) }}
+
+</div>
+<div>
+    <p><a href="{{ url_for('convert_task_to_tag', id=task_id, are_you_sure=1) }}">Yes, convert it</a></p>
+    <p><a href="{{ url_for('index') }}">No, do not convert it</a></p>
+</div>
+{% endblock %}

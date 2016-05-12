@@ -146,7 +146,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         order_num = db.Column(db.Integer, nullable=False, default=0)
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
-        expected_cost = db.Column(db.Numeric);
+        expected_cost = db.Column(db.Numeric)
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -180,7 +180,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 'deadline': str_from_datetime(self.deadline),
                 'parent_id': self.parent_id,
                 'expected_duration_minutes': self.expected_duration_minutes,
-                'expected_cost': self.get_expected_cost_for_export()
+                'expected_cost': self.get_expected_cost_for_export(),
+                'tag_ids': [ttl.tag_id for ttl in self.tags]
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
@@ -336,7 +337,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     tags = None
 
             if tags is not None:
-                query = query.join(Tag).filter(Tag.value.in_(tags))
+                def get_tag_id(tag):
+                    if tag is None:
+                        return None
+                    if tag == str(tag):
+                        return Tag.query.filter_by(value=tag).all()[0].id
+                    if isinstance(tag, Tag):
+                        return tag.id
+                    raise TypeError(
+                        "Unknown type ('{}') of argument 'tag'".format(
+                            type(tag)))
+                tag_ids = map(get_tag_id, tags)
+                query = query.join(TaskTagLink).filter(
+                    TaskTagLink.tag_id.in_(tag_ids))
 
             tasks = query.all()
 
@@ -368,23 +381,40 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return '{:.2f}'.format(self.expected_cost)
 
     class Tag(db.Model):
-        task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
-                            primary_key=True)
-        value = db.Column(db.String(100), primary_key=True)
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
 
-        task = db.relationship('Task',
-                               backref=db.backref('tags', lazy='dynamic',
-                                                  order_by=value))
-
-        def __init__(self, task_id, value):
-            self.task_id = task_id
+        def __init__(self, value, description=None):
             self.value = value
+            self.description = description
 
         def to_dict(self):
             return {
-                'task_id': self.task_id,
-                'value': self.value
+                'id': self.id,
+                'value': self.value,
+                'description': self.description,
             }
+
+    class TaskTagLink(db.Model):
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                            primary_key=True)
+        tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
+                           primary_key=True)
+
+        tag = db.relationship('Tag',
+                              backref=db.backref('tasks', lazy='dynamic'))
+
+        @property
+        def value(self):
+            return self.tag.value
+
+        task = db.relationship('Task',
+                               backref=db.backref('tags', lazy='dynamic'))
+
+        def __init__(self, task_id, tag_id):
+            self.task_id = task_id
+            self.tag_id = tag_id
 
     class Note(db.Model):
         id = db.Column(db.Integer, primary_key=True)
@@ -531,6 +561,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return __revision__
 
     app.Task = Task
+    app.Tag = Tag
+    app.TaskTagLink = TaskTagLink
     app.Note = Note
     app.Attachment = Attachment
     app.User = User
@@ -937,13 +969,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         tags = request.form['tags']
         if tags is not None:
             values = tags.split(',')
-            for tag in task.tags:
-                db.session.delete(tag)
+            for ttl in task.tags:
+                db.session.delete(ttl)
             for value in values:
                 if value is None or value == '':
                     continue
-                tag = Tag(task.id, value)
-                db.session.add(tag)
+
+                tag = Tag.query.filter_by(value=value).first()
+                if tag is None:
+                    tag = Tag(value)
+                    db.session.add(tag)
+
+                ttl = TaskTagLink.query.get((task.id, tag.id))
+                if ttl is None:
+                    ttl = TaskTagLink(task.id, tag.id)
+                    db.session.add(ttl)
 
         db.session.add(task)
         db.session.commit()
@@ -1113,26 +1153,32 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = Tag.query.get((id, value))
+        tag = Tag.query.filter_by(value=value).first()
         if tag is None:
-            tag = Tag(id, value)
+            tag = Tag(value)
             db.session.add(tag)
-            db.session.commit()
+
+        ttl = TaskTagLink.query.get((task.id, tag.id))
+        if ttl is None:
+            ttl = TaskTagLink(task.id, tag.id)
+            db.session.add(ttl)
+
+        db.session.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
 
     @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
-               defaults={'value': None})
+               defaults={'tag_id': None})
     @app.route('/task/<int:id>/delete_tag/', methods=['GET', 'POST'],
-               defaults={'value': None})
-    @app.route('/task/<int:id>/delete_tag/<value>', methods=['GET', 'POST'])
+               defaults={'tag_id': None})
+    @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
     @login_required
-    def delete_tag_from_task(id, value):
+    def delete_tag_from_task(id, tag_id):
 
-        if value is None:
-            value = get_form_or_arg('value')
-        if value is None or value == '':
+        if tag_id is None:
+            tag_id = get_form_or_arg('tag_id')
+        if tag_id is None:
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
 
@@ -1140,9 +1186,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         if task is None:
             return '', 404
 
-        tag = Tag.query.get((id, value))
-        if tag is not None:
-            db.session.delete(tag)
+        ttl = TaskTagLink.query.get((id, tag_id))
+        if ttl is not None:
+            db.session.delete(ttl)
             db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -1348,6 +1394,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db_objects = []
 
         try:
+
+            if 'tags' in src:
+                for tag in src['tags']:
+                    task_id = tag['id']
+                    value = tag['value']
+                    description = tag.get('description', '')
+                    t = Tag(value=value, description=description)
+                    t.id = task_id
+                    db_objects.append(t)
+
             if 'tasks' in src:
                 ids = set()
                 for task in src['tasks']:
@@ -1367,6 +1423,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     expected_cost = task.get('expected_cost')
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
+                    tag_ids = task.get('tag_ids', [])
                     t = Task(summary=summary, description=description,
                              is_done=is_done, is_deleted=is_deleted,
                              deadline=deadline,
@@ -1375,13 +1432,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
-                    db_objects.append(t)
-
-            if 'tags' in src:
-                for tag in src['tags']:
-                    task_id = tag['task_id']
-                    value = tag['value']
-                    t = Tag(task_id=task_id, value=value)
+                    for tag_id in tag_ids:
+                        ttl = TaskTagLink(t.id, tag_id)
+                        db_objects.append(ttl)
                     db_objects.append(t)
 
             if 'notes' in src:
@@ -1531,6 +1584,107 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         db.session.commit()
 
         return redirect(url_for('task_crud'))
+
+    @app.route('/tags')
+    @app.route('/tags/')
+    @login_required
+    def list_tags():
+        tags = Tag.query.all()
+        return render_template('list_tags.t.html', tags=tags,
+                               cycle=itertools.cycle)
+
+    @app.route('/tags/<int:id>')
+    @login_required
+    def view_tag(id):
+        tag = Tag.query.get(id)
+        if tag is None:
+            return (('No tag found for the id "%s"' % id), 404)
+
+        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True,
+                                       tags=tag)
+
+        return render_template('tag.t.html', tag=tag, tasks=tasks,
+                               cycle=itertools.cycle)
+
+    @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_tag(id):
+
+        tag = Tag.query.get(id)
+        if tag is None:
+            return (('No tag found for the id "%s"' % id), 404)
+
+        def render_get_response():
+            return render_template("edit_tag.t.html", tag=tag)
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'value' not in request.form or 'description' not in request.form:
+            return render_get_response()
+
+        tag.value = request.form['value']
+        tag.description = request.form['description']
+
+        db.session.add(tag)
+        db.session.commit()
+
+        return redirect(url_for('view_tag', id=tag.id))
+
+    def _convert_task_to_tag(task):
+
+        tag = Tag(task.summary, task.description)
+        db.session.add(tag)
+
+        for child in task.children:
+            ttl = TaskTagLink(child.id, tag.id)
+            db.session.add(ttl)
+            child.parent = task.parent
+            db.session.add(child)
+            for ttl2 in task.tags:
+                ttl3 = TaskTagLink(child.id, ttl2.tag_id)
+                db.session.add(ttl3)
+
+        for ttl2 in task.tags:
+            db.session.delete(ttl2)
+
+        task.parent = None
+        db.session.add(task)
+
+        db.session.delete(task)
+
+        db.session.commit()
+
+        return tag
+
+    app._convert_task_to_tag = _convert_task_to_tag
+
+    @app.route('/task/<int:id>/convert_to_tag')
+    @login_required
+    def convert_task_to_tag(id):
+        task = Task.query.get(id)
+        if task is None:
+            return (('No task found for the id "%s"' % id), 404)
+
+        if Tag.query.filter_by(value=task.summary).first():
+            message = 'A tag already exists with the name "{}"'.format(
+                task.summary)
+            return (message, 409)
+
+        are_you_sure = request.args.get('are_you_sure')
+        if are_you_sure:
+
+            tag = _convert_task_to_tag(task)
+
+            return redirect(
+                request.args.get('next') or url_for('view_tag', id=tag.id))
+
+        return render_template('convert_task_to_tag.t.html',
+                               task_id=task.id,
+                               tag_value=task.summary,
+                               tag_description=task.description,
+                               cycle=itertools.cycle,
+                               tasks=task.children)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
