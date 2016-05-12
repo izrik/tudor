@@ -1573,12 +1573,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     @app.route('/tags')
     @app.route('/tags/')
+    @login_required
     def list_tags():
         tags = Tag.query.all()
         return render_template('list_tags.t.html', tags=tags,
                                cycle=itertools.cycle)
 
     @app.route('/tags/<int:id>')
+    @login_required
     def view_tag(id):
         tag = Tag.query.get(id)
         if tag is None:
