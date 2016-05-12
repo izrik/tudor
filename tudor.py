@@ -1660,6 +1660,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app._convert_task_to_tag = _convert_task_to_tag
 
     @app.route('/task/<int:id>/convert_to_tag')
+    @login_required
     def convert_task_to_tag(id):
         task = Task.query.get(id)
         if task is None:
