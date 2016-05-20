@@ -1084,57 +1084,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('index'))
 
-    @app.route('/task/<int:id>/right')
-    @login_required
-    def move_task_right(id):
-        task = Task.query.get(id)
-        show_deleted = request.cookies.get('show_deleted')
-        siblings = task.get_siblings(show_deleted)
-        higher_siblings = siblings.filter(Task.order_num >= task.order_num)
-        higher_siblings = higher_siblings.filter(Task.id != task.id)
-        next_task = higher_siblings.order_by(Task.order_num.asc()).first()
-
-        if next_task:
-            if next_task.children.count() > 0:
-                reorder_tasks(next_task.get_children(descending=True))
-                children = next_task.get_children(ascending=True)
-                next_sibling = children.first()
-                new_order_num = next_sibling.order_num - 1
-            else:
-                new_order_num = 0
-            prev_parent = task.parent
-            task.parent = next_task
-            task.order_num = new_order_num
-
-            if prev_parent:
-                db.session.add(prev_parent)
-            db.session.add(task)
-            db.session.add(next_task)
-            db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
-
-    @app.route('/task/<int:id>/left')
-    @login_required
-    def move_task_left(id):
-        task = Task.query.get(id)
-        show_deleted = request.cookies.get('show_deleted')
-
-        if task.parent:
-            reorder_tasks(task.parent.get_siblings(descending=True))
-
-            prev_parent = task.parent
-            task.parent = task.parent.parent
-            task.order_num = prev_parent.order_num - 1
-
-            db.session.add(prev_parent)
-            if task.parent is not None:
-                db.session.add(task.parent)
-            db.session.add(task)
-            db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
-
     def get_form_or_arg(name):
         if name in request.form:
             return request.form[name]
