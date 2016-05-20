@@ -1062,6 +1062,22 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('index'))
 
+    @app.route('/task/<int:id>/top')
+    @login_required
+    def move_task_to_top(id):
+        task = Task.query.get(id)
+        show_deleted = request.cookies.get('show_deleted')
+        siblings = task.get_siblings(True)
+        top_task = siblings.order_by(Task.order_num.desc()).first()
+
+        if top_task:
+            task.order_num = top_task.order_num + 1
+
+            db.session.add(task)
+            db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
@@ -1080,6 +1096,22 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             db.session.add(task)
             db.session.add(next_task)
+            db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/bottom')
+    @login_required
+    def move_task_to_bottom(id):
+        task = Task.query.get(id)
+        show_deleted = request.cookies.get('show_deleted')
+        siblings = task.get_siblings(True)
+        bottom_task = siblings.order_by(Task.order_num.asc()).first()
+
+        if bottom_task:
+            task.order_num = bottom_task.order_num - 2
+
+            db.session.add(task)
             db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
