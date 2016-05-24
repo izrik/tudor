@@ -115,7 +115,14 @@ print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
+def create_sqlalchemy_db_factory(db_uri=DEFAULT_TUDOR_DB_URI):
+    def db_factory(_app):
+        _app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+        db = SQLAlchemy(_app)
+        return db
+    return db_factory
+
+def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, db_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
@@ -134,8 +141,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-    db = SQLAlchemy(app)
+    if db_factory is None:
+        db_factory = create_sqlalchemy_db_factory(db_uri)
+
+    db = db_factory(app)
     app.db = db
 
     class Task(db.Model):
