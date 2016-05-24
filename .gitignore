@@ -71,3 +71,6 @@ set-env.sh
 
 # scratch files
 _scratch*
+
+# coveralls
+.coveralls.yml
