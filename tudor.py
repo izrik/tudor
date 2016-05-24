@@ -121,14 +121,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
 
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
                                                      allowed_extensions)
                              if ext is not None and ext != '')
-    db = SQLAlchemy(app)
-    app.db = db
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -136,6 +133,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
+
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    db = SQLAlchemy(app)
+    app.db = db
 
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
