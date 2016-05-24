@@ -49,6 +49,7 @@
             {% endif %}
         </tr>
         </thead>
+        <form action="{{ url_for('long_order_change') }}" method="post">
         {% for child in descendants if child != root %}
         <tr class="{{ odd_even() }}">
             <td><a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.id }}</a></td>
@@ -110,11 +111,16 @@
             {% if show_move_links %}
                 <td>
                     <a href="{{ url_for('move_task_up', id=child.id, show_deleted=show_deleted, next=page_url) }}"><img src="{{ url_for('static', filename='up_arrow.png') }}" /></a>
+                    <a href="{{ url_for('move_task_to_top', id=child.id, show_deleted=show_deleted, next=page_url) }}"><img src="{{ url_for('static', filename='up_up_arrow.png') }}" /></a>
+                    <a href="{{ url_for('move_task_to_bottom', id=child.id, show_deleted=show_deleted, next=page_url) }}"><img src="{{ url_for('static', filename='down_down_arrow.png') }}" /></a>
                     <a href="{{ url_for('move_task_down', id=child.id, show_deleted=show_deleted, next=page_url) }}"><img src="{{ url_for('static', filename='down_arrow.png') }}" /></a>
+                    <input type="checkbox" name="long_order_target" value="{{ child.id }}" />
+                    <button type="submit" name="long_order_task_to_move" value="{{ child.id }}" >&nbsp;</button>
                 </td>
             {% endif %}
         </tr>
         {% endfor %}
+        </form>
         <tfoot>
             <td></td>
             <td>

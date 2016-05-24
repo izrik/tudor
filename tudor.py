@@ -1062,6 +1062,22 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('index'))
 
+    @app.route('/task/<int:id>/top')
+    @login_required
+    def move_task_to_top(id):
+        task = Task.query.get(id)
+        show_deleted = request.cookies.get('show_deleted')
+        siblings = task.get_siblings(True)
+        top_task = siblings.order_by(Task.order_num.desc()).first()
+
+        if top_task:
+            task.order_num = top_task.order_num + 1
+
+            db.session.add(task)
+            db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
@@ -1084,10 +1100,67 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return redirect(request.args.get('next') or url_for('index'))
 
+    @app.route('/task/<int:id>/bottom')
+    @login_required
+    def move_task_to_bottom(id):
+        task = Task.query.get(id)
+        show_deleted = request.cookies.get('show_deleted')
+        siblings = task.get_siblings(True)
+        bottom_task = siblings.order_by(Task.order_num.asc()).first()
+
+        if bottom_task:
+            task.order_num = bottom_task.order_num - 2
+
+            db.session.add(task)
+            db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
     def get_form_or_arg(name):
         if name in request.form:
             return request.form[name]
         return request.args.get(name)
+
+    @app.route('/long_order_change', methods=['POSt'])
+    @login_required
+    def long_order_change():
+
+        task_to_move_id = get_form_or_arg('long_order_task_to_move')
+        if task_to_move_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+        task_to_move = Task.query.get(task_to_move_id)
+        if task_to_move is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        target_id = get_form_or_arg('long_order_target')
+        if target_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+        target = Task.query.get(target_id)
+        if target is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        if target.parent_id != task_to_move.parent_id:
+            redirect(request.args.get('next') or url_for('index'))
+
+        siblings = target.get_siblings(True).all()
+        siblings2 = sorted(siblings, key=lambda t: t.order_num, reverse=True)
+
+        k = len(siblings) * 2
+        for s in siblings2:
+            s.order_num = k
+            k -= 2
+
+        task_to_move.order_num = target.order_num + 1
+        siblings2 = sorted(siblings, key=lambda t: t.order_num, reverse=True)
+
+        k = len(siblings) * 2
+        for s in siblings2:
+            s.order_num = k
+            k -= 2
+            db.session.add(s)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required
