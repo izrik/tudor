@@ -570,14 +570,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, db_factory=None,
         def get_revision():
             return __revision__
 
-    app.Task = Task
-    app.Tag = Tag
-    app.TaskTagLink = TaskTagLink
-    app.Note = Note
-    app.Attachment = Attachment
-    app.User = User
-    app.View = View
-    app.Option = Option
+    db.Task = Task
+    db.Tag = Tag
+    db.TaskTagLink = TaskTagLink
+    db.Note = Note
+    db.Attachment = Attachment
+    db.User = User
+    db.View = View
+    db.Option = Option
+
+    app.Task = db.Task
+    app.Tag = db.Tag
+    app.TaskTagLink = db.TaskTagLink
+    app.Note = db.Note
+    app.Attachment = db.Attachment
+    app.User = db.User
+    app.View = db.View
+    app.Option = db.Option
 
     def admin_required(func):
         @wraps(func)
