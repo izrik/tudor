@@ -614,39 +614,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def setup_options():
         return {'opts': Options}
 
-    @app.route('/new_loader')
-    @login_required
-    def new_loader_page():
-
-        kwargs = {}
-
-        roots = request.args.get('roots')
-        if roots is not None:
-            kwargs['roots'] = roots.split(',')
-
-        max_depth = request.args.get('max_depth')
-        if max_depth is not None:
-            kwargs['max_depth'] = int(max_depth)
-        else:
-            kwargs['max_depth'] = None
-
-        include_done = request.args.get('include_done')
-        if include_done is not None:
-            kwargs['include_done'] = bool_from_str(include_done)
-
-        include_deleted = request.args.get('include_deleted')
-        if include_deleted is not None:
-            kwargs['include_deleted'] = bool_from_str(include_deleted)
-
-        exclude_undeadlined = request.args.get('exclude_undeadlined')
-        if exclude_undeadlined is not None:
-            kwargs['exclude_undeadlined'] = bool_from_str(exclude_undeadlined)
-
-        tasks = Task.load(**kwargs)
-
-        return render_template('new_loader.t.html', tasks=tasks,
-                               cycle=itertools.cycle)
-
     def sort_by_hierarchy(tasks, root=None):
         tasks_by_parent = {}
 
@@ -668,83 +635,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                         yield x
 
         return list(get_sorted_order(root))
-
-    @app.route('/new_loader/task_with_children/<int:id>')
-    @login_required
-    def new_loader_task_with_children(id):
-        task = Task.query.get(id)
-        if task is None:
-            return '', 404
-
-        max_depth = int_from_str(request.args.get('max_depth'))
-        descendants = Task.load(roots=task.id, max_depth=max_depth,
-                                include_done=True, include_deleted=True)
-
-        hierarchy_sort = True
-        if hierarchy_sort:
-            descendants = sort_by_hierarchy(descendants, root=task)
-
-        show_is_done = bool_from_str(request.args.get('show_is_done'))
-        # show_is_done = request.args.get('show_is_done')
-        # if show_is_done is None:
-        #     show_is_done = True
-        # else:
-        #     show_is_done = bool_from_str(show_is_done)
-
-        show_is_deleted = bool_from_str(request.args.get('show_is_deleted'))
-        # show_is_deleted = request.args.get('show_is_deleted')
-        # if show_is_deleted is None:
-        #     show_is_deleted = True
-        # else:
-        #     show_is_deleted = bool_from_str(show_is_deleted)
-
-        show_deadline = request.args.get('show_deadline')
-        if show_deadline is None:
-            show_deadline = True
-        else:
-            show_deadline = bool_from_str(show_deadline)
-
-        show_order_num = bool_from_str(request.args.get('show_order_num'))
-        show_parent_id = bool_from_str(request.args.get('show_parent_id'))
-        show_depth = bool_from_str(request.args.get('show_depth'))
-
-        show_move_links = bool_from_str(request.args.get('show_move_links'))
-
-        show_done_links = request.args.get('show_done_links')
-        if show_done_links is None:
-            show_done_links = True
-        else:
-            show_done_links = bool_from_str(show_done_links)
-
-        # show_delete_links = bool_from_str(
-        #     request.args.get('show_delete_links'))
-        show_delete_links = request.args.get('show_delete_links')
-        if show_delete_links is None:
-            show_delete_links = True
-        else:
-            show_delete_links = bool_from_str(show_delete_links)
-
-        return render_template('new_loader_task_with_children.t.html',
-                               task=task, descendants=descendants,
-                               cycle=itertools.cycle,
-                               show_is_done=show_is_done,
-                               show_is_deleted=show_is_deleted,
-                               show_deadline=show_deadline,
-                               show_order_num=show_order_num,
-                               show_parent_id=show_parent_id,
-                               show_depth=show_depth,
-                               show_move_links=show_move_links,
-                               show_done_links=show_done_links,
-                               show_delete_links=show_delete_links)
-
-    @app.route('/new_loader/deadlines')
-    @login_required
-    def new_loader_deadlines():
-
-        tasks = Task.load_no_hierarchy(exclude_undeadlined=True)
-
-        return render_template('new_loader_deadlines.t.html', tasks=tasks,
-                               cycle=itertools.cycle)
 
     @app.route('/')
     @login_required
