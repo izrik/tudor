@@ -750,6 +750,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @login_required
     def index():
         show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
         roots = get_roots_str()
         tasks = None
         if roots is not None:
@@ -761,6 +762,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             tasks = Task.query.filter(Task.parent_id == None)
         if not show_deleted:
             tasks = tasks.filter_by(is_deleted=False)
+        if not show_done:
+            tasks = tasks.filter_by(is_done=False)
         tasks = tasks.order_by(Task.order_num.desc())
         tasks = tasks.all()
 
@@ -771,11 +774,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         if tags is not None and len(tags) > 0:
             tags = tags.split(',')
-            tasks_h = Task.load_no_hierarchy(include_done=True,
+            tasks_h = Task.load_no_hierarchy(include_done=show_done,
                                              include_deleted=show_deleted,
                                              tags=tags)
         else:
-            tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
+            tasks_h = Task.load(roots=None, max_depth=None,
+                                include_done=show_done,
                                 include_deleted=show_deleted)
             tasks_h = sort_by_hierarchy(tasks_h)
 
@@ -783,6 +787,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
+                                             show_done=show_done,
                                              roots=roots, views=View.query,
                                              cycle=itertools.cycle,
                                              all_tasks=all_tasks,
