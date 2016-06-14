@@ -19,6 +19,13 @@
         <a href="{{ url_for('show_hide_deleted', show_deleted=1) }}">show deleted</a>
         {% endif -%}
     </p>
+    <p>
+        {%- if show_done %}
+        <a href="{{ url_for('show_hide_done', show_done=0) }}">hide done</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_done', show_done=1) }}">show done</a>
+        {% endif -%}
+    </p>
     {% if user.is_admin %}
     <p><a href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
     {% endif %}
