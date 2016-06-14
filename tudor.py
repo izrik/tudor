@@ -1301,6 +1301,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             resp.set_cookie('show_deleted', '')
         return resp
 
+    @app.route('/show_hide_done')
+    @login_required
+    def show_hide_done():
+        show_done = request.args.get('show_done')
+        resp = make_response(redirect(url_for('index')))
+        if show_done and show_done != '0':
+            resp.set_cookie('show_done', '1')
+        else:
+            resp.set_cookie('show_done', '')
+        return resp
+
     @app.route('/view/new', methods=['POST'])
     @login_required
     def new_view():
