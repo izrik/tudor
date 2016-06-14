@@ -40,6 +40,33 @@
     {% endif %}
 </div>
 <div>
+    <h3>Tags</h3>
+    <table class="task_children">
+        {% set odd_even = cycle(['odd', 'even']).next %}
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Value</th>
+        </tr>
+        </thead>
+        {% for tag in tags %}
+        <tr class="{{ odd_even() }}">
+            <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.id }}</a></td>
+            <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a></td>
+        </tr>
+        {% endfor %}
+        <!--<tfoot>-->
+            <!--<td></td>-->
+            <!--<td>-->
+                <!--<form action="{ { url_for('new_tag') }}" method="post">-->
+                    <!--<input type="text" name="value" />-->
+                    <!--<input type="hidden" name="next_url" value="{ { page_url }}" />-->
+                <!--</form>-->
+            <!--</td>-->
+        <!--</tfoot>-->
+    </table>
+</div>
+<div>
     <h3>Views</h3>
     <table>
         <tr>
