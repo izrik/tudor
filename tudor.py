@@ -172,7 +172,8 @@ class SqlAlchemyDataSource(object):
                     'order_num': self.order_num,
                     'deadline': str_from_datetime(self.deadline),
                     'parent_id': self.parent_id,
-                    'expected_duration_minutes': self.expected_duration_minutes,
+                    'expected_duration_minutes':
+                        self.expected_duration_minutes,
                     'expected_cost': self.get_expected_cost_for_export(),
                     'tag_ids': [ttl.tag_id for ttl in self.tags]
                 }
@@ -180,8 +181,8 @@ class SqlAlchemyDataSource(object):
             def get_siblings(self, include_deleted=True, descending=False,
                              ascending=False):
                 if self.parent_id is not None:
-                    return self.parent.get_children(include_deleted, descending,
-                                                    ascending)
+                    return self.parent.get_children(include_deleted,
+                                                    descending, ascending)
 
                 siblings = Task.query.filter(Task.parent_id == None)
 
@@ -209,8 +210,9 @@ class SqlAlchemyDataSource(object):
 
                 return children
 
-            def get_all_descendants(self, include_deleted=True, descending=False,
-                                    ascending=False, visited=None, result=None):
+            def get_all_descendants(self, include_deleted=True,
+                                    descending=False, ascending=False,
+                                    visited=None, result=None):
                 if visited is None:
                     visited = set()
                 if result is None:
@@ -443,9 +445,10 @@ class SqlAlchemyDataSource(object):
             description = db.Column(db.String(100), nullable=False, default='')
 
             task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-            task = db.relationship('Task', backref=db.backref('attachments',
-                                                              lazy='dynamic',
-                                                              order_by=timestamp))
+            task = db.relationship('Task',
+                                   backref=db.backref('attachments',
+                                                      lazy='dynamic',
+                                                      order_by=timestamp))
 
             def __init__(self, path, description=None, timestamp=None,
                          filename=None):
@@ -556,8 +559,6 @@ class SqlAlchemyDataSource(object):
         self.Option = Option
 
 
-
-
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
@@ -599,7 +600,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         @staticmethod
         def get_revision():
             return __revision__
-
 
     app.Task = ds.Task
     app.Tag = ds.Tag
