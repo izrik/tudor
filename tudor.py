@@ -184,7 +184,7 @@ class SqlAlchemyDataSource(object):
                     return self.parent.get_children(include_deleted,
                                                     descending, ascending)
 
-                siblings = Task.query.filter(Task.parent_id == None)
+                siblings = app.Task.query.filter(Task.parent_id == None)
 
                 if not include_deleted:
                     siblings = siblings.filter(Task.is_deleted == False)
@@ -247,7 +247,7 @@ class SqlAlchemyDataSource(object):
             def load(roots=None, max_depth=0, include_done=False,
                      include_deleted=False, exclude_undeadlined=False):
 
-                query = Task.query
+                query = app.Task.query
 
                 if not include_done:
                     query = query.filter_by(is_done=False)
@@ -286,7 +286,7 @@ class SqlAlchemyDataSource(object):
 
                         depth += 1
 
-                        query = Task.query
+                        query = app.Task.query
                         query = query.filter(Task.parent_id.in_(next_ids),
                                              Task.id.notin_(already_ids))
                         if not include_done:
@@ -314,7 +314,7 @@ class SqlAlchemyDataSource(object):
             def load_no_hierarchy(include_done=False, include_deleted=False,
                                   exclude_undeadlined=False, tags=None):
 
-                query = Task.query
+                query = app.Task.query
 
                 if not include_done:
                     query = query.filter_by(is_done=False)
@@ -588,7 +588,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     class Options(object):
         @staticmethod
         def get(key, default_value=None):
-            option = Option.query.get(key)
+            option = app.Option.query.get(key)
             if option is None:
                 return default_value
             return option.value
@@ -637,7 +637,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             m = re.match(r'(\d+)\*', root_ids[i])
             if m:
                 id = m.group(1)
-                task = Task.query.get(id)
+                task = app.Task.query.get(id)
                 root_ids[i] = map(lambda c: c.id, task.children)
         if root_ids:
             root_ids = flatten(root_ids)
@@ -687,31 +687,31 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if roots is not None:
             root_ids = get_root_ids_from_str(roots)
             if root_ids:
-                tasks = Task.query.filter(Task.id.in_(root_ids))
+                tasks = app.Task.query.filter(app.Task.id.in_(root_ids))
 
         if tasks is None:
-            tasks = Task.query.filter(Task.parent_id == None)
+            tasks = app.Task.query.filter(app.Task.parent_id == None)
         if not show_deleted:
             tasks = tasks.filter_by(is_deleted=False)
         if not show_done:
             tasks = tasks.filter_by(is_done=False)
-        tasks = tasks.order_by(Task.order_num.desc())
+        tasks = tasks.order_by(app.Task.order_num.desc())
         tasks = tasks.all()
 
         all_tasks = get_tasks_and_all_descendants_from_tasks(tasks)
-        deadline_tasks = Task.load_no_hierarchy(exclude_undeadlined=True)
+        deadline_tasks = app.Task.load_no_hierarchy(exclude_undeadlined=True)
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
         if tags is not None and len(tags) > 0:
             tags = tags.split(',')
-            tasks_h = Task.load_no_hierarchy(include_done=show_done,
-                                             include_deleted=show_deleted,
-                                             tags=tags)
+            tasks_h = app.Task.load_no_hierarchy(include_done=show_done,
+                                                 include_deleted=show_deleted,
+                                                 tags=tags)
         else:
-            tasks_h = Task.load(roots=None, max_depth=None,
-                                include_done=show_done,
-                                include_deleted=show_deleted)
+            tasks_h = app.Task.load(roots=None, max_depth=None,
+                                    include_done=show_done,
+                                    include_deleted=show_deleted)
             tasks_h = sort_by_hierarchy(tasks_h)
 
         all_tags = Tag.query.all()
@@ -719,7 +719,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
                                              show_done=show_done,
-                                             roots=roots, views=View.query,
+                                             roots=roots, views=app.View.query,
                                              cycle=itertools.cycle,
                                              all_tasks=all_tasks,
                                              deadline_tasks=deadline_tasks,
@@ -733,9 +733,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def new_task():
         summary = request.form['summary']
-        task = Task(summary)
+        task = app.Task(summary)
 
-        query = Task.query.order_by(Task.order_num.asc()).limit(1)
+        query = app.Task.query.order_by(app.Task.order_num.asc()).limit(1)
         lowest_order_num_tasks = query.all()
         task.order_num = 0
         if len(lowest_order_num_tasks) > 0:
@@ -745,7 +745,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             parent_id = request.form['parent_id']
             if parent_id is None or parent_id == '':
                 task.parent_id = None
-            elif Task.query.filter_by(id=parent_id).count() > 0:
+            elif app.Task.query.filter_by(id=parent_id).count() > 0:
                 task.parent_id = parent_id
         else:
             task.parent_id = None
@@ -761,7 +761,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
-        task = Task.query.filter_by(id=id).first()
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
             return 404
         task.is_done = True
@@ -771,7 +771,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/mark_undone')
     @login_required
     def task_undo(id):
-        task = Task.query.filter_by(id=id).first()
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
             return 404
         task.is_done = False
@@ -781,7 +781,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
-        task = Task.query.filter_by(id=id).first()
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
             return 404
         task.is_deleted = True
@@ -791,7 +791,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/undelete')
     @login_required
     def undelete_task(id):
-        task = Task.query.filter_by(id=id).first()
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
             return 404
         task.is_deleted = False
@@ -802,7 +802,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     @admin_required
     def purge_task(id):
-        task = Task.query.filter_by(id=id, is_deleted=True).first()
+        task = app.Task.query.filter_by(id=id, is_deleted=True).first()
         if not task:
             return 404
         db.session.delete(task)
@@ -815,7 +815,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def purge_deleted_tasks():
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
-            deleted_tasks = Task.query.filter_by(is_deleted=True)
+            deleted_tasks = app.Task.query.filter_by(is_deleted=True)
             for task in deleted_tasks:
                 db.session.delete(task)
             db.session.commit()
@@ -825,12 +825,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        task = Task.query.filter_by(id=id).first()
+        task = app.Task.query.filter_by(id=id).first()
         if task is None:
             return (('No task found for the id "%s"' % id), 404)
 
-        descendants = Task.load(roots=task.id, max_depth=None,
-                                include_done=True, include_deleted=True)
+        descendants = app.Task.load(roots=task.id, max_depth=None,
+                                    include_done=True, include_deleted=True)
 
         hierarchy_sort = True
         if hierarchy_sort:
@@ -845,11 +845,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'task_id' not in request.form:
             return ('No task_id specified', 400)
         task_id = request.form['task_id']
-        task = Task.query.filter_by(id=task_id).first()
+        task = app.Task.query.filter_by(id=task_id).first()
         if task is None:
             return (('No task found for the id "%s"' % task_id), 404)
         content = request.form['content']
-        note = Note(content)
+        note = app.Note(content)
         note.task = task
 
         save_task(note)
@@ -859,7 +859,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_task(id):
-        task = Task.query.filter_by(id=id).first()
+        task = app.Task.query.filter_by(id=id).first()
 
         def render_get_response():
             tag_list = ','.join(task.get_tag_values())
@@ -899,7 +899,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             parent_id = request.form['parent_id']
             if parent_id is None or parent_id == '':
                 task.parent_id = None
-            elif Task.query.filter_by(id=parent_id).count() > 0:
+            elif app.Task.query.filter_by(id=parent_id).count() > 0:
                 task.parent_id = parent_id
         else:
             task.parent_id = None
@@ -913,14 +913,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 if value is None or value == '':
                     continue
 
-                tag = Tag.query.filter_by(value=value).first()
+                tag = app.Tag.query.filter_by(value=value).first()
                 if tag is None:
-                    tag = Tag(value)
+                    tag = app.Tag(value)
                     db.session.add(tag)
 
-                ttl = TaskTagLink.query.get((task.id, tag.id))
+                ttl = app.TaskTagLink.query.get((task.id, tag.id))
                 if ttl is None:
-                    ttl = TaskTagLink(task.id, tag.id)
+                    ttl = app.TaskTagLink(task.id, tag.id)
                     db.session.add(ttl)
 
         db.session.add(task)
@@ -940,7 +940,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'task_id' not in request.form:
             return ('No task_id specified', 400)
         task_id = request.form['task_id']
-        task = Task.query.filter_by(id=task_id).first()
+        task = app.Task.query.filter_by(id=task_id).first()
         if task is None:
             return (('No task found for the task_id "%s"' % task_id), 404)
         f = request.files['filename']
@@ -953,7 +953,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             description = ''
 
-        att = Attachment(path, description)
+        att = app.Attachment(path, description)
         att.task = task
 
         save_task(att)
@@ -965,7 +965,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/attachment/<int:aid>/<path:x>')
     @login_required
     def get_attachment(aid, x):
-        att = Attachment.query.filter_by(id=aid).first()
+        att = app.Attachment.query.filter_by(id=aid).first()
         if att is None:
             return (('No attachment found for the id "%s"' % aid), 404)
 
@@ -981,12 +981,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/up')
     @login_required
     def move_task_up(id):
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         show_deleted = request.cookies.get('show_deleted')
         siblings = task.get_siblings(show_deleted)
-        higher_siblings = siblings.filter(Task.order_num >= task.order_num)
-        higher_siblings = higher_siblings.filter(Task.id != task.id)
-        next_task = higher_siblings.order_by(Task.order_num.asc()).first()
+        higher_siblings = siblings.filter(app.Task.order_num >= task.order_num)
+        higher_siblings = higher_siblings.filter(app.Task.id != task.id)
+        next_task = higher_siblings.order_by(app.Task.order_num.asc()).first()
 
         if next_task:
             if task.order_num == next_task.order_num:
@@ -1003,10 +1003,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/top')
     @login_required
     def move_task_to_top(id):
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         show_deleted = request.cookies.get('show_deleted')
         siblings = task.get_siblings(True)
-        top_task = siblings.order_by(Task.order_num.desc()).first()
+        top_task = siblings.order_by(app.Task.order_num.desc()).first()
 
         if top_task:
             task.order_num = top_task.order_num + 1
@@ -1019,12 +1019,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         show_deleted = request.cookies.get('show_deleted')
         siblings = task.get_siblings(show_deleted)
-        lower_siblings = siblings.filter(Task.order_num <= task.order_num)
-        lower_siblings = lower_siblings.filter(Task.id != task.id)
-        next_task = lower_siblings.order_by(Task.order_num.desc()).first()
+        lower_siblings = siblings.filter(app.Task.order_num <= task.order_num)
+        lower_siblings = lower_siblings.filter(app.Task.id != task.id)
+        next_task = lower_siblings.order_by(app.Task.order_num.desc()).first()
 
         if next_task:
             if task.order_num == next_task.order_num:
@@ -1041,10 +1041,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/bottom')
     @login_required
     def move_task_to_bottom(id):
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         show_deleted = request.cookies.get('show_deleted')
         siblings = task.get_siblings(True)
-        bottom_task = siblings.order_by(Task.order_num.asc()).first()
+        bottom_task = siblings.order_by(app.Task.order_num.asc()).first()
 
         if bottom_task:
             task.order_num = bottom_task.order_num - 2
@@ -1066,14 +1066,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         task_to_move_id = get_form_or_arg('long_order_task_to_move')
         if task_to_move_id is None:
             redirect(request.args.get('next') or url_for('index'))
-        task_to_move = Task.query.get(task_to_move_id)
+        task_to_move = app.Task.query.get(task_to_move_id)
         if task_to_move is None:
             redirect(request.args.get('next') or url_for('index'))
 
         target_id = get_form_or_arg('long_order_target')
         if target_id is None:
             redirect(request.args.get('next') or url_for('index'))
-        target = Task.query.get(target_id)
+        target = app.Task.query.get(target_id)
         if target is None:
             redirect(request.args.get('next') or url_for('index'))
 
@@ -1109,18 +1109,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
 
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         if task is None:
             return '', 404
 
-        tag = Tag.query.filter_by(value=value).first()
+        tag = app.Tag.query.filter_by(value=value).first()
         if tag is None:
-            tag = Tag(value)
+            tag = app.Tag(value)
             db.session.add(tag)
 
-        ttl = TaskTagLink.query.get((task.id, tag.id))
+        ttl = app.TaskTagLink.query.get((task.id, tag.id))
         if ttl is None:
-            ttl = TaskTagLink(task.id, tag.id)
+            ttl = app.TaskTagLink(task.id, tag.id)
             db.session.add(ttl)
 
         db.session.commit()
@@ -1142,11 +1142,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
 
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         if task is None:
             return '', 404
 
-        ttl = TaskTagLink.query.get((id, tag_id))
+        ttl = app.TaskTagLink.query.get((id, tag_id))
         if ttl is not None:
             db.session.delete(ttl)
             db.session.commit()
@@ -1156,7 +1156,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     @login_manager.user_loader
     def load_user(userid):
-        return User.query.get(userid)
+        return app.User.query.get(userid)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -1164,7 +1164,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
-        user = User.query.get(email)
+        user = app.User.query.get(email)
 
         if (user is None or
                 not bcrypt.check_password_hash(user.hashed_password,
@@ -1189,11 +1189,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def list_users():
 
         if request.method == 'GET':
-            return render_template('list_users.t.html', users=User.query,
+            return render_template('list_users.t.html', users=app.User.query,
                                    cycle=itertools.cycle)
 
         email = request.form['email']
-        user = User.query.get(email)
+        user = app.User.query.get(email)
         if user is not None:
             return ('A user already exists with the email '
                     'address {}'.format(email), 409)
@@ -1201,7 +1201,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'is_admin' in request.form:
             is_admin = bool_from_str(request.form['is_admin'])
 
-        user = User(email=email, is_admin=is_admin)
+        user = app.User(email=email, is_admin=is_admin)
 
         db.session.add(user)
         db.session.commit()
@@ -1256,7 +1256,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         name = request.form['view_name']
         roots = request.form['view_roots']
-        view = View(name, roots)
+        view = app.View(name, roots)
 
         db.session.add(view)
         db.session.commit()
@@ -1265,7 +1265,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/view/<int:id>')
     @login_required
     def set_view(id):
-        view = View.query.get(id)
+        view = app.View.query.get(id)
         if view is None:
             return (('No view found for the id "%s"' % id), 404)
         return redirect(url_for('set_roots', roots=view.roots))
@@ -1275,18 +1275,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @admin_required
     def view_options():
         if request.method == 'GET' or 'key' not in request.form:
-            return render_template('options.t.html', options=Option.query)
+            return render_template('options.t.html', options=app.Option.query)
 
         key = request.form['key']
         value = ''
         if 'value' in request.form:
             value = request.form['value']
 
-        option = Option.query.get(key)
+        option = app.Option.query.get(key)
         if option is not None:
             option.value = value
         else:
-            option = Option(key, value)
+            option = app.Option(key, value)
 
         db.session.add(option)
         db.session.commit()
@@ -1297,7 +1297,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     @admin_required
     def delete_option(key):
-        option = Option.query.get(key)
+        option = app.Option.query.get(key)
         if option is not None:
             db.session.delete(option)
             db.session.commit()
@@ -1307,8 +1307,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
-                            include_deleted=True)
+        tasks_h = app.Task.load(roots=None, max_depth=None, include_done=True,
+                                include_deleted=True)
         tasks_h = sort_by_hierarchy(tasks_h)
 
         k = len(tasks_h) + 1
@@ -1330,21 +1330,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return render_template('export.t.html', results=None)
         results = {}
         if 'tasks' in request.form and request.form['tasks'] == 'all':
-            results['tasks'] = [t.to_dict() for t in Task.query.all()]
+            results['tasks'] = [t.to_dict() for t in app.Task.query.all()]
         if 'tags' in request.form and request.form['tags'] == 'all':
-            results['tags'] = [t.to_dict() for t in Tag.query.all()]
+            results['tags'] = [t.to_dict() for t in app.Tag.query.all()]
         if 'notes' in request.form and request.form['notes'] == 'all':
-            results['notes'] = [t.to_dict() for t in Note.query.all()]
+            results['notes'] = [t.to_dict() for t in app.Note.query.all()]
         if ('attachments' in request.form and
                 request.form['attachments'] == 'all'):
             results['attachments'] = [t.to_dict() for t in
-                                      Attachment.query.all()]
+                                      app.Attachment.query.all()]
         if 'users' in request.form and request.form['users'] == 'all':
-            results['users'] = [t.to_dict() for t in User.query.all()]
+            results['users'] = [t.to_dict() for t in app.User.query.all()]
         if 'views' in request.form and request.form['views'] == 'all':
-            results['views'] = [t.to_dict() for t in View.query.all()]
+            results['views'] = [t.to_dict() for t in app.View.query.all()]
         if 'options' in request.form and request.form['options'] == 'all':
-            results['options'] = [t.to_dict() for t in Option.query.all()]
+            results['options'] = [t.to_dict() for t in app.Option.query.all()]
 
         return jsonify(results)
 
@@ -1371,7 +1371,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     task_id = tag['id']
                     value = tag['value']
                     description = tag.get('description', '')
-                    t = Tag(value=value, description=description)
+                    t = app.Tag(value=value, description=description)
                     t.id = task_id
                     db_objects.append(t)
 
@@ -1379,7 +1379,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 ids = set()
                 for task in src['tasks']:
                     ids.add(task['id'])
-                existing_tasks = Task.query.filter(Task.id.in_(ids)).count()
+                existing_tasks = app.Task.query.filter(
+                    app.Task.id.in_(ids)).count()
                 if existing_tasks > 0:
                     return ('Some specified task id\'s already exist in the '
                             'database', 400)
@@ -1395,16 +1396,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])
-                    t = Task(summary=summary, description=description,
-                             is_done=is_done, is_deleted=is_deleted,
-                             deadline=deadline,
-                             expected_duration_minutes=exp_dur_min,
-                             expected_cost=expected_cost)
+                    t = app.Task(summary=summary, description=description,
+                                 is_done=is_done, is_deleted=is_deleted,
+                                 deadline=deadline,
+                                 expected_duration_minutes=exp_dur_min,
+                                 expected_cost=expected_cost)
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
-                        ttl = TaskTagLink(t.id, tag_id)
+                        ttl = app.TaskTagLink(t.id, tag_id)
                         db_objects.append(ttl)
                     db_objects.append(t)
 
@@ -1412,7 +1413,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 ids = set()
                 for note in src['notes']:
                     ids.add(note['id'])
-                existing_notes = Note.query.filter(Note.id.in_(ids)).count()
+                existing_notes = app.Note.query.filter(
+                    app.Note.id.in_(ids)).count()
                 if existing_notes > 0:
                     return ('Some specified note id\'s already exist in the '
                             'database', 400)
@@ -1421,7 +1423,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     content = note['content']
                     timestamp = note['timestamp']
                     task_id = note['task_id']
-                    n = Note(content=content, timestamp=timestamp)
+                    n = app.Note(content=content, timestamp=timestamp)
                     n.id = id
                     n.task_id = task_id
                     db_objects.append(n)
@@ -1431,8 +1433,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 ids = set()
                 for attachment in attachments:
                     ids.add(attachment['id'])
-                existing_attachments = Attachment.query.filter(
-                    Attachment.id.in_(ids)).count()
+                existing_attachments = app.Attachment.query.filter(
+                    app.Attachment.id.in_(ids)).count()
                 if existing_attachments > 0:
                     return ('Some specified attachment id\'s already exist in '
                             'the database', 400)
@@ -1443,8 +1445,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     filename = attachment['filename']
                     description = attachment['description']
                     task_id = attachment['task_id']
-                    a = Attachment(path=path, description=description,
-                                   timestamp=timestamp, filename=filename)
+                    a = app.Attachment(path=path, description=description,
+                                       timestamp=timestamp, filename=filename)
                     a.id = id
                     a.task_id = task_id
                     db_objects.append(a)
@@ -1454,7 +1456,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 emails = set()
                 for user in users:
                     emails.add(user['email'])
-                existing_users = User.query.filter(User.id.in_(emails)).count()
+                existing_users = app.User.query.filter(
+                    app.User.id.in_(emails)).count()
                 if existing_users > 0:
                     return ('Some specified user email addresses already '
                             'exist in the database', 400)
@@ -1462,15 +1465,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     email = attachment['email']
                     hashed_password = attachment['hashed_password']
                     is_admin = attachment['is_admin']
-                    u = User(email=email, hashed_password=hashed_password,
-                             is_admin=is_admin)
+                    u = app.User(email=email, hashed_password=hashed_password,
+                                 is_admin=is_admin)
                     db_objects.append(u)
 
             if 'views' in src:
                 ids = set()
                 for view in src['views']:
                     ids.add(view['id'])
-                existing_views = View.query.filter(View.id.in_(ids)).count()
+                existing_views = app.View.query.filter(
+                    app.View.id.in_(ids)).count()
                 if existing_views > 0:
                     return ('Some specified view id\'s already exist in the '
                             'database', 400)
@@ -1478,7 +1482,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     id = view['id']
                     name = view['name']
                     roots = view['roots']
-                    v = View(name=name, roots=roots)
+                    v = app.View(name=name, roots=roots)
                     v.id = id
                     db_objects.append(v)
 
@@ -1486,15 +1490,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 keys = set()
                 for option in src['options']:
                     keys.add(option['key'])
-                existing_options = Option.query.filter(
-                    Option.id.in_(keys)).count()
+                existing_options = app.Option.query.filter(
+                    app.Option.id.in_(keys)).count()
                 if existing_options > 0:
                     return ('Some specified option keys already exist in the '
                             'database', 400)
                 for option in src['options']:
                     key = option['key']
                     value = option['value']
-                    t = Option(key, value)
+                    t = app.Option(key, value)
                     db_objects.append(t)
         except:
             return ('The data was incorrect', 400)
@@ -1513,7 +1517,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @admin_required
     def task_crud():
 
-        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True)
+        tasks = app.Task.load_no_hierarchy(include_done=True,
+                                           include_deleted=True)
 
         if request.method == 'GET':
             return render_template('task_crud.t.html', tasks=tasks,
@@ -1560,19 +1565,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/tags/')
     @login_required
     def list_tags():
-        tags = Tag.query.all()
+        tags = app.Tag.query.all()
         return render_template('list_tags.t.html', tags=tags,
                                cycle=itertools.cycle)
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        tag = Tag.query.get(id)
+        tag = app.Tag.query.get(id)
         if tag is None:
             return (('No tag found for the id "%s"' % id), 404)
 
-        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True,
-                                       tags=tag)
+        tasks = app.Task.load_no_hierarchy(include_done=True,
+                                           include_deleted=True, tags=tag)
 
         return render_template('tag.t.html', tag=tag, tasks=tasks,
                                cycle=itertools.cycle)
@@ -1633,11 +1638,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
     def convert_task_to_tag(id):
-        task = Task.query.get(id)
+        task = app.Task.query.get(id)
         if task is None:
             return (('No task found for the id "%s"' % id), 404)
 
-        if Tag.query.filter_by(value=task.summary).first():
+        if app.Tag.query.filter_by(value=task.summary).first():
             message = 'A tag already exists with the name "{}"'.format(
                 task.summary)
             return (message, 409)
