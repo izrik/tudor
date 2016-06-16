@@ -868,12 +868,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return redirect(request.args.get('next') or url_for('index'))
         return render_template('purge.t.html')
 
-    @app.route('/task/<int:id>')
-    @login_required
-    def view_task(id):
+    def get_task_data(id):
         task = app.Task.query.filter_by(id=id).first()
         if task is None:
-            return (('No task found for the id "%s"' % id), 404)
+            raise werkzeug.exceptions.NotFound()
 
         descendants = app.Task.load(roots=task.id, max_depth=None,
                                     include_done=True, include_deleted=True)
@@ -882,8 +880,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if hierarchy_sort:
             descendants = sort_by_hierarchy(descendants, root=task)
 
-        return render_template('task.t.html', task=task,
-                               descendants=descendants, cycle=itertools.cycle)
+        return {
+            'task': task,
+            'descendants': descendants,
+        }
+
+    @app.route('/task/<int:id>')
+    @login_required
+    def view_task(id):
+        data = get_task_data(id)
+
+        return render_template('task.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
