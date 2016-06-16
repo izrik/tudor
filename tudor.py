@@ -673,12 +673,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return list(get_sorted_order(root))
 
-    @app.route('/')
-    @login_required
-    def index():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        roots = get_roots_str()
+    def get_index_data(show_deleted, show_done, roots):
         tasks = None
         if roots is not None:
             root_ids = get_root_ids_from_str(roots)
@@ -711,16 +706,40 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             tasks_h = sort_by_hierarchy(tasks_h)
 
         all_tags = app.Tag.query.all()
+        return {
+            'tasks': tasks,
+            'show_deleted': show_deleted,
+            'show_done': show_done,
+            'roots': roots,
+            'views': app.View.query,
+            'all_tasks': all_tasks,
+            'deadline_tasks': deadline_tasks,
+            'tasks_h': tasks_h,
+            'all_tags': all_tags,
+        }
 
-        resp = make_response(render_template('index.t.html', tasks=tasks,
-                                             show_deleted=show_deleted,
-                                             show_done=show_done,
-                                             roots=roots, views=app.View.query,
-                                             cycle=itertools.cycle,
-                                             all_tasks=all_tasks,
-                                             deadline_tasks=deadline_tasks,
-                                             user=current_user,
-                                             tasks_h=tasks_h, tags=all_tags))
+    @app.route('/')
+    @login_required
+    def index():
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        roots = get_roots_str()
+
+        data = get_index_data(show_deleted, show_done, roots)
+
+        resp = make_response(
+            render_template('index.t.html',
+                            tasks=data['tasks'],
+                            show_deleted=data['show_deleted'],
+                            show_done=data['show_done'],
+                            roots=data['roots'],
+                            views=data['views'],
+                            cycle=itertools.cycle,
+                            all_tasks=data['all_tasks'],
+                            deadline_tasks=data['deadline_tasks'],
+                            user=current_user,
+                            tasks_h=data['tasks_h'],
+                            tags=data['all_tags']))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
