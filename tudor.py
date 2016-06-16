@@ -894,18 +894,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                descendants=data['descendants'],
                                cycle=itertools.cycle)
 
+    def create_new_note(task_id, content):
+        task = app.Task.query.filter_by(id=task_id).first()
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        note = app.Note(content)
+        note.task = task
+        return note
+
     @app.route('/note/new', methods=['POST'])
     @login_required
     def new_note():
         if 'task_id' not in request.form:
             return ('No task_id specified', 400)
         task_id = request.form['task_id']
-        task = app.Task.query.filter_by(id=task_id).first()
-        if task is None:
-            return (('No task found for the id "%s"' % task_id), 404)
         content = request.form['content']
-        note = app.Note(content)
-        note.task = task
+
+        note = create_new_note(task_id, content)
 
         db.session.add(note)
         db.session.commit()
