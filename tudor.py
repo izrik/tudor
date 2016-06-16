@@ -23,6 +23,7 @@ from functools import wraps
 import git
 import os
 from decimal import Decimal
+import werkzeug.exceptions
 
 __revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
                                           abbrev=40)
@@ -783,46 +784,62 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(next_url)
 
+    def task_set_done(id):
+        task = app.Task.query.filter_by(id=id).first()
+        if not task:
+            raise werkzeug.exceptions.NotFound()
+        task.is_done = True
+        return task
+
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
-        task = app.Task.query.filter_by(id=id).first()
-        if not task:
-            return 404
-        task.is_done = True
+        task = task_set_done(id)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
+
+    def task_unset_done(id):
+        task = app.Task.query.filter_by(id=id).first()
+        if not task:
+            raise werkzeug.exceptions.NotFound()
+        task.is_done = False
+        return task
 
     @app.route('/task/<int:id>/mark_undone')
     @login_required
     def task_undo(id):
-        task = app.Task.query.filter_by(id=id).first()
-        if not task:
-            return 404
-        task.is_done = False
+        task = task_unset_done(id)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
+
+    def task_set_deleted(id):
+        task = app.Task.query.filter_by(id=id).first()
+        if not task:
+            raise werkzeug.exceptions.NotFound()
+        task.is_deleted = True
+        return task
 
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
-        task = app.Task.query.filter_by(id=id).first()
-        if not task:
-            return 404
-        task.is_deleted = True
+        task = task_set_deleted(id)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
+    def task_unset_deleted(id):
+        task = app.Task.query.filter_by(id=id).first()
+        if not task:
+            raise werkzeug.exceptions.NotFound()
+        task.is_deleted = False
+        return task
+
     @app.route('/task/<int:id>/undelete')
     @login_required
     def undelete_task(id):
-        task = app.Task.query.filter_by(id=id).first()
-        if not task:
-            return 404
-        task.is_deleted = False
+        task = task_unset_deleted(id)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
