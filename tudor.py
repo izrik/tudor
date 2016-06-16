@@ -744,34 +744,42 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             resp.set_cookie('roots', roots)
         return resp
 
-    @app.route('/task/new', methods=['POST'])
-    @login_required
-    def new_task():
-        summary = request.form['summary']
+    def create_new_task(summary, parent_id):
         task = app.Task(summary)
 
+        # get lowest order number
         query = app.Task.query.order_by(app.Task.order_num.asc()).limit(1)
         lowest_order_num_tasks = query.all()
         task.order_num = 0
         if len(lowest_order_num_tasks) > 0:
             task.order_num = lowest_order_num_tasks[0].order_num - 2
 
+        if parent_id is None or parent_id == '':
+            task.parent_id = None
+        elif app.Task.query.filter_by(id=parent_id).count() > 0:
+            task.parent_id = parent_id
+
+        return task
+
+    @app.route('/task/new', methods=['POST'])
+    @login_required
+    def new_task():
+        summary = request.form['summary']
+
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
-            if parent_id is None or parent_id == '':
-                task.parent_id = None
-            elif app.Task.query.filter_by(id=parent_id).count() > 0:
-                task.parent_id = parent_id
         else:
-            task.parent_id = None
+            parent_id = None
+
+        task = create_new_task(summary, parent_id)
+
+        db.session.add(task)
+        db.session.commit()
 
         if 'next_url' in request.form:
             next_url = request.form['next_url']
         else:
             next_url = url_for('index')
-
-        db.session.add(task)
-        db.session.commit()
 
         return redirect(next_url)
 
