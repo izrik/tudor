@@ -710,7 +710,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                     include_deleted=show_deleted)
             tasks_h = sort_by_hierarchy(tasks_h)
 
-        all_tags = Tag.query.all()
+        all_tags = app.Tag.query.all()
 
         resp = make_response(render_template('index.t.html', tasks=tasks,
                                              show_deleted=show_deleted,
