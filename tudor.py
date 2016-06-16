@@ -117,10 +117,17 @@ print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
 
 def create_sqlalchemy_db_factory(db_uri=DEFAULT_TUDOR_DB_URI):
     def db_factory(_app):
-        _app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-        db = SQLAlchemy(_app)
-        return db
+        db = SqlAlchemyDatabase(db_uri, _app)
+        return db.db
     return db_factory
+
+
+class SqlAlchemyDatabase(object):
+    def __init__(self, db_uri, app):
+        self.app = app
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+        self.db = SQLAlchemy(self.app)
+
 
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, db_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
