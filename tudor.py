@@ -618,10 +618,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return func(*args, **kwargs)
         return decorated_view
 
-    def save_task(task):
-        db.session.add(task)
-        db.session.commit()
-
     def get_roots_str():
         roots = request.args.get('roots') or request.cookies.get('roots')
         return roots
@@ -755,7 +751,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             next_url = url_for('index')
 
-        save_task(task)
+        db.session.add(task)
+        db.session.commit()
+
         return redirect(next_url)
 
     @app.route('/task/<int:id>/mark_done')
@@ -765,7 +763,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if not task:
             return 404
         task.is_done = True
-        save_task(task)
+        db.session.add(task)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/mark_undone')
@@ -775,7 +774,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if not task:
             return 404
         task.is_done = False
-        save_task(task)
+        db.session.add(task)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/delete')
@@ -785,7 +785,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if not task:
             return 404
         task.is_deleted = True
-        save_task(task)
+        db.session.add(task)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/undelete')
@@ -795,7 +796,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if not task:
             return 404
         task.is_deleted = False
-        save_task(task)
+        db.session.add(task)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/purge')
@@ -852,7 +854,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         note = app.Note(content)
         note.task = task
 
-        save_task(note)
+        db.session.add(note)
+        db.session.commit()
 
         return redirect(url_for('view_task', id=task_id))
 
@@ -956,7 +959,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         att = app.Attachment(path, description)
         att.task = task
 
-        save_task(att)
+        db.session.add(att)
+        db.session.commit()
 
         return redirect(url_for('view_task', id=task_id))
 
