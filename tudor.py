@@ -115,14 +115,14 @@ print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
 
 
-def create_sqlalchemy_db_factory(db_uri=DEFAULT_TUDOR_DB_URI):
-    def db_factory(_app):
-        db = SqlAlchemyDatabase(db_uri, _app)
-        return db.db
-    return db_factory
+def create_sqlalchemy_ds_factory(db_uri=DEFAULT_TUDOR_DB_URI):
+    def ds_factory(_app):
+        ds = SqlAlchemyDataSource(db_uri, _app)
+        return ds
+    return ds_factory
 
 
-class SqlAlchemyDatabase(object):
+class SqlAlchemyDataSource(object):
     def __init__(self, db_uri, app):
         self.app = app
         self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
@@ -558,7 +558,7 @@ class SqlAlchemyDatabase(object):
 
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, db_factory=None,
+def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
@@ -577,11 +577,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, db_factory=None,
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
-    if db_factory is None:
-        db_factory = create_sqlalchemy_db_factory(db_uri)
+    if ds_factory is None:
+        ds_factory = create_sqlalchemy_ds_factory(db_uri)
 
-    db = db_factory(app)
-    app.db = db
+    ds = ds_factory(app)
+    db = ds.db
+    app.ds = ds
 
     class Options(object):
         @staticmethod
@@ -600,14 +601,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, db_factory=None,
             return __revision__
 
 
-    app.Task = db.Task
-    app.Tag = db.Tag
-    app.TaskTagLink = db.TaskTagLink
-    app.Note = db.Note
-    app.Attachment = db.Attachment
-    app.User = db.User
-    app.View = db.View
-    app.Option = db.Option
+    app.Task = ds.Task
+    app.Tag = ds.Tag
+    app.TaskTagLink = ds.TaskTagLink
+    app.Note = ds.Note
+    app.Attachment = ds.Attachment
+    app.User = ds.User
+    app.View = ds.View
+    app.Option = ds.Option
 
     def admin_required(func):
         @wraps(func)

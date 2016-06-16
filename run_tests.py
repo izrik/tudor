@@ -14,7 +14,7 @@ class DbLoaderTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.app = app
         self.task_ids = {}
-        db = app.db
+        db = app.ds.db
         db.create_all()
         Task = app.Task
         # summary,
@@ -195,7 +195,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.app = app
         self.task_ids = {}
-        db = app.db
+        db = app.ds.db
         db.create_all()
         Task = app.Task
 
@@ -502,7 +502,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.app = app
         self.task_ids = {}
-        db = app.db
+        db = app.ds.db
         db.create_all()
         Task = app.Task
 
@@ -623,7 +623,8 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.db
+        self.ds = self.app.ds
+        self.db = self.ds.db
         self.db.create_all()
         self.Task = self.app.Task
         self.Tag = self.app.Tag
