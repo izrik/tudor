@@ -917,8 +917,61 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('view_task', id=task_id))
 
-    def do_edit_task(id):
-        pass
+    def set_task(task_id, summary, description, deadline=None, is_done=False,
+                 is_deleted=False, order_num=None, duration=None,
+                 expected_cost=None, parent_id=None, tags=None):
+
+        if deadline:
+            deadline = dparse(deadline)
+
+        if order_num is None:
+            order_num = 0
+
+        if parent_id is None:
+            pass
+        elif parent_id == '':
+            parent_id = None
+        elif app.Task.query.filter_by(id=parent_id).count() > 0:
+            pass
+        else:
+            parent_id = None
+
+        task = app.Task.query.filter_by(id=task_id).first()
+        task.summary = summary
+        task.description = description
+
+        task.deadline = deadline
+
+        task.is_done = is_done
+        task.is_deleted = is_deleted
+
+        task.order_num = order_num
+
+        task.expected_duration_minutes = duration
+
+        task.expected_cost = expected_cost
+
+        task.parent_id = parent_id
+
+        if tags is not None:
+            values = tags.split(',')
+            for ttl in task.tags:
+                db.session.delete(ttl)
+            for value in values:
+                if value is None or value == '':
+                    continue
+
+                tag = app.Tag.query.filter_by(value=value).first()
+                if tag is None:
+                    tag = app.Tag(value)
+                    db.session.add(tag)
+
+                ttl = app.TaskTagLink.query.get((task.id, tag.id))
+                if ttl is None:
+                    ttl = app.TaskTagLink(task.id, tag.id)
+                    db.session.add(ttl)
+
+        return task
 
     def get_edit_task_data(id):
         task = app.Task.query.filter_by(id=id).first()
@@ -968,62 +1021,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         expected_cost = money_from_str(request.form['expected_cost'])
 
-        ###
-
-        if deadline:
-            deadline = dparse(deadline)
-
-        if order_num is None:
-            order_num = 0
-
-        if parent_id is None:
-            pass
-        elif parent_id == '':
-            parent_id = None
-        elif app.Task.query.filter_by(id=parent_id).count() > 0:
-            pass
-        else:
-            parent_id = None
-
-        task = app.Task.query.filter_by(id=id).first()
-        task.summary = summary
-        task.description = description
-
-        task.deadline = deadline
-
-        task.is_done = is_done
-        task.is_deleted = is_deleted
-
-        task.order_num = order_num
-
-        task.expected_duration_minutes = duration
-
-        task.expected_cost = expected_cost
-
-        task.parent_id = parent_id
-
-        if tags is not None:
-            values = tags.split(',')
-            for ttl in task.tags:
-                db.session.delete(ttl)
-            for value in values:
-                if value is None or value == '':
-                    continue
-
-                tag = app.Tag.query.filter_by(value=value).first()
-                if tag is None:
-                    tag = app.Tag(value)
-                    db.session.add(tag)
-
-                ttl = app.TaskTagLink.query.get((task.id, tag.id))
-                if ttl is None:
-                    ttl = app.TaskTagLink(task.id, tag.id)
-                    db.session.add(ttl)
+        task = set_task(id, summary, description, deadline, is_done,
+                        is_deleted, order_num, duration, expected_cost,
+                        parent_id, tags)
 
         db.session.add(task)
-
-        ###
-
         db.session.commit()
 
         return redirect(url_for('view_task', id=task.id))
