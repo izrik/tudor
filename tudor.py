@@ -1036,27 +1036,37 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         ext = filename.rsplit('.', 1)[1]
         return (ext in allowed_extensions)
 
+    def create_new_attachment(task_id, f, description):
+
+        task = app.Task.query.filter_by(id=task_id).first()
+        if task is None:
+            return (('No task found for the task_id "%s"' % task_id), 404)
+
+        path = secure_filename(f.filename)
+        f.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
+
+        att = app.Attachment(path, description)
+        att.task = task
+
+        return att
+
     @app.route('/attachment/new', methods=['POST'])
     @login_required
     def new_attachment():
         if 'task_id' not in request.form:
             return ('No task_id specified', 400)
         task_id = request.form['task_id']
-        task = app.Task.query.filter_by(id=task_id).first()
-        if task is None:
-            return (('No task found for the task_id "%s"' % task_id), 404)
+
         f = request.files['filename']
         if f is None or not f or not allowed_file(f.filename):
             return 'Invalid file', 400
-        path = secure_filename(f.filename)
-        f.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
+
         if 'description' in request.form:
             description = request.form['description']
         else:
             description = ''
 
-        att = app.Attachment(path, description)
-        att.task = task
+        att = create_new_attachment(task_id, f, description)
 
         db.session.add(att)
         db.session.commit()
