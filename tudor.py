@@ -917,15 +917,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('view_task', id=task_id))
 
+    def do_edit_task(id):
+        pass
+
+    def get_edit_task_data(id):
+        task = app.Task.query.filter_by(id=id).first()
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        tag_list = ','.join(task.get_tag_values())
+        return {
+            'task': task,
+            'tag_list': tag_list,
+        }
+
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_task(id):
-        task = app.Task.query.filter_by(id=id).first()
 
         def render_get_response():
-            tag_list = ','.join(task.get_tag_values())
-            return render_template("edit_task.t.html", task=task,
-                                   tag_list=tag_list)
+            data = get_edit_task_data(id)
+            return render_template("edit_task.t.html", task=data['task'],
+                                   tag_list=data['tag_list'])
 
         if request.method == 'GET':
             return render_get_response()
@@ -933,39 +945,63 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'summary' not in request.form or 'description' not in request.form:
             return render_get_response()
 
-        task.summary = request.form['summary']
-        task.description = request.form['description']
+        summary = request.form['summary']
+        description = request.form['description']
         deadline = request.form['deadline']
-        if deadline:
-            task.deadline = dparse(deadline)
-        else:
-            task.deadline = None
 
-        task.is_done = ('is_done' in request.form and
-                        not not request.form['is_done'])
-        task.is_deleted = ('is_deleted' in request.form and
-                           not not request.form['is_deleted'])
+        is_done = ('is_done' in request.form and
+                   not not request.form['is_done'])
+        is_deleted = ('is_deleted' in request.form and
+                      not not request.form['is_deleted'])
 
+        order_num = None
         if 'order_num' in request.form:
-            task.order_num = request.form['order_num']
-        else:
-            task.order_num = 0
+            order_num = request.form['order_num']
 
-        duration = int_from_str(request.form['expected_duration_minutes'])
-        task.expected_duration_minutes = duration
-
-        task.expected_cost = money_from_str(request.form['expected_cost'])
-
+        parent_id = None
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
-            if parent_id is None or parent_id == '':
-                task.parent_id = None
-            elif app.Task.query.filter_by(id=parent_id).count() > 0:
-                task.parent_id = parent_id
-        else:
-            task.parent_id = None
 
         tags = request.form['tags']
+
+        duration = int_from_str(request.form['expected_duration_minutes'])
+
+        expected_cost = money_from_str(request.form['expected_cost'])
+
+        ###
+
+        if deadline:
+            deadline = dparse(deadline)
+
+        if order_num is None:
+            order_num = 0
+
+        if parent_id is None:
+            pass
+        elif parent_id == '':
+            parent_id = None
+        elif app.Task.query.filter_by(id=parent_id).count() > 0:
+            pass
+        else:
+            parent_id = None
+
+        task = app.Task.query.filter_by(id=id).first()
+        task.summary = summary
+        task.description = description
+
+        task.deadline = deadline
+
+        task.is_done = is_done
+        task.is_deleted = is_deleted
+
+        task.order_num = order_num
+
+        task.expected_duration_minutes = duration
+
+        task.expected_cost = expected_cost
+
+        task.parent_id = parent_id
+
         if tags is not None:
             values = tags.split(',')
             for ttl in task.tags:
@@ -985,6 +1021,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     db.session.add(ttl)
 
         db.session.add(task)
+
+        ###
+
         db.session.commit()
 
         return redirect(url_for('view_task', id=task.id))
