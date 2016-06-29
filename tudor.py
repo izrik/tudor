@@ -1480,9 +1480,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         db.session.commit()
         return redirect(request.args.get('next') or url_for('view_options'))
 
-    @app.route('/reset_order_nums')
-    @login_required
-    def reset_order_nums():
+    def do_reset_order_nums():
         tasks_h = app.Task.load(roots=None, max_depth=None, include_done=True,
                                 include_deleted=True)
         tasks_h = sort_by_hierarchy(tasks_h)
@@ -1494,8 +1492,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             task.order_num = 2 * k
             db.session.add(task)
             k -= 1
-        db.session.commit()
+        return tasks_h
 
+    @app.route('/reset_order_nums')
+    @login_required
+    def reset_order_nums():
+        do_reset_order_nums()
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/export', methods=['GET', 'POST'])
