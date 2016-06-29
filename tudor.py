@@ -1190,26 +1190,25 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return request.form[name]
         return request.args.get(name)
 
-    @app.route('/long_order_change', methods=['POSt'])
-    @login_required
-    def long_order_change():
-
-        task_to_move_id = get_form_or_arg('long_order_task_to_move')
-        if task_to_move_id is None:
-            redirect(request.args.get('next') or url_for('index'))
+    def do_long_order_change(task_to_move_id, target_id):
         task_to_move = app.Task.query.get(task_to_move_id)
         if task_to_move is None:
-            redirect(request.args.get('next') or url_for('index'))
+            raise werkzeug.exceptions.NotFound(
+                "No task object found for id '{}'".format(task_to_move_id))
 
-        target_id = get_form_or_arg('long_order_target')
-        if target_id is None:
-            redirect(request.args.get('next') or url_for('index'))
+
         target = app.Task.query.get(target_id)
         if target is None:
-            redirect(request.args.get('next') or url_for('index'))
+            raise werkzeug.exceptions.NotFound(
+                "No task object found for id '{}'".format(target_id))
 
         if target.parent_id != task_to_move.parent_id:
-            redirect(request.args.get('next') or url_for('index'))
+            raise werkzeug.exceptions.Conflict(
+                "Tasks '{}' and '{}' have different parents ('{}' and '{}', "
+                "respectively). Long order changes are not allowed to change "
+                "the parenting hierarchy.".format(
+                    task_to_move_id, target_id, task_to_move.parent_id,
+                    target.parent_id))
 
         siblings = target.get_siblings(True).all()
         siblings2 = sorted(siblings, key=lambda t: t.order_num, reverse=True)
@@ -1227,6 +1226,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             s.order_num = k
             k -= 2
             db.session.add(s)
+
+        return task_to_move, target
+
+    @app.route('/long_order_change', methods=['POST'])
+    @login_required
+    def long_order_change():
+
+        task_to_move_id = get_form_or_arg('long_order_task_to_move')
+        if task_to_move_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        target_id = get_form_or_arg('long_order_target')
+        if target_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+
+        do_long_order_change(task_to_move_id, target_id)
+
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
