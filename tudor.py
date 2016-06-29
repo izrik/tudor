@@ -1704,27 +1704,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('index'))
 
-    @app.route('/task_crud', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def task_crud():
+    def get_task_crud_data():
+        return app.Task.load_no_hierarchy(include_done=True,
+                                          include_deleted=True)
+
+    def do_submit_task_crud(crud_data):
 
         tasks = app.Task.load_no_hierarchy(include_done=True,
                                            include_deleted=True)
 
-        if request.method == 'GET':
-            return render_template('task_crud.t.html', tasks=tasks,
-                                   cycle=itertools.cycle)
-
         for task in tasks:
-            summary = request.form.get('task_{}_summary'.format(task.id))
-            deadline = request.form.get('task_{}_deadline'.format(task.id))
-            is_done = request.form.get('task_{}_is_done'.format(task.id))
-            is_deleted = request.form.get('task_{}_is_deleted'.format(task.id))
-            order_num = request.form.get('task_{}_order_num'.format(task.id))
-            duration = request.form.get('task_{}_duration'.format(task.id))
-            cost = request.form.get('task_{}_cost'.format(task.id))
-            parent_id = request.form.get('task_{}_parent_id'.format(task.id))
+            summary = crud_data.get('task_{}_summary'.format(task.id))
+            deadline = crud_data.get('task_{}_deadline'.format(task.id))
+            is_done = crud_data.get('task_{}_is_done'.format(task.id))
+            is_deleted = crud_data.get('task_{}_is_deleted'.format(task.id))
+            order_num = crud_data.get('task_{}_order_num'.format(task.id))
+            duration = crud_data.get('task_{}_duration'.format(task.id))
+            cost = crud_data.get('task_{}_cost'.format(task.id))
+            parent_id = crud_data.get('task_{}_parent_id'.format(task.id))
 
             if deadline:
                 deadline = dparse(deadline)
@@ -1749,6 +1746,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             db.session.add(task)
 
+    @app.route('/task_crud', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def task_crud():
+
+        if request.method == 'GET':
+            tasks = get_task_crud_data()
+            return render_template('task_crud.t.html', tasks=tasks,
+                                   cycle=itertools.cycle)
+
+        crud_data = {}
+        for key in request.form.keys():
+            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
+                        r'order_num|duration|cost|parent_id)', key):
+                crud_data[key] = request.form[key]
+
+        do_submit_task_crud(crud_data)
         db.session.commit()
 
         return redirect(url_for('task_crud'))
