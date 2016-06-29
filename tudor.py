@@ -1628,7 +1628,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 for user in users:
                     emails.add(user['email'])
                 existing_users = app.User.query.filter(
-                    app.User.id.in_(emails)).count()
+                    app.User.email.in_(emails)).count()
                 if existing_users > 0:
                     return ('Some specified user email addresses already '
                             'exist in the database', 400)
@@ -1662,7 +1662,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 for option in src['options']:
                     keys.add(option['key'])
                 existing_options = app.Option.query.filter(
-                    app.Option.id.in_(keys)).count()
+                    app.Option.key.in_(keys)).count()
                 if existing_options > 0:
                     return ('Some specified option keys already exist in the '
                             'database', 400)
