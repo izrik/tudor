@@ -1411,6 +1411,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             resp.set_cookie('show_done', '')
         return resp
 
+    def do_add_new_view(name, roots):
+        view = app.View(name, roots)
+        db.session.add(view)
+        return view
+
     @app.route('/view/new', methods=['POST'])
     @login_required
     def new_view():
@@ -1419,9 +1424,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         name = request.form['view_name']
         roots = request.form['view_roots']
-        view = app.View(name, roots)
-
-        db.session.add(view)
+        do_add_new_view(name, roots)
         db.session.commit()
         return redirect(url_for('index'))
 
