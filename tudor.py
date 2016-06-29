@@ -1633,9 +1633,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     return ('Some specified user email addresses already '
                             'exist in the database', 400)
                 for user in users:
-                    email = attachment['email']
-                    hashed_password = attachment['hashed_password']
-                    is_admin = attachment['is_admin']
+                    email = user['email']
+                    hashed_password = user['hashed_password']
+                    is_admin = user['is_admin']
                     u = app.User(email=email, hashed_password=hashed_password,
                                  is_admin=is_admin)
                     db_objects.append(u)
