@@ -1342,6 +1342,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     login_manager.login_view = 'login'
 
+    def do_add_new_user(email, is_admin):
+        user = app.User.query.get(email)
+        if user is not None:
+            return werkzeug.exceptions.Conflict(
+                "A user already exists with the email address '{}'".format(
+                    email))
+        user = app.User(email=email, is_admin=is_admin)
+        db.session.add(user)
+        return user
+
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
     @admin_required
@@ -1352,17 +1362,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                    cycle=itertools.cycle)
 
         email = request.form['email']
-        user = app.User.query.get(email)
-        if user is not None:
-            return ('A user already exists with the email '
-                    'address {}'.format(email), 409)
         is_admin = False
         if 'is_admin' in request.form:
             is_admin = bool_from_str(request.form['is_admin'])
 
-        user = app.User(email=email, is_admin=is_admin)
-
-        db.session.add(user)
+        do_add_new_user(email, is_admin)
         db.session.commit()
 
         return redirect(url_for('list_users'))
