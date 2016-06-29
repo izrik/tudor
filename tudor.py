@@ -1553,8 +1553,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 existing_tasks = app.Task.query.filter(
                     app.Task.id.in_(ids)).count()
                 if existing_tasks > 0:
-                    return ('Some specified task id\'s already exist in the '
-                            'database', 400)
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified task id\'s already exist in the '
+                        'database')
                 for task in src['tasks']:
                     id = task['id']
                     summary = task['summary']
@@ -1587,8 +1588,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 existing_notes = app.Note.query.filter(
                     app.Note.id.in_(ids)).count()
                 if existing_notes > 0:
-                    return ('Some specified note id\'s already exist in the '
-                            'database', 400)
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified note id\'s already exist in the '
+                        'database')
                 for note in src['notes']:
                     id = note['id']
                     content = note['content']
@@ -1607,8 +1609,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 existing_attachments = app.Attachment.query.filter(
                     app.Attachment.id.in_(ids)).count()
                 if existing_attachments > 0:
-                    return ('Some specified attachment id\'s already exist in '
-                            'the database', 400)
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified attachment id\'s already exist in the '
+                        'database')
                 for attachment in attachments:
                     id = attachment['id']
                     timestamp = attachment['timestamp']
@@ -1630,8 +1633,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 existing_users = app.User.query.filter(
                     app.User.email.in_(emails)).count()
                 if existing_users > 0:
-                    return ('Some specified user email addresses already '
-                            'exist in the database', 400)
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified user email addresses already exist in '
+                        'the database')
                 for user in users:
                     email = user['email']
                     hashed_password = user['hashed_password']
@@ -1647,8 +1651,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 existing_views = app.View.query.filter(
                     app.View.id.in_(ids)).count()
                 if existing_views > 0:
-                    return ('Some specified view id\'s already exist in the '
-                            'database', 400)
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified view id\'s already exist in the '
+                        'database')
                 for view in src['views']:
                     id = view['id']
                     name = view['name']
@@ -1664,13 +1669,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 existing_options = app.Option.query.filter(
                     app.Option.key.in_(keys)).count()
                 if existing_options > 0:
-                    return ('Some specified option keys already exist in the '
-                            'database', 400)
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified option keys already exist in the '
+                        'database')
                 for option in src['options']:
                     key = option['key']
                     value = option['value']
                     t = app.Option(key, value)
                     db_objects.append(t)
+        except werkzeug.exceptions.HTTPException:
+            raise
         except:
             raise werkzeug.exceptions.BadRequest('The data was incorrect')
 
