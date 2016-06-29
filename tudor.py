@@ -1501,30 +1501,34 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
+    def do_export_data(types_to_export):
+        results = {}
+        if 'tasks' in types_to_export:
+            results['tasks'] = [t.to_dict() for t in app.Task.query.all()]
+        if 'tags' in types_to_export:
+            results['tags'] = [t.to_dict() for t in app.Tag.query.all()]
+        if 'notes' in types_to_export:
+            results['notes'] = [t.to_dict() for t in app.Note.query.all()]
+        if 'attachments' in types_to_export:
+            results['attachments'] = [t.to_dict() for t in
+                                      app.Attachment.query.all()]
+        if 'users' in types_to_export:
+            results['users'] = [t.to_dict() for t in app.User.query.all()]
+        if 'views' in types_to_export:
+            results['views'] = [t.to_dict() for t in app.View.query.all()]
+        if 'options' in types_to_export:
+            results['options'] = [t.to_dict() for t in app.Option.query.all()]
+        return results
+
     @app.route('/export', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def export_data():
         if request.method == 'GET':
             return render_template('export.t.html', results=None)
-        results = {}
-        if 'tasks' in request.form and request.form['tasks'] == 'all':
-            results['tasks'] = [t.to_dict() for t in app.Task.query.all()]
-        if 'tags' in request.form and request.form['tags'] == 'all':
-            results['tags'] = [t.to_dict() for t in app.Tag.query.all()]
-        if 'notes' in request.form and request.form['notes'] == 'all':
-            results['notes'] = [t.to_dict() for t in app.Note.query.all()]
-        if ('attachments' in request.form and
-                request.form['attachments'] == 'all'):
-            results['attachments'] = [t.to_dict() for t in
-                                      app.Attachment.query.all()]
-        if 'users' in request.form and request.form['users'] == 'all':
-            results['users'] = [t.to_dict() for t in app.User.query.all()]
-        if 'views' in request.form and request.form['views'] == 'all':
-            results['views'] = [t.to_dict() for t in app.View.query.all()]
-        if 'options' in request.form and request.form['options'] == 'all':
-            results['options'] = [t.to_dict() for t in app.Option.query.all()]
-
+        types_to_export = set(k for k in request.form.keys() if
+                              k in request.form and request.form[k] == 'all')
+        results = do_export_data(types_to_export)
         return jsonify(results)
 
     @app.route('/import', methods=['GET', 'POST'])
