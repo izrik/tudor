@@ -1861,7 +1861,7 @@ if __name__ == '__main__':
 
     if args.create_db:
         print('Setting up the database')
-        app.db.create_all()
+        app.ds.db.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in xrange(48)))
