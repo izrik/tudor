@@ -1531,19 +1531,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         results = do_export_data(types_to_export)
         return jsonify(results)
 
-    @app.route('/import', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def import_data():
-        if request.method == 'GET':
-            return render_template('import.t.html')
-
-        f = request.files['file']
-        if f is None or not f:
-            r = request.form['raw']
-            src = json.loads(r)
-        else:
-            src = json.load(f)
+    def do_import_data(src):
 
         db_objects = []
 
@@ -1684,14 +1672,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     t = app.Option(key, value)
                     db_objects.append(t)
         except:
-            return ('The data was incorrect', 400)
+            raise werkzeug.exceptions.BadRequest('The data was incorrect')
 
-        try:
-            for dbo in db_objects:
-                db.session.add(dbo)
-            db.session.commit()
-        except Exception as e:
-            return ('There was an error: {}'.format(e), 500)
+        for dbo in db_objects:
+            db.session.add(dbo)
+
+    @app.route('/import', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def import_data():
+        if request.method == 'GET':
+            return render_template('import.t.html')
+
+        f = request.files['file']
+        if f is None or not f:
+            r = request.form['raw']
+            src = json.loads(r)
+        else:
+            src = json.load(f)
+
+        do_import_data(src)
+        db.session.commit()
 
         return redirect(url_for('index'))
 
