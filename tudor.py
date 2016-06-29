@@ -1466,15 +1466,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(request.args.get('next') or url_for('view_options'))
 
+    def do_delete_option(key):
+        option = app.Option.query.get(key)
+        if option is not None:
+            db.session.delete(option)
+        return option
+
     @app.route('/option/<path:key>/delete')
     @login_required
     @admin_required
     def delete_option(key):
-        option = app.Option.query.get(key)
-        if option is not None:
-            db.session.delete(option)
-            db.session.commit()
-
+        do_delete_option(key)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('view_options'))
 
     @app.route('/reset_order_nums')
