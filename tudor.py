@@ -1248,18 +1248,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(request.args.get('next') or url_for('index'))
 
-    @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
-    @login_required
-    def add_tag_to_task(id):
-
-        value = get_form_or_arg('value')
-        if value is None or value == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=id)))
-
+    def do_add_tag_to_task(id, value):
         task = app.Task.query.get(id)
         if task is None:
-            return '', 404
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(id))
 
         tag = app.Tag.query.filter_by(value=value).first()
         if tag is None:
@@ -1271,10 +1264,37 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             ttl = app.TaskTagLink(task.id, tag.id)
             db.session.add(ttl)
 
+        return ttl
+
+    @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
+    @login_required
+    def add_tag_to_task(id):
+
+        value = get_form_or_arg('value')
+        if value is None or value == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=id)))
+
+        do_add_tag_to_task(id, value)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
+
+    def do_delete_tag_from_task(task_id, tag_id):
+        if tag_id is None:
+            raise ValueError("No tag_id was specified.")
+
+        task = app.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+
+        ttl = app.TaskTagLink.query.get((task_id, tag_id))
+        if ttl is not None:
+            db.session.delete(ttl)
+
+        return ttl
 
     @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
                defaults={'tag_id': None})
@@ -1286,18 +1306,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         if tag_id is None:
             tag_id = get_form_or_arg('tag_id')
-        if tag_id is None:
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=id)))
 
-        task = app.Task.query.get(id)
-        if task is None:
-            return '', 404
-
-        ttl = app.TaskTagLink.query.get((id, tag_id))
-        if ttl is not None:
-            db.session.delete(ttl)
-            db.session.commit()
+        do_delete_tag_from_task(id, tag_id)
+        db.session.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
