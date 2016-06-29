@@ -1436,25 +1436,32 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return (('No view found for the id "%s"' % id), 404)
         return redirect(url_for('set_roots', roots=view.roots))
 
+    def get_view_options_data():
+        return app.Option.query
+
+    def do_set_option(key, value):
+        option = app.Option.query.get(key)
+        if option is not None:
+            option.value = value
+        else:
+            option = app.Option(key, value)
+        db.session.add(option)
+        return option
+
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def view_options():
         if request.method == 'GET' or 'key' not in request.form:
-            return render_template('options.t.html', options=app.Option.query)
+            data = get_view_options_data()
+            return render_template('options.t.html', options=data)
 
         key = request.form['key']
         value = ''
         if 'value' in request.form:
             value = request.form['value']
 
-        option = app.Option.query.get(key)
-        if option is not None:
-            option.value = value
-        else:
-            option = app.Option(key, value)
-
-        db.session.add(option)
+        do_set_option(key, value)
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('view_options'))
