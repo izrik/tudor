@@ -1834,7 +1834,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('view_tag', id=id))
 
-    def _convert_task_to_tag(task):
+    def get_task(task_id):
+        return app.Task.query.get(task_id)
+
+    def _convert_task_to_tag(task_id):
+        task = get_task(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '%s'".format(id))
+
+        if app.Tag.query.filter_by(value=task.summary).first():
+            raise werkzeug.exceptions.Conflict(
+                'A tag already exists with the name "{}"'.format(
+                    task.summary))
 
         tag = app.Tag(task.summary, task.description)
         db.session.add(tag)
@@ -1865,23 +1877,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
     def convert_task_to_tag(id):
-        task = app.Task.query.get(id)
-        if task is None:
-            return (('No task found for the id "%s"' % id), 404)
-
-        if app.Tag.query.filter_by(value=task.summary).first():
-            message = 'A tag already exists with the name "{}"'.format(
-                task.summary)
-            return (message, 409)
 
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
 
-            tag = _convert_task_to_tag(task)
+            tag = _convert_task_to_tag(id)
 
             return redirect(
                 request.args.get('next') or url_for('view_tag', id=tag.id))
 
+        task = get_task(id)
         return render_template('convert_task_to_tag.t.html',
                                task_id=task.id,
                                tag_value=task.summary,
