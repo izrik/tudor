@@ -1767,11 +1767,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('task_crud'))
 
+    def get_tags():
+        return app.Tag.query.all()
+
     @app.route('/tags')
     @app.route('/tags/')
     @login_required
     def list_tags():
-        tags = app.Tag.query.all()
+        tags = get_tags()
         return render_template('list_tags.t.html', tags=tags,
                                cycle=itertools.cycle)
 
