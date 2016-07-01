@@ -1778,18 +1778,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return render_template('list_tags.t.html', tags=tags,
                                cycle=itertools.cycle)
 
+    def get_tag_data(tag_id):
+        tag = app.Tag.query.get(tag_id)
+        if not tag:
+            raise werkzeug.exceptions.NotFound(
+                "No tag found for the id '{}'".format(tag_id))
+        tasks = app.Task.load_no_hierarchy(include_done=True,
+                                           include_deleted=True, tags=tag)
+        return {
+            'tag': tag,
+            'tasks': tasks,
+        }
+
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        tag = app.Tag.query.get(id)
-        if tag is None:
-            return (('No tag found for the id "%s"' % id), 404)
-
-        tasks = app.Task.load_no_hierarchy(include_done=True,
-                                           include_deleted=True, tags=tag)
-
-        return render_template('tag.t.html', tag=tag, tasks=tasks,
-                               cycle=itertools.cycle)
+        data = get_task_data(id)
+        return render_template('tag.t.html', tag=data['tag'],
+                               tasks=data['tasks'], cycle=itertools.cycle)
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
