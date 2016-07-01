@@ -1797,15 +1797,29 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return render_template('tag.t.html', tag=data['tag'],
                                tasks=data['tasks'], cycle=itertools.cycle)
 
+    def get_tag(tag_id):
+        tag = app.Tag.query.get(id)
+        if not tag:
+            raise werkzeug.exceptions.NotFound(
+                "No tag found for the id '{}'".format(tag_id))
+        return tag
+
+    def do_edit_tag(tag_id, value, description):
+        tag = get_tag(tag_id)
+        if not tag:
+            raise werkzeug.exceptions.NotFound(
+                "No tag found for the id '{}'".format(tag_id))
+        tag.value = value
+        tag.description = description
+        db.session.add(tag)
+        return tag
+
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_tag(id):
 
-        tag = app.Tag.query.get(id)
-        if tag is None:
-            return (('No tag found for the id "%s"' % id), 404)
-
         def render_get_response():
+            tag = get_tag(id)
             return render_template("edit_tag.t.html", tag=tag)
 
         if request.method == 'GET':
@@ -1813,14 +1827,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         if 'value' not in request.form or 'description' not in request.form:
             return render_get_response()
-
-        tag.value = request.form['value']
-        tag.description = request.form['description']
-
-        db.session.add(tag)
+        value = request.form['value']
+        description = request.form['description']
+        do_edit_tag(id, value, description)
         db.session.commit()
 
-        return redirect(url_for('view_tag', id=tag.id))
+        return redirect(url_for('view_tag', id=id))
 
     def _convert_task_to_tag(task):
 
