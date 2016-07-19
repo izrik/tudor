@@ -1446,37 +1446,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         db.session.add(option)
         return option
 
-    @app.route('/options', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def view_options():
-        if request.method == 'GET' or 'key' not in request.form:
-            data = get_view_options_data()
-            return render_template('options.t.html', options=data)
-
-        key = request.form['key']
-        value = ''
-        if 'value' in request.form:
-            value = request.form['value']
-
-        do_set_option(key, value)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('view_options'))
-
     def do_delete_option(key):
         option = app.Option.query.get(key)
         if option is not None:
             db.session.delete(option)
         return option
-
-    @app.route('/option/<path:key>/delete')
-    @login_required
-    @admin_required
-    def delete_option(key):
-        do_delete_option(key)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('view_options'))
 
     def do_reset_order_nums():
         tasks_h = app.Task.load(roots=None, max_depth=None, include_done=True,
@@ -1491,13 +1465,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             db.session.add(task)
             k -= 1
         return tasks_h
-
-    @app.route('/reset_order_nums')
-    @login_required
-    def reset_order_nums():
-        do_reset_order_nums()
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
 
     def do_export_data(types_to_export):
         results = {}
@@ -1517,17 +1484,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'options' in types_to_export:
             results['options'] = [t.to_dict() for t in app.Option.query.all()]
         return results
-
-    @app.route('/export', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def export_data():
-        if request.method == 'GET':
-            return render_template('export.t.html', results=None)
-        types_to_export = set(k for k in request.form.keys() if
-                              k in request.form and request.form[k] == 'all')
-        results = do_export_data(types_to_export)
-        return jsonify(results)
 
     def do_import_data(src):
 
@@ -1683,25 +1639,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         for dbo in db_objects:
             db.session.add(dbo)
 
-    @app.route('/import', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def import_data():
-        if request.method == 'GET':
-            return render_template('import.t.html')
-
-        f = request.files['file']
-        if f is None or not f:
-            r = request.form['raw']
-            src = json.loads(r)
-        else:
-            src = json.load(f)
-
-        do_import_data(src)
-        db.session.commit()
-
-        return redirect(url_for('index'))
-
     def get_task_crud_data():
         return app.Task.load_no_hierarchy(include_done=True,
                                           include_deleted=True)
@@ -1743,27 +1680,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             task.parent_id = parent_id
 
             db.session.add(task)
-
-    @app.route('/task_crud', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def task_crud():
-
-        if request.method == 'GET':
-            tasks = get_task_crud_data()
-            return render_template('task_crud.t.html', tasks=tasks,
-                                   cycle=itertools.cycle)
-
-        crud_data = {}
-        for key in request.form.keys():
-            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
-                        r'order_num|duration|cost|parent_id)', key):
-                crud_data[key] = request.form[key]
-
-        do_submit_task_crud(crud_data)
-        db.session.commit()
-
-        return redirect(url_for('task_crud'))
 
     def get_tags():
         return app.Tag.query.all()
@@ -1836,6 +1752,90 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return tag
 
     app._convert_task_to_tag = _convert_task_to_tag
+
+    @app.route('/options', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def view_options():
+        if request.method == 'GET' or 'key' not in request.form:
+            data = get_view_options_data()
+            return render_template('options.t.html', options=data)
+
+        key = request.form['key']
+        value = ''
+        if 'value' in request.form:
+            value = request.form['value']
+
+        do_set_option(key, value)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('view_options'))
+
+    @app.route('/option/<path:key>/delete')
+    @login_required
+    @admin_required
+    def delete_option(key):
+        do_delete_option(key)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('view_options'))
+
+    @app.route('/reset_order_nums')
+    @login_required
+    def reset_order_nums():
+        do_reset_order_nums()
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/export', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def export_data():
+        if request.method == 'GET':
+            return render_template('export.t.html', results=None)
+        types_to_export = set(k for k in request.form.keys() if
+                              k in request.form and request.form[k] == 'all')
+        results = do_export_data(types_to_export)
+        return jsonify(results)
+
+    @app.route('/import', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def import_data():
+        if request.method == 'GET':
+            return render_template('import.t.html')
+
+        f = request.files['file']
+        if f is None or not f:
+            r = request.form['raw']
+            src = json.loads(r)
+        else:
+            src = json.load(f)
+
+        do_import_data(src)
+        db.session.commit()
+
+        return redirect(url_for('index'))
+
+    @app.route('/task_crud', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def task_crud():
+
+        if request.method == 'GET':
+            tasks = get_task_crud_data()
+            return render_template('task_crud.t.html', tasks=tasks,
+                                   cycle=itertools.cycle)
+
+        crud_data = {}
+        for key in request.form.keys():
+            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
+                        r'order_num|duration|cost|parent_id)', key):
+                crud_data[key] = request.form[key]
+
+        do_submit_task_crud(crud_data)
+        db.session.commit()
+
+        return redirect(url_for('task_crud'))
 
     @app.route('/tags')
     @app.route('/tags/')
