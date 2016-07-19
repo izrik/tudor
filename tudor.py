@@ -1196,7 +1196,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
 
-
         target = app.Task.query.get(target_id)
         if target is None:
             raise werkzeug.exceptions.NotFound(
@@ -1240,7 +1239,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         target_id = get_form_or_arg('long_order_target')
         if target_id is None:
             redirect(request.args.get('next') or url_for('index'))
-
 
         do_long_order_change(task_to_move_id, target_id)
 
