@@ -1268,21 +1268,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return ttl
 
-    @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
-    @login_required
-    def add_tag_to_task(id):
-
-        value = get_form_or_arg('value')
-        if value is None or value == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=id)))
-
-        do_add_tag_to_task(id, value)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=id)))
-
     def do_delete_tag_from_task(task_id, tag_id):
         if tag_id is None:
             raise ValueError("No tag_id was specified.")
@@ -1297,23 +1282,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             db.session.delete(ttl)
 
         return ttl
-
-    @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
-               defaults={'tag_id': None})
-    @app.route('/task/<int:id>/delete_tag/', methods=['GET', 'POST'],
-               defaults={'tag_id': None})
-    @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
-    @login_required
-    def delete_tag_from_task(id, tag_id):
-
-        if tag_id is None:
-            tag_id = get_form_or_arg('tag_id')
-
-        do_delete_tag_from_task(id, tag_id)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=id)))
 
     def do_add_new_user(email, is_admin):
         user = app.User.query.get(email)
@@ -1648,6 +1616,40 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return tag
 
     app._convert_task_to_tag = _convert_task_to_tag
+
+    # View Functions
+
+    @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
+    @login_required
+    def add_tag_to_task(id):
+
+        value = get_form_or_arg('value')
+        if value is None or value == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=id)))
+
+        do_add_tag_to_task(id, value)
+        db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=id)))
+
+    @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
+               defaults={'tag_id': None})
+    @app.route('/task/<int:id>/delete_tag/', methods=['GET', 'POST'],
+               defaults={'tag_id': None})
+    @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
+    @login_required
+    def delete_tag_from_task(id, tag_id):
+
+        if tag_id is None:
+            tag_id = get_form_or_arg('tag_id')
+
+        do_delete_tag_from_task(id, tag_id)
+        db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=id)))
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
