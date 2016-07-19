@@ -5,6 +5,7 @@ import argparse
 import logging
 from tudor import generate_app, bool_from_str, int_from_str, str_from_datetime
 from tudor import money_from_str
+from datetime import datetime
 
 
 class DbLoaderTest(unittest.TestCase):
@@ -828,6 +829,16 @@ class TypeConversionFunctionTest(unittest.TestCase):
         self.assertIsNone(int_from_str([]))
         self.assertIsNone(int_from_str([1]))
         self.assertEquals(1, int_from_str(True))
+
+    def test_str_from_datetime(self):
+        self.assertIsNone(None, str_from_datetime(None))
+        self.assertEquals('2016-02-03 00:00:00',
+                          str_from_datetime(datetime(2016, 2, 3)))
+        self.assertEquals('2016-02-03 12:34:56',
+                          str_from_datetime(datetime(2016, 2, 3, 12, 34, 56)))
+
+        self.assertEquals('2016-02-03', str_from_datetime('2016-02-03'))
+        self.assertEquals('abcdefgh', str_from_datetime('abcdefgh'))
 
 def run():
     parser = argparse.ArgumentParser()
