@@ -1315,31 +1315,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def load_user(userid):
         return app.User.query.get(userid)
 
-    @app.route('/login', methods=['GET', 'POST'])
-    def login():
-        if request.method == 'GET':
-            return render_template('login.t.html')
-        email = request.form['email']
-        password = request.form['password']
-        user = app.User.query.get(email)
-
-        if (user is None or
-                not bcrypt.check_password_hash(user.hashed_password,
-                                               password)):
-            flash('Username or Password is invalid', 'error')
-            return redirect(url_for('login'))
-
-        login_user(user)
-        flash('Logged in successfully')
-        return redirect(request.args.get('next') or url_for('index'))
-
-    @app.route('/logout')
-    def logout():
-        logout_user()
-        return redirect(url_for('index'))
-
-    login_manager.login_view = 'login'
-
     def do_add_new_user(email, is_admin):
         user = app.User.query.get(email)
         if user is not None:
@@ -1350,89 +1325,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         db.session.add(user)
         return user
 
-    @app.route('/users', methods=['GET', 'POST'])
-    @login_required
-    @admin_required
-    def list_users():
-
-        if request.method == 'GET':
-            return render_template('list_users.t.html', users=app.User.query,
-                                   cycle=itertools.cycle)
-
-        email = request.form['email']
-        is_admin = False
-        if 'is_admin' in request.form:
-            is_admin = bool_from_str(request.form['is_admin'])
-
-        do_add_new_user(email, is_admin)
-        db.session.commit()
-
-        return redirect(url_for('list_users'))
-
-    @app.route('/clear_roots')
-    @login_required
-    def clear_roots():
-        resp = make_response(redirect(url_for('index')))
-        resp.set_cookie('roots', '', expires=0)
-        return resp
-
-    @app.route('/set_roots')
-    @login_required
-    def set_roots():
-        roots = request.args.get('roots')
-        resp = make_response(redirect(url_for('index')))
-        if roots is not None and roots != '':
-            resp.set_cookie('roots', roots)
-        else:
-            resp.set_cookie('roots', '', expires=0)
-        return resp
-
-    @app.route('/show_hide_deleted')
-    @login_required
-    def show_hide_deleted():
-        show_deleted = request.args.get('show_deleted')
-        resp = make_response(redirect(url_for('index')))
-        if show_deleted and show_deleted != '0':
-            resp.set_cookie('show_deleted', '1')
-        else:
-            resp.set_cookie('show_deleted', '')
-        return resp
-
-    @app.route('/show_hide_done')
-    @login_required
-    def show_hide_done():
-        show_done = request.args.get('show_done')
-        resp = make_response(redirect(url_for('index')))
-        if show_done and show_done != '0':
-            resp.set_cookie('show_done', '1')
-        else:
-            resp.set_cookie('show_done', '')
-        return resp
-
     def do_add_new_view(name, roots):
         view = app.View(name, roots)
         db.session.add(view)
         return view
-
-    @app.route('/view/new', methods=['POST'])
-    @login_required
-    def new_view():
-        if 'view_name' not in request.form or 'view_roots' not in request.form:
-            return redirect(url_for('index'))
-
-        name = request.form['view_name']
-        roots = request.form['view_roots']
-        do_add_new_view(name, roots)
-        db.session.commit()
-        return redirect(url_for('index'))
-
-    @app.route('/view/<int:id>')
-    @login_required
-    def set_view(id):
-        view = app.View.query.get(id)
-        if view is None:
-            return (('No view found for the id "%s"' % id), 404)
-        return redirect(url_for('set_roots', roots=view.roots))
 
     def get_view_options_data():
         return app.Option.query
@@ -1752,6 +1648,110 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return tag
 
     app._convert_task_to_tag = _convert_task_to_tag
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login():
+        if request.method == 'GET':
+            return render_template('login.t.html')
+        email = request.form['email']
+        password = request.form['password']
+        user = app.User.query.get(email)
+
+        if (user is None or
+                not bcrypt.check_password_hash(user.hashed_password,
+                                               password)):
+            flash('Username or Password is invalid', 'error')
+            return redirect(url_for('login'))
+
+        login_user(user)
+        flash('Logged in successfully')
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/logout')
+    def logout():
+        logout_user()
+        return redirect(url_for('index'))
+
+    login_manager.login_view = 'login'
+
+    @app.route('/users', methods=['GET', 'POST'])
+    @login_required
+    @admin_required
+    def list_users():
+
+        if request.method == 'GET':
+            return render_template('list_users.t.html', users=app.User.query,
+                                   cycle=itertools.cycle)
+
+        email = request.form['email']
+        is_admin = False
+        if 'is_admin' in request.form:
+            is_admin = bool_from_str(request.form['is_admin'])
+
+        do_add_new_user(email, is_admin)
+        db.session.commit()
+
+        return redirect(url_for('list_users'))
+
+    @app.route('/clear_roots')
+    @login_required
+    def clear_roots():
+        resp = make_response(redirect(url_for('index')))
+        resp.set_cookie('roots', '', expires=0)
+        return resp
+
+    @app.route('/set_roots')
+    @login_required
+    def set_roots():
+        roots = request.args.get('roots')
+        resp = make_response(redirect(url_for('index')))
+        if roots is not None and roots != '':
+            resp.set_cookie('roots', roots)
+        else:
+            resp.set_cookie('roots', '', expires=0)
+        return resp
+
+    @app.route('/show_hide_deleted')
+    @login_required
+    def show_hide_deleted():
+        show_deleted = request.args.get('show_deleted')
+        resp = make_response(redirect(url_for('index')))
+        if show_deleted and show_deleted != '0':
+            resp.set_cookie('show_deleted', '1')
+        else:
+            resp.set_cookie('show_deleted', '')
+        return resp
+
+    @app.route('/show_hide_done')
+    @login_required
+    def show_hide_done():
+        show_done = request.args.get('show_done')
+        resp = make_response(redirect(url_for('index')))
+        if show_done and show_done != '0':
+            resp.set_cookie('show_done', '1')
+        else:
+            resp.set_cookie('show_done', '')
+        return resp
+
+    @app.route('/view/new', methods=['POST'])
+    @login_required
+    def new_view():
+        if 'view_name' not in request.form or 'view_roots' not in request.form:
+            return redirect(url_for('index'))
+
+        name = request.form['view_name']
+        roots = request.form['view_roots']
+        do_add_new_view(name, roots)
+        db.session.commit()
+        return redirect(url_for('index'))
+
+    @app.route('/view/<int:id>')
+    @login_required
+    def set_view(id):
+        view = app.View.query.get(id)
+        if view is None:
+            return (('No view found for the id "%s"' % id), 404)
+        return redirect(url_for('set_roots', roots=view.roots))
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
