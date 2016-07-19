@@ -819,6 +819,16 @@ class TypeConversionFunctionTest(unittest.TestCase):
         self.assertFalse(bool_from_str(''))
         self.assertFalse(bool_from_str(None))
 
+    def test_int_from_str(self):
+        self.assertEquals(1, int_from_str('1'))
+        self.assertEquals(123, int_from_str('123'))
+        self.assertEquals(-123, int_from_str('-123'))
+        self.assertIsNone(int_from_str(None))
+        self.assertIsNone(int_from_str(''))
+        self.assertIsNone(int_from_str([]))
+        self.assertIsNone(int_from_str([1]))
+        self.assertEquals(1, int_from_str(True))
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--print-log', action='store_true',
