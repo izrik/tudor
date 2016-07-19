@@ -639,7 +639,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(0, self.Tag.query.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertIsNotNone(tag)
@@ -655,7 +655,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(1, self.Task.query.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(0, self.Task.query.count())
@@ -687,7 +687,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(task, child3.parent)
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(3, self.Task.query.count())
@@ -731,7 +731,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(0, child3.tags.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(3, tag1.tasks.count())
@@ -767,7 +767,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(task, child3.parent)
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(3, grand_parent.children.count())
