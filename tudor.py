@@ -723,32 +723,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             'all_tags': all_tags,
         }
 
-    @app.route('/')
-    @login_required
-    def index():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        roots = get_roots_str()
-
-        data = get_index_data(show_deleted, show_done, roots)
-
-        resp = make_response(
-            render_template('index.t.html',
-                            tasks=data['tasks'],
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            roots=data['roots'],
-                            views=data['views'],
-                            cycle=itertools.cycle,
-                            all_tasks=data['all_tasks'],
-                            deadline_tasks=data['deadline_tasks'],
-                            user=current_user,
-                            tasks_h=data['tasks_h'],
-                            tags=data['all_tags']))
-        if roots:
-            resp.set_cookie('roots', roots)
-        return resp
-
     def create_new_task(summary, parent_id):
         task = app.Task(summary)
 
@@ -766,42 +740,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return task
 
-    @app.route('/task/new', methods=['POST'])
-    @login_required
-    def new_task():
-        summary = request.form['summary']
-
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-        else:
-            parent_id = None
-
-        task = create_new_task(summary, parent_id)
-
-        db.session.add(task)
-        db.session.commit()
-
-        if 'next_url' in request.form:
-            next_url = request.form['next_url']
-        else:
-            next_url = url_for('index')
-
-        return redirect(next_url)
-
     def task_set_done(id):
         task = app.Task.query.filter_by(id=id).first()
         if not task:
             raise werkzeug.exceptions.NotFound()
         task.is_done = True
         return task
-
-    @app.route('/task/<int:id>/mark_done')
-    @login_required
-    def task_done(id):
-        task = task_set_done(id)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
 
     def task_unset_done(id):
         task = app.Task.query.filter_by(id=id).first()
@@ -810,14 +754,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         task.is_done = False
         return task
 
-    @app.route('/task/<int:id>/mark_undone')
-    @login_required
-    def task_undo(id):
-        task = task_unset_done(id)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
-
     def task_set_deleted(id):
         task = app.Task.query.filter_by(id=id).first()
         if not task:
@@ -825,52 +761,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         task.is_deleted = True
         return task
 
-    @app.route('/task/<int:id>/delete')
-    @login_required
-    def delete_task(id):
-        task = task_set_deleted(id)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
-
     def task_unset_deleted(id):
         task = app.Task.query.filter_by(id=id).first()
         if not task:
             raise werkzeug.exceptions.NotFound()
         task.is_deleted = False
         return task
-
-    @app.route('/task/<int:id>/undelete')
-    @login_required
-    def undelete_task(id):
-        task = task_unset_deleted(id)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
-
-    @app.route('/task/<int:id>/purge')
-    @login_required
-    @admin_required
-    def purge_task(id):
-        task = app.Task.query.filter_by(id=id, is_deleted=True).first()
-        if not task:
-            return 404
-        db.session.delete(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
-
-    @app.route('/purge_all')
-    @login_required
-    @admin_required
-    def purge_deleted_tasks():
-        are_you_sure = request.args.get('are_you_sure')
-        if are_you_sure:
-            deleted_tasks = app.Task.query.filter_by(is_deleted=True)
-            for task in deleted_tasks:
-                db.session.delete(task)
-            db.session.commit()
-            return redirect(request.args.get('next') or url_for('index'))
-        return render_template('purge.t.html')
 
     def get_task_data(id):
         task = app.Task.query.filter_by(id=id).first()
@@ -889,15 +785,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             'descendants': descendants,
         }
 
-    @app.route('/task/<int:id>')
-    @login_required
-    def view_task(id):
-        data = get_task_data(id)
-
-        return render_template('task.t.html', task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle)
-
     def create_new_note(task_id, content):
         task = app.Task.query.filter_by(id=task_id).first()
         if task is None:
@@ -905,21 +792,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         note = app.Note(content)
         note.task = task
         return note
-
-    @app.route('/note/new', methods=['POST'])
-    @login_required
-    def new_note():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-        content = request.form['content']
-
-        note = create_new_note(task_id, content)
-
-        db.session.add(note)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task_id))
 
     def set_task(task_id, summary, description, deadline=None, is_done=False,
                  is_deleted=False, order_num=None, duration=None,
@@ -1485,6 +1357,134 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app._convert_task_to_tag = _convert_task_to_tag
 
     # View Functions
+
+    @app.route('/')
+    @login_required
+    def index():
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        roots = get_roots_str()
+
+        data = get_index_data(show_deleted, show_done, roots)
+
+        resp = make_response(
+            render_template('index.t.html',
+                            tasks=data['tasks'],
+                            show_deleted=data['show_deleted'],
+                            show_done=data['show_done'],
+                            roots=data['roots'],
+                            views=data['views'],
+                            cycle=itertools.cycle,
+                            all_tasks=data['all_tasks'],
+                            deadline_tasks=data['deadline_tasks'],
+                            user=current_user,
+                            tasks_h=data['tasks_h'],
+                            tags=data['all_tags']))
+        if roots:
+            resp.set_cookie('roots', roots)
+        return resp
+
+    @app.route('/task/new', methods=['POST'])
+    @login_required
+    def new_task():
+        summary = request.form['summary']
+
+        if 'parent_id' in request.form:
+            parent_id = request.form['parent_id']
+        else:
+            parent_id = None
+
+        task = create_new_task(summary, parent_id)
+
+        db.session.add(task)
+        db.session.commit()
+
+        if 'next_url' in request.form:
+            next_url = request.form['next_url']
+        else:
+            next_url = url_for('index')
+
+        return redirect(next_url)
+
+    @app.route('/task/<int:id>/mark_done')
+    @login_required
+    def task_done(id):
+        task = task_set_done(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/mark_undone')
+    @login_required
+    def task_undo(id):
+        task = task_unset_done(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/delete')
+    @login_required
+    def delete_task(id):
+        task = task_set_deleted(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/undelete')
+    @login_required
+    def undelete_task(id):
+        task = task_unset_deleted(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/purge')
+    @login_required
+    @admin_required
+    def purge_task(id):
+        task = app.Task.query.filter_by(id=id, is_deleted=True).first()
+        if not task:
+            return 404
+        db.session.delete(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/purge_all')
+    @login_required
+    @admin_required
+    def purge_deleted_tasks():
+        are_you_sure = request.args.get('are_you_sure')
+        if are_you_sure:
+            deleted_tasks = app.Task.query.filter_by(is_deleted=True)
+            for task in deleted_tasks:
+                db.session.delete(task)
+            db.session.commit()
+            return redirect(request.args.get('next') or url_for('index'))
+        return render_template('purge.t.html')
+
+    @app.route('/task/<int:id>')
+    @login_required
+    def view_task(id):
+        data = get_task_data(id)
+
+        return render_template('task.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle)
+
+    @app.route('/note/new', methods=['POST'])
+    @login_required
+    def new_note():
+        if 'task_id' not in request.form:
+            return ('No task_id specified', 400)
+        task_id = request.form['task_id']
+        content = request.form['content']
+
+        note = create_new_note(task_id, content)
+
+        db.session.add(note)
+        db.session.commit()
+
+        return redirect(url_for('view_task', id=task_id))
 
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
