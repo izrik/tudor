@@ -1768,14 +1768,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def get_tags():
         return app.Tag.query.all()
 
-    @app.route('/tags')
-    @app.route('/tags/')
-    @login_required
-    def list_tags():
-        tags = get_tags()
-        return render_template('list_tags.t.html', tags=tags,
-                               cycle=itertools.cycle)
-
     def get_tag_data(tag_id):
         tag = app.Tag.query.get(tag_id)
         if not tag:
@@ -1787,13 +1779,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             'tag': tag,
             'tasks': tasks,
         }
-
-    @app.route('/tags/<int:id>')
-    @login_required
-    def view_tag(id):
-        data = get_task_data(id)
-        return render_template('tag.t.html', tag=data['tag'],
-                               tasks=data['tasks'], cycle=itertools.cycle)
 
     def get_tag(tag_id):
         tag = app.Tag.query.get(id)
@@ -1811,26 +1796,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         tag.description = description
         db.session.add(tag)
         return tag
-
-    @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
-    @login_required
-    def edit_tag(id):
-
-        def render_get_response():
-            tag = get_tag(id)
-            return render_template("edit_tag.t.html", tag=tag)
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'value' not in request.form or 'description' not in request.form:
-            return render_get_response()
-        value = request.form['value']
-        description = request.form['description']
-        do_edit_tag(id, value, description)
-        db.session.commit()
-
-        return redirect(url_for('view_tag', id=id))
 
     def get_task(task_id):
         return app.Task.query.get(task_id)
@@ -1871,6 +1836,41 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return tag
 
     app._convert_task_to_tag = _convert_task_to_tag
+
+    @app.route('/tags')
+    @app.route('/tags/')
+    @login_required
+    def list_tags():
+        tags = get_tags()
+        return render_template('list_tags.t.html', tags=tags,
+                               cycle=itertools.cycle)
+
+    @app.route('/tags/<int:id>')
+    @login_required
+    def view_tag(id):
+        data = get_task_data(id)
+        return render_template('tag.t.html', tag=data['tag'],
+                               tasks=data['tasks'], cycle=itertools.cycle)
+
+    @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_tag(id):
+
+        def render_get_response():
+            tag = get_tag(id)
+            return render_template("edit_tag.t.html", tag=tag)
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'value' not in request.form or 'description' not in request.form:
+            return render_get_response()
+        value = request.form['value']
+        description = request.form['description']
+        do_edit_tag(id, value, description)
+        db.session.commit()
+
+        return redirect(url_for('view_tag', id=id))
 
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
