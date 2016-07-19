@@ -3,7 +3,8 @@
 import unittest
 import argparse
 import logging
-from tudor import generate_app
+from tudor import generate_app, bool_from_str, int_from_str, str_from_datetime
+from tudor import money_from_str
 
 
 class DbLoaderTest(unittest.TestCase):
@@ -775,6 +776,48 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(grand_parent, child2.parent)
         self.assertIs(grand_parent, child3.parent)
 
+
+class TypeConversionFunctionTest(unittest.TestCase):
+    def test_bool_from_str(self):
+        # true, unsurprising
+        self.assertTrue(bool_from_str('True'))
+        self.assertTrue(bool_from_str('true'))
+        self.assertTrue(bool_from_str('tRuE'))
+        self.assertTrue(bool_from_str('t'))
+        self.assertTrue(bool_from_str('1'))
+        self.assertTrue(bool_from_str('y'))
+
+        # true, surprising
+        self.assertTrue(bool_from_str('tr'))
+        self.assertTrue(bool_from_str('tru'))
+        self.assertTrue(bool_from_str('truee'))
+        self.assertTrue(bool_from_str('ye'))
+        self.assertTrue(bool_from_str('yes'))
+
+        # false, unsurprising
+        self.assertFalse(bool_from_str('False'))
+        self.assertFalse(bool_from_str('false'))
+        self.assertFalse(bool_from_str('fAlSe'))
+        self.assertFalse(bool_from_str('f'))
+        self.assertFalse(bool_from_str('0'))
+        self.assertFalse(bool_from_str('n'))
+
+        # false, surprising
+        self.assertTrue(bool_from_str('no'))
+        self.assertTrue(bool_from_str('fa'))
+        self.assertTrue(bool_from_str('fal'))
+        self.assertTrue(bool_from_str('fals'))
+        self.assertTrue(bool_from_str('falsee'))
+
+        # true, non-string, somewhat surprising
+        self.assertTrue(bool_from_str(1))
+        self.assertTrue(bool_from_str([1]))
+        self.assertTrue(bool_from_str([False]))
+
+        # false, non-string
+        self.assertFalse(bool_from_str([]))
+        self.assertFalse(bool_from_str(''))
+        self.assertFalse(bool_from_str(None))
 
 def run():
     parser = argparse.ArgumentParser()
