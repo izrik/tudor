@@ -987,53 +987,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             'tag_list': tag_list,
         }
 
-    @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
-    @login_required
-    def edit_task(id):
-
-        def render_get_response():
-            data = get_edit_task_data(id)
-            return render_template("edit_task.t.html", task=data['task'],
-                                   tag_list=data['tag_list'])
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'summary' not in request.form or 'description' not in request.form:
-            return render_get_response()
-
-        summary = request.form['summary']
-        description = request.form['description']
-        deadline = request.form['deadline']
-
-        is_done = ('is_done' in request.form and
-                   not not request.form['is_done'])
-        is_deleted = ('is_deleted' in request.form and
-                      not not request.form['is_deleted'])
-
-        order_num = None
-        if 'order_num' in request.form:
-            order_num = request.form['order_num']
-
-        parent_id = None
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-
-        tags = request.form['tags']
-
-        duration = int_from_str(request.form['expected_duration_minutes'])
-
-        expected_cost = money_from_str(request.form['expected_cost'])
-
-        task = set_task(id, summary, description, deadline, is_done,
-                        is_deleted, order_num, duration, expected_cost,
-                        parent_id, tags)
-
-        db.session.add(task)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task.id))
-
     def allowed_file(filename):
         if '.' not in filename:
             return False
@@ -1053,40 +1006,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         att.task = task
 
         return att
-
-    @app.route('/attachment/new', methods=['POST'])
-    @login_required
-    def new_attachment():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-
-        f = request.files['filename']
-        if f is None or not f or not allowed_file(f.filename):
-            return 'Invalid file', 400
-
-        if 'description' in request.form:
-            description = request.form['description']
-        else:
-            description = ''
-
-        att = create_new_attachment(task_id, f, description)
-
-        db.session.add(att)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task_id))
-
-    @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
-    @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
-    @app.route('/attachment/<int:aid>/<path:x>')
-    @login_required
-    def get_attachment(aid, x):
-        att = app.Attachment.query.filter_by(id=aid).first()
-        if att is None:
-            return (('No attachment found for the id "%s"' % aid), 404)
-
-        return flask.send_from_directory(upload_folder, att.path)
 
     def reorder_tasks(tasks):
         tasks = list(tasks)
@@ -1113,15 +1032,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return task
 
-    @app.route('/task/<int:id>/up')
-    @login_required
-    def move_task_up(id):
-        show_deleted = request.cookies.get('show_deleted')
-        do_move_task_up(id, show_deleted)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
-
     def do_move_task_to_top(id):
         task = app.Task.query.get(id)
         siblings = task.get_siblings(True)
@@ -1133,14 +1043,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             db.session.add(task)
 
         return task
-
-    @app.route('/task/<int:id>/top')
-    @login_required
-    def move_task_to_top(id):
-        do_move_task_to_top(id)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
 
     def do_move_task_down(id, show_deleted):
         task = app.Task.query.get(id)
@@ -1160,15 +1062,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return task
 
-    @app.route('/task/<int:id>/down')
-    @login_required
-    def move_task_down(id):
-        show_deleted = request.cookies.get('show_deleted')
-        do_move_task_down(id, show_deleted)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
-
     def do_move_task_to_bottom(id):
         task = app.Task.query.get(id)
         siblings = task.get_siblings(True)
@@ -1180,14 +1073,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             db.session.add(task)
 
         return task
-
-    @app.route('/task/<int:id>/bottom')
-    @login_required
-    def move_task_to_bottom(id):
-        do_move_task_to_bottom(id)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
 
     def get_form_or_arg(name):
         if name in request.form:
@@ -1231,24 +1116,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             db.session.add(s)
 
         return task_to_move, target
-
-    @app.route('/long_order_change', methods=['POST'])
-    @login_required
-    def long_order_change():
-
-        task_to_move_id = get_form_or_arg('long_order_task_to_move')
-        if task_to_move_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-
-        target_id = get_form_or_arg('long_order_target')
-        if target_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-
-        do_long_order_change(task_to_move_id, target_id)
-
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
 
     def do_add_tag_to_task(id, value):
         task = app.Task.query.get(id)
@@ -1618,6 +1485,139 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app._convert_task_to_tag = _convert_task_to_tag
 
     # View Functions
+
+    @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_task(id):
+
+        def render_get_response():
+            data = get_edit_task_data(id)
+            return render_template("edit_task.t.html", task=data['task'],
+                                   tag_list=data['tag_list'])
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'summary' not in request.form or 'description' not in request.form:
+            return render_get_response()
+
+        summary = request.form['summary']
+        description = request.form['description']
+        deadline = request.form['deadline']
+
+        is_done = ('is_done' in request.form and
+                   not not request.form['is_done'])
+        is_deleted = ('is_deleted' in request.form and
+                      not not request.form['is_deleted'])
+
+        order_num = None
+        if 'order_num' in request.form:
+            order_num = request.form['order_num']
+
+        parent_id = None
+        if 'parent_id' in request.form:
+            parent_id = request.form['parent_id']
+
+        tags = request.form['tags']
+
+        duration = int_from_str(request.form['expected_duration_minutes'])
+
+        expected_cost = money_from_str(request.form['expected_cost'])
+
+        task = set_task(id, summary, description, deadline, is_done,
+                        is_deleted, order_num, duration, expected_cost,
+                        parent_id, tags)
+
+        db.session.add(task)
+        db.session.commit()
+
+        return redirect(url_for('view_task', id=task.id))
+
+    @app.route('/attachment/new', methods=['POST'])
+    @login_required
+    def new_attachment():
+        if 'task_id' not in request.form:
+            return ('No task_id specified', 400)
+        task_id = request.form['task_id']
+
+        f = request.files['filename']
+        if f is None or not f or not allowed_file(f.filename):
+            return 'Invalid file', 400
+
+        if 'description' in request.form:
+            description = request.form['description']
+        else:
+            description = ''
+
+        att = create_new_attachment(task_id, f, description)
+
+        db.session.add(att)
+        db.session.commit()
+
+        return redirect(url_for('view_task', id=task_id))
+
+    @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
+    @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
+    @app.route('/attachment/<int:aid>/<path:x>')
+    @login_required
+    def get_attachment(aid, x):
+        att = app.Attachment.query.filter_by(id=aid).first()
+        if att is None:
+            return (('No attachment found for the id "%s"' % aid), 404)
+
+        return flask.send_from_directory(upload_folder, att.path)
+
+    @app.route('/task/<int:id>/up')
+    @login_required
+    def move_task_up(id):
+        show_deleted = request.cookies.get('show_deleted')
+        do_move_task_up(id, show_deleted)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/top')
+    @login_required
+    def move_task_to_top(id):
+        do_move_task_to_top(id)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/down')
+    @login_required
+    def move_task_down(id):
+        show_deleted = request.cookies.get('show_deleted')
+        do_move_task_down(id, show_deleted)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/bottom')
+    @login_required
+    def move_task_to_bottom(id):
+        do_move_task_to_bottom(id)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/long_order_change', methods=['POST'])
+    @login_required
+    def long_order_change():
+
+        task_to_move_id = get_form_or_arg('long_order_task_to_move')
+        if task_to_move_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        target_id = get_form_or_arg('long_order_target')
+        if target_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        do_long_order_change(task_to_move_id, target_id)
+
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required
