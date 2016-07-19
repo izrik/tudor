@@ -611,6 +611,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.View = ds.View
     app.Option = ds.Option
 
+    @login_manager.user_loader
+    def load_user(userid):
+        return app.User.query.get(userid)
+
     def admin_required(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
@@ -1310,10 +1314,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
-
-    @login_manager.user_loader
-    def load_user(userid):
-        return app.User.query.get(userid)
 
     def do_add_new_user(email, is_admin):
         user = app.User.query.get(email)
