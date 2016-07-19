@@ -14,7 +14,7 @@ class DbLoaderTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.app = app
         self.task_ids = {}
-        db = app.db
+        db = app.ds.db
         db.create_all()
         Task = app.Task
         # summary,
@@ -195,7 +195,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.app = app
         self.task_ids = {}
-        db = app.db
+        db = app.ds.db
         db.create_all()
         Task = app.Task
 
@@ -502,7 +502,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.app = app
         self.task_ids = {}
-        db = app.db
+        db = app.ds.db
         db.create_all()
         Task = app.Task
 
@@ -623,7 +623,8 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.db
+        self.ds = self.app.ds
+        self.db = self.ds.db
         self.db.create_all()
         self.Task = self.app.Task
         self.Tag = self.app.Tag
@@ -638,7 +639,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(0, self.Tag.query.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertIsNotNone(tag)
@@ -654,7 +655,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(1, self.Task.query.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(0, self.Task.query.count())
@@ -686,7 +687,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(task, child3.parent)
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(3, self.Task.query.count())
@@ -730,7 +731,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(0, child3.tags.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(3, tag1.tasks.count())
@@ -766,7 +767,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(task, child3.parent)
 
         # when
-        tag = self.app._convert_task_to_tag(task)
+        tag = self.app._convert_task_to_tag(task.id)
 
         # then
         self.assertEquals(3, grand_parent.children.count())

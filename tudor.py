@@ -23,6 +23,7 @@ from functools import wraps
 import git
 import os
 from decimal import Decimal
+import werkzeug.exceptions
 
 __revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
                                           abbrev=40)
@@ -115,20 +116,461 @@ print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
+def create_sqlalchemy_ds_factory(db_uri=DEFAULT_TUDOR_DB_URI):
+    def ds_factory(_app):
+        ds = SqlAlchemyDataSource(db_uri, _app)
+        return ds
+    return ds_factory
+
+
+class SqlAlchemyDataSource(object):
+    def __init__(self, db_uri, app):
+        self.app = app
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+        self.db = SQLAlchemy(self.app)
+
+        db = self.db
+
+        class Task(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            summary = db.Column(db.String(100))
+            description = db.Column(db.String(4000))
+            is_done = db.Column(db.Boolean)
+            is_deleted = db.Column(db.Boolean)
+            order_num = db.Column(db.Integer, nullable=False, default=0)
+            deadline = db.Column(db.DateTime)
+            expected_duration_minutes = db.Column(db.Integer)
+            expected_cost = db.Column(db.Numeric)
+
+            parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                                  nullable=True)
+            parent = db.relationship('Task', remote_side=[id],
+                                     backref=db.backref('children',
+                                                        lazy='dynamic'))
+
+            depth = 0
+
+            def __init__(self, summary, description='', is_done=False,
+                         is_deleted=False, deadline=None,
+                         expected_duration_minutes=None, expected_cost=None):
+                self.summary = summary
+                self.description = description
+                self.is_done = is_done
+                self.is_deleted = is_deleted
+                if isinstance(deadline, basestring):
+                    deadline = dparse(deadline)
+                self.deadline = deadline
+                self.expected_duration_minutes = expected_duration_minutes
+                self.expected_cost = expected_cost
+
+            def to_dict(self):
+                return {
+                    'id': self.id,
+                    'summary': self.summary,
+                    'description': self.description,
+                    'is_done': self.is_done,
+                    'is_deleted': self.is_deleted,
+                    'order_num': self.order_num,
+                    'deadline': str_from_datetime(self.deadline),
+                    'parent_id': self.parent_id,
+                    'expected_duration_minutes':
+                        self.expected_duration_minutes,
+                    'expected_cost': self.get_expected_cost_for_export(),
+                    'tag_ids': [ttl.tag_id for ttl in self.tags]
+                }
+
+            def get_siblings(self, include_deleted=True, descending=False,
+                             ascending=False):
+                if self.parent_id is not None:
+                    return self.parent.get_children(include_deleted,
+                                                    descending, ascending)
+
+                siblings = app.Task.query.filter(Task.parent_id == None)
+
+                if not include_deleted:
+                    siblings = siblings.filter(Task.is_deleted == False)
+
+                if descending:
+                    siblings = siblings.order_by(Task.order_num.desc())
+                elif ascending:
+                    siblings = siblings.order_by(Task.order_num.asc())
+
+                return siblings
+
+            def get_children(self, include_deleted=True, descending=False,
+                             ascending=False):
+                children = self.children
+
+                if not include_deleted:
+                    children = children.filter(Task.is_deleted == False)
+
+                if descending:
+                    children = children.order_by(Task.order_num.desc())
+                elif ascending:
+                    children = children.order_by(Task.order_num.asc())
+
+                return children
+
+            def get_all_descendants(self, include_deleted=True,
+                                    descending=False, ascending=False,
+                                    visited=None, result=None):
+                if visited is None:
+                    visited = set()
+                if result is None:
+                    result = []
+
+                if self not in visited:
+                    visited.add(self)
+                    result.append(self)
+                    for child in self.get_children(include_deleted, descending,
+                                                   ascending):
+                        child.get_all_descendants(include_deleted, descending,
+                                                  ascending, visited, result)
+
+                return result
+
+            def get_css_class(self):
+                if self.is_deleted and self.is_done:
+                    return 'done-deleted'
+                if self.is_deleted:
+                    return 'not-done-deleted'
+                if self.is_done:
+                    return 'done-not-deleted'
+                return ''
+
+            def get_css_class_attr(self):
+                cls = self.get_css_class()
+                if cls:
+                    return ' class="{}" '.format(cls)
+                return ''
+
+            @staticmethod
+            def load(roots=None, max_depth=0, include_done=False,
+                     include_deleted=False, exclude_undeadlined=False):
+
+                query = app.Task.query
+
+                if not include_done:
+                    query = query.filter_by(is_done=False)
+
+                if not include_deleted:
+                    query = query.filter_by(is_deleted=False)
+
+                if exclude_undeadlined:
+                    query = query.filter(Task.deadline.isnot(None))
+
+                if roots is None:
+                    query = query.filter(Task.parent_id.is_(None))
+                else:
+                    if not hasattr(roots, '__iter__'):
+                        roots = [roots]
+                    query = query.filter(Task.id.in_(roots))
+
+                query = query.order_by(Task.id.asc())
+                query = query.order_by(Task.order_num.desc())
+
+                tasks = query.all()
+
+                depth = 0
+                for task in tasks:
+                    task.depth = depth
+
+                if max_depth is None or max_depth > 0:
+
+                    buckets = [tasks]
+                    next_ids = map(lambda t: t.id, tasks)
+                    already_ids = set()
+                    already_ids.update(next_ids)
+
+                    while ((max_depth is None or depth < max_depth) and
+                            len(next_ids) > 0):
+
+                        depth += 1
+
+                        query = app.Task.query
+                        query = query.filter(Task.parent_id.in_(next_ids),
+                                             Task.id.notin_(already_ids))
+                        if not include_done:
+                            query = query.filter_by(is_done=False)
+                        if not include_deleted:
+                            query = query.filter_by(is_deleted=False)
+                        if exclude_undeadlined:
+                            query = query.filter(Task.deadline.isnot(None))
+
+                        children = query.all()
+
+                        for child in children:
+                            child.depth = depth
+
+                        child_ids = set(map(lambda t: t.id, children))
+                        next_ids = child_ids - already_ids
+                        already_ids.update(child_ids)
+                        buckets.append(children)
+                    tasks = list(
+                        set([task for bucket in buckets for task in bucket]))
+
+                return tasks
+
+            @staticmethod
+            def load_no_hierarchy(include_done=False, include_deleted=False,
+                                  exclude_undeadlined=False, tags=None):
+
+                query = app.Task.query
+
+                if not include_done:
+                    query = query.filter_by(is_done=False)
+
+                if not include_deleted:
+                    query = query.filter_by(is_deleted=False)
+
+                if exclude_undeadlined:
+                    query = query.filter(Task.deadline.isnot(None))
+
+                if tags is not None:
+                    if not hasattr(tags, '__iter__'):
+                        tags = [tags]
+                    if len(tags) < 1:
+                        tags = None
+
+                if tags is not None:
+                    def get_tag_id(tag):
+                        if tag is None:
+                            return None
+                        if tag == str(tag):
+                            return Tag.query.filter_by(value=tag).all()[0].id
+                        if isinstance(tag, Tag):
+                            return tag.id
+                        raise TypeError(
+                            "Unknown type ('{}') of argument 'tag'".format(
+                                type(tag)))
+                    tag_ids = map(get_tag_id, tags)
+                    query = query.join(TaskTagLink).filter(
+                        TaskTagLink.tag_id.in_(tag_ids))
+
+                tasks = query.all()
+
+                depth = 0
+                for task in tasks:
+                    task.depth = depth
+
+                return tasks
+
+            def get_tag_values(self):
+                for tag in self.tags:
+                    yield tag.value
+
+            def get_expected_duration_for_viewing(self):
+                if self.expected_duration_minutes is None:
+                    return ''
+                if self.expected_duration_minutes == 1:
+                    return '1 minute'
+                return '{} minutes'.format(self.expected_duration_minutes)
+
+            def get_expected_cost_for_viewing(self):
+                if self.expected_cost is None:
+                    return ''
+                return '{:.2f}'.format(self.expected_cost)
+
+            def get_expected_cost_for_export(self):
+                if self.expected_cost is None:
+                    return None
+                return '{:.2f}'.format(self.expected_cost)
+
+        class Tag(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            value = db.Column(db.String(100), nullable=False, unique=True)
+            description = db.Column(db.String(4000), nullable=True)
+
+            def __init__(self, value, description=None):
+                self.value = value
+                self.description = description
+
+            def to_dict(self):
+                return {
+                    'id': self.id,
+                    'value': self.value,
+                    'description': self.description,
+                }
+
+        class TaskTagLink(db.Model):
+            task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                                primary_key=True)
+            tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
+                               primary_key=True)
+
+            tag = db.relationship('Tag',
+                                  backref=db.backref('tasks', lazy='dynamic'))
+
+            @property
+            def value(self):
+                return self.tag.value
+
+            task = db.relationship('Task',
+                                   backref=db.backref('tags', lazy='dynamic'))
+
+            def __init__(self, task_id, tag_id):
+                self.task_id = task_id
+                self.tag_id = tag_id
+
+        class Note(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            content = db.Column(db.String(4000))
+            timestamp = db.Column(db.DateTime)
+
+            task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+            task = db.relationship('Task',
+                                   backref=db.backref('notes', lazy='dynamic',
+                                                      order_by=timestamp))
+
+            def __init__(self, content, timestamp=None):
+                self.content = content
+                if timestamp is None:
+                    timestamp = datetime.datetime.utcnow()
+                if isinstance(timestamp, basestring):
+                    timestamp = dparse(timestamp)
+                self.timestamp = timestamp
+
+            def to_dict(self):
+                return {
+                    'id': self.id,
+                    'content': self.content,
+                    'timestamp': str_from_datetime(self.timestamp),
+                    'task_id': self.task_id
+                }
+
+        class Attachment(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            timestamp = db.Column(db.DateTime, nullable=False)
+            path = db.Column(db.String(1000), nullable=False)
+            filename = db.Column(db.String(100), nullable=False)
+            description = db.Column(db.String(100), nullable=False, default='')
+
+            task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+            task = db.relationship('Task',
+                                   backref=db.backref('attachments',
+                                                      lazy='dynamic',
+                                                      order_by=timestamp))
+
+            def __init__(self, path, description=None, timestamp=None,
+                         filename=None):
+                if description is None:
+                    description = ''
+                if timestamp is None:
+                    timestamp = datetime.datetime.utcnow()
+                if isinstance(timestamp, basestring):
+                    timestamp = dparse(timestamp)
+                if filename is None:
+                    filename = os.path.basename(path)
+                self.timestamp = timestamp
+                self.path = path
+                self.filename = filename
+                self.description = description
+
+            def to_dict(self):
+                return {
+                    'id': self.id,
+                    'timestamp': str_from_datetime(self.timestamp),
+                    'path': self.path,
+                    'filename': self.filename,
+                    'description': self.description,
+                    'task_id': self.task_id
+                }
+
+        class User(db.Model):
+            email = db.Column(db.String(100), primary_key=True, nullable=False)
+            hashed_password = db.Column(db.String(100), nullable=False)
+            is_admin = db.Column(db.Boolean, nullable=False, default=False)
+            authenticated = True
+
+            def __init__(self, email, hashed_password=None, is_admin=False):
+                if hashed_password is None:
+                    digits = '0123456789abcdef'
+                    key = ''.join((random.choice(digits) for x in xrange(48)))
+                    hashed_password = app.bcrypt.generate_password_hash(key)
+
+                self.email = email
+                self.hashed_password = hashed_password
+                self.is_admin = is_admin
+
+            def to_dict(self):
+                return {
+                    'email': self.email,
+                    'hashed_password': self.hashed_password,
+                    'is_admin': self.is_admin
+                }
+
+            def is_active(self):
+                return True
+
+            def get_id(self):
+                return self.email
+
+            def is_authenticated(self):
+                return self.authenticated
+
+            def is_anonymous(self):
+                return False
+
+        class View(db.Model):
+            id = db.Column(db.Integer, primary_key=True)
+            name = db.Column(db.String(100), nullable=False)
+            roots = db.Column(db.String(100), nullable=False)
+
+            def __init__(self, name, roots):
+                self.name = name
+                self.roots = roots
+
+            def to_dict(self):
+                return {
+                    'id': self.id,
+                    'name': self.name,
+                    'roots': self.roots
+                }
+
+        class Option(db.Model):
+            key = db.Column(db.String(100), primary_key=True)
+            value = db.Column(db.String(100), nullable=True)
+
+            def __init__(self, key, value):
+                self.key = key
+                self.value = value
+
+            def to_dict(self):
+                return {
+                    'key': self.key,
+                    'value': self.value
+                }
+
+        db.Task = Task
+        db.Tag = Tag
+        db.TaskTagLink = TaskTagLink
+        db.Note = Note
+        db.Attachment = Attachment
+        db.User = User
+        db.View = View
+        db.Option = Option
+
+        self.Task = Task
+        self.Tag = Tag
+        self.TaskTagLink = TaskTagLink
+        self.Note = Note
+        self.Attachment = Attachment
+        self.User = User
+        self.View = View
+        self.Option = Option
+
+
+def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
 
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
                                                      allowed_extensions)
                              if ext is not None and ext != '')
-    db = SQLAlchemy(app)
-    app.db = db
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -137,417 +579,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
-    class Task(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        summary = db.Column(db.String(100))
-        description = db.Column(db.String(4000))
-        is_done = db.Column(db.Boolean)
-        is_deleted = db.Column(db.Boolean)
-        order_num = db.Column(db.Integer, nullable=False, default=0)
-        deadline = db.Column(db.DateTime)
-        expected_duration_minutes = db.Column(db.Integer)
-        expected_cost = db.Column(db.Numeric)
-
-        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
-                              nullable=True)
-        parent = db.relationship('Task', remote_side=[id],
-                                 backref=db.backref('children',
-                                                    lazy='dynamic'))
-
-        depth = 0
-
-        def __init__(self, summary, description='', is_done=False,
-                     is_deleted=False, deadline=None,
-                     expected_duration_minutes=None, expected_cost=None):
-            self.summary = summary
-            self.description = description
-            self.is_done = is_done
-            self.is_deleted = is_deleted
-            if isinstance(deadline, basestring):
-                deadline = dparse(deadline)
-            self.deadline = deadline
-            self.expected_duration_minutes = expected_duration_minutes
-            self.expected_cost = expected_cost
-
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'summary': self.summary,
-                'description': self.description,
-                'is_done': self.is_done,
-                'is_deleted': self.is_deleted,
-                'order_num': self.order_num,
-                'deadline': str_from_datetime(self.deadline),
-                'parent_id': self.parent_id,
-                'expected_duration_minutes': self.expected_duration_minutes,
-                'expected_cost': self.get_expected_cost_for_export(),
-                'tag_ids': [ttl.tag_id for ttl in self.tags]
-            }
-
-        def get_siblings(self, include_deleted=True, descending=False,
-                         ascending=False):
-            if self.parent_id is not None:
-                return self.parent.get_children(include_deleted, descending,
-                                                ascending)
-
-            siblings = Task.query.filter(Task.parent_id == None)
-
-            if not include_deleted:
-                siblings = siblings.filter(Task.is_deleted == False)
-
-            if descending:
-                siblings = siblings.order_by(Task.order_num.desc())
-            elif ascending:
-                siblings = siblings.order_by(Task.order_num.asc())
-
-            return siblings
-
-        def get_children(self, include_deleted=True, descending=False,
-                         ascending=False):
-            children = self.children
-
-            if not include_deleted:
-                children = children.filter(Task.is_deleted == False)
-
-            if descending:
-                children = children.order_by(Task.order_num.desc())
-            elif ascending:
-                children = children.order_by(Task.order_num.asc())
-
-            return children
-
-        def get_all_descendants(self, include_deleted=True, descending=False,
-                                ascending=False, visited=None, result=None):
-            if visited is None:
-                visited = set()
-            if result is None:
-                result = []
-
-            if self not in visited:
-                visited.add(self)
-                result.append(self)
-                for child in self.get_children(include_deleted, descending,
-                                               ascending):
-                    child.get_all_descendants(include_deleted, descending,
-                                              ascending, visited, result)
-
-            return result
-
-        def get_css_class(self):
-            if self.is_deleted and self.is_done:
-                return 'done-deleted'
-            if self.is_deleted:
-                return 'not-done-deleted'
-            if self.is_done:
-                return 'done-not-deleted'
-            return ''
-
-        def get_css_class_attr(self):
-            cls = self.get_css_class()
-            if cls:
-                return ' class="{}" '.format(cls)
-            return ''
-
-        @staticmethod
-        def load(roots=None, max_depth=0, include_done=False,
-                 include_deleted=False, exclude_undeadlined=False):
-
-            query = Task.query
-
-            if not include_done:
-                query = query.filter_by(is_done=False)
-
-            if not include_deleted:
-                query = query.filter_by(is_deleted=False)
-
-            if exclude_undeadlined:
-                query = query.filter(Task.deadline.isnot(None))
-
-            if roots is None:
-                query = query.filter(Task.parent_id.is_(None))
-            else:
-                if not hasattr(roots, '__iter__'):
-                    roots = [roots]
-                query = query.filter(Task.id.in_(roots))
-
-            query = query.order_by(Task.id.asc())
-            query = query.order_by(Task.order_num.desc())
-
-            tasks = query.all()
-
-            depth = 0
-            for task in tasks:
-                task.depth = depth
-
-            if max_depth is None or max_depth > 0:
-
-                buckets = [tasks]
-                next_ids = map(lambda t: t.id, tasks)
-                already_ids = set()
-                already_ids.update(next_ids)
-
-                while ((max_depth is None or depth < max_depth) and
-                        len(next_ids) > 0):
-
-                    depth += 1
-
-                    query = Task.query
-                    query = query.filter(Task.parent_id.in_(next_ids),
-                                         Task.id.notin_(already_ids))
-                    if not include_done:
-                        query = query.filter_by(is_done=False)
-                    if not include_deleted:
-                        query = query.filter_by(is_deleted=False)
-                    if exclude_undeadlined:
-                        query = query.filter(Task.deadline.isnot(None))
-
-                    children = query.all()
-
-                    for child in children:
-                        child.depth = depth
-
-                    child_ids = set(map(lambda t: t.id, children))
-                    next_ids = child_ids - already_ids
-                    already_ids.update(child_ids)
-                    buckets.append(children)
-                tasks = list(
-                    set([task for bucket in buckets for task in bucket]))
-
-            return tasks
-
-        @staticmethod
-        def load_no_hierarchy(include_done=False, include_deleted=False,
-                              exclude_undeadlined=False, tags=None):
-
-            query = Task.query
-
-            if not include_done:
-                query = query.filter_by(is_done=False)
-
-            if not include_deleted:
-                query = query.filter_by(is_deleted=False)
-
-            if exclude_undeadlined:
-                query = query.filter(Task.deadline.isnot(None))
-
-            if tags is not None:
-                if not hasattr(tags, '__iter__'):
-                    tags = [tags]
-                if len(tags) < 1:
-                    tags = None
-
-            if tags is not None:
-                def get_tag_id(tag):
-                    if tag is None:
-                        return None
-                    if tag == str(tag):
-                        return Tag.query.filter_by(value=tag).all()[0].id
-                    if isinstance(tag, Tag):
-                        return tag.id
-                    raise TypeError(
-                        "Unknown type ('{}') of argument 'tag'".format(
-                            type(tag)))
-                tag_ids = map(get_tag_id, tags)
-                query = query.join(TaskTagLink).filter(
-                    TaskTagLink.tag_id.in_(tag_ids))
-
-            tasks = query.all()
-
-            depth = 0
-            for task in tasks:
-                task.depth = depth
-
-            return tasks
-
-        def get_tag_values(self):
-            for tag in self.tags:
-                yield tag.value
-
-        def get_expected_duration_for_viewing(self):
-            if self.expected_duration_minutes is None:
-                return ''
-            if self.expected_duration_minutes == 1:
-                return '1 minute'
-            return '{} minutes'.format(self.expected_duration_minutes)
-
-        def get_expected_cost_for_viewing(self):
-            if self.expected_cost is None:
-                return ''
-            return '{:.2f}'.format(self.expected_cost)
-
-        def get_expected_cost_for_export(self):
-            if self.expected_cost is None:
-                return None
-            return '{:.2f}'.format(self.expected_cost)
-
-    class Tag(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        value = db.Column(db.String(100), nullable=False, unique=True)
-        description = db.Column(db.String(4000), nullable=True)
-
-        def __init__(self, value, description=None):
-            self.value = value
-            self.description = description
-
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'value': self.value,
-                'description': self.description,
-            }
-
-    class TaskTagLink(db.Model):
-        task_id = db.Column(db.Integer, db.ForeignKey('task.id'),
-                            primary_key=True)
-        tag_id = db.Column(db.Integer, db.ForeignKey('tag.id'),
-                           primary_key=True)
-
-        tag = db.relationship('Tag',
-                              backref=db.backref('tasks', lazy='dynamic'))
-
-        @property
-        def value(self):
-            return self.tag.value
-
-        task = db.relationship('Task',
-                               backref=db.backref('tags', lazy='dynamic'))
-
-        def __init__(self, task_id, tag_id):
-            self.task_id = task_id
-            self.tag_id = tag_id
-
-    class Note(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        content = db.Column(db.String(4000))
-        timestamp = db.Column(db.DateTime)
-
-        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-        task = db.relationship('Task',
-                               backref=db.backref('notes', lazy='dynamic',
-                                                  order_by=timestamp))
-
-        def __init__(self, content, timestamp=None):
-            self.content = content
-            if timestamp is None:
-                timestamp = datetime.datetime.utcnow()
-            if isinstance(timestamp, basestring):
-                timestamp = dparse(timestamp)
-            self.timestamp = timestamp
-
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'content': self.content,
-                'timestamp': str_from_datetime(self.timestamp),
-                'task_id': self.task_id
-            }
-
-    class Attachment(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        timestamp = db.Column(db.DateTime, nullable=False)
-        path = db.Column(db.String(1000), nullable=False)
-        filename = db.Column(db.String(100), nullable=False)
-        description = db.Column(db.String(100), nullable=False, default='')
-
-        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-        task = db.relationship('Task', backref=db.backref('attachments',
-                                                          lazy='dynamic',
-                                                          order_by=timestamp))
-
-        def __init__(self, path, description=None, timestamp=None,
-                     filename=None):
-            if description is None:
-                description = ''
-            if timestamp is None:
-                timestamp = datetime.datetime.utcnow()
-            if isinstance(timestamp, basestring):
-                timestamp = dparse(timestamp)
-            if filename is None:
-                filename = os.path.basename(path)
-            self.timestamp = timestamp
-            self.path = path
-            self.filename = filename
-            self.description = description
-
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'timestamp': str_from_datetime(self.timestamp),
-                'path': self.path,
-                'filename': self.filename,
-                'description': self.description,
-                'task_id': self.task_id
-            }
-
-    class User(db.Model):
-        email = db.Column(db.String(100), primary_key=True, nullable=False)
-        hashed_password = db.Column(db.String(100), nullable=False)
-        is_admin = db.Column(db.Boolean, nullable=False, default=False)
-        authenticated = True
-
-        def __init__(self, email, hashed_password=None, is_admin=False):
-            if hashed_password is None:
-                digits = '0123456789abcdef'
-                key = ''.join((random.choice(digits) for x in xrange(48)))
-                hashed_password = app.bcrypt.generate_password_hash(key)
-
-            self.email = email
-            self.hashed_password = hashed_password
-            self.is_admin = is_admin
-
-        def to_dict(self):
-            return {
-                'email': self.email,
-                'hashed_password': self.hashed_password,
-                'is_admin': self.is_admin
-            }
-
-        def is_active(self):
-            return True
-
-        def get_id(self):
-            return self.email
-
-        def is_authenticated(self):
-            return self.authenticated
-
-        def is_anonymous(self):
-            return False
-
-    class View(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(100), nullable=False)
-        roots = db.Column(db.String(100), nullable=False)
-
-        def __init__(self, name, roots):
-            self.name = name
-            self.roots = roots
-
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'name': self.name,
-                'roots': self.roots
-            }
-
-    class Option(db.Model):
-        key = db.Column(db.String(100), primary_key=True)
-        value = db.Column(db.String(100), nullable=True)
-
-        def __init__(self, key, value):
-            self.key = key
-            self.value = value
-
-        def to_dict(self):
-            return {
-                'key': self.key,
-                'value': self.value
-            }
+    if ds_factory is None:
+        ds_factory = create_sqlalchemy_ds_factory(db_uri)
+
+    ds = ds_factory(app)
+    db = ds.db
+    app.ds = ds
 
     class Options(object):
         @staticmethod
         def get(key, default_value=None):
-            option = Option.query.get(key)
+            option = app.Option.query.get(key)
             if option is None:
                 return default_value
             return option.value
@@ -560,14 +602,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         def get_revision():
             return __revision__
 
-    app.Task = Task
-    app.Tag = Tag
-    app.TaskTagLink = TaskTagLink
-    app.Note = Note
-    app.Attachment = Attachment
-    app.User = User
-    app.View = View
-    app.Option = Option
+    app.Task = ds.Task
+    app.Tag = ds.Tag
+    app.TaskTagLink = ds.TaskTagLink
+    app.Note = ds.Note
+    app.Attachment = ds.Attachment
+    app.User = ds.User
+    app.View = ds.View
+    app.Option = ds.Option
+
+    @login_manager.user_loader
+    def load_user(userid):
+        return app.User.query.get(userid)
 
     def admin_required(func):
         @wraps(func)
@@ -576,10 +622,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 return ('You are not authorized to view this page', 403)
             return func(*args, **kwargs)
         return decorated_view
-
-    def save_task(task):
-        db.session.add(task)
-        db.session.commit()
 
     def get_roots_str():
         roots = request.args.get('roots') or request.cookies.get('roots')
@@ -596,7 +638,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             m = re.match(r'(\d+)\*', root_ids[i])
             if m:
                 id = m.group(1)
-                task = Task.query.get(id)
+                task = app.Task.query.get(id)
                 root_ids[i] = map(lambda c: c.id, task.children)
         if root_ids:
             root_ids = flatten(root_ids)
@@ -636,234 +678,157 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         return list(get_sorted_order(root))
 
-    @app.route('/')
-    @login_required
-    def index():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        roots = get_roots_str()
+    def get_index_data(show_deleted, show_done, roots):
         tasks = None
         if roots is not None:
             root_ids = get_root_ids_from_str(roots)
             if root_ids:
-                tasks = Task.query.filter(Task.id.in_(root_ids))
+                tasks = app.Task.query.filter(app.Task.id.in_(root_ids))
 
         if tasks is None:
-            tasks = Task.query.filter(Task.parent_id == None)
+            tasks = app.Task.query.filter(app.Task.parent_id == None)
         if not show_deleted:
             tasks = tasks.filter_by(is_deleted=False)
         if not show_done:
             tasks = tasks.filter_by(is_done=False)
-        tasks = tasks.order_by(Task.order_num.desc())
+        tasks = tasks.order_by(app.Task.order_num.desc())
         tasks = tasks.all()
 
         all_tasks = get_tasks_and_all_descendants_from_tasks(tasks)
-        deadline_tasks = Task.load_no_hierarchy(exclude_undeadlined=True)
+        deadline_tasks = app.Task.load_no_hierarchy(exclude_undeadlined=True)
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
         if tags is not None and len(tags) > 0:
             tags = tags.split(',')
-            tasks_h = Task.load_no_hierarchy(include_done=show_done,
-                                             include_deleted=show_deleted,
-                                             tags=tags)
+            tasks_h = app.Task.load_no_hierarchy(include_done=show_done,
+                                                 include_deleted=show_deleted,
+                                                 tags=tags)
         else:
-            tasks_h = Task.load(roots=None, max_depth=None,
-                                include_done=show_done,
-                                include_deleted=show_deleted)
+            tasks_h = app.Task.load(roots=None, max_depth=None,
+                                    include_done=show_done,
+                                    include_deleted=show_deleted)
             tasks_h = sort_by_hierarchy(tasks_h)
 
-        all_tags = Tag.query.all()
+        all_tags = app.Tag.query.all()
+        return {
+            'tasks': tasks,
+            'show_deleted': show_deleted,
+            'show_done': show_done,
+            'roots': roots,
+            'views': app.View.query,
+            'all_tasks': all_tasks,
+            'deadline_tasks': deadline_tasks,
+            'tasks_h': tasks_h,
+            'all_tags': all_tags,
+        }
 
-        resp = make_response(render_template('index.t.html', tasks=tasks,
-                                             show_deleted=show_deleted,
-                                             show_done=show_done,
-                                             roots=roots, views=View.query,
-                                             cycle=itertools.cycle,
-                                             all_tasks=all_tasks,
-                                             deadline_tasks=deadline_tasks,
-                                             user=current_user,
-                                             tasks_h=tasks_h, tags=all_tags))
-        if roots:
-            resp.set_cookie('roots', roots)
-        return resp
+    def create_new_task(summary, parent_id):
+        task = app.Task(summary)
 
-    @app.route('/task/new', methods=['POST'])
-    @login_required
-    def new_task():
-        summary = request.form['summary']
-        task = Task(summary)
-
-        query = Task.query.order_by(Task.order_num.asc()).limit(1)
+        # get lowest order number
+        query = app.Task.query.order_by(app.Task.order_num.asc()).limit(1)
         lowest_order_num_tasks = query.all()
         task.order_num = 0
         if len(lowest_order_num_tasks) > 0:
             task.order_num = lowest_order_num_tasks[0].order_num - 2
 
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-            if parent_id is None or parent_id == '':
-                task.parent_id = None
-            elif Task.query.filter_by(id=parent_id).count() > 0:
-                task.parent_id = parent_id
-        else:
+        if parent_id is None or parent_id == '':
             task.parent_id = None
+        elif app.Task.query.filter_by(id=parent_id).count() > 0:
+            task.parent_id = parent_id
 
-        if 'next_url' in request.form:
-            next_url = request.form['next_url']
-        else:
-            next_url = url_for('index')
+        return task
 
-        save_task(task)
-        return redirect(next_url)
-
-    @app.route('/task/<int:id>/mark_done')
-    @login_required
-    def task_done(id):
-        task = Task.query.filter_by(id=id).first()
+    def task_set_done(id):
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
-            return 404
+            raise werkzeug.exceptions.NotFound()
         task.is_done = True
-        save_task(task)
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/mark_undone')
-    @login_required
-    def task_undo(id):
-        task = Task.query.filter_by(id=id).first()
+    def task_unset_done(id):
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
-            return 404
+            raise werkzeug.exceptions.NotFound()
         task.is_done = False
-        save_task(task)
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/delete')
-    @login_required
-    def delete_task(id):
-        task = Task.query.filter_by(id=id).first()
+    def task_set_deleted(id):
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
-            return 404
+            raise werkzeug.exceptions.NotFound()
         task.is_deleted = True
-        save_task(task)
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/undelete')
-    @login_required
-    def undelete_task(id):
-        task = Task.query.filter_by(id=id).first()
+    def task_unset_deleted(id):
+        task = app.Task.query.filter_by(id=id).first()
         if not task:
-            return 404
+            raise werkzeug.exceptions.NotFound()
         task.is_deleted = False
-        save_task(task)
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/purge')
-    @login_required
-    @admin_required
-    def purge_task(id):
-        task = Task.query.filter_by(id=id, is_deleted=True).first()
-        if not task:
-            return 404
-        db.session.delete(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
-
-    @app.route('/purge_all')
-    @login_required
-    @admin_required
-    def purge_deleted_tasks():
-        are_you_sure = request.args.get('are_you_sure')
-        if are_you_sure:
-            deleted_tasks = Task.query.filter_by(is_deleted=True)
-            for task in deleted_tasks:
-                db.session.delete(task)
-            db.session.commit()
-            return redirect(request.args.get('next') or url_for('index'))
-        return render_template('purge.t.html')
-
-    @app.route('/task/<int:id>')
-    @login_required
-    def view_task(id):
-        task = Task.query.filter_by(id=id).first()
+    def get_task_data(id):
+        task = app.Task.query.filter_by(id=id).first()
         if task is None:
-            return (('No task found for the id "%s"' % id), 404)
+            raise werkzeug.exceptions.NotFound()
 
-        descendants = Task.load(roots=task.id, max_depth=None,
-                                include_done=True, include_deleted=True)
+        descendants = app.Task.load(roots=task.id, max_depth=None,
+                                    include_done=True, include_deleted=True)
 
         hierarchy_sort = True
         if hierarchy_sort:
             descendants = sort_by_hierarchy(descendants, root=task)
 
-        return render_template('task.t.html', task=task,
-                               descendants=descendants, cycle=itertools.cycle)
+        return {
+            'task': task,
+            'descendants': descendants,
+        }
 
-    @app.route('/note/new', methods=['POST'])
-    @login_required
-    def new_note():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-        task = Task.query.filter_by(id=task_id).first()
+    def create_new_note(task_id, content):
+        task = app.Task.query.filter_by(id=task_id).first()
         if task is None:
-            return (('No task found for the id "%s"' % task_id), 404)
-        content = request.form['content']
-        note = Note(content)
+            raise werkzeug.exceptions.NotFound()
+        note = app.Note(content)
         note.task = task
+        return note
 
-        save_task(note)
+    def set_task(task_id, summary, description, deadline=None, is_done=False,
+                 is_deleted=False, order_num=None, duration=None,
+                 expected_cost=None, parent_id=None, tags=None):
 
-        return redirect(url_for('view_task', id=task_id))
-
-    @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
-    @login_required
-    def edit_task(id):
-        task = Task.query.filter_by(id=id).first()
-
-        def render_get_response():
-            tag_list = ','.join(task.get_tag_values())
-            return render_template("edit_task.t.html", task=task,
-                                   tag_list=tag_list)
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'summary' not in request.form or 'description' not in request.form:
-            return render_get_response()
-
-        task.summary = request.form['summary']
-        task.description = request.form['description']
-        deadline = request.form['deadline']
         if deadline:
-            task.deadline = dparse(deadline)
+            deadline = dparse(deadline)
+
+        if order_num is None:
+            order_num = 0
+
+        if parent_id is None:
+            pass
+        elif parent_id == '':
+            parent_id = None
+        elif app.Task.query.filter_by(id=parent_id).count() > 0:
+            pass
         else:
-            task.deadline = None
+            parent_id = None
 
-        task.is_done = ('is_done' in request.form and
-                        not not request.form['is_done'])
-        task.is_deleted = ('is_deleted' in request.form and
-                           not not request.form['is_deleted'])
+        task = app.Task.query.filter_by(id=task_id).first()
+        task.summary = summary
+        task.description = description
 
-        if 'order_num' in request.form:
-            task.order_num = request.form['order_num']
-        else:
-            task.order_num = 0
+        task.deadline = deadline
 
-        duration = int_from_str(request.form['expected_duration_minutes'])
+        task.is_done = is_done
+        task.is_deleted = is_deleted
+
+        task.order_num = order_num
+
         task.expected_duration_minutes = duration
 
-        task.expected_cost = money_from_str(request.form['expected_cost'])
+        task.expected_cost = expected_cost
 
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-            if parent_id is None or parent_id == '':
-                task.parent_id = None
-            elif Task.query.filter_by(id=parent_id).count() > 0:
-                task.parent_id = parent_id
-        else:
-            task.parent_id = None
+        task.parent_id = parent_id
 
-        tags = request.form['tags']
         if tags is not None:
             values = tags.split(',')
             for ttl in task.tags:
@@ -872,20 +837,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 if value is None or value == '':
                     continue
 
-                tag = Tag.query.filter_by(value=value).first()
+                tag = app.Tag.query.filter_by(value=value).first()
                 if tag is None:
-                    tag = Tag(value)
+                    tag = app.Tag(value)
                     db.session.add(tag)
 
-                ttl = TaskTagLink.query.get((task.id, tag.id))
+                ttl = app.TaskTagLink.query.get((task.id, tag.id))
                 if ttl is None:
-                    ttl = TaskTagLink(task.id, tag.id)
+                    ttl = app.TaskTagLink(task.id, tag.id)
                     db.session.add(ttl)
 
-        db.session.add(task)
-        db.session.commit()
+        return task
 
-        return redirect(url_for('view_task', id=task.id))
+    def get_edit_task_data(id):
+        task = app.Task.query.filter_by(id=id).first()
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        tag_list = ','.join(task.get_tag_values())
+        return {
+            'task': task,
+            'tag_list': tag_list,
+        }
 
     def allowed_file(filename):
         if '.' not in filename:
@@ -893,42 +865,19 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         ext = filename.rsplit('.', 1)[1]
         return (ext in allowed_extensions)
 
-    @app.route('/attachment/new', methods=['POST'])
-    @login_required
-    def new_attachment():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-        task = Task.query.filter_by(id=task_id).first()
+    def create_new_attachment(task_id, f, description):
+
+        task = app.Task.query.filter_by(id=task_id).first()
         if task is None:
             return (('No task found for the task_id "%s"' % task_id), 404)
-        f = request.files['filename']
-        if f is None or not f or not allowed_file(f.filename):
-            return 'Invalid file', 400
+
         path = secure_filename(f.filename)
         f.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
-        if 'description' in request.form:
-            description = request.form['description']
-        else:
-            description = ''
 
-        att = Attachment(path, description)
+        att = app.Attachment(path, description)
         att.task = task
 
-        save_task(att)
-
-        return redirect(url_for('view_task', id=task_id))
-
-    @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
-    @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
-    @app.route('/attachment/<int:aid>/<path:x>')
-    @login_required
-    def get_attachment(aid, x):
-        att = Attachment.query.filter_by(id=aid).first()
-        if att is None:
-            return (('No attachment found for the id "%s"' % aid), 404)
-
-        return flask.send_from_directory(upload_folder, att.path)
+        return att
 
     def reorder_tasks(tasks):
         tasks = list(tasks)
@@ -937,15 +886,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             tasks[i].order_num = 2 * (N - i)
             db.session.add(tasks[i])
 
-    @app.route('/task/<int:id>/up')
-    @login_required
-    def move_task_up(id):
-        task = Task.query.get(id)
-        show_deleted = request.cookies.get('show_deleted')
+    def do_move_task_up(id, show_deleted):
+        task = app.Task.query.get(id)
         siblings = task.get_siblings(show_deleted)
-        higher_siblings = siblings.filter(Task.order_num >= task.order_num)
-        higher_siblings = higher_siblings.filter(Task.id != task.id)
-        next_task = higher_siblings.order_by(Task.order_num.asc()).first()
+        higher_siblings = siblings.filter(app.Task.order_num >= task.order_num)
+        higher_siblings = higher_siblings.filter(app.Task.id != task.id)
+        next_task = higher_siblings.order_by(app.Task.order_num.asc()).first()
 
         if next_task:
             if task.order_num == next_task.order_num:
@@ -955,35 +901,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             db.session.add(task)
             db.session.add(next_task)
-            db.session.commit()
 
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/top')
-    @login_required
-    def move_task_to_top(id):
-        task = Task.query.get(id)
-        show_deleted = request.cookies.get('show_deleted')
+    def do_move_task_to_top(id):
+        task = app.Task.query.get(id)
         siblings = task.get_siblings(True)
-        top_task = siblings.order_by(Task.order_num.desc()).first()
+        top_task = siblings.order_by(app.Task.order_num.desc()).first()
 
         if top_task:
             task.order_num = top_task.order_num + 1
 
             db.session.add(task)
-            db.session.commit()
 
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/down')
-    @login_required
-    def move_task_down(id):
-        task = Task.query.get(id)
-        show_deleted = request.cookies.get('show_deleted')
+    def do_move_task_down(id, show_deleted):
+        task = app.Task.query.get(id)
         siblings = task.get_siblings(show_deleted)
-        lower_siblings = siblings.filter(Task.order_num <= task.order_num)
-        lower_siblings = lower_siblings.filter(Task.id != task.id)
-        next_task = lower_siblings.order_by(Task.order_num.desc()).first()
+        lower_siblings = siblings.filter(app.Task.order_num <= task.order_num)
+        lower_siblings = lower_siblings.filter(app.Task.id != task.id)
+        next_task = lower_siblings.order_by(app.Task.order_num.desc()).first()
 
         if next_task:
             if task.order_num == next_task.order_num:
@@ -993,51 +931,44 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
             db.session.add(task)
             db.session.add(next_task)
-            db.session.commit()
 
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
-    @app.route('/task/<int:id>/bottom')
-    @login_required
-    def move_task_to_bottom(id):
-        task = Task.query.get(id)
-        show_deleted = request.cookies.get('show_deleted')
+    def do_move_task_to_bottom(id):
+        task = app.Task.query.get(id)
         siblings = task.get_siblings(True)
-        bottom_task = siblings.order_by(Task.order_num.asc()).first()
+        bottom_task = siblings.order_by(app.Task.order_num.asc()).first()
 
         if bottom_task:
             task.order_num = bottom_task.order_num - 2
 
             db.session.add(task)
-            db.session.commit()
 
-        return redirect(request.args.get('next') or url_for('index'))
+        return task
 
     def get_form_or_arg(name):
         if name in request.form:
             return request.form[name]
         return request.args.get(name)
 
-    @app.route('/long_order_change', methods=['POSt'])
-    @login_required
-    def long_order_change():
-
-        task_to_move_id = get_form_or_arg('long_order_task_to_move')
-        if task_to_move_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-        task_to_move = Task.query.get(task_to_move_id)
+    def do_long_order_change(task_to_move_id, target_id):
+        task_to_move = app.Task.query.get(task_to_move_id)
         if task_to_move is None:
-            redirect(request.args.get('next') or url_for('index'))
+            raise werkzeug.exceptions.NotFound(
+                "No task object found for id '{}'".format(task_to_move_id))
 
-        target_id = get_form_or_arg('long_order_target')
-        if target_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-        target = Task.query.get(target_id)
+        target = app.Task.query.get(target_id)
         if target is None:
-            redirect(request.args.get('next') or url_for('index'))
+            raise werkzeug.exceptions.NotFound(
+                "No task object found for id '{}'".format(target_id))
 
         if target.parent_id != task_to_move.parent_id:
-            redirect(request.args.get('next') or url_for('index'))
+            raise werkzeug.exceptions.Conflict(
+                "Tasks '{}' and '{}' have different parents ('{}' and '{}', "
+                "respectively). Long order changes are not allowed to change "
+                "the parenting hierarchy.".format(
+                    task_to_move_id, target_id, task_to_move.parent_id,
+                    target.parent_id))
 
         siblings = target.get_siblings(True).all()
         siblings2 = sorted(siblings, key=lambda t: t.order_num, reverse=True)
@@ -1055,6 +986,635 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             s.order_num = k
             k -= 2
             db.session.add(s)
+
+        return task_to_move, target
+
+    def do_add_tag_to_task(id, value):
+        task = app.Task.query.get(id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(id))
+
+        tag = app.Tag.query.filter_by(value=value).first()
+        if tag is None:
+            tag = app.Tag(value)
+            db.session.add(tag)
+
+        ttl = app.TaskTagLink.query.get((task.id, tag.id))
+        if ttl is None:
+            ttl = app.TaskTagLink(task.id, tag.id)
+            db.session.add(ttl)
+
+        return ttl
+
+    def do_delete_tag_from_task(task_id, tag_id):
+        if tag_id is None:
+            raise ValueError("No tag_id was specified.")
+
+        task = app.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+
+        ttl = app.TaskTagLink.query.get((task_id, tag_id))
+        if ttl is not None:
+            db.session.delete(ttl)
+
+        return ttl
+
+    def do_add_new_user(email, is_admin):
+        user = app.User.query.get(email)
+        if user is not None:
+            return werkzeug.exceptions.Conflict(
+                "A user already exists with the email address '{}'".format(
+                    email))
+        user = app.User(email=email, is_admin=is_admin)
+        db.session.add(user)
+        return user
+
+    def do_add_new_view(name, roots):
+        view = app.View(name, roots)
+        db.session.add(view)
+        return view
+
+    def get_view_options_data():
+        return app.Option.query
+
+    def do_set_option(key, value):
+        option = app.Option.query.get(key)
+        if option is not None:
+            option.value = value
+        else:
+            option = app.Option(key, value)
+        db.session.add(option)
+        return option
+
+    def do_delete_option(key):
+        option = app.Option.query.get(key)
+        if option is not None:
+            db.session.delete(option)
+        return option
+
+    def do_reset_order_nums():
+        tasks_h = app.Task.load(roots=None, max_depth=None, include_done=True,
+                                include_deleted=True)
+        tasks_h = sort_by_hierarchy(tasks_h)
+
+        k = len(tasks_h) + 1
+        for task in tasks_h:
+            if task is None:
+                continue
+            task.order_num = 2 * k
+            db.session.add(task)
+            k -= 1
+        return tasks_h
+
+    def do_export_data(types_to_export):
+        results = {}
+        if 'tasks' in types_to_export:
+            results['tasks'] = [t.to_dict() for t in app.Task.query.all()]
+        if 'tags' in types_to_export:
+            results['tags'] = [t.to_dict() for t in app.Tag.query.all()]
+        if 'notes' in types_to_export:
+            results['notes'] = [t.to_dict() for t in app.Note.query.all()]
+        if 'attachments' in types_to_export:
+            results['attachments'] = [t.to_dict() for t in
+                                      app.Attachment.query.all()]
+        if 'users' in types_to_export:
+            results['users'] = [t.to_dict() for t in app.User.query.all()]
+        if 'views' in types_to_export:
+            results['views'] = [t.to_dict() for t in app.View.query.all()]
+        if 'options' in types_to_export:
+            results['options'] = [t.to_dict() for t in app.Option.query.all()]
+        return results
+
+    def do_import_data(src):
+
+        db_objects = []
+
+        try:
+
+            if 'tags' in src:
+                for tag in src['tags']:
+                    task_id = tag['id']
+                    value = tag['value']
+                    description = tag.get('description', '')
+                    t = app.Tag(value=value, description=description)
+                    t.id = task_id
+                    db_objects.append(t)
+
+            if 'tasks' in src:
+                ids = set()
+                for task in src['tasks']:
+                    ids.add(task['id'])
+                existing_tasks = app.Task.query.filter(
+                    app.Task.id.in_(ids)).count()
+                if existing_tasks > 0:
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified task id\'s already exist in the '
+                        'database')
+                for task in src['tasks']:
+                    id = task['id']
+                    summary = task['summary']
+                    description = task.get('description', '')
+                    is_done = task.get('is_done', False)
+                    is_deleted = task.get('is_deleted', False)
+                    deadline = task.get('deadline', None)
+                    exp_dur_min = task.get('expected_duration_minutes')
+                    expected_cost = task.get('expected_cost')
+                    parent_id = task.get('parent_id', None)
+                    order_num = task.get('order_num', None)
+                    tag_ids = task.get('tag_ids', [])
+                    t = app.Task(summary=summary, description=description,
+                                 is_done=is_done, is_deleted=is_deleted,
+                                 deadline=deadline,
+                                 expected_duration_minutes=exp_dur_min,
+                                 expected_cost=expected_cost)
+                    t.id = id
+                    t.parent_id = parent_id
+                    t.order_num = order_num
+                    for tag_id in tag_ids:
+                        ttl = app.TaskTagLink(t.id, tag_id)
+                        db_objects.append(ttl)
+                    db_objects.append(t)
+
+            if 'notes' in src:
+                ids = set()
+                for note in src['notes']:
+                    ids.add(note['id'])
+                existing_notes = app.Note.query.filter(
+                    app.Note.id.in_(ids)).count()
+                if existing_notes > 0:
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified note id\'s already exist in the '
+                        'database')
+                for note in src['notes']:
+                    id = note['id']
+                    content = note['content']
+                    timestamp = note['timestamp']
+                    task_id = note['task_id']
+                    n = app.Note(content=content, timestamp=timestamp)
+                    n.id = id
+                    n.task_id = task_id
+                    db_objects.append(n)
+
+            if 'attachments' in src:
+                attachments = src['attachments']
+                ids = set()
+                for attachment in attachments:
+                    ids.add(attachment['id'])
+                existing_attachments = app.Attachment.query.filter(
+                    app.Attachment.id.in_(ids)).count()
+                if existing_attachments > 0:
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified attachment id\'s already exist in the '
+                        'database')
+                for attachment in attachments:
+                    id = attachment['id']
+                    timestamp = attachment['timestamp']
+                    path = attachment['path']
+                    filename = attachment['filename']
+                    description = attachment['description']
+                    task_id = attachment['task_id']
+                    a = app.Attachment(path=path, description=description,
+                                       timestamp=timestamp, filename=filename)
+                    a.id = id
+                    a.task_id = task_id
+                    db_objects.append(a)
+
+            if 'users' in src:
+                users = src['users']
+                emails = set()
+                for user in users:
+                    emails.add(user['email'])
+                existing_users = app.User.query.filter(
+                    app.User.email.in_(emails)).count()
+                if existing_users > 0:
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified user email addresses already exist in '
+                        'the database')
+                for user in users:
+                    email = user['email']
+                    hashed_password = user['hashed_password']
+                    is_admin = user['is_admin']
+                    u = app.User(email=email, hashed_password=hashed_password,
+                                 is_admin=is_admin)
+                    db_objects.append(u)
+
+            if 'views' in src:
+                ids = set()
+                for view in src['views']:
+                    ids.add(view['id'])
+                existing_views = app.View.query.filter(
+                    app.View.id.in_(ids)).count()
+                if existing_views > 0:
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified view id\'s already exist in the '
+                        'database')
+                for view in src['views']:
+                    id = view['id']
+                    name = view['name']
+                    roots = view['roots']
+                    v = app.View(name=name, roots=roots)
+                    v.id = id
+                    db_objects.append(v)
+
+            if 'options' in src:
+                keys = set()
+                for option in src['options']:
+                    keys.add(option['key'])
+                existing_options = app.Option.query.filter(
+                    app.Option.key.in_(keys)).count()
+                if existing_options > 0:
+                    raise werkzeug.exceptions.Conflict(
+                        'Some specified option keys already exist in the '
+                        'database')
+                for option in src['options']:
+                    key = option['key']
+                    value = option['value']
+                    t = app.Option(key, value)
+                    db_objects.append(t)
+        except werkzeug.exceptions.HTTPException:
+            raise
+        except:
+            raise werkzeug.exceptions.BadRequest('The data was incorrect')
+
+        for dbo in db_objects:
+            db.session.add(dbo)
+
+    def get_task_crud_data():
+        return app.Task.load_no_hierarchy(include_done=True,
+                                          include_deleted=True)
+
+    def do_submit_task_crud(crud_data):
+
+        tasks = app.Task.load_no_hierarchy(include_done=True,
+                                           include_deleted=True)
+
+        for task in tasks:
+            summary = crud_data.get('task_{}_summary'.format(task.id))
+            deadline = crud_data.get('task_{}_deadline'.format(task.id))
+            is_done = crud_data.get('task_{}_is_done'.format(task.id))
+            is_deleted = crud_data.get('task_{}_is_deleted'.format(task.id))
+            order_num = crud_data.get('task_{}_order_num'.format(task.id))
+            duration = crud_data.get('task_{}_duration'.format(task.id))
+            cost = crud_data.get('task_{}_cost'.format(task.id))
+            parent_id = crud_data.get('task_{}_parent_id'.format(task.id))
+
+            if deadline:
+                deadline = dparse(deadline)
+            else:
+                deadline = None
+            is_done = (True if is_done else False)
+            is_deleted = (True if is_deleted else False)
+            order_num = int_from_str(order_num)
+            duration = int_from_str(duration)
+            cost = money_from_str(cost)
+            parent_id = int_from_str(parent_id)
+
+            if summary is not None:
+                task.summary = summary
+            task.deadline = deadline
+            task.is_done = is_done
+            task.is_deleted = is_deleted
+            task.order_num = order_num
+            task.expected_duration_minutes = duration
+            task.expected_cost = cost
+            task.parent_id = parent_id
+
+            db.session.add(task)
+
+    def get_tags():
+        return app.Tag.query.all()
+
+    def get_tag_data(tag_id):
+        tag = app.Tag.query.get(tag_id)
+        if not tag:
+            raise werkzeug.exceptions.NotFound(
+                "No tag found for the id '{}'".format(tag_id))
+        tasks = app.Task.load_no_hierarchy(include_done=True,
+                                           include_deleted=True, tags=tag)
+        return {
+            'tag': tag,
+            'tasks': tasks,
+        }
+
+    def get_tag(tag_id):
+        tag = app.Tag.query.get(id)
+        if not tag:
+            raise werkzeug.exceptions.NotFound(
+                "No tag found for the id '{}'".format(tag_id))
+        return tag
+
+    def do_edit_tag(tag_id, value, description):
+        tag = get_tag(tag_id)
+        if not tag:
+            raise werkzeug.exceptions.NotFound(
+                "No tag found for the id '{}'".format(tag_id))
+        tag.value = value
+        tag.description = description
+        db.session.add(tag)
+        return tag
+
+    def get_task(task_id):
+        return app.Task.query.get(task_id)
+
+    def _convert_task_to_tag(task_id):
+        task = get_task(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '%s'".format(id))
+
+        if app.Tag.query.filter_by(value=task.summary).first():
+            raise werkzeug.exceptions.Conflict(
+                'A tag already exists with the name "{}"'.format(
+                    task.summary))
+
+        tag = app.Tag(task.summary, task.description)
+        db.session.add(tag)
+
+        for child in task.children:
+            ttl = app.TaskTagLink(child.id, tag.id)
+            db.session.add(ttl)
+            child.parent = task.parent
+            db.session.add(child)
+            for ttl2 in task.tags:
+                ttl3 = app.TaskTagLink(child.id, ttl2.tag_id)
+                db.session.add(ttl3)
+
+        for ttl2 in task.tags:
+            db.session.delete(ttl2)
+
+        task.parent = None
+        db.session.add(task)
+
+        db.session.delete(task)
+
+        db.session.commit()
+
+        return tag
+
+    app._convert_task_to_tag = _convert_task_to_tag
+
+    # View Functions
+
+    @app.route('/')
+    @login_required
+    def index():
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        roots = get_roots_str()
+
+        data = get_index_data(show_deleted, show_done, roots)
+
+        resp = make_response(
+            render_template('index.t.html',
+                            tasks=data['tasks'],
+                            show_deleted=data['show_deleted'],
+                            show_done=data['show_done'],
+                            roots=data['roots'],
+                            views=data['views'],
+                            cycle=itertools.cycle,
+                            all_tasks=data['all_tasks'],
+                            deadline_tasks=data['deadline_tasks'],
+                            user=current_user,
+                            tasks_h=data['tasks_h'],
+                            tags=data['all_tags']))
+        if roots:
+            resp.set_cookie('roots', roots)
+        return resp
+
+    @app.route('/task/new', methods=['POST'])
+    @login_required
+    def new_task():
+        summary = request.form['summary']
+
+        if 'parent_id' in request.form:
+            parent_id = request.form['parent_id']
+        else:
+            parent_id = None
+
+        task = create_new_task(summary, parent_id)
+
+        db.session.add(task)
+        db.session.commit()
+
+        if 'next_url' in request.form:
+            next_url = request.form['next_url']
+        else:
+            next_url = url_for('index')
+
+        return redirect(next_url)
+
+    @app.route('/task/<int:id>/mark_done')
+    @login_required
+    def task_done(id):
+        task = task_set_done(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/mark_undone')
+    @login_required
+    def task_undo(id):
+        task = task_unset_done(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/delete')
+    @login_required
+    def delete_task(id):
+        task = task_set_deleted(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/undelete')
+    @login_required
+    def undelete_task(id):
+        task = task_unset_deleted(id)
+        db.session.add(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/purge')
+    @login_required
+    @admin_required
+    def purge_task(id):
+        task = app.Task.query.filter_by(id=id, is_deleted=True).first()
+        if not task:
+            return 404
+        db.session.delete(task)
+        db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/purge_all')
+    @login_required
+    @admin_required
+    def purge_deleted_tasks():
+        are_you_sure = request.args.get('are_you_sure')
+        if are_you_sure:
+            deleted_tasks = app.Task.query.filter_by(is_deleted=True)
+            for task in deleted_tasks:
+                db.session.delete(task)
+            db.session.commit()
+            return redirect(request.args.get('next') or url_for('index'))
+        return render_template('purge.t.html')
+
+    @app.route('/task/<int:id>')
+    @login_required
+    def view_task(id):
+        data = get_task_data(id)
+
+        return render_template('task.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle)
+
+    @app.route('/note/new', methods=['POST'])
+    @login_required
+    def new_note():
+        if 'task_id' not in request.form:
+            return ('No task_id specified', 400)
+        task_id = request.form['task_id']
+        content = request.form['content']
+
+        note = create_new_note(task_id, content)
+
+        db.session.add(note)
+        db.session.commit()
+
+        return redirect(url_for('view_task', id=task_id))
+
+    @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_task(id):
+
+        def render_get_response():
+            data = get_edit_task_data(id)
+            return render_template("edit_task.t.html", task=data['task'],
+                                   tag_list=data['tag_list'])
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'summary' not in request.form or 'description' not in request.form:
+            return render_get_response()
+
+        summary = request.form['summary']
+        description = request.form['description']
+        deadline = request.form['deadline']
+
+        is_done = ('is_done' in request.form and
+                   not not request.form['is_done'])
+        is_deleted = ('is_deleted' in request.form and
+                      not not request.form['is_deleted'])
+
+        order_num = None
+        if 'order_num' in request.form:
+            order_num = request.form['order_num']
+
+        parent_id = None
+        if 'parent_id' in request.form:
+            parent_id = request.form['parent_id']
+
+        tags = request.form['tags']
+
+        duration = int_from_str(request.form['expected_duration_minutes'])
+
+        expected_cost = money_from_str(request.form['expected_cost'])
+
+        task = set_task(id, summary, description, deadline, is_done,
+                        is_deleted, order_num, duration, expected_cost,
+                        parent_id, tags)
+
+        db.session.add(task)
+        db.session.commit()
+
+        return redirect(url_for('view_task', id=task.id))
+
+    @app.route('/attachment/new', methods=['POST'])
+    @login_required
+    def new_attachment():
+        if 'task_id' not in request.form:
+            return ('No task_id specified', 400)
+        task_id = request.form['task_id']
+
+        f = request.files['filename']
+        if f is None or not f or not allowed_file(f.filename):
+            return 'Invalid file', 400
+
+        if 'description' in request.form:
+            description = request.form['description']
+        else:
+            description = ''
+
+        att = create_new_attachment(task_id, f, description)
+
+        db.session.add(att)
+        db.session.commit()
+
+        return redirect(url_for('view_task', id=task_id))
+
+    @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
+    @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
+    @app.route('/attachment/<int:aid>/<path:x>')
+    @login_required
+    def get_attachment(aid, x):
+        att = app.Attachment.query.filter_by(id=aid).first()
+        if att is None:
+            return (('No attachment found for the id "%s"' % aid), 404)
+
+        return flask.send_from_directory(upload_folder, att.path)
+
+    @app.route('/task/<int:id>/up')
+    @login_required
+    def move_task_up(id):
+        show_deleted = request.cookies.get('show_deleted')
+        do_move_task_up(id, show_deleted)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/top')
+    @login_required
+    def move_task_to_top(id):
+        do_move_task_to_top(id)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/down')
+    @login_required
+    def move_task_down(id):
+        show_deleted = request.cookies.get('show_deleted')
+        do_move_task_down(id, show_deleted)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/task/<int:id>/bottom')
+    @login_required
+    def move_task_to_bottom(id):
+        do_move_task_to_bottom(id)
+        db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    @app.route('/long_order_change', methods=['POST'])
+    @login_required
+    def long_order_change():
+
+        task_to_move_id = get_form_or_arg('long_order_task_to_move')
+        if task_to_move_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        target_id = get_form_or_arg('long_order_target')
+        if target_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        do_long_order_change(task_to_move_id, target_id)
+
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
@@ -1068,20 +1628,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
 
-        task = Task.query.get(id)
-        if task is None:
-            return '', 404
-
-        tag = Tag.query.filter_by(value=value).first()
-        if tag is None:
-            tag = Tag(value)
-            db.session.add(tag)
-
-        ttl = TaskTagLink.query.get((task.id, tag.id))
-        if ttl is None:
-            ttl = TaskTagLink(task.id, tag.id)
-            db.session.add(ttl)
-
+        do_add_tag_to_task(id, value)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -1097,25 +1644,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         if tag_id is None:
             tag_id = get_form_or_arg('tag_id')
-        if tag_id is None:
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=id)))
 
-        task = Task.query.get(id)
-        if task is None:
-            return '', 404
-
-        ttl = TaskTagLink.query.get((id, tag_id))
-        if ttl is not None:
-            db.session.delete(ttl)
-            db.session.commit()
+        do_delete_tag_from_task(id, tag_id)
+        db.session.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
-
-    @login_manager.user_loader
-    def load_user(userid):
-        return User.query.get(userid)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -1123,7 +1657,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
-        user = User.query.get(email)
+        user = app.User.query.get(email)
 
         if (user is None or
                 not bcrypt.check_password_hash(user.hashed_password,
@@ -1148,21 +1682,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def list_users():
 
         if request.method == 'GET':
-            return render_template('list_users.t.html', users=User.query,
+            return render_template('list_users.t.html', users=app.User.query,
                                    cycle=itertools.cycle)
 
         email = request.form['email']
-        user = User.query.get(email)
-        if user is not None:
-            return ('A user already exists with the email '
-                    'address {}'.format(email), 409)
         is_admin = False
         if 'is_admin' in request.form:
             is_admin = bool_from_str(request.form['is_admin'])
 
-        user = User(email=email, is_admin=is_admin)
-
-        db.session.add(user)
+        do_add_new_user(email, is_admin)
         db.session.commit()
 
         return redirect(url_for('list_users'))
@@ -1215,16 +1743,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         name = request.form['view_name']
         roots = request.form['view_roots']
-        view = View(name, roots)
-
-        db.session.add(view)
+        do_add_new_view(name, roots)
         db.session.commit()
         return redirect(url_for('index'))
 
     @app.route('/view/<int:id>')
     @login_required
     def set_view(id):
-        view = View.query.get(id)
+        view = app.View.query.get(id)
         if view is None:
             return (('No view found for the id "%s"' % id), 404)
         return redirect(url_for('set_roots', roots=view.roots))
@@ -1234,20 +1760,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @admin_required
     def view_options():
         if request.method == 'GET' or 'key' not in request.form:
-            return render_template('options.t.html', options=Option.query)
+            data = get_view_options_data()
+            return render_template('options.t.html', options=data)
 
         key = request.form['key']
         value = ''
         if 'value' in request.form:
             value = request.form['value']
 
-        option = Option.query.get(key)
-        if option is not None:
-            option.value = value
-        else:
-            option = Option(key, value)
-
-        db.session.add(option)
+        do_set_option(key, value)
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('view_options'))
@@ -1256,29 +1777,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @login_required
     @admin_required
     def delete_option(key):
-        option = Option.query.get(key)
-        if option is not None:
-            db.session.delete(option)
-            db.session.commit()
-
+        do_delete_option(key)
+        db.session.commit()
         return redirect(request.args.get('next') or url_for('view_options'))
 
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        tasks_h = Task.load(roots=None, max_depth=None, include_done=True,
-                            include_deleted=True)
-        tasks_h = sort_by_hierarchy(tasks_h)
-
-        k = len(tasks_h) + 1
-        for task in tasks_h:
-            if task is None:
-                continue
-            task.order_num = 2 * k
-            db.session.add(task)
-            k -= 1
+        do_reset_order_nums()
         db.session.commit()
-
         return redirect(request.args.get('next') or url_for('index'))
 
     @app.route('/export', methods=['GET', 'POST'])
@@ -1287,24 +1794,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def export_data():
         if request.method == 'GET':
             return render_template('export.t.html', results=None)
-        results = {}
-        if 'tasks' in request.form and request.form['tasks'] == 'all':
-            results['tasks'] = [t.to_dict() for t in Task.query.all()]
-        if 'tags' in request.form and request.form['tags'] == 'all':
-            results['tags'] = [t.to_dict() for t in Tag.query.all()]
-        if 'notes' in request.form and request.form['notes'] == 'all':
-            results['notes'] = [t.to_dict() for t in Note.query.all()]
-        if ('attachments' in request.form and
-                request.form['attachments'] == 'all'):
-            results['attachments'] = [t.to_dict() for t in
-                                      Attachment.query.all()]
-        if 'users' in request.form and request.form['users'] == 'all':
-            results['users'] = [t.to_dict() for t in User.query.all()]
-        if 'views' in request.form and request.form['views'] == 'all':
-            results['views'] = [t.to_dict() for t in View.query.all()]
-        if 'options' in request.form and request.form['options'] == 'all':
-            results['options'] = [t.to_dict() for t in Option.query.all()]
-
+        types_to_export = set(k for k in request.form.keys() if
+                              k in request.form and request.form[k] == 'all')
+        results = do_export_data(types_to_export)
         return jsonify(results)
 
     @app.route('/import', methods=['GET', 'POST'])
@@ -1321,149 +1813,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         else:
             src = json.load(f)
 
-        db_objects = []
-
-        try:
-
-            if 'tags' in src:
-                for tag in src['tags']:
-                    task_id = tag['id']
-                    value = tag['value']
-                    description = tag.get('description', '')
-                    t = Tag(value=value, description=description)
-                    t.id = task_id
-                    db_objects.append(t)
-
-            if 'tasks' in src:
-                ids = set()
-                for task in src['tasks']:
-                    ids.add(task['id'])
-                existing_tasks = Task.query.filter(Task.id.in_(ids)).count()
-                if existing_tasks > 0:
-                    return ('Some specified task id\'s already exist in the '
-                            'database', 400)
-                for task in src['tasks']:
-                    id = task['id']
-                    summary = task['summary']
-                    description = task.get('description', '')
-                    is_done = task.get('is_done', False)
-                    is_deleted = task.get('is_deleted', False)
-                    deadline = task.get('deadline', None)
-                    exp_dur_min = task.get('expected_duration_minutes')
-                    expected_cost = task.get('expected_cost')
-                    parent_id = task.get('parent_id', None)
-                    order_num = task.get('order_num', None)
-                    tag_ids = task.get('tag_ids', [])
-                    t = Task(summary=summary, description=description,
-                             is_done=is_done, is_deleted=is_deleted,
-                             deadline=deadline,
-                             expected_duration_minutes=exp_dur_min,
-                             expected_cost=expected_cost)
-                    t.id = id
-                    t.parent_id = parent_id
-                    t.order_num = order_num
-                    for tag_id in tag_ids:
-                        ttl = TaskTagLink(t.id, tag_id)
-                        db_objects.append(ttl)
-                    db_objects.append(t)
-
-            if 'notes' in src:
-                ids = set()
-                for note in src['notes']:
-                    ids.add(note['id'])
-                existing_notes = Note.query.filter(Note.id.in_(ids)).count()
-                if existing_notes > 0:
-                    return ('Some specified note id\'s already exist in the '
-                            'database', 400)
-                for note in src['notes']:
-                    id = note['id']
-                    content = note['content']
-                    timestamp = note['timestamp']
-                    task_id = note['task_id']
-                    n = Note(content=content, timestamp=timestamp)
-                    n.id = id
-                    n.task_id = task_id
-                    db_objects.append(n)
-
-            if 'attachments' in src:
-                attachments = src['attachments']
-                ids = set()
-                for attachment in attachments:
-                    ids.add(attachment['id'])
-                existing_attachments = Attachment.query.filter(
-                    Attachment.id.in_(ids)).count()
-                if existing_attachments > 0:
-                    return ('Some specified attachment id\'s already exist in '
-                            'the database', 400)
-                for attachment in attachments:
-                    id = attachment['id']
-                    timestamp = attachment['timestamp']
-                    path = attachment['path']
-                    filename = attachment['filename']
-                    description = attachment['description']
-                    task_id = attachment['task_id']
-                    a = Attachment(path=path, description=description,
-                                   timestamp=timestamp, filename=filename)
-                    a.id = id
-                    a.task_id = task_id
-                    db_objects.append(a)
-
-            if 'users' in src:
-                users = src['users']
-                emails = set()
-                for user in users:
-                    emails.add(user['email'])
-                existing_users = User.query.filter(User.id.in_(emails)).count()
-                if existing_users > 0:
-                    return ('Some specified user email addresses already '
-                            'exist in the database', 400)
-                for user in users:
-                    email = attachment['email']
-                    hashed_password = attachment['hashed_password']
-                    is_admin = attachment['is_admin']
-                    u = User(email=email, hashed_password=hashed_password,
-                             is_admin=is_admin)
-                    db_objects.append(u)
-
-            if 'views' in src:
-                ids = set()
-                for view in src['views']:
-                    ids.add(view['id'])
-                existing_views = View.query.filter(View.id.in_(ids)).count()
-                if existing_views > 0:
-                    return ('Some specified view id\'s already exist in the '
-                            'database', 400)
-                for view in src['views']:
-                    id = view['id']
-                    name = view['name']
-                    roots = view['roots']
-                    v = View(name=name, roots=roots)
-                    v.id = id
-                    db_objects.append(v)
-
-            if 'options' in src:
-                keys = set()
-                for option in src['options']:
-                    keys.add(option['key'])
-                existing_options = Option.query.filter(
-                    Option.id.in_(keys)).count()
-                if existing_options > 0:
-                    return ('Some specified option keys already exist in the '
-                            'database', 400)
-                for option in src['options']:
-                    key = option['key']
-                    value = option['value']
-                    t = Option(key, value)
-                    db_objects.append(t)
-        except:
-            return ('The data was incorrect', 400)
-
-        try:
-            for dbo in db_objects:
-                db.session.add(dbo)
-            db.session.commit()
-        except Exception as e:
-            return ('There was an error: {}'.format(e), 500)
+        do_import_data(src)
+        db.session.commit()
 
         return redirect(url_for('index'))
 
@@ -1472,45 +1823,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @admin_required
     def task_crud():
 
-        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True)
-
         if request.method == 'GET':
+            tasks = get_task_crud_data()
             return render_template('task_crud.t.html', tasks=tasks,
                                    cycle=itertools.cycle)
 
-        for task in tasks:
-            summary = request.form.get('task_{}_summary'.format(task.id))
-            deadline = request.form.get('task_{}_deadline'.format(task.id))
-            is_done = request.form.get('task_{}_is_done'.format(task.id))
-            is_deleted = request.form.get('task_{}_is_deleted'.format(task.id))
-            order_num = request.form.get('task_{}_order_num'.format(task.id))
-            duration = request.form.get('task_{}_duration'.format(task.id))
-            cost = request.form.get('task_{}_cost'.format(task.id))
-            parent_id = request.form.get('task_{}_parent_id'.format(task.id))
+        crud_data = {}
+        for key in request.form.keys():
+            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
+                        r'order_num|duration|cost|parent_id)', key):
+                crud_data[key] = request.form[key]
 
-            if deadline:
-                deadline = dparse(deadline)
-            else:
-                deadline = None
-            is_done = (True if is_done else False)
-            is_deleted = (True if is_deleted else False)
-            order_num = int_from_str(order_num)
-            duration = int_from_str(duration)
-            cost = money_from_str(cost)
-            parent_id = int_from_str(parent_id)
-
-            if summary is not None:
-                task.summary = summary
-            task.deadline = deadline
-            task.is_done = is_done
-            task.is_deleted = is_deleted
-            task.order_num = order_num
-            task.expected_duration_minutes = duration
-            task.expected_cost = cost
-            task.parent_id = parent_id
-
-            db.session.add(task)
-
+        do_submit_task_crud(crud_data)
         db.session.commit()
 
         return redirect(url_for('task_crud'))
@@ -1519,32 +1843,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/tags/')
     @login_required
     def list_tags():
-        tags = Tag.query.all()
+        tags = get_tags()
         return render_template('list_tags.t.html', tags=tags,
                                cycle=itertools.cycle)
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        tag = Tag.query.get(id)
-        if tag is None:
-            return (('No tag found for the id "%s"' % id), 404)
-
-        tasks = Task.load_no_hierarchy(include_done=True, include_deleted=True,
-                                       tags=tag)
-
-        return render_template('tag.t.html', tag=tag, tasks=tasks,
-                               cycle=itertools.cycle)
+        data = get_task_data(id)
+        return render_template('tag.t.html', tag=data['tag'],
+                               tasks=data['tasks'], cycle=itertools.cycle)
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_tag(id):
 
-        tag = Tag.query.get(id)
-        if tag is None:
-            return (('No tag found for the id "%s"' % id), 404)
-
         def render_get_response():
+            tag = get_tag(id)
             return render_template("edit_tag.t.html", tag=tag)
 
         if request.method == 'GET':
@@ -1552,63 +1867,26 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
         if 'value' not in request.form or 'description' not in request.form:
             return render_get_response()
-
-        tag.value = request.form['value']
-        tag.description = request.form['description']
-
-        db.session.add(tag)
+        value = request.form['value']
+        description = request.form['description']
+        do_edit_tag(id, value, description)
         db.session.commit()
 
-        return redirect(url_for('view_tag', id=tag.id))
-
-    def _convert_task_to_tag(task):
-
-        tag = Tag(task.summary, task.description)
-        db.session.add(tag)
-
-        for child in task.children:
-            ttl = TaskTagLink(child.id, tag.id)
-            db.session.add(ttl)
-            child.parent = task.parent
-            db.session.add(child)
-            for ttl2 in task.tags:
-                ttl3 = TaskTagLink(child.id, ttl2.tag_id)
-                db.session.add(ttl3)
-
-        for ttl2 in task.tags:
-            db.session.delete(ttl2)
-
-        task.parent = None
-        db.session.add(task)
-
-        db.session.delete(task)
-
-        db.session.commit()
-
-        return tag
-
-    app._convert_task_to_tag = _convert_task_to_tag
+        return redirect(url_for('view_tag', id=id))
 
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
     def convert_task_to_tag(id):
-        task = Task.query.get(id)
-        if task is None:
-            return (('No task found for the id "%s"' % id), 404)
-
-        if Tag.query.filter_by(value=task.summary).first():
-            message = 'A tag already exists with the name "{}"'.format(
-                task.summary)
-            return (message, 409)
 
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
 
-            tag = _convert_task_to_tag(task)
+            tag = _convert_task_to_tag(id)
 
             return redirect(
                 request.args.get('next') or url_for('view_tag', id=tag.id))
 
+        task = get_task(id)
         return render_template('convert_task_to_tag.t.html',
                                task_id=task.id,
                                tag_value=task.summary,
@@ -1631,7 +1909,7 @@ if __name__ == '__main__':
 
     if args.create_db:
         print('Setting up the database')
-        app.db.create_all()
+        app.ds.db.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in xrange(48)))
