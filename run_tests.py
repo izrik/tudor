@@ -847,6 +847,7 @@ class TypeConversionFunctionTest(unittest.TestCase):
                           money_from_str('12345678901234567890'))
         self.assertEquals(None, money_from_str(None))
 
+
 def run():
     parser = argparse.ArgumentParser()
     parser.add_argument('--print-log', action='store_true',
