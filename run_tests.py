@@ -6,6 +6,7 @@ import logging
 from tudor import generate_app, bool_from_str, int_from_str, str_from_datetime
 from tudor import money_from_str
 from datetime import datetime
+from decimal import Decimal
 
 
 class DbLoaderTest(unittest.TestCase):
@@ -839,6 +840,12 @@ class TypeConversionFunctionTest(unittest.TestCase):
 
         self.assertEquals('2016-02-03', str_from_datetime('2016-02-03'))
         self.assertEquals('abcdefgh', str_from_datetime('abcdefgh'))
+
+    def test_money_from_str(self):
+        self.assertEquals(123.46, money_from_str('123.4567'))
+        self.assertEquals(12345678901234567890.0,
+                          money_from_str('12345678901234567890'))
+        self.assertEquals(None, money_from_str(None))
 
 def run():
     parser = argparse.ArgumentParser()
