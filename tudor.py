@@ -618,7 +618,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def __init__(self, ds, upload_folder):
             self.ds = ds
             self.db = self.ds.db
-            self.app = app
             self.upload_folder = upload_folder
 
         def flatten(self, lst):
