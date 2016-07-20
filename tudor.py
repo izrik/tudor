@@ -615,9 +615,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     class LogicLayer(object):
 
-        def __init__(self):
+        def __init__(self, upload_folder):
             self.ds = ds
             self.app = app
+            self.upload_folder = upload_folder
 
         def get_roots_str(self):
             roots = request.args.get('roots') or request.cookies.get('roots')
@@ -865,7 +866,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 return (('No task found for the task_id "%s"' % task_id), 404)
 
             path = secure_filename(f.filename)
-            f.save(os.path.join(self.app.config['UPLOAD_FOLDER'], path))
+            f.save(os.path.join(self.upload_folder, path))
 
             att = self.ds.Attachment(path, description)
             att.task = task
@@ -1360,7 +1361,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             return tag
 
-    ll = LogicLayer()
+    ll = LogicLayer(app.config['UPLOAD_FOLDER'])
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
