@@ -71,7 +71,8 @@ class LogicLayer(object):
         if roots is not None:
             root_ids = self.get_root_ids_from_str(roots)
             if root_ids:
-                tasks = self.ds.Task.query.filter(self.ds.Task.id.in_(root_ids))
+                tasks = self.ds.Task.query.filter(
+                    self.ds.Task.id.in_(root_ids))
 
         if tasks is None:
             tasks = self.ds.Task.query.filter(self.ds.Task.parent_id == None)
@@ -93,8 +94,8 @@ class LogicLayer(object):
                 tags=tags)
         else:
             tasks_h = self.ds.Task.load(roots=None, max_depth=None,
-                                    include_done=show_done,
-                                    include_deleted=show_deleted)
+                                        include_done=show_done,
+                                        include_deleted=show_deleted)
             tasks_h = self.sort_by_hierarchy(tasks_h)
 
         all_tags = self.ds.Tag.query.all()
@@ -114,7 +115,8 @@ class LogicLayer(object):
         task = self.ds.Task(summary)
 
         # get lowest order number
-        query = self.ds.Task.query.order_by(self.ds.Task.order_num.asc()).limit(1)
+        query = self.ds.Task.query.order_by(
+            self.ds.Task.order_num.asc()).limit(1)
         lowest_order_num_tasks = query.all()
         task.order_num = 0
         if len(lowest_order_num_tasks) > 0:
@@ -161,8 +163,8 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
 
         descendants = self.ds.Task.load(roots=task.id, max_depth=None,
-                                    include_done=True,
-                                    include_deleted=True)
+                                        include_done=True,
+                                        include_deleted=True)
 
         hierarchy_sort = True
         if hierarchy_sort:
@@ -341,7 +343,6 @@ class LogicLayer(object):
 
         return task
 
-
     def do_long_order_change(self, task_to_move_id, target_id):
         task_to_move = self.ds.Task.query.get(task_to_move_id)
         if task_to_move is None:
@@ -450,7 +451,7 @@ class LogicLayer(object):
 
     def do_reset_order_nums(self):
         tasks_h = self.ds.Task.load(roots=None, max_depth=None,
-                                include_done=True, include_deleted=True)
+                                    include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         k = len(tasks_h) + 1
@@ -520,10 +521,10 @@ class LogicLayer(object):
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])
                     t = self.ds.Task(summary=summary, description=description,
-                                 is_done=is_done, is_deleted=is_deleted,
-                                 deadline=deadline,
-                                 expected_duration_minutes=exp_dur_min,
-                                 expected_cost=expected_cost)
+                                     is_done=is_done, is_deleted=is_deleted,
+                                     deadline=deadline,
+                                     expected_duration_minutes=exp_dur_min,
+                                     expected_cost=expected_cost)
                     t.id = id
                     t.parent_id = parent_id
                     t.order_num = order_num
@@ -571,8 +572,8 @@ class LogicLayer(object):
                     description = attachment['description']
                     task_id = attachment['task_id']
                     a = self.ds.Attachment(path=path, description=description,
-                                       timestamp=timestamp,
-                                       filename=filename)
+                                           timestamp=timestamp,
+                                           filename=filename)
                     a.id = id
                     a.task_id = task_id
                     db_objects.append(a)
@@ -593,8 +594,8 @@ class LogicLayer(object):
                     hashed_password = user['hashed_password']
                     is_admin = user['is_admin']
                     u = self.ds.User(email=email,
-                                 hashed_password=hashed_password,
-                                 is_admin=is_admin)
+                                     hashed_password=hashed_password,
+                                     is_admin=is_admin)
                     db_objects.append(u)
 
             if 'views' in src:
@@ -640,12 +641,12 @@ class LogicLayer(object):
 
     def get_task_crud_data(self):
         return self.ds.Task.load_no_hierarchy(include_done=True,
-                                          include_deleted=True)
+                                              include_deleted=True)
 
     def do_submit_task_crud(self, crud_data):
 
         tasks = self.ds.Task.load_no_hierarchy(include_done=True,
-                                           include_deleted=True)
+                                               include_deleted=True)
 
         for task in tasks:
             summary = crud_data.get('task_{}_summary'.format(task.id))
@@ -690,7 +691,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
         tasks = self.ds.Task.load_no_hierarchy(include_done=True,
-                                           include_deleted=True, tags=tag)
+                                               include_deleted=True, tags=tag)
         return {
             'tag': tag,
             'tasks': tasks,
