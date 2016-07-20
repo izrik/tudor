@@ -621,10 +621,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             self.app = app
             self.upload_folder = upload_folder
 
-        def get_roots_str(self):
-            roots = request.args.get('roots') or request.cookies.get('roots')
-            return roots
-
         def flatten(self, lst):
             gen = (x if isinstance(x, list) else [x] for x in lst)
             flattened = itertools.chain.from_iterable(gen)
@@ -1391,7 +1387,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        roots = ll.get_roots_str()
+        roots = request.args.get('roots') or request.cookies.get('roots')
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
