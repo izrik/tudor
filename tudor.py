@@ -615,10 +615,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     class LogicLayer(object):
 
-        def __init__(self, ds, upload_folder):
+        def __init__(self, ds, upload_folder, allowed_extensions):
             self.ds = ds
             self.db = self.ds.db
             self.upload_folder = upload_folder
+            self.allowed_extensions = allowed_extensions
 
         def flatten(self, lst):
             gen = (x if isinstance(x, list) else [x] for x in lst)
@@ -853,7 +854,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             if '.' not in filename:
                 return False
             ext = filename.rsplit('.', 1)[1]
-            return (ext in allowed_extensions)
+            return (ext in self.allowed_extensions)
 
         def create_new_attachment(self, task_id, f, description):
 
@@ -1353,7 +1354,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             return tag
 
-    ll = LogicLayer(ds, app.config['UPLOAD_FOLDER'])
+    ll = LogicLayer(ds, app.config['UPLOAD_FOLDER'], allowed_extensions)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
