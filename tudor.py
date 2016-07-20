@@ -611,22 +611,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.View = ds.View
     app.Option = ds.Option
 
-    @login_manager.user_loader
-    def load_user(userid):
-        return app.User.query.get(userid)
-
-    def admin_required(func):
-        @wraps(func)
-        def decorated_view(*args, **kwargs):
-            if not current_user.is_admin:
-                return ('You are not authorized to view this page', 403)
-            return func(*args, **kwargs)
-        return decorated_view
-
-    @app.context_processor
-    def setup_options():
-        return {'opts': Options}
-
+    # Application logic functions
 
     def get_roots_str():
         roots = request.args.get('roots') or request.cookies.get('roots')
@@ -1357,6 +1342,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return tag
 
     app._convert_task_to_tag = _convert_task_to_tag
+
+    # Flask setup functions
+
+    @login_manager.user_loader
+    def load_user(userid):
+        return app.User.query.get(userid)
+
+    def admin_required(func):
+        @wraps(func)
+        def decorated_view(*args, **kwargs):
+            if not current_user.is_admin:
+                return ('You are not authorized to view this page', 403)
+            return func(*args, **kwargs)
+        return decorated_view
+
+    @app.context_processor
+    def setup_options():
+        return {'opts': Options}
 
     # View Functions
 
