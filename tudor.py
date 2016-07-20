@@ -943,10 +943,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             return task
 
-        def get_form_or_arg(self, name):
-            if name in request.form:
-                return request.form[name]
-            return request.args.get(name)
 
         def do_long_order_change(self, task_to_move_id, target_id):
             task_to_move = self.ds.Task.query.get(task_to_move_id)
@@ -1380,6 +1376,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def setup_options():
         return {'opts': Options}
 
+    # View utility functions
+
+    def get_form_or_arg(self, name):
+        if name in request.form:
+            return request.form[name]
+        return request.args.get(name)
+
     # View Functions
 
     @app.route('/')
@@ -1631,11 +1634,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def long_order_change():
 
-        task_to_move_id = ll.get_form_or_arg('long_order_task_to_move')
+        task_to_move_id = get_form_or_arg('long_order_task_to_move')
         if task_to_move_id is None:
             redirect(request.args.get('next') or url_for('index'))
 
-        target_id = ll.get_form_or_arg('long_order_target')
+        target_id = get_form_or_arg('long_order_target')
         if target_id is None:
             redirect(request.args.get('next') or url_for('index'))
 
@@ -1649,7 +1652,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def add_tag_to_task(id):
 
-        value = ll.get_form_or_arg('value')
+        value = get_form_or_arg('value')
         if value is None or value == '':
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
@@ -1669,7 +1672,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def delete_tag_from_task(id, tag_id):
 
         if tag_id is None:
-            tag_id = ll.get_form_or_arg('tag_id')
+            tag_id = get_form_or_arg('tag_id')
 
         ll.do_delete_tag_from_task(id, tag_id)
         db.session.commit()
