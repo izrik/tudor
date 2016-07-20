@@ -1351,6 +1351,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         db.session.delete(task)
 
+        # TODO: commit in a non-view function
         db.session.commit()
 
         return tag
