@@ -126,7 +126,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     class Options(object):
         @staticmethod
         def get(key, default_value=None):
-            option = app.Option.query.get(key)
+            option = ds.Option.query.get(key)
             if option is None:
                 return default_value
             return option.value
