@@ -623,6 +623,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return func(*args, **kwargs)
         return decorated_view
 
+    @app.context_processor
+    def setup_options():
+        return {'opts': Options}
+
+
     def get_roots_str():
         roots = request.args.get('roots') or request.cookies.get('roots')
         return roots
@@ -651,10 +656,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         for task in tasks:
             task.get_all_descendants(visited=visited, result=result)
         return result
-
-    @app.context_processor
-    def setup_options():
-        return {'opts': Options}
 
     def sort_by_hierarchy(tasks, root=None):
         tasks_by_parent = {}
