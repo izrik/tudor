@@ -3,10 +3,11 @@
 import unittest
 import argparse
 import logging
-from tudor import generate_app, bool_from_str, int_from_str, str_from_datetime
-from tudor import money_from_str
+from tudor import generate_app
 from datetime import datetime
 from decimal import Decimal
+from conversions import bool_from_str, int_from_str, str_from_datetime
+from conversions import money_from_str
 
 
 class DbLoaderTest(unittest.TestCase):

@@ -24,6 +24,8 @@ import git
 import os
 from decimal import Decimal
 import werkzeug.exceptions
+from conversions import bool_from_str, int_from_str, str_from_datetime
+from conversions import money_from_str
 
 __revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
                                           abbrev=40)
@@ -35,38 +37,6 @@ DEFAULT_TUDOR_DB_URI = 'sqlite:////tmp/test.db'
 DEFAULT_TUDOR_UPLOAD_FOLDER = '/tmp/tudor/uploads'
 DEFAULT_TUDOR_ALLOWED_EXTENSIONS = 'txt,pdf,png,jpg,jpeg,gif'
 DEFAULT_TUDOR_SECRET_KEY = None
-
-
-def bool_from_str(s):
-    if isinstance(s, basestring):
-        s = s.lower()
-    if s in ['true', 't', '1', 'y']:
-        return True
-    if s in ['false', 'f', '0', 'n']:
-        return False
-    return bool(s)
-
-
-def int_from_str(s):
-    try:
-        return int(s)
-    except:
-        return None
-
-
-def str_from_datetime(dt):
-    if dt is None:
-        return None
-    return str(dt)
-
-
-def money_from_str(s):
-    try:
-        d = Decimal(s)
-        d = round(d, 2)
-        return d
-    except:
-        return None
 
 
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
