@@ -617,6 +617,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         def __init__(self, ds, upload_folder):
             self.ds = ds
+            self.db = self.ds.db
             self.app = app
             self.upload_folder = upload_folder
 
@@ -826,7 +827,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             if tags is not None:
                 values = tags.split(',')
                 for ttl in task.tags:
-                    db.session.delete(ttl)
+                    self.db.session.delete(ttl)
                 for value in values:
                     if value is None or value == '':
                         continue
@@ -834,12 +835,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     tag = self.ds.Tag.query.filter_by(value=value).first()
                     if tag is None:
                         tag = self.ds.Tag(value)
-                        db.session.add(tag)
+                        self.db.session.add(tag)
 
                     ttl = self.ds.TaskTagLink.query.get((task.id, tag.id))
                     if ttl is None:
                         ttl = self.ds.TaskTagLink(task.id, tag.id)
-                        db.session.add(ttl)
+                        self.db.session.add(ttl)
 
             return task
 
@@ -878,7 +879,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             N = len(tasks)
             for i in xrange(N):
                 tasks[i].order_num = 2 * (N - i)
-                db.session.add(tasks[i])
+                self.db.session.add(tasks[i])
 
         def do_move_task_up(self, id, show_deleted):
             task = self.ds.Task.query.get(id)
@@ -896,8 +897,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 task.order_num, next_task.order_num =\
                     new_order_num, task.order_num
 
-                db.session.add(task)
-                db.session.add(next_task)
+                self.db.session.add(task)
+                self.db.session.add(next_task)
 
             return task
 
@@ -909,7 +910,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             if top_task:
                 task.order_num = top_task.order_num + 1
 
-                db.session.add(task)
+                self.db.session.add(task)
 
             return task
 
@@ -929,8 +930,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 task.order_num, next_task.order_num =\
                     new_order_num, task.order_num
 
-                db.session.add(task)
-                db.session.add(next_task)
+                self.db.session.add(task)
+                self.db.session.add(next_task)
 
             return task
 
@@ -942,7 +943,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             if bottom_task:
                 task.order_num = bottom_task.order_num - 2
 
-                db.session.add(task)
+                self.db.session.add(task)
 
             return task
 
@@ -987,7 +988,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             for s in siblings2:
                 s.order_num = k
                 k -= 2
-                db.session.add(s)
+                self.db.session.add(s)
 
             return task_to_move, target
 
@@ -1000,12 +1001,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             tag = self.ds.Tag.query.filter_by(value=value).first()
             if tag is None:
                 tag = self.ds.Tag(value)
-                db.session.add(tag)
+                self.db.session.add(tag)
 
             ttl = self.ds.TaskTagLink.query.get((task.id, tag.id))
             if ttl is None:
                 ttl = self.ds.TaskTagLink(task.id, tag.id)
-                db.session.add(ttl)
+                self.db.session.add(ttl)
 
             return ttl
 
@@ -1020,7 +1021,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             ttl = self.ds.TaskTagLink.query.get((task_id, tag_id))
             if ttl is not None:
-                db.session.delete(ttl)
+                self.db.session.delete(ttl)
 
             return ttl
 
@@ -1031,12 +1032,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     "A user already exists with the email address '{}'".format(
                         email))
             user = self.ds.User(email=email, is_admin=is_admin)
-            db.session.add(user)
+            self.db.session.add(user)
             return user
 
         def do_add_new_view(self, name, roots):
             view = self.ds.View(name, roots)
-            db.session.add(view)
+            self.db.session.add(view)
             return view
 
         def get_view_options_data(self):
@@ -1048,13 +1049,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 option.value = value
             else:
                 option = self.ds.Option(key, value)
-            db.session.add(option)
+            self.db.session.add(option)
             return option
 
         def do_delete_option(self, key):
             option = self.ds.Option.query.get(key)
             if option is not None:
-                db.session.delete(option)
+                self.db.session.delete(option)
             return option
 
         def do_reset_order_nums(self):
@@ -1067,7 +1068,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 if task is None:
                     continue
                 task.order_num = 2 * k
-                db.session.add(task)
+                self.db.session.add(task)
                 k -= 1
             return tasks_h
 
@@ -1245,7 +1246,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 raise werkzeug.exceptions.BadRequest('The data was incorrect')
 
             for dbo in db_objects:
-                db.session.add(dbo)
+                self.db.session.add(dbo)
 
         def get_task_crud_data(self):
             return self.ds.Task.load_no_hierarchy(include_done=True,
@@ -1288,7 +1289,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 task.expected_cost = cost
                 task.parent_id = parent_id
 
-                db.session.add(task)
+                self.db.session.add(task)
 
         def get_tags(self):
             return self.ds.Tag.query.all()
@@ -1319,7 +1320,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     "No tag found for the id '{}'".format(tag_id))
             tag.value = value
             tag.description = description
-            db.session.add(tag)
+            self.db.session.add(tag)
             return tag
 
         def get_task(self, task_id):
@@ -1337,27 +1338,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                         task.summary))
 
             tag = self.ds.Tag(task.summary, task.description)
-            db.session.add(tag)
+            self.db.session.add(tag)
 
             for child in task.children:
                 ttl = self.ds.TaskTagLink(child.id, tag.id)
-                db.session.add(ttl)
+                self.db.session.add(ttl)
                 child.parent = task.parent
-                db.session.add(child)
+                self.db.session.add(child)
                 for ttl2 in task.tags:
                     ttl3 = self.ds.TaskTagLink(child.id, ttl2.tag_id)
-                    db.session.add(ttl3)
+                    self.db.session.add(ttl3)
 
             for ttl2 in task.tags:
-                db.session.delete(ttl2)
+                self.db.session.delete(ttl2)
 
             task.parent = None
-            db.session.add(task)
+            self.db.session.add(task)
 
-            db.session.delete(task)
+            self.db.session.delete(task)
 
             # TODO: commit in a non-view function
-            db.session.commit()
+            self.db.session.commit()
 
             return tag
 
