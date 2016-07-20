@@ -615,7 +615,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     class LogicLayer(object):
 
-        def __init__(self, upload_folder):
+        def __init__(self, ds, upload_folder):
             self.ds = ds
             self.app = app
             self.upload_folder = upload_folder
@@ -1361,7 +1361,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             return tag
 
-    ll = LogicLayer(app.config['UPLOAD_FOLDER'])
+    ll = LogicLayer(ds, app.config['UPLOAD_FOLDER'])
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
