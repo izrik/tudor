@@ -5,6 +5,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 
 from conversions import str_from_datetime
 
+
 class SqlAlchemyDataSource(object):
     def __init__(self, db_uri, app):
         self.app = app

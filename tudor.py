@@ -95,8 +95,6 @@ def create_sqlalchemy_ds_factory(db_uri=DEFAULT_TUDOR_DB_URI):
     return ds_factory
 
 
-
-
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
