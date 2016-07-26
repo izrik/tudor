@@ -543,26 +543,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             resp.set_cookie('show_done', '')
         return resp
 
-    @app.route('/view/new', methods=['POST'])
-    @login_required
-    def new_view():
-        if 'view_name' not in request.form or 'view_roots' not in request.form:
-            return redirect(url_for('index'))
-
-        name = request.form['view_name']
-        roots = request.form['view_roots']
-        ll.do_add_new_view(name, roots)
-        db.session.commit()
-        return redirect(url_for('index'))
-
-    @app.route('/view/<int:id>')
-    @login_required
-    def set_view(id):
-        view = app.View.query.get(id)
-        if view is None:
-            return (('No view found for the id "%s"' % id), 404)
-        return redirect(url_for('set_roots', roots=view.roots))
-
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
     @admin_required
