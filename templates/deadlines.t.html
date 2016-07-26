@@ -1,0 +1,15 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block title %}{{ super() }} - Tasks by Deadline{% endblock %}
+{% block content scoped %}
+<div>
+    <h3>Deadlines</h3>
+    {{ render_task_table(deadline_tasks, root=None, cycle=cycle,
+        page_url=url_for('deadlines'),
+        child_task_view='view_task',
+        indent=False, show_expected_duration=True) }}
+</div>
+<div>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+{% endblock %}

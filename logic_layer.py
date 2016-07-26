@@ -111,6 +111,13 @@ class LogicLayer(object):
             'all_tags': all_tags,
         }
 
+    def get_deadlines_data(self):
+        deadline_tasks = self.ds.Task.load_no_hierarchy(
+            exclude_undeadlined=True)
+        return {
+            'deadline_tasks': deadline_tasks,
+        }
+
     def create_new_task(self, summary, parent_id):
         task = self.ds.Task(summary)
 

@@ -100,13 +100,4 @@
         </form>
     </table>
 </div>
-{% if all_tasks != None %}
-<div>
-    <h3>Deadlines</h3>
-    {{ render_task_table(deadline_tasks, root=None, cycle=cycle,
-        page_url=url_for('index'),
-        child_task_view='view_task',
-        indent=False, show_expected_duration=True) }}
-</div>
-{% endif %}
 {% endblock %}
