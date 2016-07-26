@@ -184,24 +184,6 @@ class LogicLayer(object):
 
         task.parent_id = parent_id
 
-        if tags is not None:
-            values = tags.split(',')
-            for ttl in task.tags:
-                self.db.session.delete(ttl)
-            for value in values:
-                if value is None or value == '':
-                    continue
-
-                tag = self.ds.Tag.query.filter_by(value=value).first()
-                if tag is None:
-                    tag = self.ds.Tag(value)
-                    self.db.session.add(tag)
-
-                ttl = self.ds.TaskTagLink.query.get((task.id, tag.id))
-                if ttl is None:
-                    ttl = self.ds.TaskTagLink(task.id, tag.id)
-                    self.db.session.add(ttl)
-
         return task
 
     def get_edit_task_data(self, id):
