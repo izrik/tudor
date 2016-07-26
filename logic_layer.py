@@ -66,7 +66,7 @@ class LogicLayer(object):
                 include_done=show_done, include_deleted=show_deleted,
                 tags=tags)
         else:
-            tasks_h = self.ds.Task.load(roots=None, max_depth=None,
+            tasks_h = self.ds.Task.load(root_task_id=None, max_depth=None,
                                         include_done=show_done,
                                         include_deleted=show_deleted)
             tasks_h = self.sort_by_hierarchy(tasks_h)
@@ -138,7 +138,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound()
 
-        descendants = self.ds.Task.load(roots=task.id, max_depth=None,
+        descendants = self.ds.Task.load(root_task_id=task.id, max_depth=None,
                                         include_done=True,
                                         include_deleted=True)
 
@@ -421,7 +421,7 @@ class LogicLayer(object):
         return option
 
     def do_reset_order_nums(self):
-        tasks_h = self.ds.Task.load(roots=None, max_depth=None,
+        tasks_h = self.ds.Task.load(root_task_id=None, max_depth=None,
                                     include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
