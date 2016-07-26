@@ -77,16 +77,6 @@ class DbLoaderTest(unittest.TestCase):
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertEqual(self.task_ids['parent'], tasks[0].id)
 
-    def test_loader_with_multiple_roots(self):
-        roots = [self.task_ids['parent'], self.task_ids['parent2']]
-        tasks = self.app.Task.load(roots=roots)
-        self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], self.app.Task)
-        self.assertIsInstance(tasks[1], self.app.Task)
-
-        ids = set(t.id for t in tasks)
-        self.assertEqual(set(roots), ids)
-
     def test_loader_with_max_depth_1(self):
 
         # when
