@@ -4,6 +4,10 @@ import unittest
 import argparse
 import logging
 from tudor import generate_app
+from datetime import datetime
+from decimal import Decimal
+from conversions import bool_from_str, int_from_str, str_from_datetime
+from conversions import money_from_str
 
 
 class DbLoaderTest(unittest.TestCase):
@@ -774,6 +778,75 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(grand_parent, child1.parent)
         self.assertIs(grand_parent, child2.parent)
         self.assertIs(grand_parent, child3.parent)
+
+
+class TypeConversionFunctionTest(unittest.TestCase):
+    def test_bool_from_str(self):
+        # true, unsurprising
+        self.assertTrue(bool_from_str('True'))
+        self.assertTrue(bool_from_str('true'))
+        self.assertTrue(bool_from_str('tRuE'))
+        self.assertTrue(bool_from_str('t'))
+        self.assertTrue(bool_from_str('1'))
+        self.assertTrue(bool_from_str('y'))
+
+        # true, surprising
+        self.assertTrue(bool_from_str('tr'))
+        self.assertTrue(bool_from_str('tru'))
+        self.assertTrue(bool_from_str('truee'))
+        self.assertTrue(bool_from_str('ye'))
+        self.assertTrue(bool_from_str('yes'))
+
+        # false, unsurprising
+        self.assertFalse(bool_from_str('False'))
+        self.assertFalse(bool_from_str('false'))
+        self.assertFalse(bool_from_str('fAlSe'))
+        self.assertFalse(bool_from_str('f'))
+        self.assertFalse(bool_from_str('0'))
+        self.assertFalse(bool_from_str('n'))
+
+        # false, surprising
+        self.assertTrue(bool_from_str('no'))
+        self.assertTrue(bool_from_str('fa'))
+        self.assertTrue(bool_from_str('fal'))
+        self.assertTrue(bool_from_str('fals'))
+        self.assertTrue(bool_from_str('falsee'))
+
+        # true, non-string, somewhat surprising
+        self.assertTrue(bool_from_str(1))
+        self.assertTrue(bool_from_str([1]))
+        self.assertTrue(bool_from_str([False]))
+
+        # false, non-string
+        self.assertFalse(bool_from_str([]))
+        self.assertFalse(bool_from_str(''))
+        self.assertFalse(bool_from_str(None))
+
+    def test_int_from_str(self):
+        self.assertEquals(1, int_from_str('1'))
+        self.assertEquals(123, int_from_str('123'))
+        self.assertEquals(-123, int_from_str('-123'))
+        self.assertIsNone(int_from_str(None))
+        self.assertIsNone(int_from_str(''))
+        self.assertIsNone(int_from_str([]))
+        self.assertIsNone(int_from_str([1]))
+        self.assertEquals(1, int_from_str(True))
+
+    def test_str_from_datetime(self):
+        self.assertIsNone(None, str_from_datetime(None))
+        self.assertEquals('2016-02-03 00:00:00',
+                          str_from_datetime(datetime(2016, 2, 3)))
+        self.assertEquals('2016-02-03 12:34:56',
+                          str_from_datetime(datetime(2016, 2, 3, 12, 34, 56)))
+
+        self.assertEquals('2016-02-03', str_from_datetime('2016-02-03'))
+        self.assertEquals('abcdefgh', str_from_datetime('abcdefgh'))
+
+    def test_money_from_str(self):
+        self.assertEquals(123.46, money_from_str('123.4567'))
+        self.assertEquals(12345678901234567890.0,
+                          money_from_str('12345678901234567890'))
+        self.assertEquals(None, money_from_str(None))
 
 
 def run():
