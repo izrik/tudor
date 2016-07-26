@@ -78,10 +78,6 @@ class LogicLayer(object):
         tasks = tasks.order_by(self.ds.Task.order_num.desc())
         tasks = tasks.all()
 
-        all_tasks = self.get_tasks_and_all_descendants_from_tasks(tasks)
-        deadline_tasks = self.ds.Task.load_no_hierarchy(
-            exclude_undeadlined=True)
-
         if tags is not None and len(tags) > 0:
             tags = tags.split(',')
             tasks_h = self.ds.Task.load_no_hierarchy(
