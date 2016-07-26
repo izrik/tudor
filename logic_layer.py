@@ -19,24 +19,6 @@ class LogicLayer(object):
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
 
-    def flatten(self, lst):
-        gen = (x if isinstance(x, list) else [x] for x in lst)
-        flattened = itertools.chain.from_iterable(gen)
-        return list(flattened)
-
-    def get_root_ids_from_str(self, roots):
-        root_ids = roots.split(',')
-        for i in xrange(len(root_ids)):
-            m = re.match(r'(\d+)\*', root_ids[i])
-            if m:
-                id = m.group(1)
-                task = self.ds.Task.query.get(id)
-                root_ids[i] = map(lambda c: c.id, task.children)
-        if root_ids:
-            root_ids = self.flatten(root_ids)
-            return root_ids
-        return None
-
     def get_tasks_and_all_descendants_from_tasks(self, tasks):
         visited = set()
         result = []
