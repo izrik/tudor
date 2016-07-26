@@ -145,9 +145,7 @@ class SqlAlchemyDataSource(object):
                 if roots is None:
                     query = query.filter(Task.parent_id.is_(None))
                 else:
-                    if not hasattr(roots, '__iter__'):
-                        roots = [roots]
-                    query = query.filter(Task.id.in_(roots))
+                    query = query.filter_by(id=roots)
 
                 query = query.order_by(Task.id.asc())
                 query = query.order_by(Task.order_num.desc())
