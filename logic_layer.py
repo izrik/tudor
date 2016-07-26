@@ -175,7 +175,7 @@ class LogicLayer(object):
 
         hierarchy_sort = True
         if hierarchy_sort:
-            descendants = ll.sort_by_hierarchy(descendants, root=task)
+            descendants = self.sort_by_hierarchy(descendants, root=task)
 
         return {
             'task': task,
