@@ -144,7 +144,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.Note = ds.Note
     app.Attachment = ds.Attachment
     app.User = ds.User
-    app.View = ds.View
     app.Option = ds.Option
 
     ll = LogicLayer(ds, upload_folder, allowed_extensions)
