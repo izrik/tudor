@@ -521,24 +521,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('list_users'))
 
-    @app.route('/clear_roots')
-    @login_required
-    def clear_roots():
-        resp = make_response(redirect(url_for('index')))
-        resp.set_cookie('roots', '', expires=0)
-        return resp
-
-    @app.route('/set_roots')
-    @login_required
-    def set_roots():
-        roots = request.args.get('roots')
-        resp = make_response(redirect(url_for('index')))
-        if roots is not None and roots != '':
-            resp.set_cookie('roots', roots)
-        else:
-            resp.set_cookie('roots', '', expires=0)
-        return resp
-
     @app.route('/show_hide_deleted')
     @login_required
     def show_hide_deleted():
