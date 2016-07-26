@@ -465,8 +465,6 @@ class LogicLayer(object):
                                       self.ds.Attachment.query.all()]
         if 'users' in types_to_export:
             results['users'] = [t.to_dict() for t in self.ds.User.query.all()]
-        if 'views' in types_to_export:
-            results['views'] = [t.to_dict() for t in self.ds.View.query.all()]
         if 'options' in types_to_export:
             results['options'] = [t.to_dict() for t in
                                   self.ds.Option.query.all()]
@@ -586,24 +584,6 @@ class LogicLayer(object):
                                      hashed_password=hashed_password,
                                      is_admin=is_admin)
                     db_objects.append(u)
-
-            if 'views' in src:
-                ids = set()
-                for view in src['views']:
-                    ids.add(view['id'])
-                existing_views = self.ds.View.query.filter(
-                    self.ds.View.id.in_(ids)).count()
-                if existing_views > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified view id\'s already exist in the '
-                        'database')
-                for view in src['views']:
-                    id = view['id']
-                    name = view['name']
-                    roots = view['roots']
-                    v = self.ds.View(name=name, roots=roots)
-                    v.id = id
-                    db_objects.append(v)
 
             if 'options' in src:
                 keys = set()
