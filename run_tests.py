@@ -72,7 +72,7 @@ class DbLoaderTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_single_root(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent']])
+        tasks = self.app.Task.load(roots=self.task_ids['parent'])
         self.assertEqual(1, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertEqual(self.task_ids['parent'], tasks[0].id)
@@ -345,7 +345,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_done_children_stop_search(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent3']],
+        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
                                    max_depth=None)
         self.assertEqual(3, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
@@ -357,7 +357,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_done_children_dont_stop_search_if_included(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent3']],
+        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
                                    max_depth=None,
                                    include_done=True)
         self.assertEqual(5, len(tasks))
@@ -423,55 +423,99 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_deleted_children_stop_search(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent3'],
-                                          self.task_ids['parent4'],
-                                          self.task_ids['parent5']],
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
                                    max_depth=None)
-        self.assertEqual(9, len(tasks))
+        # then
+        self.assertEqual(3, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
-        self.assertIsInstance(tasks[3], self.app.Task)
-        self.assertIsInstance(tasks[4], self.app.Task)
-        self.assertIsInstance(tasks[5], self.app.Task)
-        self.assertIsInstance(tasks[6], self.app.Task)
-        self.assertIsInstance(tasks[7], self.app.Task)
-        self.assertIsInstance(tasks[8], self.app.Task)
 
-        expected_summaries = {'parent3', 'child3', 'grandchild3',
-                              'parent4', 'child4', 'grandchild4',
-                              'parent5', 'child5', 'grandchild5'}
+        expected_summaries = {'parent3', 'child3', 'grandchild3'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent4'],
+                                   max_depth=None)
+        # then
+        self.assertEqual(3, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+
+        expected_summaries = {'parent4', 'child4', 'grandchild4'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent5'],
+                                   max_depth=None)
+        # then
+        self.assertEqual(3, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+
+        expected_summaries = {'parent5', 'child5', 'grandchild5'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)
 
     def test_deleted_children_do_not_stop_search_if_included(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent3'],
-                                          self.task_ids['parent4'],
-                                          self.task_ids['parent5']],
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
                                    max_depth=None,
                                    include_deleted=True)
-        # self.assertEqual(5, len(tasks))
+        # then
+        self.assertEqual(3, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+
+        expected_summaries = {'parent3', 'child3', 'grandchild3'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent4'],
+                                   max_depth=None,
+                                   include_deleted=True)
+        # then
+        self.assertEqual(5, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
         self.assertIsInstance(tasks[3], self.app.Task)
         self.assertIsInstance(tasks[4], self.app.Task)
 
-        expected_summaries = {'parent3', 'child3', 'grandchild3',
-                              'parent4', 'child4', 'grandchild4',
-                              'great_grandchild4', 'great_great_grandchild4',
-                              'parent5', 'child5', 'grandchild5'}
+        expected_summaries = {'parent4', 'child4', 'grandchild4',
+                              'great_grandchild4', 'great_great_grandchild4'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent5'],
+                                   max_depth=None,
+                                   include_deleted=True)
+        # then
+        self.assertEqual(3, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+
+        expected_summaries = {'parent5', 'child5', 'grandchild5'}
         summaries = set((t.summary for t in tasks))
         self.assertEqual(expected_summaries, summaries)
 
     def test_done_and_deleted_children_do_not_stop_search_if_included(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent3'],
-                                          self.task_ids['parent4'],
-                                          self.task_ids['parent5']],
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
                                    max_depth=None,
                                    include_done=True,
                                    include_deleted=True)
-        # self.assertEqual(5, len(tasks))
+        # then
+        self.assertEqual(5, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertIsInstance(tasks[1], self.app.Task)
         self.assertIsInstance(tasks[2], self.app.Task)
@@ -479,10 +523,42 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertIsInstance(tasks[4], self.app.Task)
 
         expected_summaries = {'parent3', 'child3', 'grandchild3',
-                              'great_grandchild3', 'great_great_grandchild3',
-                              'parent4', 'child4', 'grandchild4',
-                              'great_grandchild4', 'great_great_grandchild4',
-                              'parent5', 'child5', 'grandchild5',
+                              'great_grandchild3', 'great_great_grandchild3'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent4'],
+                                   max_depth=None,
+                                   include_done=True,
+                                   include_deleted=True)
+        # then
+        self.assertEqual(5, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+
+        expected_summaries = {'parent4', 'child4', 'grandchild4',
+                              'great_grandchild4', 'great_great_grandchild4'}
+        summaries = set((t.summary for t in tasks))
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent5'],
+                                   max_depth=None,
+                                   include_done=True,
+                                   include_deleted=True)
+        # then
+        self.assertEqual(5, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+
+        expected_summaries = {'parent5', 'child5', 'grandchild5',
                               'great_grandchild5', 'great_great_grandchild5'}
         summaries = set((t.summary for t in tasks))
         self.assertEqual(expected_summaries, summaries)
@@ -587,24 +663,43 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_loader_undeadlined_do_not_stop_search_if_not_excluded(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent1'],
-                                          self.task_ids['parent2']],
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent1'],
                                    max_depth=None)
-        self.assertEqual(10, len(tasks))
+        # then
+        self.assertEqual(5, len(tasks))
         self.assertTrue(all(isinstance(t, self.app.Task) for t in tasks))
 
         expected_summaries = {'parent1', 'child1', 'grandchild1',
-                              'great_grandchild1', 'great_great_grandchild1',
-                              'parent2', 'child2', 'grandchild2',
+                              'great_grandchild1', 'great_great_grandchild1'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent2'],
+                                   max_depth=None)
+        # then
+        self.assertEqual(5, len(tasks))
+        self.assertTrue(all(isinstance(t, self.app.Task) for t in tasks))
+
+        expected_summaries = {'parent2', 'child2', 'grandchild2',
                               'great_grandchild2', 'great_great_grandchild2'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)
 
     def test_loader_undeadlined_stop_search_if_excluded(self):
-        tasks = self.app.Task.load(roots=[self.task_ids['parent1'],
-                                          self.task_ids['parent2']],
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent1'],
                                    max_depth=None,
                                    exclude_undeadlined=True)
+        # then
+        self.assertEqual(0, len(tasks))
+
+        # when
+        tasks = self.app.Task.load(roots=self.task_ids['parent2'],
+                                   max_depth=None,
+                                   exclude_undeadlined=True)
+        # then
         self.assertEqual(3, len(tasks))
         self.assertTrue(all(isinstance(t, self.app.Task) for t in tasks))
 
