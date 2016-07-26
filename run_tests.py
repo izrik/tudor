@@ -72,7 +72,7 @@ class DbLoaderTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_loader_with_single_root(self):
-        tasks = self.app.Task.load(roots=self.task_ids['parent'])
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent'])
         self.assertEqual(1, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
         self.assertEqual(self.task_ids['parent'], tasks[0].id)
@@ -80,7 +80,8 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_max_depth_1(self):
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'], max_depth=1)
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
+                                   max_depth=1)
 
         # then
         self.assertEqual(3, len(tasks))
@@ -95,7 +96,8 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_max_depth_2(self):
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'], max_depth=2)
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
+                                   max_depth=2)
 
         # then
         self.assertEqual(4, len(tasks))
@@ -111,7 +113,8 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_max_depth_3(self):
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'], max_depth=3)
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
+                                   max_depth=3)
 
         # then
         self.assertEqual(5, len(tasks))
@@ -129,7 +132,8 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_max_depth_4(self):
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'], max_depth=4)
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
+                                   max_depth=4)
 
         # then
         self.assertEqual(6, len(tasks))
@@ -148,7 +152,7 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_max_depth_None(self):
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
                                    max_depth=None)
 
         # then
@@ -168,7 +172,7 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_max_depth_None_2(self):
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent'],
                                    max_depth=None)
 
         # then
@@ -345,7 +349,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_done_children_stop_search(self):
-        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent3'],
                                    max_depth=None)
         self.assertEqual(3, len(tasks))
         self.assertIsInstance(tasks[0], self.app.Task)
@@ -357,7 +361,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
     def test_done_children_dont_stop_search_if_included(self):
-        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent3'],
                                    max_depth=None,
                                    include_done=True)
         self.assertEqual(5, len(tasks))
@@ -424,7 +428,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
 
     def test_deleted_children_stop_search(self):
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent3'],
                                    max_depth=None)
         # then
         self.assertEqual(3, len(tasks))
@@ -437,7 +441,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent4'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent4'],
                                    max_depth=None)
         # then
         self.assertEqual(3, len(tasks))
@@ -450,7 +454,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent5'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent5'],
                                    max_depth=None)
         # then
         self.assertEqual(3, len(tasks))
@@ -464,7 +468,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
 
     def test_deleted_children_do_not_stop_search_if_included(self):
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent3'],
                                    max_depth=None,
                                    include_deleted=True)
         # then
@@ -478,7 +482,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent4'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent4'],
                                    max_depth=None,
                                    include_deleted=True)
         # then
@@ -495,7 +499,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent5'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent5'],
                                    max_depth=None,
                                    include_deleted=True)
         # then
@@ -510,7 +514,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
 
     def test_done_and_deleted_children_do_not_stop_search_if_included(self):
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent3'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent3'],
                                    max_depth=None,
                                    include_done=True,
                                    include_deleted=True)
@@ -528,7 +532,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent4'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent4'],
                                    max_depth=None,
                                    include_done=True,
                                    include_deleted=True)
@@ -546,7 +550,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent5'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent5'],
                                    max_depth=None,
                                    include_done=True,
                                    include_deleted=True)
@@ -664,7 +668,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
 
     def test_loader_undeadlined_do_not_stop_search_if_not_excluded(self):
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent1'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent1'],
                                    max_depth=None)
         # then
         self.assertEqual(5, len(tasks))
@@ -676,7 +680,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         self.assertEqual(expected_summaries, summaries)
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
                                    max_depth=None)
         # then
         self.assertEqual(5, len(tasks))
@@ -689,14 +693,14 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
 
     def test_loader_undeadlined_stop_search_if_excluded(self):
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent1'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent1'],
                                    max_depth=None,
                                    exclude_undeadlined=True)
         # then
         self.assertEqual(0, len(tasks))
 
         # when
-        tasks = self.app.Task.load(roots=self.task_ids['parent2'],
+        tasks = self.app.Task.load(root_task_id=self.task_ids['parent2'],
                                    max_depth=None,
                                    exclude_undeadlined=True)
         # then
