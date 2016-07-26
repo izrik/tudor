@@ -196,8 +196,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                             roots=data['roots'],
                             views=data['views'],
                             cycle=itertools.cycle,
-                            all_tasks=data['all_tasks'],
-                            deadline_tasks=data['deadline_tasks'],
                             user=current_user,
                             tasks_h=data['tasks_h'],
                             tags=data['all_tags']))
