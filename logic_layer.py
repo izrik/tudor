@@ -19,24 +19,6 @@ class LogicLayer(object):
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
 
-    def flatten(self, lst):
-        gen = (x if isinstance(x, list) else [x] for x in lst)
-        flattened = itertools.chain.from_iterable(gen)
-        return list(flattened)
-
-    def get_root_ids_from_str(self, roots):
-        root_ids = roots.split(',')
-        for i in xrange(len(root_ids)):
-            m = re.match(r'(\d+)\*', root_ids[i])
-            if m:
-                id = m.group(1)
-                task = self.ds.Task.query.get(id)
-                root_ids[i] = map(lambda c: c.id, task.children)
-        if root_ids:
-            root_ids = self.flatten(root_ids)
-            return root_ids
-        return None
-
     def get_tasks_and_all_descendants_from_tasks(self, tasks):
         visited = set()
         result = []
@@ -66,13 +48,8 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done, roots, tags):
+    def get_index_data(self, show_deleted, show_done, tags):
         tasks = None
-        if roots is not None:
-            root_ids = self.get_root_ids_from_str(roots)
-            if root_ids:
-                tasks = self.ds.Task.query.filter(
-                    self.ds.Task.id.in_(root_ids))
 
         if tasks is None:
             tasks = self.ds.Task.query.filter(self.ds.Task.parent_id == None)
@@ -82,10 +59,6 @@ class LogicLayer(object):
             tasks = tasks.filter_by(is_done=False)
         tasks = tasks.order_by(self.ds.Task.order_num.desc())
         tasks = tasks.all()
-
-        all_tasks = self.get_tasks_and_all_descendants_from_tasks(tasks)
-        deadline_tasks = self.ds.Task.load_no_hierarchy(
-            exclude_undeadlined=True)
 
         if tags is not None and len(tags) > 0:
             tags = tags.split(',')
@@ -103,8 +76,6 @@ class LogicLayer(object):
             'tasks': tasks,
             'show_deleted': show_deleted,
             'show_done': show_done,
-            'roots': roots,
-            'views': self.ds.View.query,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
         }
@@ -431,11 +402,6 @@ class LogicLayer(object):
         self.db.session.add(user)
         return user
 
-    def do_add_new_view(self, name, roots):
-        view = self.ds.View(name, roots)
-        self.db.session.add(view)
-        return view
-
     def get_view_options_data(self):
         return self.ds.Option.query
 
@@ -481,8 +447,6 @@ class LogicLayer(object):
                                       self.ds.Attachment.query.all()]
         if 'users' in types_to_export:
             results['users'] = [t.to_dict() for t in self.ds.User.query.all()]
-        if 'views' in types_to_export:
-            results['views'] = [t.to_dict() for t in self.ds.View.query.all()]
         if 'options' in types_to_export:
             results['options'] = [t.to_dict() for t in
                                   self.ds.Option.query.all()]
@@ -602,24 +566,6 @@ class LogicLayer(object):
                                      hashed_password=hashed_password,
                                      is_admin=is_admin)
                     db_objects.append(u)
-
-            if 'views' in src:
-                ids = set()
-                for view in src['views']:
-                    ids.add(view['id'])
-                existing_views = self.ds.View.query.filter(
-                    self.ds.View.id.in_(ids)).count()
-                if existing_views > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified view id\'s already exist in the '
-                        'database')
-                for view in src['views']:
-                    id = view['id']
-                    name = view['name']
-                    roots = view['roots']
-                    v = self.ds.View(name=name, roots=roots)
-                    v.id = id
-                    db_objects.append(v)
 
             if 'options' in src:
                 keys = set()

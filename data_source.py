@@ -394,22 +394,6 @@ class SqlAlchemyDataSource(object):
             def is_anonymous(self):
                 return False
 
-        class View(db.Model):
-            id = db.Column(db.Integer, primary_key=True)
-            name = db.Column(db.String(100), nullable=False)
-            roots = db.Column(db.String(100), nullable=False)
-
-            def __init__(self, name, roots):
-                self.name = name
-                self.roots = roots
-
-            def to_dict(self):
-                return {
-                    'id': self.id,
-                    'name': self.name,
-                    'roots': self.roots
-                }
-
         class Option(db.Model):
             key = db.Column(db.String(100), primary_key=True)
             value = db.Column(db.String(100), nullable=True)
@@ -430,7 +414,6 @@ class SqlAlchemyDataSource(object):
         db.Note = Note
         db.Attachment = Attachment
         db.User = User
-        db.View = View
         db.Option = Option
 
         self.Task = Task
@@ -439,5 +422,4 @@ class SqlAlchemyDataSource(object):
         self.Note = Note
         self.Attachment = Attachment
         self.User = User
-        self.View = View
         self.Option = Option

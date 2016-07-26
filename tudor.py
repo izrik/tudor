@@ -110,6 +110,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     login_manager = LoginManager()
     login_manager.init_app(app)
     app.login_manager = login_manager
+    login_manager.login_view = 'login'
 
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
@@ -143,7 +144,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.Note = ds.Note
     app.Attachment = ds.Attachment
     app.User = ds.User
-    app.View = ds.View
     app.Option = ds.Option
 
     ll = LogicLayer(ds, upload_folder, allowed_extensions)
@@ -182,25 +182,20 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        roots = request.args.get('roots') or request.cookies.get('roots')
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
-        data = ll.get_index_data(show_deleted, show_done, roots, tags)
+        data = ll.get_index_data(show_deleted, show_done, tags)
 
         resp = make_response(
             render_template('index.t.html',
                             tasks=data['tasks'],
                             show_deleted=data['show_deleted'],
                             show_done=data['show_done'],
-                            roots=data['roots'],
-                            views=data['views'],
                             cycle=itertools.cycle,
                             user=current_user,
                             tasks_h=data['tasks_h'],
                             tags=data['all_tags']))
-        if roots:
-            resp.set_cookie('roots', roots)
         return resp
 
     @app.route('/deadlines')
@@ -505,8 +500,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         logout_user()
         return redirect(url_for('index'))
 
-    login_manager.login_view = 'login'
-
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
     @admin_required
@@ -525,24 +518,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         db.session.commit()
 
         return redirect(url_for('list_users'))
-
-    @app.route('/clear_roots')
-    @login_required
-    def clear_roots():
-        resp = make_response(redirect(url_for('index')))
-        resp.set_cookie('roots', '', expires=0)
-        return resp
-
-    @app.route('/set_roots')
-    @login_required
-    def set_roots():
-        roots = request.args.get('roots')
-        resp = make_response(redirect(url_for('index')))
-        if roots is not None and roots != '':
-            resp.set_cookie('roots', roots)
-        else:
-            resp.set_cookie('roots', '', expires=0)
-        return resp
 
     @app.route('/show_hide_deleted')
     @login_required
@@ -565,26 +540,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             resp.set_cookie('show_done', '')
         return resp
-
-    @app.route('/view/new', methods=['POST'])
-    @login_required
-    def new_view():
-        if 'view_name' not in request.form or 'view_roots' not in request.form:
-            return redirect(url_for('index'))
-
-        name = request.form['view_name']
-        roots = request.form['view_roots']
-        ll.do_add_new_view(name, roots)
-        db.session.commit()
-        return redirect(url_for('index'))
-
-    @app.route('/view/<int:id>')
-    @login_required
-    def set_view(id):
-        view = app.View.query.get(id)
-        if view is None:
-            return (('No view found for the id "%s"' % id), 404)
-        return redirect(url_for('set_roots', roots=view.roots))
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
