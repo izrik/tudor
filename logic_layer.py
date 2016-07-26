@@ -149,8 +149,7 @@ class LogicLayer(object):
 
     def set_task(self, task_id, summary, description, deadline=None,
                  is_done=False, is_deleted=False, order_num=None,
-                 duration=None, expected_cost=None, parent_id=None,
-                 tags=None):
+                 duration=None, expected_cost=None, parent_id=None):
 
         if deadline:
             deadline = dparse(deadline)

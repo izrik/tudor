@@ -343,15 +343,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
 
-        tags = request.form['tags']
-
         duration = int_from_str(request.form['expected_duration_minutes'])
 
         expected_cost = money_from_str(request.form['expected_cost'])
 
         task = ll.set_task(id, summary, description, deadline, is_done,
                            is_deleted, order_num, duration, expected_cost,
-                           parent_id, tags)
+                           parent_id)
 
         db.session.add(task)
         db.session.commit()
