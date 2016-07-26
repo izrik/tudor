@@ -94,7 +94,6 @@ class LogicLayer(object):
             'tasks': tasks,
             'show_deleted': show_deleted,
             'show_done': show_done,
-            'views': self.ds.View.query,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
         }
