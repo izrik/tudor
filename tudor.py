@@ -110,6 +110,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     login_manager = LoginManager()
     login_manager.init_app(app)
     app.login_manager = login_manager
+    login_manager.login_view = 'login'
 
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
@@ -499,8 +500,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def logout():
         logout_user()
         return redirect(url_for('index'))
-
-    login_manager.login_view = 'login'
 
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
