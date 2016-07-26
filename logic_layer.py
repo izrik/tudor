@@ -420,11 +420,6 @@ class LogicLayer(object):
         self.db.session.add(user)
         return user
 
-    def do_add_new_view(self, name, roots):
-        view = self.ds.View(name, roots)
-        self.db.session.add(view)
-        return view
-
     def get_view_options_data(self):
         return self.ds.Option.query
 
