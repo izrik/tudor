@@ -151,7 +151,13 @@ class LogicLayer(object):
                  is_done=False, is_deleted=False, order_num=None,
                  duration=None, expected_cost=None, parent_id=None):
 
-        if deadline:
+        if deadline is None:
+            pass
+        elif deadline == '':
+            deadline = None
+        elif not deadline:
+            deadline = None
+        else:
             deadline = dparse(deadline)
 
         if order_num is None:
