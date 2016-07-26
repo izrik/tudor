@@ -207,7 +207,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             render_template(
                 'deadlines.t.html',
                 cycle=itertools.cycle,
-                deadline_tasks=data['deadline_tasks']))
+                deadline_tasks=data['deadline_tasks'],
+                current_datetime=data['current_datetime']))
 
     @app.route('/task/new', methods=['POST'])
     @login_required

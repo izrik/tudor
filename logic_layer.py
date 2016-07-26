@@ -3,6 +3,7 @@
 import re
 import itertools
 import os
+import datetime
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
@@ -76,6 +77,7 @@ class LogicLayer(object):
             query_post_op=order_by_deadline)
         return {
             'deadline_tasks': deadline_tasks,
+            'current_datetime': datetime.datetime.utcnow()
         }
 
     def create_new_task(self, summary, parent_id):

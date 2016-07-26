@@ -4,6 +4,7 @@
 {% block content scoped %}
 <div>
     <h3>Deadlines</h3>
+    <p>Current date and time: {{ current_datetime|d }} UTC</p>
     {{ render_task_table(deadline_tasks, root=None, cycle=cycle,
         page_url=url_for('deadlines'),
         child_task_view='view_task',
