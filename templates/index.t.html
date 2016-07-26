@@ -45,6 +45,7 @@
     <p><a href="{{ url_for('import_data') }}">import</a></p>
     <p><a href="{{ url_for('task_crud') }}">task crud</a></p>
     {% endif %}
+    <p><a href="{{ url_for('deadlines') }}">deadlines</a></p>
 </div>
 <div>
     <h3>Tags</h3>
@@ -100,13 +101,4 @@
         </form>
     </table>
 </div>
-{% if all_tasks != None %}
-<div>
-    <h3>Deadlines</h3>
-    {{ render_task_table(deadline_tasks, root=None, cycle=cycle,
-        page_url=url_for('index'),
-        child_task_view='view_task',
-        indent=False, show_expected_duration=True) }}
-</div>
-{% endif %}
 {% endblock %}

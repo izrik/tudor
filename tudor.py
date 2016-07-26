@@ -196,14 +196,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                             roots=data['roots'],
                             views=data['views'],
                             cycle=itertools.cycle,
-                            all_tasks=data['all_tasks'],
-                            deadline_tasks=data['deadline_tasks'],
                             user=current_user,
                             tasks_h=data['tasks_h'],
                             tags=data['all_tags']))
         if roots:
             resp.set_cookie('roots', roots)
         return resp
+
+    @app.route('/deadlines')
+    @login_required
+    def deadlines():
+
+        data = ll.get_deadlines_data()
+
+        return make_response(
+            render_template(
+                'deadlines.t.html',
+                cycle=itertools.cycle,
+                deadline_tasks=data['deadline_tasks']))
 
     @app.route('/task/new', methods=['POST'])
     @login_required

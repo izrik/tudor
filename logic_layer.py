@@ -105,10 +105,15 @@ class LogicLayer(object):
             'show_done': show_done,
             'roots': roots,
             'views': self.ds.View.query,
-            'all_tasks': all_tasks,
-            'deadline_tasks': deadline_tasks,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
+        }
+
+    def get_deadlines_data(self):
+        deadline_tasks = self.ds.Task.load_no_hierarchy(
+            exclude_undeadlined=True)
+        return {
+            'deadline_tasks': deadline_tasks,
         }
 
     def create_new_task(self, summary, parent_id):
@@ -168,7 +173,7 @@ class LogicLayer(object):
 
         hierarchy_sort = True
         if hierarchy_sort:
-            descendants = ll.sort_by_hierarchy(descendants, root=task)
+            descendants = self.sort_by_hierarchy(descendants, root=task)
 
         return {
             'task': task,
