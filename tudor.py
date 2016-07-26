@@ -170,7 +170,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     # View utility functions
 
-    def get_form_or_arg(self, name):
+    def get_form_or_arg(name):
         if name in request.form:
             return request.form[name]
         return request.args.get(name)
