@@ -189,7 +189,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         resp = make_response(
             render_template('index.t.html',
-                            tasks=data['tasks'],
                             show_deleted=data['show_deleted'],
                             show_done=data['show_done'],
                             cycle=itertools.cycle,

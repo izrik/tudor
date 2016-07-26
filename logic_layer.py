@@ -49,17 +49,6 @@ class LogicLayer(object):
         return list(get_sorted_order(root))
 
     def get_index_data(self, show_deleted, show_done, tags):
-        tasks = None
-
-        if tasks is None:
-            tasks = self.ds.Task.query.filter(self.ds.Task.parent_id == None)
-        if not show_deleted:
-            tasks = tasks.filter_by(is_deleted=False)
-        if not show_done:
-            tasks = tasks.filter_by(is_done=False)
-        tasks = tasks.order_by(self.ds.Task.order_num.desc())
-        tasks = tasks.all()
-
         if tags is not None and len(tags) > 0:
             tags = tags.split(',')
             tasks_h = self.ds.Task.load_no_hierarchy(
@@ -73,7 +62,6 @@ class LogicLayer(object):
 
         all_tags = self.ds.Tag.query.all()
         return {
-            'tasks': tasks,
             'show_deleted': show_deleted,
             'show_done': show_done,
             'tasks_h': tasks_h,
