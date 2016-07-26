@@ -182,21 +182,25 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
+        roots = request.args.get('roots') or request.cookies.get('roots')
 
         tags = request.args.get('tags') or request.cookies.get('tags')
 
-        data = ll.get_index_data(show_deleted, show_done, tags)
+        data = ll.get_index_data(show_deleted, show_done, roots, tags)
 
         resp = make_response(
             render_template('index.t.html',
                             tasks=data['tasks'],
                             show_deleted=data['show_deleted'],
                             show_done=data['show_done'],
+                            roots=data['roots'],
                             views=data['views'],
                             cycle=itertools.cycle,
                             user=current_user,
                             tasks_h=data['tasks_h'],
                             tags=data['all_tags']))
+        if roots:
+            resp.set_cookie('roots', roots)
         return resp
 
     @app.route('/deadlines')

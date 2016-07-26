@@ -66,8 +66,13 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done, tags):
+    def get_index_data(self, show_deleted, show_done, roots, tags):
         tasks = None
+        if roots is not None:
+            root_ids = self.get_root_ids_from_str(roots)
+            if root_ids:
+                tasks = self.ds.Task.query.filter(
+                    self.ds.Task.id.in_(root_ids))
 
         if tasks is None:
             tasks = self.ds.Task.query.filter(self.ds.Task.parent_id == None)
@@ -88,7 +93,8 @@ class LogicLayer(object):
                 include_done=show_done, include_deleted=show_deleted,
                 tags=tags)
         else:
-            tasks_h = self.ds.Task.load(max_depth=None, include_done=show_done,
+            tasks_h = self.ds.Task.load(roots=None, max_depth=None,
+                                        include_done=show_done,
                                         include_deleted=show_deleted)
             tasks_h = self.sort_by_hierarchy(tasks_h)
 
@@ -97,6 +103,7 @@ class LogicLayer(object):
             'tasks': tasks,
             'show_deleted': show_deleted,
             'show_done': show_done,
+            'roots': roots,
             'views': self.ds.View.query,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
