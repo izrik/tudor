@@ -194,7 +194,8 @@ class SqlAlchemyDataSource(object):
 
             @staticmethod
             def load_no_hierarchy(include_done=False, include_deleted=False,
-                                  exclude_undeadlined=False, tags=None):
+                                  exclude_undeadlined=False, tags=None,
+                                  query_post_op=None):
 
                 query = app.Task.query
 
@@ -227,6 +228,9 @@ class SqlAlchemyDataSource(object):
                     tag_ids = map(get_tag_id, tags)
                     query = query.join(TaskTagLink).filter(
                         TaskTagLink.tag_id.in_(tag_ids))
+
+                if query_post_op:
+                    query = query_post_op(query)
 
                 tasks = query.all()
 

@@ -69,8 +69,11 @@ class LogicLayer(object):
         }
 
     def get_deadlines_data(self):
+        def order_by_deadline(query):
+            return query.order_by(self.ds.Task.deadline)
         deadline_tasks = self.ds.Task.load_no_hierarchy(
-            exclude_undeadlined=True)
+            exclude_undeadlined=True,
+            query_post_op=order_by_deadline)
         return {
             'deadline_tasks': deadline_tasks,
         }
