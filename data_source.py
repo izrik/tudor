@@ -128,7 +128,7 @@ class SqlAlchemyDataSource(object):
                 return ''
 
             @staticmethod
-            def load(roots=None, max_depth=0, include_done=False,
+            def load(max_depth=0, include_done=False,
                      include_deleted=False, exclude_undeadlined=False):
 
                 query = app.Task.query
@@ -142,12 +142,7 @@ class SqlAlchemyDataSource(object):
                 if exclude_undeadlined:
                     query = query.filter(Task.deadline.isnot(None))
 
-                if roots is None:
-                    query = query.filter(Task.parent_id.is_(None))
-                else:
-                    if not hasattr(roots, '__iter__'):
-                        roots = [roots]
-                    query = query.filter(Task.id.in_(roots))
+                query = query.filter(Task.parent_id.is_(None))
 
                 query = query.order_by(Task.id.asc())
                 query = query.order_by(Task.order_num.desc())
