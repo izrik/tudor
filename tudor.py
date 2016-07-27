@@ -290,11 +290,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
         data = ll.get_task_data(id)
 
         return render_template('task.t.html', task=data['task'],
                                descendants=data['descendants'],
-                               cycle=itertools.cycle)
+                               cycle=itertools.cycle,
+                               show_deleted=show_deleted, show_done=show_done)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
