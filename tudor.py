@@ -292,7 +292,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        data = ll.get_task_data(id)
+        data = ll.get_task_data(id, include_deleted=show_deleted,
+                                include_done=show_done)
 
         return render_template('task.t.html', task=data['task'],
                                descendants=data['descendants'],
