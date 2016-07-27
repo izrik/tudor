@@ -290,11 +290,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        data = ll.get_task_data(id)
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        data = ll.get_task_data(id, include_deleted=show_deleted,
+                                include_done=show_done)
 
         return render_template('task.t.html', task=data['task'],
                                descendants=data['descendants'],
-                               cycle=itertools.cycle)
+                               cycle=itertools.cycle,
+                               show_deleted=show_deleted, show_done=show_done)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
@@ -520,7 +524,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def show_hide_deleted():
         show_deleted = request.args.get('show_deleted')
-        resp = make_response(redirect(url_for('index')))
+        resp = make_response(
+            redirect(request.args.get('next') or url_for('index')))
         if show_deleted and show_deleted != '0':
             resp.set_cookie('show_deleted', '1')
         else:
@@ -531,7 +536,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def show_hide_done():
         show_done = request.args.get('show_done')
-        resp = make_response(redirect(url_for('index')))
+        resp = make_response(
+            redirect(request.args.get('next') or url_for('index')))
         if show_done and show_done != '0':
             resp.set_cookie('show_done', '1')
         else:

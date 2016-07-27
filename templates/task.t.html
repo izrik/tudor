@@ -78,6 +78,22 @@
         show_new_task_form=True, new_task_parent=task) }}
 </div>
 <div>
+    <p>
+        {%- if show_deleted %}
+        <a href="{{ url_for('show_hide_deleted', show_deleted=0, next=url_for('view_task', id=task.id)) }}">hide deleted</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_deleted', show_deleted=1, next=url_for('view_task', id=task.id)) }}">show deleted</a>
+        {% endif -%}
+    </p>
+    <p>
+        {%- if show_done %}
+        <a href="{{ url_for('show_hide_done', show_done=0, next=url_for('view_task', id=task.id)) }}">hide done</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_done', show_done=1, next=url_for('view_task', id=task.id)) }}">show done</a>
+        {% endif -%}
+    </p>
+</div>
+<div>
     <h4>Notes</h4>
     <table class="task_notes">
         <thead>

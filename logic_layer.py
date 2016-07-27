@@ -124,14 +124,14 @@ class LogicLayer(object):
         task.is_deleted = False
         return task
 
-    def get_task_data(self, id):
+    def get_task_data(self, id, include_deleted=True, include_done=True):
         task = self.ds.Task.query.filter_by(id=id).first()
         if task is None:
             raise werkzeug.exceptions.NotFound()
 
         descendants = self.ds.Task.load(root_task_id=task.id, max_depth=None,
-                                        include_done=True,
-                                        include_deleted=True)
+                                        include_done=include_done,
+                                        include_deleted=include_deleted)
 
         hierarchy_sort = True
         if hierarchy_sort:
