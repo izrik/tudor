@@ -183,9 +183,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
 
-        tags = request.args.get('tags') or request.cookies.get('tags')
-
-        data = ll.get_index_data(show_deleted, show_done, tags)
+        data = ll.get_index_data(show_deleted, show_done)
 
         resp = make_response(
             render_template('index.t.html',
