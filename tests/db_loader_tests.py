@@ -734,13 +734,14 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         db.session.add(child)
 
         parent2 = Task(summary='parent2')
-        child2 = Task(summary='child2', is_done=True)
+        child2 = Task(summary='child2', is_done=True, deadline='2016-01-01')
         child2.parent = parent2
         child3 = Task(summary='child3', is_deleted=True)
         child3.parent = parent2
         grandchild = Task(summary='grandchild')
         grandchild.parent = child3
-        great_grandchild = Task(summary='great_grandchild')
+        great_grandchild = Task(summary='great_grandchild',
+                                deadline='2016-12-31')
         great_grandchild.parent = grandchild
         great_great_grandchild = Task(summary='great_great_grandchild')
         great_great_grandchild.parent = great_grandchild
@@ -839,5 +840,29 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
                               'child3', 'grandchild', 'great_grandchild',
                               'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_exclude_undeadlined_only_returns_tasks_with_deadlines(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(exclude_undeadlined=True)
+
+        # then
+        self.assertEqual(1, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertEquals('great_grandchild', tasks[0].summary)
+
+    def test_exclude_undeadlined_only_returns_tasks_with_deadlines2(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True,
+                                                exclude_undeadlined=True)
+
+        # then
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'child2', 'great_grandchild'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)
