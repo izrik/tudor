@@ -29,8 +29,11 @@ from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
 
-__revision__ = git.Repo('.').git.describe(tags=True, dirty=True, always=True,
-                                          abbrev=40)
+try:
+    __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
+                                              always=True, abbrev=40)
+except git.InvalidGitRepositoryError:
+    __revision__ = 'unknown'
 
 
 DEFAULT_TUDOR_DEBUG = False
