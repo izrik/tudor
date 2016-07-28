@@ -705,3 +705,245 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         expected_summaries = {'parent2', 'child2', 'grandchild2'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)
+
+
+class DbLoadNoHierarchyTest(unittest.TestCase):
+
+    task_ids = None
+
+    def setUp(self):
+        app = generate_app(db_uri='sqlite://')
+        self.app = app
+        self.task_ids = {}
+        db = app.ds.db
+        db.create_all()
+        Task = app.Task
+        Tag = app.Tag
+        TTL = app.TaskTagLink
+
+        abcd = Tag('abcd')
+        efgh = Tag('efgh')
+        ijkl = Tag('ijkl')
+
+        db.session.add(abcd)
+        db.session.add(efgh)
+        db.session.add(ijkl)
+
+        normal = Task(summary='normal')
+        db.session.add(normal)
+
+        parent = Task(summary='parent')
+        child = Task(summary='child')
+        child.parent = parent
+        db.session.add(parent)
+        db.session.add(child)
+
+        parent2 = Task(summary='parent2')
+        child2 = Task(summary='child2', is_done=True, deadline='2016-01-01')
+        child2.parent = parent2
+        child3 = Task(summary='child3', is_deleted=True)
+        child3.parent = parent2
+        grandchild = Task(summary='grandchild')
+        grandchild.parent = child3
+        great_grandchild = Task(summary='great_grandchild',
+                                deadline='2016-12-31')
+        great_grandchild.parent = grandchild
+        great_great_grandchild = Task(summary='great_great_grandchild')
+        great_great_grandchild.parent = great_grandchild
+        db.session.add(parent2)
+        db.session.add(child2)
+        db.session.add(child3)
+        db.session.add(grandchild)
+        db.session.add(great_grandchild)
+        db.session.add(great_great_grandchild)
+
+        db.session.commit()
+
+        db.session.add(TTL(normal.id, abcd.id))
+        db.session.add(TTL(normal.id, efgh.id))
+        db.session.add(TTL(normal.id, ijkl.id))
+        db.session.add(TTL(parent.id, ijkl.id))
+        db.session.add(TTL(parent2.id, efgh.id))
+        db.session.add(TTL(great_great_grandchild.id, abcd.id))
+
+        db.session.commit()
+
+        for t in [normal, parent, child, parent2, child2, child3, grandchild,
+                  great_grandchild, great_great_grandchild]:
+            self.task_ids[t.summary] = t.id
+
+    def test_no_params_yields_all(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy()
+
+        # then
+        self.assertEqual(7, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2',
+                              'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_include_done_includes_done(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True)
+
+        # then
+        self.assertEqual(8, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
+                              'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_include_deleted_includes_deleted(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_deleted=True)
+
+        # then
+        self.assertEqual(8, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child3',
+                              'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_include_both_includes_both(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True)
+
+        # then
+        self.assertEqual(9, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+        self.assertIsInstance(tasks[8], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
+                              'child3', 'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_exclude_undeadlined_only_returns_tasks_with_deadlines(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(exclude_undeadlined=True)
+
+        # then
+        self.assertEqual(1, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertEquals('great_grandchild', tasks[0].summary)
+
+    def test_exclude_undeadlined_only_returns_tasks_with_deadlines2(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True,
+                                                exclude_undeadlined=True)
+
+        # then
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'child2', 'great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_single_tag_returns_only_tasks_with_that_tag_1(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True,
+                                                tags=['abcd'])
+
+        # then
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'normal', 'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_single_tag_returns_only_tasks_with_that_tag_2(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True,
+                                                tags=['efgh'])
+
+        # then
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'normal', 'parent2'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_single_tag_returns_only_tasks_with_that_tag_3(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True,
+                                                tags=['ijkl'])
+
+        # then
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'normal', 'parent'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_multiple_tags_return_all_tasks_with_any_of_those_tags(self):
+
+        # For a task to be returned, it only has to have any one of the
+        # specified tags. Multiple tags combine like an 'OR' operation.
+
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True,
+                                                tags=['abcd', 'efgh', 'ijkl'])
+
+        # then
+        self.assertEqual(4, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'parent2',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
