@@ -734,9 +734,9 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         db.session.add(child)
 
         parent2 = Task(summary='parent2')
-        child2 = Task(summary='child2')
+        child2 = Task(summary='child2', is_done=True)
         child2.parent = parent2
-        child3 = Task(summary='child3')
+        child3 = Task(summary='child3', is_deleted=True)
         child3.parent = parent2
         grandchild = Task(summary='grandchild')
         grandchild.parent = child3
@@ -760,6 +760,69 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
     def test_no_params_yields_all(self):
         # when
         tasks = self.app.Task.load_no_hierarchy()
+
+        # then
+        self.assertEqual(7, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2',
+                              'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_include_done_includes_done(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True)
+
+        # then
+        self.assertEqual(8, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
+                              'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_include_deleted_includes_deleted(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_deleted=True)
+
+        # then
+        self.assertEqual(8, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child3',
+                              'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_include_both_includes_both(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy(include_done=True,
+                                                include_deleted=True)
 
         # then
         self.assertEqual(9, len(tasks))
