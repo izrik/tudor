@@ -48,7 +48,7 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done, tags):
+    def get_index_data(self, show_deleted, show_done):
         tasks_h = self.ds.Task.load(root_task_id=None, max_depth=None,
                                     include_done=show_done,
                                     include_deleted=show_deleted)
