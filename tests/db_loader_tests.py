@@ -705,3 +705,76 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         expected_summaries = {'parent2', 'child2', 'grandchild2'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)
+
+
+class DbLoadNoHierarchyTest(unittest.TestCase):
+
+    task_ids = None
+
+    def setUp(self):
+        app = generate_app(db_uri='sqlite://')
+        self.app = app
+        self.task_ids = {}
+        db = app.ds.db
+        db.create_all()
+        Task = app.Task
+        # summary,
+        # description='',
+        # is_done=False,
+        # is_deleted=False,
+        # deadline=None):
+
+        normal = Task(summary='normal')
+        db.session.add(normal)
+
+        parent = Task(summary='parent')
+        child = Task(summary='child')
+        child.parent = parent
+        db.session.add(parent)
+        db.session.add(child)
+
+        parent2 = Task(summary='parent2')
+        child2 = Task(summary='child2')
+        child2.parent = parent2
+        child3 = Task(summary='child3')
+        child3.parent = parent2
+        grandchild = Task(summary='grandchild')
+        grandchild.parent = child3
+        great_grandchild = Task(summary='great_grandchild')
+        great_grandchild.parent = grandchild
+        great_great_grandchild = Task(summary='great_great_grandchild')
+        great_great_grandchild.parent = great_grandchild
+        db.session.add(parent2)
+        db.session.add(child2)
+        db.session.add(child3)
+        db.session.add(grandchild)
+        db.session.add(great_grandchild)
+        db.session.add(great_great_grandchild)
+
+        db.session.commit()
+
+        for t in [normal, parent, child, parent2, child2, child3, grandchild,
+                  great_grandchild, great_great_grandchild]:
+            self.task_ids[t.summary] = t.id
+
+    def test_no_params_yields_all(self):
+        # when
+        tasks = self.app.Task.load_no_hierarchy()
+
+        # then
+        self.assertEqual(9, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+        self.assertIsInstance(tasks[2], self.app.Task)
+        self.assertIsInstance(tasks[3], self.app.Task)
+        self.assertIsInstance(tasks[4], self.app.Task)
+        self.assertIsInstance(tasks[5], self.app.Task)
+        self.assertIsInstance(tasks[6], self.app.Task)
+        self.assertIsInstance(tasks[7], self.app.Task)
+        self.assertIsInstance(tasks[8], self.app.Task)
+
+        expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
+                              'child3', 'grandchild', 'great_grandchild',
+                              'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
