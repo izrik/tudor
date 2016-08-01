@@ -28,6 +28,7 @@ from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
+import base64
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -158,6 +159,22 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_manager.user_loader
     def load_user(userid):
         return app.User.query.get(userid)
+
+    @login_manager.request_loader
+    def load_user_with_basic_auth(request):
+        api_key = request.headers.get('Authorization')
+        if api_key:
+            api_key = api_key.replace('Basic ', '', 1)
+            api_key = base64.b64decode(api_key)
+            email, password = api_key.split(':', 1)
+            user = app.User.query.get(email)
+
+            if (user is None or
+                    not bcrypt.check_password_hash(
+                        user.hashed_password, password)):
+                return None
+
+            return user
 
     def admin_required(func):
         @wraps(func)
