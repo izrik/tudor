@@ -10,8 +10,8 @@ def generate_task_user_link_class(db):
                                backref=db.backref('tasks', lazy='dynamic'))
 
         @property
-        def value(self):
-            return self.user.value
+        def email(self):
+            return self.user.email
 
         task = db.relationship('Task',
                                backref=db.backref('users', lazy='dynamic'))
