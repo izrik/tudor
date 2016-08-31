@@ -574,6 +574,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return redirect(url_for('list_users'))
 
+    @app.route('/users/<int:user_id>', methods=['GET'])
+    @login_required
+    @admin_required
+    def view_user(user_id):
+        user = ll.do_get_user_data(user_id)
+        return render_template('view_user.t.html', user=user)
+
     @app.route('/show_hide_deleted')
     @login_required
     def show_hide_deleted():

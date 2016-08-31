@@ -427,6 +427,13 @@ class LogicLayer(object):
         self.db.session.add(user)
         return user
 
+    def do_get_user_data(self, user_id):
+        user = self.ds.User.query.get(user_id)
+        if user is None:
+            raise werkzeug.exceptions.NotFound(
+                "No user found for the id '%s'".format(user_id))
+        return user
+
     def get_view_options_data(self):
         return self.ds.Option.query
 
