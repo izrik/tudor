@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-import datetime
-import random
-
-import os
 
 from flask.ext.sqlalchemy import SQLAlchemy
 from models.task import generate_task_class
@@ -12,8 +8,7 @@ from models.note import generate_note_class
 from models.attachment import generate_attachment_class
 from models.user import generate_user_class
 from models.option import generate_option_class
-
-from conversions import str_from_datetime
+from models.task_user_link import generate_task_user_link_class
 
 
 class SqlAlchemyDataSource(object):
@@ -31,6 +26,7 @@ class SqlAlchemyDataSource(object):
         Attachment = generate_attachment_class(db)
         User = generate_user_class(db, app.bcrypt)
         Option = generate_option_class(db)
+        TaskUserLink = generate_task_user_link_class(db)
 
         db.Task = Task
         db.Tag = Tag
@@ -39,6 +35,7 @@ class SqlAlchemyDataSource(object):
         db.Attachment = Attachment
         db.User = User
         db.Option = Option
+        db.TaskUserLink = TaskUserLink
 
         self.Task = Task
         self.Tag = Tag
@@ -47,3 +44,4 @@ class SqlAlchemyDataSource(object):
         self.Attachment = Attachment
         self.User = User
         self.Option = Option
+        self.TaskUserLink = TaskUserLink
