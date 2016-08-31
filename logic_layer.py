@@ -72,7 +72,7 @@ class LogicLayer(object):
             'deadline_tasks': deadline_tasks,
         }
 
-    def create_new_task(self, summary, parent_id):
+    def create_new_task(self, summary, parent_id, user):
         task = self.ds.Task(summary)
 
         # get lowest order number
@@ -88,7 +88,9 @@ class LogicLayer(object):
         elif self.ds.Task.query.filter_by(id=parent_id).count() > 0:
             task.parent_id = parent_id
 
-        return task
+        tul = self.ds.TaskUserLink(task.id, user.id)
+
+        return (task, tul)
 
     def task_set_done(self, id):
         task = self.ds.Task.query.filter_by(id=id).first()
