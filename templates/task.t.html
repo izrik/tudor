@@ -67,7 +67,7 @@
                 {% for tul in task.users %}
                     <a href="{ { url_for('view_user', id=tul.user_id) }}">{{ tul.email }}</a>
                     {% if task.users.count() > 1 %}
-                    <a href="{ { url_for('deauthorize_user_from_task', id=task.id, user_id=tul.user_id) }}">
+                    <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=tul.user_id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
                     {% endif %}

@@ -389,6 +389,34 @@ class LogicLayer(object):
 
         return tul
 
+    def do_deauthorize_user_for_task(self, task_id, user_id):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if user_id is None:
+            raise ValueError("No user_id was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+
+        user = self.ds.User.query.get(user_id)
+        if user is None:
+            raise werkzeug.exceptions.NotFound(
+                "No user found for the id '{}'".format(user_id))
+
+        if len(task.users) < 2:
+            raise werkzeug.exceptions.Conflict(
+                "The user cannot be de-authorized. It is the last authorized "
+                "user for the task. De-authorizing the user would make the "
+                "task inaccessible.")
+
+        tul = self.ds.TaskUserLink.query.get((task_id, user_id))
+        if tul is not None:
+            self.db.session.delete(tul)
+
+        return tul
+
     def do_add_new_user(self, email, is_admin):
         user = self.ds.User.query.filter_by(email=email).first()
         if user is not None:

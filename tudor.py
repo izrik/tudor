@@ -516,6 +516,22 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
 
+    @app.route('/task/<int:task_id>/deauthorize_user', methods=['GET', 'POST'],
+               defaults={'user_id': None})
+    @app.route('/task/<int:task_id>/deauthorize_user/',
+               methods=['GET', 'POST'], defaults={'user_id': None})
+    @app.route('/task/<int:task_id>/deauthorize_user/<int:user_id>',
+               methods=['GET', 'POST'])
+    def deauthorize_user_for_task(task_id, user_id):
+        if user_id is None:
+            user_id = get_form_or_arg('user_id')
+
+        ll.do_deauthorize_user_for_task(task_id, user_id)
+        db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
+
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if request.method == 'GET':
