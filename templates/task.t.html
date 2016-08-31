@@ -67,13 +67,13 @@
                 {% for tul in task.users %}
                     <a href="{ { url_for('view_user', id=tul.user_id) }}">{{ tul.email }}</a>
                     {% if task.users.count() > 1 %}
-                    <a href="{ { url_for('delete_user_from_task', id=task.id, user_id=tul.user_id) }}">
+                    <a href="{ { url_for('deauthorize_user_from_task', id=task.id, user_id=tul.user_id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
                     {% endif %}
                 {% endfor %}
-                <form action="{ { url_for('add_user_to_task', id=task.id) }}" method="post">
-                    <input type="text" name="value" />
+                <form action="{{ url_for('authorize_user_for_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="email" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>

@@ -366,6 +366,29 @@ class LogicLayer(object):
 
         return ttl
 
+    def do_authorize_user_for_task(self, task_id, user_email):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if user_email is None or user_email == '':
+            raise ValueError("No user_email was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(id))
+
+        user = self.ds.User.query.filter_by(email=user_email).first()
+        if user is None:
+            raise werkzeug.exceptions.BadRequest(
+                "No user found for the email '{}'".format(user_email))
+
+        tul = self.ds.TaskUserLink.query.get((task.id, user.id))
+        if tul is None:
+            tul = self.ds.TaskUserLink(task.id, user.id)
+            self.db.session.add(tul)
+
+        return tul
+
     def do_add_new_user(self, email, is_admin):
         user = self.ds.User.query.filter_by(email=email).first()
         if user is not None:

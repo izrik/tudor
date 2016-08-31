@@ -501,6 +501,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=id)))
 
+    @app.route('/task/<int:task_id>/authorize_user', methods=['GET', 'POST'])
+    @login_required
+    def authorize_user_for_task(task_id):
+
+        email = get_form_or_arg('email')
+        if email is None or email == '':
+            return (redirect(
+                request.args.get('next') or url_for('view_task', id=task_id)))
+
+        ll.do_authorize_user_for_task(task_id, email)
+        db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
+
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if request.method == 'GET':
