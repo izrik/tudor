@@ -158,7 +158,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     @login_manager.user_loader
     def load_user(userid):
-        return app.User.query.get(userid)
+        return app.User.query.filter_by(email=userid).first()
 
     @login_manager.request_loader
     def load_user_with_basic_auth(request):
@@ -167,7 +167,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             api_key = api_key.replace('Basic ', '', 1)
             api_key = base64.b64decode(api_key)
             email, password = api_key.split(':', 1)
-            user = app.User.query.get(email)
+            user = app.User.query.filter_by(email=email).first()
 
             if (user is None or
                     not bcrypt.check_password_hash(
@@ -502,7 +502,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
-        user = app.User.query.get(email)
+        user = app.User.query.filter_by(email=email).first()
 
         if (user is None or
                 not bcrypt.check_password_hash(user.hashed_password,

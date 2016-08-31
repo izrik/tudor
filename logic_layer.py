@@ -365,7 +365,7 @@ class LogicLayer(object):
         return ttl
 
     def do_add_new_user(self, email, is_admin):
-        user = self.ds.User.query.get(email)
+        user = self.ds.User.query.filter_by(email=email).first()
         if user is not None:
             return werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(

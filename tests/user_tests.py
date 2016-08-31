@@ -10,6 +10,12 @@ class UserTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.User = self.app.User
 
+    def test_constructor_default_id_is_none(self):
+        # when
+        user = self.User('name@example.org', 'hashed_password')
+        # then
+        self.assertIsNone(user.id)
+
     def test_constructor_sets_email(self):
         # when
         user = self.User('name@example.org', 'hashed_password')
@@ -69,4 +75,4 @@ class UserTest(unittest.TestCase):
         # then
         self.assertEqual({'email': 'name@example.org',
                           'hashed_password': '12345',
-                          'is_admin': False}, user.to_dict())
+                          'is_admin': False, 'id': None}, user.to_dict())

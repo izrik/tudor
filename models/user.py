@@ -4,7 +4,9 @@ import random
 
 def generate_user_class(db, bcrypt):
     class User(db.Model):
-        email = db.Column(db.String(100), primary_key=True, nullable=False)
+
+        id = db.Column(db.Integer, primary_key=True)
+        email = db.Column(db.String(100), nullable=False, unique=True)
         hashed_password = db.Column(db.String(100), nullable=False)
         is_admin = db.Column(db.Boolean, nullable=False, default=False)
         authenticated = True
@@ -21,6 +23,7 @@ def generate_user_class(db, bcrypt):
 
         def to_dict(self):
             return {
+                'id': self.id,
                 'email': self.email,
                 'hashed_password': self.hashed_password,
                 'is_admin': self.is_admin
