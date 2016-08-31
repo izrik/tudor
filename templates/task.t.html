@@ -61,6 +61,22 @@
                 </form>
             </td>
         </tr>
+        <tr>
+            <td>Authorized Users</td>
+            <td>
+                {% for tul in task.users %}
+                    <a href="{ { url_for('view_user', id=tul.user_id) }}">{{ tul.email }}</a>
+                    <a href="{ { url_for('delete_user_from_task', id=task.id, user_id=tul.user_id) }}">
+                        <img src="{{ url_for('static', filename='delete.png') }}" />
+                    </a>
+                {% endfor %}
+                <form action="{ { url_for('add_user_to_task', id=task.id) }}" method="post">
+                    <input type="text" name="value" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+            </td>
+        </tr>
     </table>
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>
