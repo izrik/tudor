@@ -253,4 +253,10 @@ def generate_task_class(db, Tag, TaskTagLink):
                 return None
             return '{:.2f}'.format(self.expected_cost)
 
+        def is_user_authorized(self, user):
+            for tul in self.users:
+                if tul.user is user:
+                    return True
+            return False
+
     return Task

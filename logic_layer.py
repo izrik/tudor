@@ -366,7 +366,20 @@ class LogicLayer(object):
 
         return ttl
 
-    def do_authorize_user_for_task(self, task_id, user_email):
+    def do_authorize_user_for_task(self, task, user):
+        if task is None:
+            raise ValueError("No task was specified.")
+        if user is None:
+            raise ValueError("No user was specified.")
+
+        tul = self.ds.TaskUserLink.query.get((task.id, user.id))
+        if tul is None:
+            tul = self.ds.TaskUserLink(task.id, user.id)
+            self.db.session.add(tul)
+
+        return tul
+
+    def do_authorize_user_for_task_by_email(self, task_id, user_email):
         if task_id is None:
             raise ValueError("No task_id was specified.")
         if user_email is None or user_email == '':
@@ -375,19 +388,32 @@ class LogicLayer(object):
         task = self.ds.Task.query.get(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
-                "No task found for the id '{}'".format(id))
+                "No task found for the id '{}'".format(task_id))
 
         user = self.ds.User.query.filter_by(email=user_email).first()
         if user is None:
             raise werkzeug.exceptions.BadRequest(
                 "No user found for the email '{}'".format(user_email))
 
-        tul = self.ds.TaskUserLink.query.get((task.id, user.id))
-        if tul is None:
-            tul = self.ds.TaskUserLink(task.id, user.id)
-            self.db.session.add(tul)
+        return self.do_authorize_user_for_task(task, user)
 
-        return tul
+    def do_authorize_user_for_task_by_id(self, task_id, user_id):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if user_id is None:
+            raise ValueError("No user_id was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+
+        user = self.ds.User.query.get(user_id)
+        if user is None:
+            raise werkzeug.exceptions.BadRequest(
+                "No user found for the id '{}'".format(user_id))
+
+        return self.do_authorize_user_for_task(task, user)
 
     def do_deauthorize_user_for_task(self, task_id, user_id):
         if task_id is None:
@@ -405,7 +431,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
 
-        if len(task.users) < 2:
+        if task.users.count() < 2:
             raise werkzeug.exceptions.Conflict(
                 "The user cannot be de-authorized. It is the last authorized "
                 "user for the task. De-authorizing the user would make the "
@@ -433,6 +459,9 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '%s'".format(user_id))
         return user
+
+    def get_users(self):
+        return self.ds.User.query
 
     def get_view_options_data(self):
         return self.ds.Option.query

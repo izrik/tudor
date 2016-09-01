@@ -77,6 +77,7 @@
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                <a href="{{ url_for('pick_user_to_authorize', task_id=task.id) }}">Pick a user</a>
             </td>
         </tr>
     </table>
