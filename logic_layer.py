@@ -453,11 +453,14 @@ class LogicLayer(object):
         self.db.session.add(user)
         return user
 
-    def do_get_user_data(self, user_id):
+    def do_get_user_data(self, user_id, current_user):
         user = self.ds.User.query.get(user_id)
         if user is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '%s'".format(user_id))
+        if user != current_user and not current_user.is_admin:
+            raise werkzeug.exceptions.Forbidden()
+
         return user
 
     def get_users(self):

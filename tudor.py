@@ -598,9 +598,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     @app.route('/users/<int:user_id>', methods=['GET'])
     @login_required
-    @admin_required
     def view_user(user_id):
-        user = ll.do_get_user_data(user_id)
+        user = ll.do_get_user_data(user_id, current_user)
         return render_template('view_user.t.html', user=user)
 
     @app.route('/show_hide_deleted')
