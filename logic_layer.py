@@ -56,9 +56,9 @@ class LogicLayer(object):
         return list(get_sorted_order(root))
 
     def get_index_data(self, show_deleted, show_done):
-        tasks_h = self.ds.Task.load(root_task_id=None, max_depth=None,
-                                    include_done=show_done,
-                                    include_deleted=show_deleted)
+        tasks_h = self.load(root_task_id=None, max_depth=None,
+                            include_done=show_done,
+                            include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         all_tags = self.ds.Tag.query.all()
@@ -72,7 +72,7 @@ class LogicLayer(object):
     def get_deadlines_data(self):
         def order_by_deadline(query):
             return query.order_by(self.ds.Task.deadline)
-        deadline_tasks = self.ds.Task.load_no_hierarchy(
+        deadline_tasks = self.load_no_hierarchy(
             exclude_undeadlined=True,
             query_post_op=order_by_deadline)
         return {
@@ -145,9 +145,9 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        descendants = self.ds.Task.load(root_task_id=task.id, max_depth=None,
-                                        include_done=include_done,
-                                        include_deleted=include_deleted)
+        descendants = self.load(root_task_id=task.id, max_depth=None,
+                                include_done=include_done,
+                                include_deleted=include_deleted)
 
         hierarchy_sort = True
         if hierarchy_sort:
@@ -554,8 +554,8 @@ class LogicLayer(object):
         return option
 
     def do_reset_order_nums(self):
-        tasks_h = self.ds.Task.load(root_task_id=None, max_depth=None,
-                                    include_done=True, include_deleted=True)
+        tasks_h = self.load(root_task_id=None, max_depth=None,
+                            include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         k = len(tasks_h) + 1
@@ -724,13 +724,11 @@ class LogicLayer(object):
             self.db.session.add(dbo)
 
     def get_task_crud_data(self):
-        return self.ds.Task.load_no_hierarchy(include_done=True,
-                                              include_deleted=True)
+        return self.load_no_hierarchy(include_done=True, include_deleted=True)
 
     def do_submit_task_crud(self, crud_data):
 
-        tasks = self.ds.Task.load_no_hierarchy(include_done=True,
-                                               include_deleted=True)
+        tasks = self.load_no_hierarchy(include_done=True, include_deleted=True)
 
         for task in tasks:
             summary = crud_data.get('task_{}_summary'.format(task.id))
@@ -774,8 +772,8 @@ class LogicLayer(object):
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
-        tasks = self.ds.Task.load_no_hierarchy(include_done=True,
-                                               include_deleted=True, tags=tag)
+        tasks = self.load_no_hierarchy(include_done=True, include_deleted=True,
+                                       tags=tag)
         return {
             'tag': tag,
             'tasks': tasks,
@@ -843,3 +841,113 @@ class LogicLayer(object):
         self.db.session.commit()
 
         return tag
+
+    def load(self, root_task_id=None, max_depth=0, include_done=False,
+             include_deleted=False, exclude_undeadlined=False):
+        query = self.ds.Task.query
+
+        if not include_done:
+            query = query.filter_by(is_done=False)
+
+        if not include_deleted:
+            query = query.filter_by(is_deleted=False)
+
+        if exclude_undeadlined:
+            query = query.filter(self.ds.Task.deadline.isnot(None))
+
+        if root_task_id is None:
+            query = query.filter(self.ds.Task.parent_id.is_(None))
+        else:
+            query = query.filter_by(id=root_task_id)
+
+        query = query.order_by(self.ds.Task.id.asc())
+        query = query.order_by(self.ds.Task.order_num.desc())
+
+        tasks = query.all()
+
+        depth = 0
+        for task in tasks:
+            task.depth = depth
+
+        if max_depth is None or max_depth > 0:
+
+            buckets = [tasks]
+            next_ids = map(lambda t: t.id, tasks)
+            already_ids = set()
+            already_ids.update(next_ids)
+
+            while ((max_depth is None or depth < max_depth) and
+                           len(next_ids) > 0):
+
+                depth += 1
+
+                query = self.ds.Task.query
+                query = query.filter(self.ds.Task.parent_id.in_(next_ids),
+                                     self.ds.Task.id.notin_(already_ids))
+                if not include_done:
+                    query = query.filter_by(is_done=False)
+                if not include_deleted:
+                    query = query.filter_by(is_deleted=False)
+                if exclude_undeadlined:
+                    query = query.filter(self.ds.Task.deadline.isnot(None))
+
+                children = query.all()
+
+                for child in children:
+                    child.depth = depth
+
+                child_ids = set(map(lambda t: t.id, children))
+                next_ids = child_ids - already_ids
+                already_ids.update(child_ids)
+                buckets.append(children)
+            tasks = list(
+                set([task for bucket in buckets for task in bucket]))
+
+        return tasks
+
+    def load_no_hierarchy(self, include_done=False, include_deleted=False,
+                          exclude_undeadlined=False, tags=None,
+                          query_post_op=None):
+        query = self.ds.Task.query
+
+        if not include_done:
+            query = query.filter_by(is_done=False)
+
+        if not include_deleted:
+            query = query.filter_by(is_deleted=False)
+
+        if exclude_undeadlined:
+            query = query.filter(self.ds.Task.deadline.isnot(None))
+
+        if tags is not None:
+            if not hasattr(tags, '__iter__'):
+                tags = [tags]
+            if len(tags) < 1:
+                tags = None
+
+        if tags is not None:
+            def get_tag_id(tag):
+                if tag is None:
+                    return None
+                if tag == str(tag):
+                    return self.ds.Tag.query.filter_by(value=tag).all()[0].id
+                if isinstance(tag, self.ds.Tag):
+                    return tag.id
+                raise TypeError(
+                    "Unknown type ('{}') of argument 'tag'".format(
+                        type(tag)))
+
+            tag_ids = map(get_tag_id, tags)
+            query = query.join(self.ds.TaskTagLink).filter(
+                self.ds.TaskTagLink.tag_id.in_(tag_ids))
+
+        if query_post_op:
+            query = query_post_op(query)
+
+        tasks = query.all()
+
+        depth = 0
+        for task in tasks:
+            task.depth = depth
+
+        return tasks
