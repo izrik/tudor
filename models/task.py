@@ -255,7 +255,7 @@ def generate_task_class(db, Tag, TaskTagLink):
 
         def is_user_authorized(self, user):
             for tul in self.users:
-                if tul.user is user:
+                if tul.user == user:
                     return True
             return False
 

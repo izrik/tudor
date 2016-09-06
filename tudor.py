@@ -257,7 +257,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
-        task = ll.task_set_done(id)
+        task = ll.task_set_done(id, current_user)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
@@ -265,7 +265,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/mark_undone')
     @login_required
     def task_undo(id):
-        task = ll.task_unset_done(id)
+        task = ll.task_unset_done(id, current_user)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
@@ -273,7 +273,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
-        task = ll.task_set_deleted(id)
+        task = ll.task_set_deleted(id, current_user)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
@@ -281,7 +281,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/undelete')
     @login_required
     def undelete_task(id):
-        task = ll.task_unset_deleted(id)
+        task = ll.task_unset_deleted(id, current_user)
         db.session.add(task)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
@@ -315,7 +315,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        data = ll.get_task_data(id, include_deleted=show_deleted,
+        data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
                                 include_done=show_done)
 
         return render_template('task.t.html', task=data['task'],
@@ -331,7 +331,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         task_id = request.form['task_id']
         content = request.form['content']
 
-        note = ll.create_new_note(task_id, content)
+        note = ll.create_new_note(task_id, content, current_user)
 
         db.session.add(note)
         db.session.commit()
@@ -343,7 +343,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def edit_task(id):
 
         def render_get_response():
-            data = ll.get_edit_task_data(id)
+            data = ll.get_edit_task_data(id, current_user)
             return render_template("edit_task.t.html", task=data['task'],
                                    tag_list=data['tag_list'])
 
@@ -374,9 +374,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         expected_cost = money_from_str(request.form['expected_cost'])
 
-        task = ll.set_task(id, summary, description, deadline, is_done,
-                           is_deleted, order_num, duration, expected_cost,
-                           parent_id)
+        task = ll.set_task(id, current_user, summary, description, deadline,
+                           is_done, is_deleted, order_num, duration,
+                           expected_cost, parent_id)
 
         db.session.add(task)
         db.session.commit()
@@ -399,7 +399,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             description = ''
 
-        att = ll.create_new_attachment(task_id, f, description)
+        att = ll.create_new_attachment(task_id, f, description, current_user)
 
         db.session.add(att)
         db.session.commit()
@@ -421,7 +421,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def move_task_up(id):
         show_deleted = request.cookies.get('show_deleted')
-        ll.do_move_task_up(id, show_deleted)
+        ll.do_move_task_up(id, show_deleted, current_user)
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
@@ -429,7 +429,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/top')
     @login_required
     def move_task_to_top(id):
-        ll.do_move_task_to_top(id)
+        ll.do_move_task_to_top(id, current_user)
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
@@ -438,7 +438,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def move_task_down(id):
         show_deleted = request.cookies.get('show_deleted')
-        ll.do_move_task_down(id, show_deleted)
+        ll.do_move_task_down(id, show_deleted, current_user)
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
@@ -446,7 +446,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/bottom')
     @login_required
     def move_task_to_bottom(id):
-        ll.do_move_task_to_bottom(id)
+        ll.do_move_task_to_bottom(id, current_user)
         db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
@@ -463,7 +463,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if target_id is None:
             redirect(request.args.get('next') or url_for('index'))
 
-        ll.do_long_order_change(task_to_move_id, target_id)
+        ll.do_long_order_change(task_to_move_id, target_id, current_user)
 
         db.session.commit()
 
@@ -478,7 +478,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=id)))
 
-        ll.do_add_tag_to_task(id, value)
+        ll.do_add_tag_to_task(id, value, current_user)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -495,7 +495,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if tag_id is None:
             tag_id = get_form_or_arg('tag_id')
 
-        ll.do_delete_tag_from_task(id, tag_id)
+        ll.do_delete_tag_from_task(id, tag_id, current_user)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -510,7 +510,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=task_id)))
 
-        ll.do_authorize_user_for_task_by_email(task_id, email)
+        ll.do_authorize_user_for_task_by_email(task_id, email, current_user)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -518,7 +518,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     @app.route('/task/<int:task_id>/pick_user')
     def pick_user_to_authorize(task_id):
-        task = ll.get_task(task_id)
+        task = ll.get_task(task_id, current_user)
         users = ll.get_users()
         return render_template('pick_user.t.html', task=task, users=users,
                                cycle=itertools.cycle)
@@ -531,7 +531,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=task_id)))
 
-        ll.do_authorize_user_for_task_by_id(task_id, user_id)
+        ll.do_authorize_user_for_task_by_id(task_id, user_id, current_user)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -547,7 +547,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if user_id is None:
             user_id = get_form_or_arg('user_id')
 
-        ll.do_deauthorize_user_for_task(task_id, user_id)
+        ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
         db.session.commit()
 
         return (redirect(request.args.get('next') or
@@ -757,7 +757,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return redirect(
                 request.args.get('next') or url_for('view_tag', id=tag.id))
 
-        task = ll.get_task(id)
+        task = ll.get_task(id, current_user)
         return render_template('convert_task_to_tag.t.html',
                                task_id=task.id,
                                tag_value=task.summary,
