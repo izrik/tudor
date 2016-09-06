@@ -203,7 +203,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
 
-        data = ll.get_index_data(show_deleted, show_done)
+        data = ll.get_index_data(show_deleted, show_done, current_user)
 
         resp = make_response(
             render_template('index.t.html',
@@ -721,7 +721,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        data = ll.get_tag_data(id)
+        data = ll.get_tag_data(id, current_user)
         return render_template('tag.t.html', tag=data['tag'],
                                tasks=data['tasks'], cycle=itertools.cycle)
 

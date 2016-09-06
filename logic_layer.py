@@ -55,8 +55,8 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done):
-        tasks_h = self.load(root_task_id=None, max_depth=None,
+    def get_index_data(self, show_deleted, show_done, current_user):
+        tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
                             include_done=show_done,
                             include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
@@ -69,10 +69,11 @@ class LogicLayer(object):
             'all_tags': all_tags,
         }
 
-    def get_deadlines_data(self):
+    def get_deadlines_data(self, current_user):
         def order_by_deadline(query):
             return query.order_by(self.ds.Task.deadline)
         deadline_tasks = self.load_no_hierarchy(
+            current_user,
             exclude_undeadlined=True,
             query_post_op=order_by_deadline)
         return {
@@ -145,8 +146,8 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        descendants = self.load(root_task_id=task.id, max_depth=None,
-                                include_done=include_done,
+        descendants = self.load(current_user, root_task_id=task.id,
+                                max_depth=None, include_done=include_done,
                                 include_deleted=include_deleted)
 
         hierarchy_sort = True
@@ -723,12 +724,14 @@ class LogicLayer(object):
         for dbo in db_objects:
             self.db.session.add(dbo)
 
-    def get_task_crud_data(self):
-        return self.load_no_hierarchy(include_done=True, include_deleted=True)
+    def get_task_crud_data(self, current_user):
+        return self.load_no_hierarchy(current_user, include_done=True,
+                                      include_deleted=True)
 
-    def do_submit_task_crud(self, crud_data):
+    def do_submit_task_crud(self, crud_data, current_user):
 
-        tasks = self.load_no_hierarchy(include_done=True, include_deleted=True)
+        tasks = self.load_no_hierarchy(current_user, include_done=True,
+                                       include_deleted=True)
 
         for task in tasks:
             summary = crud_data.get('task_{}_summary'.format(task.id))
@@ -767,13 +770,13 @@ class LogicLayer(object):
     def get_tags(self):
         return self.ds.Tag.query.all()
 
-    def get_tag_data(self, tag_id):
+    def get_tag_data(self, tag_id, current_user):
         tag = self.ds.Tag.query.get(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
-        tasks = self.load_no_hierarchy(include_done=True, include_deleted=True,
-                                       tags=tag)
+        tasks = self.load_no_hierarchy(current_user, include_done=True,
+                                       include_deleted=True, tags=tag)
         return {
             'tag': tag,
             'tasks': tasks,
@@ -842,9 +845,21 @@ class LogicLayer(object):
 
         return tag
 
-    def load(self, root_task_id=None, max_depth=0, include_done=False,
-             include_deleted=False, exclude_undeadlined=False):
+    def load(self, current_user, root_task_id=None, max_depth=0,
+             include_done=False, include_deleted=False,
+             exclude_undeadlined=False):
+
+        if root_task_id is not None:
+            root_task = self.get_task(root_task_id, current_user)
+            if not self.is_user_authorized_or_admin(root_task, current_user):
+                raise werkzeug.exceptions.Forbidden()
+
         query = self.ds.Task.query
+
+        if not current_user.is_admin:
+            query = query.filter(
+                self.ds.Task.users.any(
+                    self.ds.TaskUserLink.user_id == current_user.id))
 
         if not include_done:
             query = query.filter_by(is_done=False)
@@ -882,6 +897,10 @@ class LogicLayer(object):
                 depth += 1
 
                 query = self.ds.Task.query
+                if not current_user.is_admin:
+                    query = query.filter(
+                        self.ds.Task.users.any(
+                            self.ds.TaskUserLink.user_id == current_user.id))
                 query = query.filter(self.ds.Task.parent_id.in_(next_ids),
                                      self.ds.Task.id.notin_(already_ids))
                 if not include_done:
@@ -905,10 +924,15 @@ class LogicLayer(object):
 
         return tasks
 
-    def load_no_hierarchy(self, include_done=False, include_deleted=False,
-                          exclude_undeadlined=False, tags=None,
-                          query_post_op=None):
+    def load_no_hierarchy(self, current_user, include_done=False,
+                          include_deleted=False, exclude_undeadlined=False,
+                          tags=None, query_post_op=None):
         query = self.ds.Task.query
+
+        if not current_user.is_admin:
+            query = query.filter(
+                self.ds.Task.users.any(
+                    self.ds.TaskUserLink.user_id == current_user.id))
 
         if not include_done:
             query = query.filter_by(is_done=False)
