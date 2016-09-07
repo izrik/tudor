@@ -50,7 +50,8 @@ def generate_task_class(db, Tag, TaskTagLink):
                 'expected_duration_minutes':
                     self.expected_duration_minutes,
                 'expected_cost': self.get_expected_cost_for_export(),
-                'tag_ids': [ttl.tag_id for ttl in self.tags]
+                'tag_ids': [ttl.tag_id for ttl in self.tags],
+                'user_ids': [tul.user_id for tul in self.users]
             }
 
         def get_siblings(self, include_deleted=True, descending=False,

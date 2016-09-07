@@ -623,6 +623,7 @@ class LogicLayer(object):
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])
+                    user_ids = task.get('user_ids', [])
                     t = self.ds.Task(summary=summary, description=description,
                                      is_done=is_done, is_deleted=is_deleted,
                                      deadline=deadline,
@@ -634,6 +635,9 @@ class LogicLayer(object):
                     for tag_id in tag_ids:
                         ttl = self.ds.TaskTagLink(t.id, tag_id)
                         db_objects.append(ttl)
+                    for user_id in user_ids:
+                        tul = self.ds.TaskUserLink(t.id, user_id)
+                        db_objects.append(tul)
                     db_objects.append(t)
 
             if 'notes' in src:
