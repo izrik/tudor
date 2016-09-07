@@ -10,6 +10,7 @@ import tests
 from tests.conversions_tests import *
 from tests.convert_task_to_tag_tests import *
 from tests.db_loader_tests import *
+from tests.user_tests import *
 
 
 def run():

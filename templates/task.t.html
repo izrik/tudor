@@ -61,6 +61,25 @@
                 </form>
             </td>
         </tr>
+        <tr>
+            <td>Authorized Users</td>
+            <td>
+                {% for tul in task.users %}
+                    <a href="{{ url_for('view_user', user_id=tul.user_id) }}">{{ tul.email }}</a>
+                    {% if task.users.count() > 1 %}
+                    <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=tul.user_id) }}">
+                        <img src="{{ url_for('static', filename='delete.png') }}" />
+                    </a>
+                    {% endif %}
+                {% endfor %}
+                <form action="{{ url_for('authorize_user_for_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="email" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                <a href="{{ url_for('pick_user_to_authorize', task_id=task.id) }}">Pick a user</a>
+            </td>
+        </tr>
     </table>
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>

@@ -15,6 +15,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.Task = self.app.Task
         self.Tag = self.app.Tag
         self.TaskTagLink = self.app.TaskTagLink
+        self.user = self.ds.User('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):
         # given
@@ -25,7 +26,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(0, self.Tag.query.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task.id)
+        tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertIsNotNone(tag)
@@ -41,7 +42,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(1, self.Task.query.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task.id)
+        tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertEquals(0, self.Task.query.count())
@@ -73,7 +74,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(task, child3.parent)
 
         # when
-        tag = self.app._convert_task_to_tag(task.id)
+        tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertEquals(3, self.Task.query.count())
@@ -117,7 +118,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertEquals(0, child3.tags.count())
 
         # when
-        tag = self.app._convert_task_to_tag(task.id)
+        tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertEquals(3, tag1.tasks.count())
@@ -153,7 +154,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.assertIs(task, child3.parent)
 
         # when
-        tag = self.app._convert_task_to_tag(task.id)
+        tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertEquals(3, grand_parent.children.count())

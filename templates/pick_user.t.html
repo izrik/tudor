@@ -1,0 +1,40 @@
+{% extends "base.t.html" %}
+{% block title %}{{ super() }} - Users{% endblock %}
+{% block content scoped %}
+<div>
+    <table class="task_info">
+        <tr><td>ID</td><td>{{ task.id }}</td></tr>
+        <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>
+    </table>
+    <p>Pick a user to authorize:</p>
+    <table class="tasks">
+        {% set odd_even = cycle(['odd', 'even']).next %}
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Is Admin</th>
+            <th></th>
+        </tr>
+        </thead>
+        {% for user in users %}
+        <tr class="{{ odd_even() }}">
+            <td>{{ user.id }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.is_admin }}</td>
+            <td>
+                {% if task.is_user_authorized(user) %}
+                Authorized
+                {% else %}
+                <a href="{{ url_for('authorize_picked_user_for_task', task_id=task.id, user_id=user.id) }}">Authorize</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div>
+    <p><a href="{{ url_for('view_task', id=task.id) }}">back</a></p>
+    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
+{% endblock %}

@@ -6,18 +6,21 @@
         {% set odd_even = cycle(['odd', 'even']).next %}
         <thead>
         <tr>
+            <th>ID</th>
             <th>Email</th>
             <th>Is Admin</th>
         </tr>
         </thead>
         {% for user in users %}
         <tr class="{{ odd_even() }}">
-            <td>{{ user.email }}</td>
-            <td>{{ user.is_admin }}</td>
+            <td><a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.id }}</a></td>
+            <td><a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.email }}</a></td>
+            <td><a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.is_admin }}</a></td>
         </tr>
         {% endfor %}
         <tfoot>
         <form action="{{ url_for('list_users') }}" method="post">
+            <td></td>
             <td>
                 <input type="text" name="email"/>
             </td>
