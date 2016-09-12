@@ -13,6 +13,7 @@ from tests.db_loader_tests import *
 from tests.user_tests import *
 from tests.is_user_authorized_or_admin_tests import *
 from tests.task_hierarchy_tests import *
+from tests.sort_by_hierarchy_tests import *
 
 
 def run():
