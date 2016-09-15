@@ -135,4 +135,3 @@ class SortByHierarchyTest(unittest.TestCase):
 
         # then the other unrelated tasks are not returned
         self.assertEqual([t2, t3], result)
-
