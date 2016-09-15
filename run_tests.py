@@ -16,6 +16,7 @@ from tests.task_hierarchy_tests import *
 from tests.sort_by_hierarchy_tests import *
 from tests.get_index_data_tests import *
 from tests.get_deadlines_data_tests import *
+from tests.create_new_task_tests import *
 
 
 def run():
