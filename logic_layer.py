@@ -69,6 +69,7 @@ class LogicLayer(object):
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
+            'show_hierarchy': show_hierarchy,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
         }

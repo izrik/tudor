@@ -202,13 +202,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
+        show_hierarchy = request.cookies.get('show_hierarchy', True)
 
-        data = ll.get_index_data(show_deleted, show_done, True, current_user)
+        data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
+                                 current_user)
 
         resp = make_response(
             render_template('index.t.html',
                             show_deleted=data['show_deleted'],
                             show_done=data['show_done'],
+                            show_hierarchy=data['show_hierarchy'],
                             cycle=itertools.cycle,
                             user=current_user,
                             tasks_h=data['tasks_h'],
@@ -624,6 +627,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             resp.set_cookie('show_done', '1')
         else:
             resp.set_cookie('show_done', '')
+        return resp
+
+    @app.route('/show_hide_hierarchy')
+    @login_required
+    def show_hide_hierarchy():
+        show_hierarchy = request.args.get('show_hierarchy')
+        resp = make_response(
+            redirect(request.args.get('next') or url_for('index')))
+        if show_hierarchy and show_hierarchy != '0':
+            resp.set_cookie('show_hierarchy', '1')
+        else:
+            resp.set_cookie('show_hierarchy', '')
         return resp
 
     @app.route('/options', methods=['GET', 'POST'])
