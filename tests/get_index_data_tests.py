@@ -42,7 +42,7 @@ class GetIndexDataTest(unittest.TestCase):
         self.db.session.add(tag1)
 
         # when
-        data = self.ll.get_index_data(True, True, self.admin)
+        data = self.ll.get_index_data(True, True, True, self.admin)
 
         # then
         self.assertEqual([None, t4, t2, t3, t1], data['tasks_h'])
@@ -50,24 +50,24 @@ class GetIndexDataTest(unittest.TestCase):
 
     def test_show_deleted_returns_as_is(self):
         # when
-        data = self.ll.get_index_data(True, True, self.admin)
+        data = self.ll.get_index_data(True, True, True, self.admin)
 
         # then
         self.assertTrue(data['show_deleted'])
         # when
-        data = self.ll.get_index_data(False, True, self.admin)
+        data = self.ll.get_index_data(False, True, True, self.admin)
 
         # then
         self.assertFalse(data['show_deleted'])
 
     def test_show_done_returns_as_is(self):
         # when
-        data = self.ll.get_index_data(True, True, self.admin)
+        data = self.ll.get_index_data(True, True, True, self.admin)
 
         # then
         self.assertTrue(data['show_done'])
         # when
-        data = self.ll.get_index_data(True, False, self.admin)
+        data = self.ll.get_index_data(True, False, True, self.admin)
 
         # then
         self.assertFalse(data['show_done'])
@@ -91,7 +91,7 @@ class GetIndexDataTest(unittest.TestCase):
         self.db.session.add(tul)
 
         # when
-        data = self.ll.get_index_data(True, True, self.user)
+        data = self.ll.get_index_data(True, True, True, self.user)
 
         # then
         self.assertEqual([None, t2], data['tasks_h'])
