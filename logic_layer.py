@@ -896,7 +896,7 @@ class LogicLayer(object):
             already_ids.update(next_ids)
 
             while ((max_depth is None or depth < max_depth) and
-                           len(next_ids) > 0):
+                   len(next_ids) > 0):
 
                 depth += 1
 

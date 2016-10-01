@@ -11,6 +11,16 @@ from tests.conversions_tests import *
 from tests.convert_task_to_tag_tests import *
 from tests.db_loader_tests import *
 from tests.user_tests import *
+from tests.is_user_authorized_or_admin_tests import *
+from tests.task_hierarchy_tests import *
+from tests.sort_by_hierarchy_tests import *
+from tests.get_index_data_tests import *
+from tests.get_deadlines_data_tests import *
+from tests.create_new_task_tests import *
+from tests.task_set_done_tests import *
+from tests.task_set_deleted_tests import *
+from tests.task_unset_done_tests import *
+from tests.task_unset_deleted_tests import *
 
 
 def run():
