@@ -111,6 +111,13 @@
         <a href="{{ url_for('show_hide_done', show_done=1, next=url_for('view_task', id=task.id)) }}">show done</a>
         {% endif -%}
     </p>
+    <p>
+        {%- if show_hierarchy %}
+        <a href="{{ url_for('show_hide_hierarchy', show_hierarchy=0, next=url_for('view_task', id=task.id)) }}">hide hierarchy</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_hierarchy', show_hierarchy=1, next=url_for('view_task', id=task.id)) }}">show hierarchy</a>
+        {% endif -%}
+    </p>
 </div>
 <div>
     <h4>Notes</h4>

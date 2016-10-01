@@ -55,9 +55,13 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done, current_user):
-        tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
-                            include_done=show_done,
+    def get_index_data(self, show_deleted, show_done, show_hierarchy,
+                       current_user):
+        max_depth = None
+        if not show_hierarchy:
+            max_depth = 0
+        tasks_h = self.load(current_user, root_task_id=None,
+                            max_depth=max_depth, include_done=show_done,
                             include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
@@ -65,6 +69,7 @@ class LogicLayer(object):
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
+            'show_hierarchy': show_hierarchy,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
         }
@@ -139,15 +144,18 @@ class LogicLayer(object):
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
-                      include_done=True):
+                      include_done=True, show_hierarchy=True):
         task = self.ds.Task.query.filter_by(id=id).first()
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
+        max_depth = None
+        if not show_hierarchy:
+            max_depth = 1
         descendants = self.load(current_user, root_task_id=task.id,
-                                max_depth=None, include_done=include_done,
+                                max_depth=max_depth, include_done=include_done,
                                 include_deleted=include_deleted)
 
         hierarchy_sort = True
