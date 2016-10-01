@@ -57,8 +57,11 @@ class LogicLayer(object):
 
     def get_index_data(self, show_deleted, show_done, show_hierarchy,
                        current_user):
-        tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
-                            include_done=show_done,
+        max_depth = None
+        if not show_hierarchy:
+            max_depth = 0
+        tasks_h = self.load(current_user, root_task_id=None,
+                            max_depth=max_depth, include_done=show_done,
                             include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
