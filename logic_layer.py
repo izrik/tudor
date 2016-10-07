@@ -562,8 +562,8 @@ class LogicLayer(object):
             self.db.session.delete(option)
         return option
 
-    def do_reset_order_nums(self):
-        tasks_h = self.load(root_task_id=None, max_depth=None,
+    def do_reset_order_nums(self, current_user):
+        tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
                             include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
