@@ -16,6 +16,8 @@ class SortByHierarchyTest(unittest.TestCase):
         self.Task = app.ds.Task
 
     def test_errant_leading_none_when_no_root_specified(self):
+        # TODO: Fix this. The None should not be there. Only return tasks.
+
         # given
         t1 = self.Task('t1')
         t1.order_num = 1
