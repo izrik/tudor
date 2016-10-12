@@ -222,7 +222,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     def deadlines():
 
-        data = ll.get_deadlines_data()
+        data = ll.get_deadlines_data(current_user)
 
         return make_response(
             render_template(
