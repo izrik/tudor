@@ -844,16 +844,35 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/tags/')
     @login_required
     def list_tags():
+        accept = get_accept_type()
+        if accept is None:
+            return '', 406
         tags = ll.get_tags()
-        return render_template('list_tags.t.html', tags=tags,
-                               cycle=itertools.cycle)
+        if accept == 'html':
+            return render_template('list_tags.t.html', tags=tags,
+                                   cycle=itertools.cycle)
+        else:
+            data = [{'href': url_for('view_tag', id=tag.id),
+                     'value': tag.value}
+                    for tag in tags]
+            return json.dumps(data), 200
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
+        accept = get_accept_type()
+        if accept is None:
+            return '', 406
         data = ll.get_tag_data(id, current_user)
-        return render_template('tag.t.html', tag=data['tag'],
-                               tasks=data['tasks'], cycle=itertools.cycle)
+        if accept == 'html':
+            return render_template('tag.t.html', tag=data['tag'],
+                                   tasks=data['tasks'], cycle=itertools.cycle)
+        else:
+            tag = data['tag'].to_dict()
+            tasks = data['tasks']
+            tag['tasks'] = [url_for('view_task', id=task.id) for task in tasks]
+            return json.dumps(tag), 200
+
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
