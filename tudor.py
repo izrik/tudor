@@ -263,14 +263,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/deadlines')
     @login_required
     def deadlines():
+        accept = get_accept_type()
+        if accept is None:
+            return '', 406
 
         data = ll.get_deadlines_data(current_user)
 
-        return make_response(
-            render_template(
-                'deadlines.t.html',
-                cycle=itertools.cycle,
-                deadline_tasks=data['deadline_tasks']))
+        if accept == 'html':
+            return make_response(
+                render_template(
+                    'deadlines.t.html',
+                    cycle=itertools.cycle,
+                    deadline_tasks=data['deadline_tasks']))
+        else:
+            deadline_tasks = [{'deadline': task.deadline,
+                               'summary': task.summary,
+                               'href': url_for('view_task', id=task.id)} for
+                              task in data['deadline_tasks']]
+            return json.dumps(deadline_tasks), 200
 
     @app.route('/task/new', methods=['POST'])
     @login_required
