@@ -214,22 +214,50 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/')
     @login_required
     def index():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy', True)
+        accept = get_accept_type()
+        if accept is None:
+            return '', 406
 
-        data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
-                                 current_user)
+        if accept == 'html':
+            show_deleted = request.cookies.get('show_deleted')
+            show_done = request.cookies.get('show_done')
+            show_hierarchy = request.cookies.get('show_hierarchy', True)
 
-        resp = make_response(
-            render_template('index.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            show_hierarchy=data['show_hierarchy'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks_h=data['tasks_h'],
-                            tags=data['all_tags']))
+            data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
+                                     current_user)
+
+            resp = make_response(
+                render_template('index.t.html',
+                                show_deleted=data['show_deleted'],
+                                show_done=data['show_done'],
+                                show_hierarchy=data['show_hierarchy'],
+                                cycle=itertools.cycle,
+                                user=current_user,
+                                tasks_h=data['tasks_h'],
+                                tags=data['all_tags']))
+        else:
+            show_deleted = get_form_or_arg('show_deleted')
+            show_done = get_form_or_arg('show_done')
+            show_hierarchy = False
+
+            data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
+                                     current_user)
+
+            tasks = [
+                {'summary': t.summary, 'href': url_for('view_task', id=t.id)}
+                for t in data['tasks_h'] if t is not None]
+
+            tags = [
+                {'name': tag.value, 'href': url_for('view_tag', id=tag.id)}
+                for tag in data['all_tags']]
+
+            data = {
+                'tasks': tasks,
+                'tags': tags
+            }
+
+            resp = json.dumps(data), 200
+
         return resp
 
     @app.route('/deadlines')
