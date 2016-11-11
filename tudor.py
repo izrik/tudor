@@ -190,10 +190,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     # View utility functions
 
-    def get_form_or_arg(name):
+    def get_form_or_arg(name, default=None):
         if name in request.form:
             return request.form[name]
-        return request.args.get(name)
+        if name in request.args:
+            return request.args.get(name)
+        return default
 
     def get_accept_type():
         best = request.accept_mimetypes.best_match(['application/json',
