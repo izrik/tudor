@@ -754,8 +754,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @admin_required
     def view_options():
         if request.method == 'GET' or 'key' not in request.form:
+            accept = get_accept_type()
+            if accept is None:
+                return '', 406
             data = ll.get_view_options_data()
-            return render_template('options.t.html', options=data)
+            if accept == 'html':
+                return render_template('options.t.html', options=data)
+            else:
+                data = [option.to_dict() for option in data]
+                return json.dumps(data), 200
 
         key = request.form['key']
         value = ''
