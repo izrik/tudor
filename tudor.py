@@ -195,6 +195,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return request.form[name]
         return request.args.get(name)
 
+    def get_accept_type():
+        best = request.accept_mimetypes.best_match(['application/json',
+                                                    'text/html'])
+        if (best == 'text/html' and request.accept_mimetypes[best] >=
+                request.accept_mimetypes['application/json']):
+            return 'html'
+        elif (best == 'application/json' and request.accept_mimetypes[best] >=
+                request.accept_mimetypes['text/html']):
+            return 'json'
+        else:
+            return None
+
     # View Functions
 
     @app.route('/')
