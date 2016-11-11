@@ -673,9 +673,20 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def list_users():
 
         if request.method == 'GET':
+            accept = get_accept_type()
+            if accept is None:
+                return '', 406
+
             users = ll.get_users()
-            return render_template('list_users.t.html', users=users,
-                                   cycle=itertools.cycle)
+            if accept == 'html':
+                return render_template('list_users.t.html', users=users,
+                                       cycle=itertools.cycle)
+            else:
+                data = [{'href': url_for('view_user', user_id=user.id),
+                         'id': user.id,
+                         'email': user.email}
+                        for user in users]
+                return json.dumps(data), 200
 
         email = request.form['email']
         is_admin = False
@@ -690,8 +701,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/users/<int:user_id>', methods=['GET'])
     @login_required
     def view_user(user_id):
+        accept = get_accept_type()
+        if accept is None:
+            return '', 406
         user = ll.do_get_user_data(user_id, current_user)
-        return render_template('view_user.t.html', user=user)
+        if accept == 'html':
+            return render_template('view_user.t.html', user=user)
+        else:
+            data = {'id': user.id,
+                    'email': user.email,
+                    'is_admin': user.is_admin}
+            return json.dumps(data), 200
 
     @app.route('/show_hide_deleted')
     @login_required
