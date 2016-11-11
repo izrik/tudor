@@ -358,18 +358,51 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy', True)
-        data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
-                                include_done=show_done,
-                                show_hierarchy=show_hierarchy)
+        accept = get_accept_type()
+        if accept is None:
+            return '', 406
 
-        return render_template('task.t.html', task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done,
-                               show_hierarchy=show_hierarchy)
+        if accept == 'html':
+            show_deleted = request.cookies.get('show_deleted')
+            show_done = request.cookies.get('show_done')
+            show_hierarchy = request.cookies.get('show_hierarchy', True)
+            data = ll.get_task_data(id, current_user,
+                                    include_deleted=show_deleted,
+                                    include_done=show_done,
+                                    show_hierarchy=show_hierarchy)
+
+            return render_template('task.t.html', task=data['task'],
+                                   descendants=data['descendants'],
+                                   cycle=itertools.cycle,
+                                   show_deleted=show_deleted,
+                                   show_done=show_done,
+                                   show_hierarchy=show_hierarchy)
+        else:
+            show_deleted = get_form_or_arg('show_deleted')
+            show_done = get_form_or_arg('show_done')
+            show_hierarchy = False
+            data = ll.get_task_data(id, current_user,
+                                    include_deleted=show_deleted,
+                                    include_done=show_done,
+                                    show_hierarchy=show_hierarchy)
+            task = data['task']
+            data = {
+                'id': task.id,
+                'summary': task.summary,
+                'description': task.description,
+                'is_done': task.is_done,
+                'is_deleted': task.is_deleted,
+                'order_num': task.order_num,
+                'deadline': str_from_datetime(task.deadline),
+                'parent_id': task.parent_id,
+                'expected_duration_minutes':
+                    task.expected_duration_minutes,
+                'expected_cost': task.get_expected_cost_for_export(),
+                'tags': [url_for('view_tag', id=ttl.tag_id)
+                         for ttl in task.tags],
+                'users': [url_for('view_user', user_id=tul.user_id)
+                          for tul in task.users]}
+            return json.dumps(data), 200
 
     @app.route('/note/new', methods=['POST'])
     @login_required
