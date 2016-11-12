@@ -198,8 +198,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return default
 
     def get_accept_type():
-        best = request.accept_mimetypes.best_match(['application/json',
-                                                    'text/html'])
+        best = request.accept_mimetypes.best_match(['text/html',
+                                                    'application/json'])
         if (best == 'text/html' and request.accept_mimetypes[best] >=
                 request.accept_mimetypes['application/json']):
             return 'html'
