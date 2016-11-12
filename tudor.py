@@ -29,6 +29,7 @@ from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
 import base64
+from json_renderer import JsonRenderer
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -153,6 +154,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     ll = LogicLayer(ds, upload_folder, allowed_extensions)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
+    jr = JsonRenderer()
 
     # Flask setup functions
 
@@ -243,20 +245,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
                                      current_user)
 
-            tasks = [
-                {'summary': t.summary, 'href': url_for('view_task', id=t.id)}
-                for t in data['tasks_h'] if t is not None]
-
-            tags = [
-                {'name': tag.value, 'href': url_for('view_tag', id=tag.id)}
-                for tag in data['all_tags']]
-
-            data = {
-                'tasks': tasks,
-                'tags': tags
-            }
-
-            resp = json.dumps(data), 200
+            return jr.render_index(data)
 
         return resp
 
@@ -276,11 +265,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                     cycle=itertools.cycle,
                     deadline_tasks=data['deadline_tasks']))
         else:
-            deadline_tasks = [{'deadline': task.deadline,
-                               'summary': task.summary,
-                               'href': url_for('view_task', id=task.id)} for
-                              task in data['deadline_tasks']]
-            return json.dumps(deadline_tasks), 200
+            return jr.render_deadlines(data)
 
     @app.route('/task/new', methods=['POST'])
     @login_required
@@ -395,24 +380,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                     include_deleted=show_deleted,
                                     include_done=show_done,
                                     show_hierarchy=show_hierarchy)
-            task = data['task']
-            data = {
-                'id': task.id,
-                'summary': task.summary,
-                'description': task.description,
-                'is_done': task.is_done,
-                'is_deleted': task.is_deleted,
-                'order_num': task.order_num,
-                'deadline': str_from_datetime(task.deadline),
-                'parent_id': task.parent_id,
-                'expected_duration_minutes':
-                    task.expected_duration_minutes,
-                'expected_cost': task.get_expected_cost_for_export(),
-                'tags': [url_for('view_tag', id=ttl.tag_id)
-                         for ttl in task.tags],
-                'users': [url_for('view_user', user_id=tul.user_id)
-                          for tul in task.users]}
-            return json.dumps(data), 200
+            return jr.render_task(data)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
@@ -682,11 +650,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 return render_template('list_users.t.html', users=users,
                                        cycle=itertools.cycle)
             else:
-                data = [{'href': url_for('view_user', user_id=user.id),
-                         'id': user.id,
-                         'email': user.email}
-                        for user in users]
-                return json.dumps(data), 200
+                return jr.render_list_users(users)
 
         email = request.form['email']
         is_admin = False
@@ -708,10 +672,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if accept == 'html':
             return render_template('view_user.t.html', user=user)
         else:
-            data = {'id': user.id,
-                    'email': user.email,
-                    'is_admin': user.is_admin}
-            return json.dumps(data), 200
+            return jr.render_user(user)
 
     @app.route('/show_hide_deleted')
     @login_required
@@ -761,8 +722,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             if accept == 'html':
                 return render_template('options.t.html', options=data)
             else:
-                data = [option.to_dict() for option in data]
-                return json.dumps(data), 200
+                return jr.render_options(data)
 
         key = request.form['key']
         value = ''
@@ -852,10 +812,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return render_template('list_tags.t.html', tags=tags,
                                    cycle=itertools.cycle)
         else:
-            data = [{'href': url_for('view_tag', id=tag.id),
-                     'value': tag.value}
-                    for tag in tags]
-            return json.dumps(data), 200
+            return jr.render_list_tags(tags)
 
     @app.route('/tags/<int:id>')
     @login_required
@@ -868,10 +825,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return render_template('tag.t.html', tag=data['tag'],
                                    tasks=data['tasks'], cycle=itertools.cycle)
         else:
-            tag = data['tag'].to_dict()
-            tasks = data['tasks']
-            tag['tasks'] = [url_for('view_task', id=task.id) for task in tasks]
-            return json.dumps(tag), 200
+            return jr.render_tag(data)
 
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
