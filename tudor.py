@@ -29,7 +29,8 @@ from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
 import base64
-from json_renderer import JsonRenderer
+from render.json_renderer import JsonRenderer
+from render.html_renderer import HtmlRenderer
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -155,6 +156,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
     jr = JsonRenderer()
+    hr = HtmlRenderer()
 
     # Flask setup functions
 
@@ -227,16 +229,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
                                      current_user)
-
-            resp = make_response(
-                render_template('index.t.html',
-                                show_deleted=data['show_deleted'],
-                                show_done=data['show_done'],
-                                show_hierarchy=data['show_hierarchy'],
-                                cycle=itertools.cycle,
-                                user=current_user,
-                                tasks_h=data['tasks_h'],
-                                tags=data['all_tags']))
+            return hr.render_index(data)
         else:
             show_deleted = get_form_or_arg('show_deleted')
             show_done = get_form_or_arg('show_done')
@@ -246,8 +239,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                      current_user)
 
             return jr.render_index(data)
-
-        return resp
 
     @app.route('/deadlines')
     @login_required
@@ -259,11 +250,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         data = ll.get_deadlines_data(current_user)
 
         if accept == 'html':
-            return make_response(
-                render_template(
-                    'deadlines.t.html',
-                    cycle=itertools.cycle,
-                    deadline_tasks=data['deadline_tasks']))
+            return hr.render_deadlines
         else:
             return jr.render_deadlines(data)
 
@@ -365,13 +352,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                     include_deleted=show_deleted,
                                     include_done=show_done,
                                     show_hierarchy=show_hierarchy)
-
-            return render_template('task.t.html', task=data['task'],
-                                   descendants=data['descendants'],
-                                   cycle=itertools.cycle,
-                                   show_deleted=show_deleted,
-                                   show_done=show_done,
-                                   show_hierarchy=show_hierarchy)
+            data['show_deleted'] = show_deleted
+            data['show_done'] = show_done
+            data['show_hierarchy'] = show_hierarchy
+            return hr.render_task(data)
         else:
             show_deleted = get_form_or_arg('show_deleted')
             show_done = get_form_or_arg('show_done')
@@ -647,8 +631,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
             users = ll.get_users()
             if accept == 'html':
-                return render_template('list_users.t.html', users=users,
-                                       cycle=itertools.cycle)
+                return hr.render_list_users(users)
             else:
                 return jr.render_list_users(users)
 
@@ -670,7 +653,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return '', 406
         user = ll.do_get_user_data(user_id, current_user)
         if accept == 'html':
-            return render_template('view_user.t.html', user=user)
+            return hr.render_user(user)
         else:
             return jr.render_user(user)
 
@@ -720,7 +703,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 return '', 406
             data = ll.get_view_options_data()
             if accept == 'html':
-                return render_template('options.t.html', options=data)
+                return hr.render_options(data)
             else:
                 return jr.render_options(data)
 
@@ -809,8 +792,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return '', 406
         tags = ll.get_tags()
         if accept == 'html':
-            return render_template('list_tags.t.html', tags=tags,
-                                   cycle=itertools.cycle)
+            return hr.render_list_tags(tags)
         else:
             return jr.render_list_tags(tags)
 
@@ -822,8 +804,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return '', 406
         data = ll.get_tag_data(id, current_user)
         if accept == 'html':
-            return render_template('tag.t.html', tag=data['tag'],
-                                   tasks=data['tasks'], cycle=itertools.cycle)
+            return hr.render_tag(data)
         else:
             return jr.render_tag(data)
 
