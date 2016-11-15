@@ -808,7 +808,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             return jr.render_tag(data)
 
-
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_tag(id):
