@@ -31,6 +31,7 @@ from data_source import SqlAlchemyDataSource
 import base64
 from render.json_renderer import JsonRenderer
 from render.html_renderer import HtmlRenderer
+from render.render_layer import RenderLayer
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -157,6 +158,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app._convert_task_to_tag = ll._convert_task_to_tag
     jr = JsonRenderer()
     hr = HtmlRenderer()
+    rl = RenderLayer(hr, jr)
+    app.rl = rl
 
     # Flask setup functions
 
@@ -201,58 +204,34 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return request.args.get(name)
         return default
 
-    def get_accept_type():
-        best = request.accept_mimetypes.best_match(['text/html',
-                                                    'application/json'])
-        if (best == 'text/html' and request.accept_mimetypes[best] >=
-                request.accept_mimetypes['application/json']):
-            return 'html'
-        elif (best == 'application/json' and request.accept_mimetypes[best] >=
-                request.accept_mimetypes['text/html']):
-            return 'json'
-        else:
-            return None
-
     # View Functions
 
     @app.route('/')
     @login_required
     def index():
-        accept = get_accept_type()
-        if accept is None:
-            return '', 406
+        accept = rl.get_accept_type()
 
         if accept == 'html':
             show_deleted = request.cookies.get('show_deleted')
             show_done = request.cookies.get('show_done')
             show_hierarchy = request.cookies.get('show_hierarchy', True)
-
             data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
                                      current_user)
-            return hr.render_index(data)
         else:
             show_deleted = get_form_or_arg('show_deleted')
             show_done = get_form_or_arg('show_done')
             show_hierarchy = False
-
             data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
                                      current_user)
 
-            return jr.render_index(data)
+        return rl.render_index(data)
 
     @app.route('/deadlines')
     @login_required
     def deadlines():
-        accept = get_accept_type()
-        if accept is None:
-            return '', 406
-
+        accept = rl.get_accept_type()
         data = ll.get_deadlines_data(current_user)
-
-        if accept == 'html':
-            return hr.render_deadlines
-        else:
-            return jr.render_deadlines(data)
+        return rl.render_deadlines(data)
 
     @app.route('/task/new', methods=['POST'])
     @login_required
@@ -340,9 +319,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        accept = get_accept_type()
-        if accept is None:
-            return '', 406
+        accept = rl.get_accept_type()
 
         if accept == 'html':
             show_deleted = request.cookies.get('show_deleted')
@@ -355,7 +332,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             data['show_deleted'] = show_deleted
             data['show_done'] = show_done
             data['show_hierarchy'] = show_hierarchy
-            return hr.render_task(data)
         else:
             show_deleted = get_form_or_arg('show_deleted')
             show_done = get_form_or_arg('show_done')
@@ -364,7 +340,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                     include_deleted=show_deleted,
                                     include_done=show_done,
                                     show_hierarchy=show_hierarchy)
-            return jr.render_task(data)
+        return rl.render_task(data)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
@@ -625,15 +601,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def list_users():
 
         if request.method == 'GET':
-            accept = get_accept_type()
-            if accept is None:
-                return '', 406
-
+            accept = rl.get_accept_type()
             users = ll.get_users()
-            if accept == 'html':
-                return hr.render_list_users(users)
-            else:
-                return jr.render_list_users(users)
+            return rl.render_list_users(users)
 
         email = request.form['email']
         is_admin = False
@@ -648,14 +618,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/users/<int:user_id>', methods=['GET'])
     @login_required
     def view_user(user_id):
-        accept = get_accept_type()
-        if accept is None:
-            return '', 406
+        accept = rl.get_accept_type()
         user = ll.do_get_user_data(user_id, current_user)
-        if accept == 'html':
-            return hr.render_user(user)
-        else:
-            return jr.render_user(user)
+        return rl.render_user(user)
 
     @app.route('/show_hide_deleted')
     @login_required
@@ -698,14 +663,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @admin_required
     def view_options():
         if request.method == 'GET' or 'key' not in request.form:
-            accept = get_accept_type()
-            if accept is None:
-                return '', 406
+            accept = rl.get_accept_type()
             data = ll.get_view_options_data()
-            if accept == 'html':
-                return hr.render_options(data)
-            else:
-                return jr.render_options(data)
+            return rl.render_options(data)
 
         key = request.form['key']
         value = ''
@@ -787,26 +747,16 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/tags/')
     @login_required
     def list_tags():
-        accept = get_accept_type()
-        if accept is None:
-            return '', 406
+        accept = rl.get_accept_type()
         tags = ll.get_tags()
-        if accept == 'html':
-            return hr.render_list_tags(tags)
-        else:
-            return jr.render_list_tags(tags)
+        return rl.render_list_tags(tags)
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        accept = get_accept_type()
-        if accept is None:
-            return '', 406
+        accept = rl.get_accept_type()
         data = ll.get_tag_data(id, current_user)
-        if accept == 'html':
-            return hr.render_tag(data)
-        else:
-            return jr.render_tag(data)
+        return rl.render_tag(data)
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
