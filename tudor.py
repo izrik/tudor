@@ -200,6 +200,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return func(*args, **kwargs)
         return decorated_view
 
+    def api_required(func):
+        @wraps(func)
+        def decorated_view(*args, **kwargs):
+            if get_form_or_arg('Accept') != 'application/json':
+                raise werkzeug.exceptions.NotAcceptable
+            return func(*args, **kwargs)
+        return decorated_view
+
     @app.context_processor
     def setup_options():
         return {'opts': Options}
