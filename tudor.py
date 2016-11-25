@@ -161,6 +161,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     rl = RenderLayer(hr, jr)
     app.rl = rl
 
+    # View utility functions
+
+    def get_form_or_arg(name, default=None):
+        if name in request.form:
+            return request.form[name]
+        if name in request.args:
+            return request.args.get(name)
+        return default
+
     # Flask setup functions
 
     @login_manager.user_loader
@@ -194,15 +203,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.context_processor
     def setup_options():
         return {'opts': Options}
-
-    # View utility functions
-
-    def get_form_or_arg(name, default=None):
-        if name in request.form:
-            return request.form[name]
-        if name in request.args:
-            return request.args.get(name)
-        return default
 
     # View Functions
 
