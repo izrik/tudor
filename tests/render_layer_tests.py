@@ -193,7 +193,7 @@ class TaskRenderLayerGetAcceptTypeTest(unittest.TestCase):
 
     def test_get_accept_type_json(self):
         with self.app.test_request_context(
-                '/', headers={'Accept':'application/json'}):
+                '/', headers={'Accept': 'application/json'}):
 
             # when
             accept = self.rl.get_accept_type()
@@ -264,7 +264,7 @@ class TaskRenderLayerSwitchOnGetAcceptTypeTest(unittest.TestCase):
             # then
             self.hr.render_user.assert_called()
             self.jr.render_user.assert_not_called()
-    
+
     def test_render_options(self):
         with self.app.test_request_context('/options',
                                            headers={'Accept': 'text/html'}):
@@ -274,7 +274,7 @@ class TaskRenderLayerSwitchOnGetAcceptTypeTest(unittest.TestCase):
             # then
             self.hr.render_options.assert_called()
             self.jr.render_options.assert_not_called()
-    
+
     def test_render_list_tags(self):
         with self.app.test_request_context('/tags',
                                            headers={'Accept': 'text/html'}):
