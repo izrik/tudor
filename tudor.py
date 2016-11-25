@@ -32,6 +32,7 @@ import base64
 from render.json_renderer import JsonRenderer
 from render.html_renderer import HtmlRenderer
 from render.render_layer import RenderLayer
+from api.json import JsonApi
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
@@ -160,6 +161,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     hr = HtmlRenderer()
     rl = RenderLayer(hr, jr)
     app.rl = rl
+    api = JsonApi(jr, ll)
+    app.api = api
 
     # View utility functions
 
@@ -805,6 +808,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                tag_description=task.description,
                                cycle=itertools.cycle,
                                tasks=task.children)
+
+    @app.route('/api/v1.0')
+    @app.route('/api/v1.0/')
+    @login_required
+    @api_required
+    def api_index():
+        content, code = api.index()
+        return json.dumps(content), code
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
