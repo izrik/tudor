@@ -217,7 +217,7 @@ class JsonRendererTest(unittest.TestCase):
             self.assertEqual(False, parsed['is_deleted'])
             self.assertEqual(None, parsed['order_num'])
             self.assertEqual(None, parsed['deadline'])
-            self.assertEqual(None, parsed['parent_id'])
+            self.assertEqual(None, parsed['parent'])
             self.assertEqual(None, parsed['expected_duration_minutes'])
             self.assertEqual(None, parsed['expected_cost'])
             self.assertEqual([], parsed['tags'])

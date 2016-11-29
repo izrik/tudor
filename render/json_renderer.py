@@ -45,7 +45,7 @@ class JsonRenderer(object):
             'is_deleted': task.is_deleted,
             'order_num': task.order_num,
             'deadline': str_from_datetime(task.deadline),
-            'parent_id': task.parent_id,
+            'parent': None,
             'expected_duration_minutes':
                 task.expected_duration_minutes,
             'expected_cost': task.get_expected_cost_for_export(),
@@ -55,6 +55,8 @@ class JsonRenderer(object):
                       for tul in task.users],
             'children': [url_for('api_get_task', task_id=child.id) for child in
                          task.children]}
+        if task.parent_id:
+            data['parent'] = url_for('api_get_task', task_id=task.parent_id)
         return json.dumps(data), 200
 
     def render_list_users(self, users):
