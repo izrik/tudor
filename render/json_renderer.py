@@ -52,7 +52,9 @@ class JsonRenderer(object):
             'tags': [url_for('view_tag', id=ttl.tag_id)
                      for ttl in task.tags],
             'users': [url_for('view_user', user_id=tul.user_id)
-                      for tul in task.users]}
+                      for tul in task.users],
+            'children': [url_for('api_get_task', task_id=child.id) for child in
+                         task.children]}
         return json.dumps(data), 200
 
     def render_list_users(self, users):
