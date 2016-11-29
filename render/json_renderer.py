@@ -28,6 +28,13 @@ class JsonRenderer(object):
                           task in data['deadline_tasks']]
         return json.dumps(deadline_tasks), 200
 
+    def render_list_tasks(self, tasks):
+        data = [
+            {'href': url_for('view_task', id=task.id),
+             'summary': task.summary}
+            for task in tasks if task]
+        return json.dumps(data), 200
+
     def render_task(self, data):
         task = data['task']
         data = {

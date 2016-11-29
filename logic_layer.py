@@ -74,6 +74,17 @@ class LogicLayer(object):
             'all_tags': all_tags,
         }
 
+    def get_tasks(self, current_user, include_done, include_deleted, root):
+        """Get a flat list of tasks (single-depth, no hierarchy)."""
+        root_task_id = None
+        if root:
+            root_task_id = root.id
+        tasks = self.load(current_user=current_user, root_task_id=root_task_id,
+                          include_done=include_done,
+                          include_deleted=include_deleted)
+        tasks = self.sort_by_hierarchy(tasks, root)
+        return tasks
+
     def get_deadlines_data(self, current_user):
         def order_by_deadline(query):
             return query.order_by(self.ds.Task.deadline)

@@ -148,6 +148,43 @@ class JsonRendererTest(unittest.TestCase):
                 ],
                 parsed)
 
+    def test_render_list_tasks(self):
+        # given
+        t1 = self.Task(summary='sum')
+        t1.id = 123
+        t2 = self.Task(summary='summ')
+        t2.id = 456
+        tasks = [t1, t2]
+        with self.app.test_request_context(
+                '/tasks', headers={'Accept': 'application/json'}):
+            # when
+            result = self.jr.render_list_tasks(tasks)
+
+            # then
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, tuple)
+            self.assertEqual(2, len(result))
+
+            body, code = result
+            self.assertEqual(200, code)
+            self.assertIsNotNone(body)
+            self.assertIsInstance(body, basestring)
+
+            parsed = json.loads(body)
+            self.assertIsNotNone(parsed)
+            self.assertEqual(
+                [
+                    {
+                        'summary': 'sum',
+                        'href': '/task/123',
+                    },
+                    {
+                        'summary': 'summ',
+                        'href': '/task/456',
+                    },
+                ],
+                parsed)
+
     def test_render_task(self):
         # given
         t1 = self.Task(summary='sum')
