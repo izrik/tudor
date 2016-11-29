@@ -223,6 +223,47 @@ class JsonRendererTest(unittest.TestCase):
             self.assertEqual([], parsed['tags'])
             self.assertEqual([], parsed['users'])
 
+    def test_render_task_with_parent(self):
+        # given
+        t1 = self.Task(summary='sum')
+        t1.id = 123
+        t2 = self.Task(summary='summ')
+        t2.id = 456
+        t1.parent_id = t2.id
+        data = {
+            'task': t1,
+            'descendents': []
+        }
+        with self.app.test_request_context(
+                '/task/123', headers={'Accept': 'application/json'}):
+            # when
+            result = self.jr.render_task(data)
+
+            # then
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, tuple)
+            self.assertEqual(2, len(result))
+
+            body, code = result
+            self.assertEqual(200, code)
+            self.assertIsNotNone(body)
+            self.assertIsInstance(body, basestring)
+
+            parsed = json.loads(body)
+            self.assertIsNotNone(parsed)
+            self.assertEqual(123, parsed['id'])
+            self.assertEqual('sum', parsed['summary'])
+            self.assertEqual('', parsed['description'])
+            self.assertEqual(False, parsed['is_done'])
+            self.assertEqual(False, parsed['is_deleted'])
+            self.assertEqual(None, parsed['order_num'])
+            self.assertEqual(None, parsed['deadline'])
+            self.assertEqual('/api/v1.0/tasks/456', parsed['parent'])
+            self.assertEqual(None, parsed['expected_duration_minutes'])
+            self.assertEqual(None, parsed['expected_cost'])
+            self.assertEqual([], parsed['tags'])
+            self.assertEqual([], parsed['users'])
+
     def test_render_list_users(self):
         # given
         u1 = self.User('user1@example.org')
