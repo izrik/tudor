@@ -176,11 +176,11 @@ class JsonRendererTest(unittest.TestCase):
                 [
                     {
                         'summary': 'sum',
-                        'href': '/task/123',
+                        'href': '/api/v1.0/tasks/123',
                     },
                     {
                         'summary': 'summ',
-                        'href': '/task/456',
+                        'href': '/api/v1.0/tasks/456',
                     },
                 ],
                 parsed)

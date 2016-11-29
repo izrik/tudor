@@ -30,7 +30,7 @@ class JsonRenderer(object):
 
     def render_list_tasks(self, tasks):
         data = [
-            {'href': url_for('view_task', id=task.id),
+            {'href': url_for('api_get_task', task_id=task.id),
              'summary': task.summary}
             for task in tasks if task]
         return json.dumps(data), 200

@@ -824,6 +824,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def api_list_tasks():
         return api.list_tasks(current_user)
 
+    @app.route('/api/v1.0/tasks/<int:task_id>', methods=['GET'])
+    @login_required
+    @api_required
+    def api_get_task(task_id):
+        return api.get_task(current_user, task_id)
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])
