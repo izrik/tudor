@@ -21,3 +21,7 @@ class JsonApi(object):
                                      include_deleted=True, include_done=True,
                                      show_hierarchy=True)
         return self.jr.render_task(data)
+
+    def get_deadlines(self, current_user):
+        data = self.ll.get_deadlines_data(current_user)
+        return self.jr.render_deadlines(data)

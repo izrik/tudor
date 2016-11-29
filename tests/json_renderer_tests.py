@@ -96,12 +96,12 @@ class JsonRendererTest(unittest.TestCase):
                 [
                     {
                         'summary': 'sum',
-                        'href': '/task/123',
+                        'href': '/api/v1.0/tasks/123',
                         'deadline': 'Sat, 31 Dec 2016 00:00:00 GMT'
                     },
                     {
                         'summary': 'summ',
-                        'href': '/task/456',
+                        'href': '/api/v1.0/tasks/456',
                         'deadline': 'Fri, 30 Dec 2016 00:00:00 GMT'
                     },
                 ],
@@ -137,12 +137,12 @@ class JsonRendererTest(unittest.TestCase):
                 [
                     {
                         'summary': 'summ',
-                        'href': '/task/456',
+                        'href': '/api/v1.0/tasks/456',
                         'deadline': 'Fri, 30 Dec 2016 00:00:00 GMT'
                     },
                     {
                         'summary': 'sum',
-                        'href': '/task/123',
+                        'href': '/api/v1.0/tasks/123',
                         'deadline': 'Sat, 31 Dec 2016 00:00:00 GMT'
                     },
                 ],

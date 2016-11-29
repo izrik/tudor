@@ -24,7 +24,7 @@ class JsonRenderer(object):
     def render_deadlines(self, data):
         deadline_tasks = [{'deadline': task.deadline,
                            'summary': task.summary,
-                           'href': url_for('view_task', id=task.id)} for
+                           'href': url_for('api_get_task', task_id=task.id)} for
                           task in data['deadline_tasks']]
         return json.dumps(deadline_tasks), 200
 
