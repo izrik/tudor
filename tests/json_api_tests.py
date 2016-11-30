@@ -93,3 +93,64 @@ class JsonApiTest(unittest.TestCase):
             self.assertEqual([], t.tags.all())
             self.assertEqual(1, t.users.count())
             self.assertIs(u, t.users.first().user)
+
+    def test_create_tasks_with_nulls(self):
+        # given
+        data = {
+            'summary': 'summary'
+        }
+        u = self.User('user@example.com')
+        self.db.session.add(u)
+        self.db.session.commit()
+
+        with self.app.test_request_context(
+                '/', headers={'Accept': 'application/json'}):
+            # when
+            result = self.api.create_task(u, data)
+
+            # then it returns a json representation of the new tasks, along
+            # with Location header and 201 status code
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, Response)
+
+            self.assertIn('Location', result.headers)
+            self.assertRegexpMatches(result.headers['Location'],
+                                     '/api/v1.0/tasks/\d+')
+
+            code = result.status_code
+            self.assertEqual(201, code)
+
+            body = result.data
+            self.assertIsNotNone(body)
+            self.assertIsInstance(body, basestring)
+
+            parsed = json.loads(body)
+            self.assertIsNotNone(parsed)
+            self.assertIn('id', parsed)
+            self.assertEqual('summary', parsed['summary'])
+            self.assertEqual('', parsed['description'])
+            self.assertEqual(False, parsed['is_done'])
+            self.assertEqual(False, parsed['is_deleted'])
+            self.assertEqual(0, parsed['order_num'])
+            self.assertEqual(None, parsed['deadline'])
+            self.assertEqual(None, parsed['parent'])
+            self.assertEqual(None, parsed['expected_duration_minutes'])
+            self.assertEqual(None, parsed['expected_cost'])
+            self.assertEqual([], parsed['tags'])
+            self.assertEqual(['/users/{}'.format(u.id)], parsed['users'])
+
+            # then the new task is present in the database
+            t = self.Task.query.get(parsed['id'])
+            self.assertIsNotNone(t)
+            self.assertEqual('summary', t.summary)
+            self.assertEqual('', t.description)
+            self.assertEqual(False, t.is_done)
+            self.assertEqual(False, t.is_deleted)
+            self.assertEqual(0, t.order_num)
+            self.assertEqual(None, t.deadline)
+            self.assertEqual(None, t.parent)
+            self.assertEqual(None, t.expected_duration_minutes)
+            self.assertEqual(None, t.expected_cost)
+            self.assertEqual([], t.tags.all())
+            self.assertEqual(1, t.users.count())
+            self.assertIs(u, t.users.first().user)
