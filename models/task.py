@@ -24,9 +24,17 @@ def generate_task_class(db, Tag, TaskTagLink):
 
         depth = 0
 
-        def __init__(self, summary, description='', is_done=False,
-                     is_deleted=False, deadline=None,
+        def __init__(self, summary, description=None, is_done=None,
+                     is_deleted=None, deadline=None,
                      expected_duration_minutes=None, expected_cost=None):
+
+            if description is None:
+                description = ''
+            if is_done is None:
+                is_done = False
+            if is_deleted is None:
+                is_deleted = False
+
             self.summary = summary
             self.description = description
             self.is_done = is_done
