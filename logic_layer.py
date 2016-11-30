@@ -100,7 +100,11 @@ class LogicLayer(object):
                         is_done=False, is_deleted=False, deadline=None,
                         expected_duration_minutes=None, expected_cost=None,
                         parent_id=None):
-        task = self.ds.Task(summary)
+        task = self.ds.Task(
+            summary=summary, description=description, is_done=is_done,
+            is_deleted=is_deleted, deadline=deadline,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost)
 
         # get lowest order number
         query = self.ds.Task.query.order_by(
