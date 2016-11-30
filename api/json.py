@@ -32,7 +32,8 @@ class JsonApi(object):
             is_deleted=is_deleted, deadline=deadline,
             expected_duration_minutes=expected_duration_minutes,
             expected_cost=expected_cost)
-        task.order_num = order_num
+        if order_num is not None:
+            task.order_num = order_num
 
         self.db.session.add(task)
         # TODO: extra commit in view
