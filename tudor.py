@@ -161,7 +161,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     hr = HtmlRenderer()
     rl = RenderLayer(hr, jr)
     app.rl = rl
-    api = JsonApi(jr, ll)
+    api = JsonApi(jr, ll, db)
     app.api = api
 
     # View utility functions
@@ -208,6 +208,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def decorated_view(*args, **kwargs):
             if get_form_or_arg('Accept') != 'application/json':
                 raise werkzeug.exceptions.NotAcceptable
+            return func(*args, **kwargs)
+        return decorated_view
+
+    def json_content_required(func):
+        @wraps(func)
+        def decorated_view(*args, **kwargs):
+            # if get_form_or_arg('Content-Type') != 'application/json':
+            #     raise werkzeug.exceptions.NotAcceptable
             return func(*args, **kwargs)
         return decorated_view
 
@@ -823,6 +831,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @api_required
     def api_list_tasks():
         return api.list_tasks(current_user)
+
+    @app.route('/api/v1.0/tasks', methods=['POST'])
+    @app.route('/api/v1.0/tasks/', methods=['POST'])
+    @login_required
+    @api_required
+    @json_content_required
+    def api_post_tasks():
+        return api.create_task(current_user, request.json)
 
     @app.route('/api/v1.0/tasks/<int:task_id>', methods=['GET'])
     @login_required
