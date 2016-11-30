@@ -262,7 +262,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             parent_id = None
 
-        task, tul = ll.create_new_task(summary, parent_id, current_user)
+        task, tul = ll.create_new_task(current_user, summary, parent_id)
 
         db.session.add(task)
         # TODO: extra commit in view

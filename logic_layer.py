@@ -96,7 +96,10 @@ class LogicLayer(object):
             'deadline_tasks': deadline_tasks,
         }
 
-    def create_new_task(self, summary, parent_id, current_user):
+    def create_new_task(self, current_user, summary, description=None,
+                        is_done=False, is_deleted=False, deadline=None,
+                        expected_duration_minutes=None, expected_cost=None,
+                        parent_id=None):
         task = self.ds.Task(summary)
 
         # get lowest order number

@@ -23,7 +23,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_admin_adds_first_task(self):
         # when
-        result = self.ll.create_new_task('t1', None, self.admin)
+        result = self.ll.create_new_task(self.admin, 't1', parent_id=None)
 
         # then
         self.assertIsInstance(result, tuple)
@@ -43,7 +43,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.add(t1)
 
         # when
-        result = self.ll.create_new_task('t2', None, self.admin)
+        result = self.ll.create_new_task(self.admin, 't2', parent_id=None)
 
         # then
         self.assertIsInstance(result, tuple)
@@ -64,7 +64,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.commit()
 
         # when
-        result = self.ll.create_new_task('c', p.id, self.admin)
+        result = self.ll.create_new_task(self.admin, 'c', parent_id=p.id)
 
         # then
         self.assertIsInstance(result, tuple)
@@ -91,7 +91,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.add(tul)
 
         # when
-        result = self.ll.create_new_task('c', p.id, self.user)
+        result = self.ll.create_new_task(self.user, 'c', parent_id=p.id)
 
         # then
         self.assertIsInstance(result, tuple)
@@ -113,4 +113,5 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # expect
         self.assertRaises(werkzeug.exceptions.Forbidden,
-                          self.ll.create_new_task, 'c', p.id, self.user)
+                          self.ll.create_new_task, self.user, 'c',
+                          parent_id=p.id)

@@ -27,7 +27,8 @@ class JsonApi(object):
         expected_duration_minutes = task_data.get('expected_duration_minutes')
         expected_cost = task_data.get('expected_cost')
 
-        task, tul = self.ll.create_new_task(summary, None, current_user)
+        task, tul = self.ll.create_new_task(current_user, summary,
+                                            parent_id=None)
         task.description = description
         task.is_done = is_done
         task.is_deleted = is_deleted
