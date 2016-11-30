@@ -214,8 +214,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def json_content_required(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
-            # if get_form_or_arg('Content-Type') != 'application/json':
-            #     raise werkzeug.exceptions.NotAcceptable
+            if get_form_or_arg('Content-Type') != 'application/json':
+                raise werkzeug.exceptions.NotAcceptable
             return func(*args, **kwargs)
         return decorated_view
 
