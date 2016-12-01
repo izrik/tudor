@@ -60,7 +60,6 @@ class JsonApi(object):
         resp.headers['Location'] = location
         return resp
 
-
     def get_task(self, current_user, task_id):
         data = self.ll.get_task_data(task_id, current_user,
                                      include_deleted=True, include_done=True,
@@ -70,3 +69,45 @@ class JsonApi(object):
     def get_deadlines(self, current_user):
         data = self.ll.get_deadlines_data(current_user)
         return self.jr.render_deadlines(data)
+
+    def update_task(self, current_user, task_id, task_data):
+        self.ll.get_task_data(id=task_id, current_user=current_user,
+                              show_hierarchy=False)
+
+        summary = task_data.get('summary', self.ll.DO_NOT_CHANGE)
+        description = task_data.get('description', self.ll.DO_NOT_CHANGE)
+        is_done = task_data.get('is_done', self.ll.DO_NOT_CHANGE)
+        is_deleted = task_data.get('is_deleted', self.ll.DO_NOT_CHANGE)
+        order_num = task_data.get('order_num', self.ll.DO_NOT_CHANGE)
+        deadline = task_data.get('deadline', self.ll.DO_NOT_CHANGE)
+        expected_duration_minutes = task_data.get('expected_duration_minutes',
+                                                  self.ll.DO_NOT_CHANGE)
+        expected_cost = task_data.get('expected_cost', self.ll.DO_NOT_CHANGE)
+
+        task = self.ll.set_task(task_id, current_user, summary=summary,
+                                description=description, deadline=deadline,
+                                is_done=is_done, is_deleted=is_deleted,
+                                order_num=order_num,
+                                duration=expected_duration_minutes,
+                                expected_cost=expected_cost)
+
+        self.db.session.add(task)
+        # TODO: extra commit in view
+        self.db.session.commit()
+
+        # parent ?
+        # tags ?
+
+        # users ?
+        # children ?
+
+        location = url_for('api_get_task', task_id=task.id)
+
+        data = {
+            'task': task,
+            'descendants': task.children,
+        }
+        content, code = self.jr.render_task(data)
+        resp = make_response(content, 200)
+        resp.headers['Location'] = location
+        return resp

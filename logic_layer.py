@@ -3,6 +3,7 @@
 import re
 import itertools
 import os
+import datetime
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
@@ -212,6 +213,8 @@ class LogicLayer(object):
         if deadline is None:
             pass
         elif deadline is self.DO_NOT_CHANGE:
+            pass
+        elif isinstance(deadline, datetime.datetime):
             pass
         elif deadline == '':
             deadline = None

@@ -846,6 +846,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def api_get_task(task_id):
         return api.get_task(current_user, task_id)
 
+    @app.route('/api/v1.0/tasks/<int:task_id>', methods=['PUT'])
+    @login_required
+    @json_accept_required
+    @json_content_required
+    def api_put_task(task_id):
+        return api.update_task(current_user, task_id, request.json)
+
     @app.route('/api/v1.0/deadlines', methods=['GET'])
     @login_required
     @json_accept_required
