@@ -25,7 +25,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_index_html(self):
 
         # when
-        self.rl.render_index(self.data, 'html')
+        self.rl.render_index(self.data, 'text/html')
 
         # then
         self.hr.render_index.assert_called()
@@ -34,7 +34,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_index_json(self):
 
         # when
-        self.rl.render_index(self.data, 'json')
+        self.rl.render_index(self.data, 'application/json')
 
         # then
         self.hr.render_index.assert_not_called()
@@ -43,7 +43,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_deadlines_html(self):
 
         # when
-        self.rl.render_deadlines(self.data, 'html')
+        self.rl.render_deadlines(self.data, 'text/html')
 
         # then
         self.hr.render_deadlines.assert_called()
@@ -52,7 +52,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_deadlines_json(self):
 
         # when
-        self.rl.render_deadlines(self.data, 'json')
+        self.rl.render_deadlines(self.data, 'application/json')
 
         # then
         self.hr.render_deadlines.assert_not_called()
@@ -61,7 +61,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_task_html(self):
 
         # when
-        self.rl.render_task(self.data, 'html')
+        self.rl.render_task(self.data, 'text/html')
 
         # then
         self.hr.render_task.assert_called()
@@ -70,7 +70,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_task_json(self):
 
         # when
-        self.rl.render_task(self.data, 'json')
+        self.rl.render_task(self.data, 'application/json')
 
         # then
         self.hr.render_task.assert_not_called()
@@ -79,7 +79,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_list_users_html(self):
 
         # when
-        self.rl.render_list_users(self.data, 'html')
+        self.rl.render_list_users(self.data, 'text/html')
 
         # then
         self.hr.render_list_users.assert_called()
@@ -88,7 +88,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_list_users_json(self):
 
         # when
-        self.rl.render_list_users(self.data, 'json')
+        self.rl.render_list_users(self.data, 'application/json')
 
         # then
         self.hr.render_list_users.assert_not_called()
@@ -97,7 +97,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_user_html(self):
 
         # when
-        self.rl.render_user(self.data, 'html')
+        self.rl.render_user(self.data, 'text/html')
 
         # then
         self.hr.render_user.assert_called()
@@ -106,7 +106,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_user_json(self):
 
         # when
-        self.rl.render_user(self.data, 'json')
+        self.rl.render_user(self.data, 'application/json')
 
         # then
         self.hr.render_user.assert_not_called()
@@ -115,7 +115,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_options_html(self):
 
         # when
-        self.rl.render_options(self.data, 'html')
+        self.rl.render_options(self.data, 'text/html')
 
         # then
         self.hr.render_options.assert_called()
@@ -124,7 +124,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_options_json(self):
 
         # when
-        self.rl.render_options(self.data, 'json')
+        self.rl.render_options(self.data, 'application/json')
 
         # then
         self.hr.render_options.assert_not_called()
@@ -133,7 +133,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_list_tags_html(self):
 
         # when
-        self.rl.render_list_tags(self.data, 'html')
+        self.rl.render_list_tags(self.data, 'text/html')
 
         # then
         self.hr.render_list_tags.assert_called()
@@ -142,7 +142,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_list_tags_json(self):
 
         # when
-        self.rl.render_list_tags(self.data, 'json')
+        self.rl.render_list_tags(self.data, 'application/json')
 
         # then
         self.hr.render_list_tags.assert_not_called()
@@ -151,7 +151,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_tag_html(self):
 
         # when
-        self.rl.render_tag(self.data, 'html')
+        self.rl.render_tag(self.data, 'text/html')
 
         # then
         self.hr.render_tag.assert_called()
@@ -160,7 +160,7 @@ class TaskRenderLayerTest(unittest.TestCase):
     def test_render_tag_json(self):
 
         # when
-        self.rl.render_tag(self.data, 'json')
+        self.rl.render_tag(self.data, 'application/json')
 
         # then
         self.hr.render_tag.assert_not_called()
@@ -189,7 +189,7 @@ class TaskRenderLayerGetAcceptTypeTest(unittest.TestCase):
             accept = self.rl.get_accept_type()
 
             # then
-            self.assertEqual('html', accept)
+            self.assertEqual('text/html', accept)
 
     def test_get_accept_type_json(self):
         with self.app.test_request_context(
@@ -199,7 +199,7 @@ class TaskRenderLayerGetAcceptTypeTest(unittest.TestCase):
             accept = self.rl.get_accept_type()
 
             # then
-            self.assertEqual('json', accept)
+            self.assertEqual('application/json', accept)
 
 
 class TaskRenderLayerSwitchOnGetAcceptTypeTest(unittest.TestCase):

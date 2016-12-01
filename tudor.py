@@ -230,7 +230,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         accept = rl.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             show_deleted = request.cookies.get('show_deleted')
             show_done = request.cookies.get('show_done')
             show_hierarchy = request.cookies.get('show_hierarchy', True)
@@ -340,7 +340,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         accept = rl.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             show_deleted = request.cookies.get('show_deleted')
             show_done = request.cookies.get('show_done')
             show_hierarchy = request.cookies.get('show_hierarchy', True)

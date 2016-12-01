@@ -14,10 +14,10 @@ class RenderLayer(object):
                                                     'application/json'])
         if (best == 'text/html' and request.accept_mimetypes[best] >=
                 request.accept_mimetypes['application/json']):
-            return 'html'
+            return 'text/html'
         elif (best == 'application/json' and request.accept_mimetypes[best] >=
                 request.accept_mimetypes['text/html']):
-            return 'json'
+            return 'application/json'
         else:
             raise werkzeug.exceptions.NotAcceptable()
 
@@ -25,7 +25,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_index(data)
         else:
             return self.json.render_index(data)
@@ -34,7 +34,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_deadlines(data)
         else:
             return self.json.render_deadlines(data)
@@ -43,7 +43,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_task(data)
         else:
             return self.json.render_task(data)
@@ -52,7 +52,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_list_users(users)
         else:
             return self.json.render_list_users(users)
@@ -61,7 +61,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_user(user)
         else:
             return self.json.render_user(user)
@@ -70,7 +70,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_options(data)
         else:
             return self.json.render_options(data)
@@ -79,7 +79,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_list_tags(data)
         else:
             return self.json.render_list_tags(data)
@@ -88,7 +88,7 @@ class RenderLayer(object):
         if not accept:
             accept = self.get_accept_type()
 
-        if accept == 'html':
+        if accept == 'text/html':
             return self.html.render_tag(data)
         else:
             return self.json.render_tag(data)
