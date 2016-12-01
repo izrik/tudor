@@ -203,7 +203,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             return func(*args, **kwargs)
         return decorated_view
 
-    def api_required(func):
+    def json_accept_required(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
             if get_form_or_arg('Accept') != 'application/json':
@@ -820,7 +820,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/api/v1.0')
     @app.route('/api/v1.0/')
     @login_required
-    @api_required
+    @json_accept_required
     def api_index():
         content, code = api.index()
         return json.dumps(content), code
@@ -828,27 +828,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/api/v1.0/tasks', methods=['GET'])
     @app.route('/api/v1.0/tasks/', methods=['GET'])
     @login_required
-    @api_required
+    @json_accept_required
     def api_list_tasks():
         return api.list_tasks(current_user)
 
     @app.route('/api/v1.0/tasks', methods=['POST'])
     @app.route('/api/v1.0/tasks/', methods=['POST'])
     @login_required
-    @api_required
+    @json_accept_required
     @json_content_required
     def api_post_tasks():
         return api.create_task(current_user, request.json)
 
     @app.route('/api/v1.0/tasks/<int:task_id>', methods=['GET'])
     @login_required
-    @api_required
+    @json_accept_required
     def api_get_task(task_id):
         return api.get_task(current_user, task_id)
 
     @app.route('/api/v1.0/deadlines', methods=['GET'])
     @login_required
-    @api_required
+    @json_accept_required
     def api_get_deadlines():
         return api.get_deadlines(current_user)
 
