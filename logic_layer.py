@@ -195,10 +195,13 @@ class LogicLayer(object):
         note.task = task
         return note
 
-    def set_task(self, task_id, current_user, summary, description,
-                 deadline=None, is_done=False, is_deleted=False,
-                 order_num=None, duration=None, expected_cost=None,
-                 parent_id=None):
+    DO_NOT_CHANGE = object()
+
+    def set_task(self, task_id, current_user, summary=DO_NOT_CHANGE,
+                 description=DO_NOT_CHANGE, deadline=DO_NOT_CHANGE,
+                 is_done=DO_NOT_CHANGE, is_deleted=DO_NOT_CHANGE,
+                 order_num=DO_NOT_CHANGE, duration=DO_NOT_CHANGE,
+                 expected_cost=DO_NOT_CHANGE, parent_id=DO_NOT_CHANGE):
 
         task = self.ds.Task.query.filter_by(id=task_id).first()
         if task is None:
@@ -207,6 +210,8 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
 
         if deadline is None:
+            pass
+        elif deadline is self.DO_NOT_CHANGE:
             pass
         elif deadline == '':
             deadline = None
@@ -220,6 +225,8 @@ class LogicLayer(object):
 
         if parent_id is None:
             pass
+        elif parent_id is self.DO_NOT_CHANGE:
+            pass
         elif parent_id == '':
             parent_id = None
         elif self.ds.Task.query.filter_by(id=parent_id).count() > 0:
@@ -227,21 +234,30 @@ class LogicLayer(object):
         else:
             parent_id = None
 
-        task.summary = summary
-        task.description = description
+        if summary is not self.DO_NOT_CHANGE:
+            task.summary = summary
+        if description is not self.DO_NOT_CHANGE:
+            task.description = description
 
-        task.deadline = deadline
+        if deadline is not self.DO_NOT_CHANGE:
+            task.deadline = deadline
 
-        task.is_done = is_done
-        task.is_deleted = is_deleted
+        if is_done is not self.DO_NOT_CHANGE:
+            task.is_done = is_done
+        if is_deleted is not self.DO_NOT_CHANGE:
+            task.is_deleted = is_deleted
 
-        task.order_num = order_num
+        if order_num is not self.DO_NOT_CHANGE:
+            task.order_num = order_num
 
-        task.expected_duration_minutes = duration
+        if duration is not self.DO_NOT_CHANGE:
+            task.expected_duration_minutes = duration
 
-        task.expected_cost = expected_cost
+        if expected_cost is not self.DO_NOT_CHANGE:
+            task.expected_cost = expected_cost
 
-        task.parent_id = parent_id
+        if parent_id is not self.DO_NOT_CHANGE:
+            task.parent_id = parent_id
 
         return task
 
