@@ -8,7 +8,8 @@ class RenderLayer(object):
         self.html = html
         self.json = json
 
-    def get_accept_type(self):
+    @staticmethod
+    def get_accept_type():
         best = request.accept_mimetypes.best_match(['text/html',
                                                     'application/json'])
         if (best == 'text/html' and request.accept_mimetypes[best] >=
