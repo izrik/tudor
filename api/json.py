@@ -10,7 +10,8 @@ class JsonApi(object):
 
     def index(self):
         return {
-                   'tasks': url_for('api_list_tasks')
+                   'tasks': url_for('api_list_tasks'),
+                   'tags': url_for('api_list_tags'),
                }, 200
 
     def list_tasks(self, current_user):
@@ -115,3 +116,7 @@ class JsonApi(object):
 
     def purge_task(self, current_user, task_id):
         return self.ll.purge_task(current_user, task_id)
+
+    def list_tags(self, current_user):
+        tags = self.ll.get_tags()
+        return self.jr.render_list_tags(tags)
