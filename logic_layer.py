@@ -1024,3 +1024,27 @@ class LogicLayer(object):
             task.depth = depth
 
         return tasks
+
+    def purge_task(self, current_user, task_id):
+        task = self.ds.Task.query.filter_by(id=task_id).first()
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if not task.is_deleted:
+            raise werkzeug.exceptions.Conflict(
+                "The task has not been deleted yet.")
+
+        for ttl in self.ds.TaskTagLink.query.filter_by(task_id=task_id):
+            self.db.session.delete(ttl)
+
+        for tul in self.ds.TaskUserLink.query.filter_by(task_id=task_id):
+            self.db.session.delete(tul)
+
+        # children ?
+        # notes ?
+        # attachments ?
+
+        self.db.session.delete(task)
+        return '', 200

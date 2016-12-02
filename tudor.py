@@ -853,6 +853,15 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def api_put_task(task_id):
         return api.update_task(current_user, task_id, request.json)
 
+    @app.route('/api/v1.0/tasks/<int:task_id>', methods=['DELETE'])
+    @login_required
+    @json_accept_required
+    @json_content_required
+    def api_delete_task(task_id):
+        retval = api.purge_task(current_user, task_id)
+        db.session.commit()
+        return retval
+
     @app.route('/api/v1.0/deadlines', methods=['GET'])
     @login_required
     @json_accept_required

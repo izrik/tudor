@@ -1,3 +1,4 @@
+
 from flask import json, url_for, make_response
 
 
@@ -71,8 +72,8 @@ class JsonApi(object):
         return self.jr.render_deadlines(data)
 
     def update_task(self, current_user, task_id, task_data):
-        self.ll.get_task_data(id=task_id, current_user=current_user,
-                              show_hierarchy=False)
+        task = self.ll.get_task_data(id=task_id, current_user=current_user,
+                                     show_hierarchy=False)
 
         summary = task_data.get('summary', self.ll.DO_NOT_CHANGE)
         description = task_data.get('description', self.ll.DO_NOT_CHANGE)
@@ -111,3 +112,6 @@ class JsonApi(object):
         resp = make_response(content, 200)
         resp.headers['Location'] = location
         return resp
+
+    def purge_task(self, current_user, task_id):
+        return self.ll.purge_task(current_user, task_id)
