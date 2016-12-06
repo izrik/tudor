@@ -862,18 +862,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         db.session.commit()
         return retval
 
+    @app.route('/api/v1.0/deadlines', methods=['GET'])
+    @login_required
+    @json_accept_required
+    def api_get_deadlines():
+        return api.get_deadlines(current_user)
+
     @app.route('/api/v1.0/tags', methods=['GET'])
     @app.route('/api/v1.0/tags/', methods=['GET'])
     @login_required
     @json_accept_required
     def api_list_tags():
         return api.list_tags(current_user)
-
-    @app.route('/api/v1.0/deadlines', methods=['GET'])
-    @login_required
-    @json_accept_required
-    def api_get_deadlines():
-        return api.get_deadlines(current_user)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
