@@ -26,6 +26,16 @@ class JsonApiTest(unittest.TestCase):
         self.Option = self.app.ds.Option
         self.TaskUserLink = self.app.ds.TaskUserLink
 
+    def test_get_index(self):
+        with self.app.test_request_context(
+                '/', headers={'Accept': 'application/json'}):
+            result = self.api.index()
+            self.assertEqual(({
+                       'tasks': '/api/v1.0/tasks/',
+                       'tags': '/api/v1.0/tags/',
+                   }, 200),
+                result)
+
     def test_create_tasks(self):
 
         # given
