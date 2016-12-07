@@ -120,3 +120,7 @@ class JsonApi(object):
     def list_tags(self, current_user):
         tags = self.ll.get_tags()
         return self.jr.render_list_tags(tags)
+
+    def get_tag(self, current_user, tag_id):
+        data = self.ll.get_tag_data(tag_id, current_user)
+        return self.jr.render_tag(data)

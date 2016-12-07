@@ -875,6 +875,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def api_list_tags():
         return api.list_tags(current_user)
 
+    @app.route('/api/v1.0/tags/<int:tag_id>', methods=['GET'])
+    @login_required
+    @json_accept_required
+    def api_get_tag(tag_id):
+        return api.get_tag(current_user, tag_id)
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])

@@ -451,8 +451,8 @@ class JsonRendererTest(unittest.TestCase):
                     'value': 'value1',
                     'description': 'desc1',
                     'tasks': [
-                        '/task/456',
-                        '/task/789',
+                        '/api/v1.0/tasks/456',
+                        '/api/v1.0/tasks/789',
                     ]
                 },
                 parsed)

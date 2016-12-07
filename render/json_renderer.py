@@ -49,7 +49,7 @@ class JsonRenderer(object):
             'expected_duration_minutes':
                 task.expected_duration_minutes,
             'expected_cost': task.get_expected_cost_for_export(),
-            'tags': [url_for('view_tag', id=ttl.tag_id)
+            'tags': [url_for('api_get_tag', tag_id=ttl.tag_id)
                      for ttl in task.tags],
             'users': [url_for('view_user', user_id=tul.user_id)
                       for tul in task.users],
@@ -85,5 +85,5 @@ class JsonRenderer(object):
     def render_tag(self, data):
         tag = data['tag'].to_dict()
         tasks = data['tasks']
-        tag['tasks'] = [url_for('view_task', id=task.id) for task in tasks]
+        tag['tasks'] = [url_for('api_get_task', task_id=task.id) for task in tasks]
         return json.dumps(tag), 200
