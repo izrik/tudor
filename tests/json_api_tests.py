@@ -36,6 +36,59 @@ class JsonApiTest(unittest.TestCase):
                    }, 200),
                 result)
 
+    def test_list_tasks(self):
+
+        # given
+        t1 = self.Task(summary='sum1', description='desc1')
+        t2 = self.Task(summary='sum2', description='desc2')
+        t3 = self.Task(summary='sum3', description='desc3')
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(t3)
+        u = self.User('user@example.com')
+        self.db.session.add(u)
+        self.db.session.commit()
+        tul = self.TaskUserLink(t1.id, u.id)
+        self.db.session.add(tul)
+        tul = self.TaskUserLink(t2.id, u.id)
+        self.db.session.add(tul)
+        tul = self.TaskUserLink(t3.id, u.id)
+        self.db.session.add(tul)
+        self.db.session.commit()
+
+        with self.app.test_request_context(
+                '/api/v1.0/tasks/', headers={'Accept': 'application/json'}):
+            # when
+            result = self.api.list_tasks(u)
+
+            # then it returns a json representation of the tasks and 200 status
+            # code
+            self.assertIsNotNone(result)
+            self.assertIsInstance(result, tuple)
+            self.assertEqual(len(result), 2)
+
+            body, code = result
+            self.assertEqual(200, code)
+
+            self.assertIsNotNone(body)
+            self.assertIsInstance(body, basestring)
+
+            parsed = json.loads(body)
+            self.assertEqual([
+                {
+                    'summary': t1.summary,
+                    'href': '/api/v1.0/tasks/{}'.format(t1.id)
+                },
+                {
+                    'summary': t2.summary,
+                    'href': '/api/v1.0/tasks/{}'.format(t2.id)
+                },
+                {
+                    'summary': t3.summary,
+                    'href': '/api/v1.0/tasks/{}'.format(t3.id)
+                },
+            ], parsed)
+
     def test_create_tasks(self):
 
         # given
@@ -210,7 +263,7 @@ class JsonApiTest(unittest.TestCase):
             result = self.api.update_task(u, t1.id, data)
 
             # then it returns a json representation of the new tasks, along
-            # with Location header and 201 status code
+            # with Location header and 200 status code
             self.assertIsNotNone(result)
             self.assertIsInstance(result, Response)
 
