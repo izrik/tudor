@@ -202,7 +202,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy', True)
+        show_hierarchy = request.cookies.get('show_hierarchy')
 
         data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
                                  current_user)
@@ -318,7 +318,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy', True)
+        show_hierarchy = request.cookies.get('show_hierarchy')
         data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
                                 include_done=show_done,
                                 show_hierarchy=show_hierarchy)
