@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     {% block head %}
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='tudor.css') }}" />
     <title>{% block title %}{{ opts.get_title() }}{% endblock %}</title>
     {% endblock %}
@@ -22,5 +23,10 @@
             <small>Revision: <code>{{ opts.get_revision() }}</code></small>
         {% endblock %}
     </p>
+
+    {% block endbody %}
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    {% endblock endbody %}
 </body>
 </html>
