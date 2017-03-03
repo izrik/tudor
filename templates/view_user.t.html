@@ -1,5 +1,5 @@
 {% extends "base.t.html" %}
-{% block title %}{{ super() }} - User {{ user.email }}{% endblock %}
+{% block title %}User {{ user.email }} - {{ super() }}{% endblock %}
 {% block header_sub_text %}User {{ user.email }}{% endblock %}
 {% block content %}
 <div class="container">
