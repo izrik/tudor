@@ -677,7 +677,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        ll.do_reset_order_nums()
+        ll.do_reset_order_nums(current_user)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
