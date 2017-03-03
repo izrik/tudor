@@ -8,7 +8,7 @@
 <div class="container">
 <div>
     <form action="edit" method="post" enctype="multipart/form-data">
-        <textarea name="description" rows="24" cols="80" data-provide="markdown">{{ task.description if task.description != None }}</textarea>
+        <textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ task.description if task.description != None }}</textarea>
         <table>
             <tr><td>ID</td><td>{{ task.id }}</td></tr>
             <tr><td>Summary</td><td><input type="text" name="summary" value="{{ task.summary if task.summary != None }}" /></td></tr>
