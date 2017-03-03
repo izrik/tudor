@@ -142,6 +142,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def get_revision():
             return __revision__
 
+        @staticmethod
+        def get_author():
+            return Options.get('author', 'the author')
+
     app.Task = ds.Task
     app.Tag = ds.Tag
     app.TaskTagLink = ds.TaskTagLink
