@@ -1,6 +1,7 @@
 {% extends "base.t.html" %}
 {% block title %}{{ super() }} - Task CRUD (Bulk Edit){% endblock %}
 {% block content scoped %}
+<div class="container">
 <div>
     <form action="{{ url_for('task_crud') }}" method="post">
         <table class="task_crud">
@@ -37,5 +38,6 @@
 </div>
 <div>
     <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
 </div>
 {% endblock %}

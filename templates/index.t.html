@@ -1,6 +1,7 @@
 {% extends "base.t.html" %}
 {% from 'task_table.t.html' import render_task_table %}
 {% block content scoped %}
+<div class="container">
 <div>
 
     {{ render_task_table(tasks_h, root=None, cycle=cycle,
@@ -73,5 +74,6 @@
             <!--</td>-->
         <!--</tfoot>-->
     </table>
+</div>
 </div>
 {% endblock %}

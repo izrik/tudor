@@ -2,6 +2,7 @@
 {% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ super() }} - Convert "{{ tag_value }}" to a tag?{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <h1>Are you sure you want to convert the "{{ tag_value }}" task into the following tag?</h1>
     <table class="task_info">
@@ -26,5 +27,6 @@
 <div>
     <p><a href="{{ url_for('convert_task_to_tag', id=task_id, are_you_sure=1) }}">Yes, convert it</a></p>
     <p><a href="{{ url_for('index') }}">No, do not convert it</a></p>
+</div>
 </div>
 {% endblock %}

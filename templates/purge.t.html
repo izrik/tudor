@@ -1,7 +1,7 @@
 {% extends "base.t.html" %}
 {% block title %}{{ super() }} - Purge Deleted Tasks{% endblock %}
 {% block content %}
-<div>
+<div class="container">
     <h1>Are you sure?</h1>
     <p><a href="{{ url_for('purge_deleted_tasks', are_you_sure=1) }}">Yes</a></p>
     <p><a href="{{ url_for('index') }}">No</a></p>

@@ -2,6 +2,7 @@
 {% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ super() }} - Tasks by Deadline{% endblock %}
 {% block content scoped %}
+<div class="container">
 <div>
     <h3>Deadlines</h3>
     {{ render_task_table(deadline_tasks, root=None, cycle=cycle,
@@ -11,5 +12,6 @@
 </div>
 <div>
     <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
 </div>
 {% endblock %}

@@ -2,6 +2,7 @@
 {% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ super() }} - {{ tag.value if tag.value != None }}{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <table class="task_info">
         <tr><td>ID</td><td>{{ tag.id }}</td></tr>
@@ -21,5 +22,6 @@
         child_task_view='view_task',
         show_move_links=False,
         show_new_task_form=True) }}
+</div>
 </div>
 {% endblock %}

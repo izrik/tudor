@@ -1,6 +1,7 @@
 {% extends "base.t.html" %}
 {% block title %}{{ super() }} - Export{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <h4>Export</h4>
     <form action="{{ url_for('export_data') }}" method="post">
@@ -58,5 +59,6 @@
 </div>
 <div>
     <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
 </div>
 {% endblock %}
