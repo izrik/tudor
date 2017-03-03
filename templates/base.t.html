@@ -26,15 +26,21 @@
 
     {% block content %}{% endblock %}
 
-    <p id="footer">
-        {% block footer %}
-            {% if current_user.is_authenticated() %}
-              <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
-            {% endif %}
-            <small>Tudor is &copy; Copyright 2016 by <a href="http://metaindu.com/">metaindu</a> and <a href="http://izrik.com">izrik</a>.</small><br/>
-            <small>Revision: <code>{{ opts.get_revision() }}</code></small>
+    {% block footer %}
+    <div class="container">
+        <br/>
+        {% if current_user.is_authenticated %}
+        <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
+        {% else %}
+        <small><a href="/login">Login</a></small><br/>
+        {% endif %}
+        {% block copyright %}
+        <small>Copyright &copy; 2017 by {{ opts.get_author() }}.</small><br/>
         {% endblock %}
-    </p>
+        <small>Powered by <a href="https://github.com/izrik/tudor">tudor</a>.</small><br/>
+        <small>Revision: <code>{{ opts.get_revision() }}</code></small>
+    </div>
+    {% endblock %}
 
     {% block endbody %}
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
