@@ -1,6 +1,8 @@
 {% extends "base.t.html" %}
-{% block title %}{{ super() }} - Users{% endblock %}
+{% block title %}Pick User - {{ super() }}{% endblock %}
+{% block header_sub_text %}Pick User{% endblock %}
 {% block content scoped %}
+<div class="container">
 <div>
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
@@ -35,6 +37,6 @@
 </div>
 <div>
     <p><a href="{{ url_for('view_task', id=task.id) }}">back</a></p>
-    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
 </div>
 {% endblock %}

@@ -1,6 +1,8 @@
 {% extends "base.t.html" %}
-{% block title %}{{ super() }} - Tags{% endblock %}
+{% block title %}Tags - {{ super() }}{% endblock %}
+{% block header_sub_text %}Tags{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).next %}
@@ -27,7 +29,5 @@
         <!--</tfoot>-->
     </table>
 </div>
-<div>
-    <p><a href="{{ url_for('index') }}">main</a></p>
 </div>
 {% endblock %}

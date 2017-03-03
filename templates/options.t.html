@@ -1,6 +1,8 @@
 {% extends "base.t.html" %}
-{% block title %}{{ super() }} - Options{% endblock %}
+{% block title %}Options - {{ super() }}{% endblock %}
+{% block header_sub_text %}Options{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <h4>Options</h4>
     <table class="options">
@@ -39,7 +41,5 @@
         </tfoot>
     </table>
 </div>
-<div>
-    <p><a href="{{ url_for('index') }}">main</a></p>
 </div>
 {% endblock %}

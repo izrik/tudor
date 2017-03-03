@@ -1,6 +1,7 @@
 {% extends "base.t.html" %}
 {% from 'task_table.t.html' import render_task_table %}
 {% block content scoped %}
+<div class="container">
 <div>
 
     {{ render_task_table(tasks_h, root=None, cycle=cycle,
@@ -37,41 +38,6 @@
     <p><a href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
     {% endif %}
     <p><a href="{{ url_for('reset_order_nums') }}">reset order numbers</a></p>
-    <p><a href="{{ url_for('list_tags') }}">tags</a></p>
-    {% if user.is_admin %}
-    <p><a href="{{ url_for('view_options') }}">options</a></p>
-    <p><a href="{{ url_for('list_users') }}">users</a></p>
-    <p><a href="{{ url_for('export_data') }}">export</a></p>
-    <p><a href="{{ url_for('import_data') }}">import</a></p>
-    <p><a href="{{ url_for('task_crud') }}">task crud</a></p>
-    {% endif %}
-    <p><a href="{{ url_for('deadlines') }}">deadlines</a></p>
 </div>
-<div>
-    <h3>Tags</h3>
-    <table class="task_children">
-        {% set odd_even = cycle(['odd', 'even']).next %}
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Value</th>
-        </tr>
-        </thead>
-        {% for tag in tags %}
-        <tr class="{{ odd_even() }}">
-            <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.id }}</a></td>
-            <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a></td>
-        </tr>
-        {% endfor %}
-        <!--<tfoot>-->
-            <!--<td></td>-->
-            <!--<td>-->
-                <!--<form action="{ { url_for('new_tag') }}" method="post">-->
-                    <!--<input type="text" name="value" />-->
-                    <!--<input type="hidden" name="next_url" value="{ { page_url }}" />-->
-                <!--</form>-->
-            <!--</td>-->
-        <!--</tfoot>-->
-    </table>
 </div>
 {% endblock %}

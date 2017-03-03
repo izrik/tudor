@@ -1,7 +1,9 @@
 {% extends "base.t.html" %}
 {% from 'task_table.t.html' import render_task_table %}
-{% block title %}{{ super() }} - {{ task.summary if task.summary != None }}{% endblock %}
+{% block title %}{{ task.summary if task.summary != None }} - {{ super() }}{% endblock %}
+{% block header_sub_text %}{{ task.summary if task.summary != None }}{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
@@ -84,7 +86,6 @@
     <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>
 <div>
-    <p><a href="{{ url_for('index') }}">main</a></p>
     <p><a href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a></p>
 </div>
 <div>
@@ -184,5 +185,6 @@
             </form>
         </tr>
     </table>
+</div>
 </div>
 {% endblock %}

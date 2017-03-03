@@ -142,6 +142,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def get_revision():
             return __revision__
 
+        @staticmethod
+        def get_author():
+            return Options.get('author', 'the author')
+
+        @staticmethod
+        def get_user():
+            return current_user
+
     app.Task = ds.Task
     app.Tag = ds.Tag
     app.TaskTagLink = ds.TaskTagLink
@@ -673,7 +681,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        ll.do_reset_order_nums()
+        ll.do_reset_order_nums(current_user)
         db.session.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
@@ -713,7 +721,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def task_crud():
 
         if request.method == 'GET':
-            tasks = ll.get_task_crud_data()
+            tasks = ll.get_task_crud_data(current_user)
             return render_template('task_crud.t.html', tasks=tasks,
                                    cycle=itertools.cycle)
 
@@ -723,7 +731,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                         r'order_num|duration|cost|parent_id)', key):
                 crud_data[key] = request.form[key]
 
-        ll.do_submit_task_crud(crud_data)
+        ll.do_submit_task_crud(crud_data, current_user)
         db.session.commit()
 
         return redirect(url_for('task_crud'))

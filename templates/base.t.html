@@ -3,24 +3,77 @@
 <head>
     <meta charset="UTF-8">
     {% block head %}
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet"/>
     <link rel="stylesheet" href="{{ url_for('static', filename='tudor.css') }}" />
     <title>{% block title %}{{ opts.get_title() }}{% endblock %}</title>
     {% endblock %}
+    {% block link_css %}
+    {% endblock %}
 </head>
 <body>
-    <div id="header">
-        {% block header %}
-        {% endblock %}
+
+    {% block header %}
+    <div class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                {% block header_nav_expand_button %}
+                <button type="button" class="navbar-toggle collapsed"
+                        data-toggle="collapse"
+                        data-target="#navbar-collapse-1"
+                        aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                {% endblock %}
+                {% block header_text %}
+                <a class="navbar-brand" href="{{ url_for('index') }}">{{ opts.get_title() }}</a>
+                <p class="navbar-text">{% block header_sub_text %}{% endblock %}</p>
+                {% endblock %}
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    {% block header_nav_items %}
+                    {% if opts.get_user() %}
+                    <li class="small"><a class="nav-link" href="{{ url_for('deadlines') }}">Deadlines</a></li>
+                    <li class="small"><a class="nav-link" href="{{ url_for('list_tags') }}">Tags</a></li>
+                        {% if opts.get_user().is_admin %}
+                        <li class="small"><a class="nav-link" href="{{ url_for('view_options') }}">Options</a></li>
+                        <li class="small"><a class="nav-link" href="{{ url_for('list_users') }}">Users</a></li>
+                        <li class="small"><a class="nav-link" href="{{ url_for('export_data') }}">Export</a></li>
+                        <li class="small"><a class="nav-link" href="{{ url_for('import_data') }}">Import</a></li>
+                        <li class="small"><a class="nav-link" href="{{ url_for('task_crud') }}">Task CRUD</a></li>
+                        {% endif %}
+                    {% endif %}
+                    {% endblock %}
+                </ul>
+            </div>
+        </div>
     </div>
+    {% endblock header %}
+
     {% block content %}{% endblock %}
-    <p id="footer">
-        {% block footer %}
-            {% if current_user.is_authenticated() %}
-              <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
-            {% endif %}
-            <small>Tudor is &copy; Copyright 2016 by <a href="http://metaindu.com/">metaindu</a> and <a href="http://izrik.com">izrik</a>.</small><br/>
-            <small>Revision: <code>{{ opts.get_revision() }}</code></small>
+
+    {% block footer %}
+    <div class="container">
+        <br/>
+        {% if current_user.is_authenticated %}
+        <small>Logged in as {{ current_user.email }} - <a href="{{ url_for('logout') }}">logout</a></small><br/>
+        {% else %}
+        <small><a href="/login">Login</a></small><br/>
+        {% endif %}
+        {% block copyright %}
+        <small>Copyright &copy; 2017 by {{ opts.get_author() }}.</small><br/>
         {% endblock %}
-    </p>
+        <small>Powered by <a href="https://github.com/izrik/tudor">tudor</a>.</small><br/>
+        <small>Revision: <code>{{ opts.get_revision() }}</code></small>
+    </div>
+    {% endblock %}
+
+    {% block endbody %}
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    {% endblock endbody %}
 </body>
 </html>

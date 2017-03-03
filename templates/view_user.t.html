@@ -1,6 +1,8 @@
 {% extends "base.t.html" %}
-{% block title %}{{ super() }} - User {{ user.email }}{% endblock %}
+{% block title %}User {{ user.email }} - {{ super() }}{% endblock %}
+{% block header_sub_text %}User {{ user.email }}{% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <table class="task_info">
         <tr><td>ID</td><td>{{ user.id }}</td></tr>
@@ -10,6 +12,6 @@
 </div>
 <div>
     <p><a href="{{ url_for('list_users') }}">users</a></p>
-    <p><a href="{{ url_for('index') }}">main</a></p>
+</div>
 </div>
 {% endblock %}

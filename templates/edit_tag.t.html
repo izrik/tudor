@@ -1,18 +1,30 @@
 {% extends "base.t.html" %}
-{% block title %}{{ super() }} - Editing "{{ tag.value }}" (ID {{tag.id}}){% endblock %}
+{% block title %}Editing "{{ tag.value }}" (ID {{tag.id}}) - {{ super() }}{% endblock %}
+{% block link_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css" rel="stylesheet"/>
+{% endblock %}
+{% block header_sub_text %}Editing "{{ tag.value }}" (ID {{tag.id}}){% endblock %}
 {% block content %}
+<div class="container">
 <div>
     <form action="edit" method="post" enctype="multipart/form-data">
         <table>
             <tr><td>ID</td><td>{{ tag.id }}</td></tr>
             <tr><td>Value</td><td><input type="text" name="value" value="{{ tag.value }}" /></td></tr>
-            <tr><td>Description</td><td><textarea name="description" rows="24" cols="80">{{ tag.description if tag.description != None }}</textarea> </td></tr>
+            <tr><td>Description:</td></tr>
         </table>
+        <textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ tag.description if tag.description != None }}</textarea>
         <input type="submit" value="Save"/>
     </form>
 </div>
 <div>
     <p><a href="{{ url_for('view_tag', id=tag.id) }}">back</a></p>
-    <p><a href="{{ url_for('index') }}">main</a></p>
 </div>
+</div>
+{% endblock %}
+
+{% block endbody %}
+    {{ super() }}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/js/bootstrap-markdown.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
 {% endblock %}
