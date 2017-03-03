@@ -12,8 +12,8 @@
             <tr><td>ID</td><td>{{ tag.id }}</td></tr>
             <tr><td>Value</td><td><input type="text" name="value" value="{{ tag.value }}" /></td></tr>
             <tr><td>Description:</td></tr>
-            <tr><td colspan="2"><textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ tag.description if tag.description != None }}</textarea> </td></tr>
         </table>
+        <textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ tag.description if tag.description != None }}</textarea>
         <input type="submit" value="Save"/>
     </form>
 </div>
