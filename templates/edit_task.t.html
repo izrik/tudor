@@ -3,7 +3,7 @@
 {% block link_css %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css" rel="stylesheet"/>
 {% endblock %}
-{% block header_sub_text %}- Editing "{{ task.summary if task.summary != None }}" (ID {{task.id}}){% endblock %}
+{% block header_sub_text %}Editing "{{ task.summary if task.summary != None }}" (ID {{task.id}}){% endblock %}
 {% block content %}
 <div class="container">
 <div>
