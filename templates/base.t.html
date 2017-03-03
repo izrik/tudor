@@ -29,7 +29,7 @@
                 {% endblock %}
                 {% block header_text %}
                 <a class="navbar-brand" href="{{ url_for('index') }}">{{ opts.get_title() }}</a>
-                <span class="navbar-brand"><small>{% block header_sub_text %}{% endblock %}</small></span>
+                <p class="navbar-text">{% block header_sub_text %}{% endblock %}</p>
                 {% endblock %}
             </div>
             <div class="collapse navbar-collapse" id="navbar-collapse-1">
