@@ -14,14 +14,34 @@
     <div class="navbar navbar-default">
         <div class="container">
             <div class="navbar-header">
+                {% block header_nav_expand_button %}
+                <button type="button" class="navbar-toggle collapsed"
+                        data-toggle="collapse"
+                        data-target="#navbar-collapse-1"
+                        aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                {% endblock %}
                 {% block header_text %}
                 <a class="navbar-brand" href="{{ url_for('index') }}">{{ opts.get_title() }}</a>
                 <span class="navbar-brand"><small>{% block header_sub_text %}{% endblock %}</small></span>
                 {% endblock %}
             </div>
-            <div class="collapse navbar-collapse">
+            <div class="collapse navbar-collapse" id="navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     {% block header_nav_items %}
+                    <li><a class="nav-link" href="{{ url_for('deadlines') }}">Deadlines</a></li>
+                    <li><a class="nav-link" href="{{ url_for('list_tags') }}">Tags</a></li>
+                    {% if user and user.is_admin %}
+                    <li><a class="nav-link" href="{{ url_for('view_options') }}">Options</a></li>
+                    <li><a class="nav-link" href="{{ url_for('list_users') }}">Users</a></li>
+                    <li><a class="nav-link" href="{{ url_for('export_data') }}">Export</a></li>
+                    <li><a class="nav-link" href="{{ url_for('import_data') }}">Import</a></li>
+                    <li><a class="nav-link" href="{{ url_for('task_crud') }}">Task CRUD</a></li>
+                    {% endif %}
                     {% endblock %}
                 </ul>
             </div>

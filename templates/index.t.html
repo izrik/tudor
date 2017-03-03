@@ -38,15 +38,6 @@
     <p><a href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
     {% endif %}
     <p><a href="{{ url_for('reset_order_nums') }}">reset order numbers</a></p>
-    <p><a href="{{ url_for('list_tags') }}">tags</a></p>
-    {% if user.is_admin %}
-    <p><a href="{{ url_for('view_options') }}">options</a></p>
-    <p><a href="{{ url_for('list_users') }}">users</a></p>
-    <p><a href="{{ url_for('export_data') }}">export</a></p>
-    <p><a href="{{ url_for('import_data') }}">import</a></p>
-    <p><a href="{{ url_for('task_crud') }}">task crud</a></p>
-    {% endif %}
-    <p><a href="{{ url_for('deadlines') }}">deadlines</a></p>
 </div>
 <div>
     <h3>Tags</h3>
