@@ -717,7 +717,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def task_crud():
 
         if request.method == 'GET':
-            tasks = ll.get_task_crud_data()
+            tasks = ll.get_task_crud_data(current_user)
             return render_template('task_crud.t.html', tasks=tasks,
                                    cycle=itertools.cycle)
 
@@ -727,7 +727,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                         r'order_num|duration|cost|parent_id)', key):
                 crud_data[key] = request.form[key]
 
-        ll.do_submit_task_crud(crud_data)
+        ll.do_submit_task_crud(crud_data, current_user)
         db.session.commit()
 
         return redirect(url_for('task_crud'))
