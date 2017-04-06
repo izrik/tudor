@@ -8,6 +8,9 @@
 <div class="container">
 <div>
     <form action="edit" method="post" enctype="multipart/form-data">
+        <input class="btn btn-primary" type="submit" value="Save"/>
+        <a class="btn btn-info" href="{{ url_for('view_task', id=task.id) }}">Back</a>
+        <p></p>
         <textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ task.description if task.description != None }}</textarea>
         <table>
             <tr><td>ID</td><td>{{ task.id }}</td></tr>
@@ -21,6 +24,7 @@
             <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ task.parent_id if task.parent_id != None }}" /></td></tr>
             <tr><td>Tags</td><td><input type="text" name="tags" value="{{ tag_list }}" disabled="disabled"/></td></tr>
         </table>
+        <p></p>
         <input class="btn btn-primary" type="submit" value="Save"/>
         <a class="btn btn-info" href="{{ url_for('view_task', id=task.id) }}">Back</a>
     </form>
