@@ -83,10 +83,10 @@
             </td>
         </tr>
     </table>
-    <p><a href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
+    <p><a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">edit</a></p>
 </div>
 <div>
-    <p><a href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a></p>
+    <p><a class="btn btn-danger" href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a></p>
 </div>
 <div>
     <h4>Child Tasks</h4>
