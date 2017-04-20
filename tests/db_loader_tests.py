@@ -893,7 +893,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         # when
         tasks = self.ll.load_no_hierarchy(self.user, include_done=True,
                                           include_deleted=True,
-                                          tags=['abcd'])
+                                          tag='abcd')
 
         # then
         self.assertEqual(2, len(tasks))
@@ -908,7 +908,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         # when
         tasks = self.ll.load_no_hierarchy(self.user, include_done=True,
                                           include_deleted=True,
-                                          tags=['efgh'])
+                                          tag='efgh')
 
         # then
         self.assertEqual(2, len(tasks))
@@ -923,7 +923,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         # when
         tasks = self.ll.load_no_hierarchy(self.user, include_done=True,
                                           include_deleted=True,
-                                          tags=['ijkl'])
+                                          tag='ijkl')
 
         # then
         self.assertEqual(2, len(tasks))
@@ -931,27 +931,5 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         self.assertIsInstance(tasks[1], self.app.Task)
 
         expected_summaries = {'normal', 'parent'}
-        summaries = set(t.summary for t in tasks)
-        self.assertEqual(expected_summaries, summaries)
-
-    def test_multiple_tags_return_all_tasks_with_any_of_those_tags(self):
-
-        # For a task to be returned, it only has to have any one of the
-        # specified tags. Multiple tags combine like an 'OR' operation.
-
-        # when
-        tasks = self.ll.load_no_hierarchy(self.user, include_done=True,
-                                          include_deleted=True,
-                                          tags=['abcd', 'efgh', 'ijkl'])
-
-        # then
-        self.assertEqual(4, len(tasks))
-        self.assertIsInstance(tasks[0], self.app.Task)
-        self.assertIsInstance(tasks[1], self.app.Task)
-        self.assertIsInstance(tasks[2], self.app.Task)
-        self.assertIsInstance(tasks[3], self.app.Task)
-
-        expected_summaries = {'normal', 'parent', 'parent2',
-                              'great_great_grandchild'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)

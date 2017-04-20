@@ -788,7 +788,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
         tasks = self.load_no_hierarchy(current_user, include_done=True,
-                                       include_deleted=True, tags=tag)
+                                       include_deleted=True, tag=tag)
         return {
             'tag': tag,
             'tasks': tasks,
@@ -938,7 +938,7 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
-                          tags=None, query_post_op=None):
+                          tag=None, query_post_op=None):
         query = self.ds.Task.query
 
         if not current_user.is_admin:
@@ -955,27 +955,18 @@ class LogicLayer(object):
         if exclude_undeadlined:
             query = query.filter(self.ds.Task.deadline.isnot(None))
 
-        if tags is not None:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-            if len(tags) < 1:
-                tags = None
-
-        if tags is not None:
-            def get_tag_id(tag):
-                if tag is None:
-                    return None
-                if tag == str(tag):
-                    return self.ds.Tag.query.filter_by(value=tag).all()[0].id
-                if isinstance(tag, self.ds.Tag):
-                    return tag.id
+        if tag is not None:
+            tag_id = None
+            if tag == str(tag):
+                tag_id = self.ds.Tag.query.filter_by(value=tag).all()[0].id
+            elif isinstance(tag, self.ds.Tag):
+                tag_id = tag.id
+            else:
                 raise TypeError(
-                    "Unknown type ('{}') of argument 'tag'".format(
-                        type(tag)))
+                    "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
-            tag_ids = map(get_tag_id, tags)
             query = query.join(self.ds.TaskTagLink).filter(
-                self.ds.TaskTagLink.tag_id.in_(tag_ids))
+                self.ds.TaskTagLink.tag_id == tag_id)
 
         if query_post_op:
             query = query_post_op(query)
