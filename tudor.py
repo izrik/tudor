@@ -152,7 +152,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     app.Task = ds.Task
     app.Tag = ds.Tag
-    app.TaskTagLink = ds.TaskTagLink
     app.Note = ds.Note
     app.Attachment = ds.Attachment
     app.User = ds.User
@@ -778,7 +777,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
 
-            tag = ll._convert_task_to_tag(id)
+            tag = ll._convert_task_to_tag(id, current_user)
 
             return redirect(
                 request.args.get('next') or url_for('view_tag', id=tag.id))

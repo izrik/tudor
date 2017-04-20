@@ -14,7 +14,6 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.db.create_all()
         self.Task = self.app.Task
         self.Tag = self.app.Tag
-        self.TaskTagLink = self.app.TaskTagLink
         self.user = self.ds.User('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):
@@ -65,9 +64,9 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.db.session.commit()
 
         self.assertEquals(4, self.Task.query.count())
-        self.assertEquals(0, child1.tags.count())
-        self.assertEquals(0, child2.tags.count())
-        self.assertEquals(0, child3.tags.count())
+        self.assertEquals(0, len(child1.tags))
+        self.assertEquals(0, len(child2.tags))
+        self.assertEquals(0, len(child3.tags))
 
         self.assertIs(task, child1.parent)
         self.assertIs(task, child2.parent)
@@ -78,9 +77,9 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
         # then
         self.assertEquals(3, self.Task.query.count())
-        self.assertEquals(1, child1.tags.count())
-        self.assertEquals(1, child2.tags.count())
-        self.assertEquals(1, child3.tags.count())
+        self.assertEquals(1, len(child1.tags))
+        self.assertEquals(1, len(child2.tags))
+        self.assertEquals(1, len(child3.tags))
 
         self.assertIsNone(child1.parent)
         self.assertIsNone(child2.parent)
@@ -94,11 +93,9 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
         task = self.Task('some_task')
         self.db.session.add(task)
+        task.tags.append(tag1)
 
         self.db.session.commit()
-
-        ttl = self.TaskTagLink(task.id, tag1.id)
-        self.db.session.add(ttl)
 
         child1 = self.Task('child1')
         child1.parent = task
@@ -113,18 +110,21 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.db.session.commit()
 
         self.assertEquals(1, tag1.tasks.count())
-        self.assertEquals(0, child1.tags.count())
-        self.assertEquals(0, child2.tags.count())
-        self.assertEquals(0, child3.tags.count())
+        self.assertEquals(0, len(child1.tags))
+        self.assertEquals(0, len(child2.tags))
+        self.assertEquals(0, len(child3.tags))
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(3, tag1.tasks.count())
-        self.assertEquals(2, child1.tags.count())
-        self.assertEquals(2, child2.tags.count())
-        self.assertEquals(2, child3.tags.count())
+        self.assertEquals({child1, child2, child3}, set(tag1.tasks))
+        self.assertIn(tag1, child1.tags)
+        self.assertIn(tag, child1.tags)
+        self.assertIn(tag1, child2.tags)
+        self.assertIn(tag, child2.tags)
+        self.assertIn(tag1, child3.tags)
+        self.assertIn(tag, child3.tags)
 
     def test_children_of_old_task_become_children_of_old_tasks_parent(self):
         # given

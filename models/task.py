@@ -4,7 +4,7 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(db, Tag, TaskTagLink):
+def generate_task_class(db, Tag, tags_tasks_table):
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -15,6 +15,8 @@ def generate_task_class(db, Tag, TaskTagLink):
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
         expected_cost = db.Column(db.Numeric)
+        tags = db.relationship('Tag', secondary=tags_tasks_table,
+                               backref=db.backref('tasks', lazy='dynamic'))
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -50,7 +52,7 @@ def generate_task_class(db, Tag, TaskTagLink):
                 'expected_duration_minutes':
                     self.expected_duration_minutes,
                 'expected_cost': self.get_expected_cost_for_export(),
-                'tag_ids': [ttl.tag_id for ttl in self.tags],
+                'tag_ids': [tag.id for tag in self.tags],
                 'user_ids': [tul.user_id for tul in self.users]
             }
 

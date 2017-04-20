@@ -407,12 +407,11 @@ class LogicLayer(object):
             tag = self.ds.Tag(value)
             self.db.session.add(tag)
 
-        ttl = self.ds.TaskTagLink.query.get((task.id, tag.id))
-        if ttl is None:
-            ttl = self.ds.TaskTagLink(task.id, tag.id)
-            self.db.session.add(ttl)
+        if tag not in task.tags:
+            task.tags.append(tag)
+            self.db.session.add(task)
 
-        return ttl
+        return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
         if tag_id is None:
@@ -425,11 +424,14 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        ttl = self.ds.TaskTagLink.query.get((task_id, tag_id))
-        if ttl is not None:
-            self.db.session.delete(ttl)
+        tag = self.ds.Tag.query.get(tag_id)
+        if tag is not None:
+            if tag in task.tags:
+                task.tags.remove(tag)
+                self.db.session.add(task)
+                self.db.session.add(tag)
 
-        return ttl
+        return tag
 
     def do_authorize_user_for_task(self, task, user_to_authorize,
                                    current_user):
@@ -641,8 +643,8 @@ class LogicLayer(object):
                     t.parent_id = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
-                        ttl = self.ds.TaskTagLink(t.id, tag_id)
-                        db_objects.append(ttl)
+                        tag = self.ds.Tag.query.get(tag_id)
+                        t.tags.append(tag)
                     for user_id in user_ids:
                         tul = self.ds.TaskUserLink(t.id, user_id)
                         db_objects.append(tul)
@@ -836,16 +838,14 @@ class LogicLayer(object):
         self.db.session.add(tag)
 
         for child in task.children:
-            ttl = self.ds.TaskTagLink(child.id, tag.id)
-            self.db.session.add(ttl)
+            child.tags.append(tag)
             child.parent = task.parent
+            for tag2 in task.tags:
+                child.tags.append(tag2)
             self.db.session.add(child)
-            for ttl2 in task.tags:
-                ttl3 = self.ds.TaskTagLink(child.id, ttl2.tag_id)
-                self.db.session.add(ttl3)
 
-        for ttl2 in task.tags:
-            self.db.session.delete(ttl2)
+        for tul in task.users:
+            self.db.session.delete(tul)
 
         task.parent = None
         self.db.session.add(task)
@@ -956,17 +956,15 @@ class LogicLayer(object):
             query = query.filter(self.ds.Task.deadline.isnot(None))
 
         if tag is not None:
-            tag_id = None
             if tag == str(tag):
-                tag_id = self.ds.Tag.query.filter_by(value=tag).all()[0].id
+                tag = self.ds.Tag.query.filter_by(value=tag).all()[0]
             elif isinstance(tag, self.ds.Tag):
-                tag_id = tag.id
+                pass
             else:
                 raise TypeError(
                     "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
-            query = query.join(self.ds.TaskTagLink).filter(
-                self.ds.TaskTagLink.tag_id == tag_id)
+            query = query.filter(self.ds.Task.tags.contains(tag))
 
         if query_post_op:
             query = query_post_op(query)

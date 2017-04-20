@@ -724,7 +724,6 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         db.create_all()
         Task = app.Task
         Tag = app.Tag
-        TTL = app.TaskTagLink
 
         self.user = self.app.User('name@example.org', None, True)
         db.session.add(self.user)
@@ -765,14 +764,12 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         db.session.add(great_grandchild)
         db.session.add(great_great_grandchild)
 
-        db.session.commit()
-
-        db.session.add(TTL(normal.id, abcd.id))
-        db.session.add(TTL(normal.id, efgh.id))
-        db.session.add(TTL(normal.id, ijkl.id))
-        db.session.add(TTL(parent.id, ijkl.id))
-        db.session.add(TTL(parent2.id, efgh.id))
-        db.session.add(TTL(great_great_grandchild.id, abcd.id))
+        normal.tags.append(abcd)
+        normal.tags.append(efgh)
+        normal.tags.append(ijkl)
+        parent.tags.append(ijkl)
+        parent2.tags.append(efgh)
+        great_great_grandchild.tags.append(abcd)
 
         db.session.commit()
 
