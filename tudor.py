@@ -785,10 +785,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                cycle=itertools.cycle,
                                tasks=task.children)
 
-    @app.route('/search', methods=['GET', 'POST'])
+    @app.route('/search', methods=['GET', 'POST'], defaults={'query': None})
+    @app.route('/search/', methods=['GET', 'POST'], defaults={'query': None})
+    @app.route('/search/<query>', methods=['GET'])
     @login_required
-    def search():
-        return render_template('search.t.html')
+    def search(query):
+        if query is None and request.method == 'POST':
+            query = request.form['query']
+        return render_template('search.t.html', query=query)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
