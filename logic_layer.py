@@ -276,7 +276,7 @@ class LogicLayer(object):
 
         if next_task:
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(descending=True))
+                self.reorder_tasks(task.get_siblings(ordered=True))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
@@ -317,7 +317,7 @@ class LogicLayer(object):
 
         if next_task:
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(descending=True))
+                self.reorder_tasks(task.get_siblings(ordered=True))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num

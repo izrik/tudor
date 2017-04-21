@@ -58,27 +58,27 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table):
                 'user_ids': [user.id for user in self.users]
             }
 
-        def get_siblings(self, include_deleted=True, descending=False):
+        def get_siblings(self, include_deleted=True, ordered=False):
             if self.parent_id is not None:
-                return self.parent.get_children(include_deleted, descending)
+                return self.parent.get_children(include_deleted, ordered)
 
             siblings = Task.query.filter(Task.parent_id == None)
 
             if not include_deleted:
                 siblings = siblings.filter(Task.is_deleted == False)
 
-            if descending:
+            if ordered:
                 siblings = siblings.order_by(Task.order_num.desc())
 
             return siblings
 
-        def get_children(self, include_deleted=True, descending=False):
+        def get_children(self, include_deleted=True, ordered=False):
             children = self.children
 
             if not include_deleted:
                 children = children.filter(Task.is_deleted == False)
 
-            if descending:
+            if ordered:
                 children = children.order_by(Task.order_num.desc())
 
             return children
