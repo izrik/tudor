@@ -644,13 +644,21 @@ class LogicLayer(object):
                     for tag_id in tag_ids:
                         tag = self.ds.Tag.query.get(tag_id)
                         if tag is None:
-                            # TODO: properly respond to case of tag-not-found
+                            tag = next((obj for obj in db_objects
+                                        if isinstance(obj, self.ds.Tag)
+                                        and obj.id == tag_id),
+                                       None)
+                        if tag is None:
                             raise Exception('Tag not found')
                         t.tags.append(tag)
                     for user_id in user_ids:
                         user = self.ds.User.query.get(user_id)
                         if user is None:
-                            # TODO: properly respond to case of user-not-found
+                            user = next((obj for obj in db_objects
+                                        if isinstance(obj, self.ds.User)
+                                        and obj.id == user_id),
+                                       None)
+                        if user is None:
                             raise Exception('User not found')
                         t.users.append(user)
                     db_objects.append(t)
