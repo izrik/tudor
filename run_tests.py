@@ -23,6 +23,8 @@ from tests.task_unset_deleted_tests import *
 from tests.do_reset_order_nums_tests import *
 from tests.tag_tests import *
 from tests.task_sibling_tests import *
+from tests.task_tests import *
+from tests.task_id_tests import *
 
 
 def run():
