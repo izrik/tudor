@@ -26,13 +26,6 @@ class LogicLayer(object):
             return True
         return False
 
-    def get_tasks_and_all_descendants_from_tasks(self, tasks):
-        visited = set()
-        result = []
-        for task in tasks:
-            task.get_all_descendants(visited=visited, result=result)
-        return result
-
     def sort_by_hierarchy(self, tasks, root=None):
         tasks_by_parent = {}
 
