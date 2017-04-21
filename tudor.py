@@ -785,6 +785,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                cycle=itertools.cycle,
                                tasks=task.children)
 
+    @app.route('/search', methods=['GET', 'POST'])
+    @login_required
+    def search():
+        return render_template('search.t.html')
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])

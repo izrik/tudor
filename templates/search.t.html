@@ -1,0 +1,15 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block content scoped %}
+<div class="container">
+<div>
+    search form
+    {{query_string}}
+</div>
+<div>
+{% if results %}
+    results
+{% endif %}
+</div>
+</div>
+{% endblock %}
