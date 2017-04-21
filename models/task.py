@@ -4,7 +4,7 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(db, Tag, tags_tasks_table):
+def generate_task_class(db, tags_tasks_table, users_tasks_table):
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -17,6 +17,8 @@ def generate_task_class(db, Tag, tags_tasks_table):
         expected_cost = db.Column(db.Numeric)
         tags = db.relationship('Tag', secondary=tags_tasks_table,
                                backref=db.backref('tasks', lazy='dynamic'))
+        users = db.relationship('User', secondary=users_tasks_table,
+                                backref=db.backref('tasks', lazy='dynamic'))
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -53,7 +55,7 @@ def generate_task_class(db, Tag, tags_tasks_table):
                     self.expected_duration_minutes,
                 'expected_cost': self.get_expected_cost_for_export(),
                 'tag_ids': [tag.id for tag in self.tags],
-                'user_ids': [tul.user_id for tul in self.users]
+                'user_ids': [user.id for user in self.users]
             }
 
         def get_siblings(self, include_deleted=True, descending=False,
@@ -143,9 +145,6 @@ def generate_task_class(db, Tag, tags_tasks_table):
             return '{:.2f}'.format(self.expected_cost)
 
         def is_user_authorized(self, user):
-            for tul in self.users:
-                if tul.user == user:
-                    return True
-            return False
+            return user in self.users
 
     return Task

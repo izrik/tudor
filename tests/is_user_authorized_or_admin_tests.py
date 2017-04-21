@@ -17,7 +17,6 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         self.ll = app.ll
         self.User = app.ds.User
         self.Task = app.ds.Task
-        self.TaskUserLink = app.ds.TaskUserLink
 
     def test_unauthorized_nonadmin_cannot_access_task(self):
 
@@ -41,9 +40,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         user = self.User('name@example.org')
         self.db.session.add(task)
         self.db.session.add(user)
-        self.db.session.commit()
-        tul = self.TaskUserLink(task.id, user.id)
-        self.db.session.add(tul)
+        task.users.append(user)
         self.db.session.commit()
 
         # when
@@ -74,9 +71,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         user = self.User('name@example.org', None, True)
         self.db.session.add(task)
         self.db.session.add(user)
-        self.db.session.commit()
-        tul = self.TaskUserLink(task.id, user.id)
-        self.db.session.add(tul)
+        task.users.append(user)
         self.db.session.commit()
 
         # when

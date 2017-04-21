@@ -103,9 +103,9 @@ class LogicLayer(object):
                 raise werkzeug.exceptions.Forbidden()
             task.parent = parent
 
-        tul = self.ds.TaskUserLink(task.id, current_user.id)
+        task.users.append(current_user)
 
-        return (task, tul)
+        return task
 
     def task_set_done(self, id, current_user):
         task = self.ds.Task.query.filter_by(id=id).first()
@@ -442,12 +442,10 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        tul = self.ds.TaskUserLink.query.get((task.id, user_to_authorize.id))
-        if tul is None:
-            tul = self.ds.TaskUserLink(task.id, user_to_authorize.id)
-            self.db.session.add(tul)
+        if user_to_authorize not in task.users:
+            task.users.append(user_to_authorize)
 
-        return tul
+        return task
 
     def do_authorize_user_for_task_by_email(self, task_id, user_email,
                                             current_user):
@@ -511,17 +509,18 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if task.users.count() < 2:
+        if len(task.users) < 2:
             raise werkzeug.exceptions.Conflict(
                 "The user cannot be de-authorized. It is the last authorized "
                 "user for the task. De-authorizing the user would make the "
                 "task inaccessible.")
 
-        tul = self.ds.TaskUserLink.query.get((task_id, user_id))
-        if tul is not None:
-            self.db.session.delete(tul)
+        if user_to_deauthorize in task.users:
+            task.users.remove(user_to_deauthorize)
+            self.db.session.add(task)
+            self.db.session.add(user_to_deauthorize)
 
-        return tul
+        return task
 
     def do_add_new_user(self, email, is_admin):
         user = self.ds.User.query.filter_by(email=email).first()
@@ -644,10 +643,16 @@ class LogicLayer(object):
                     t.order_num = order_num
                     for tag_id in tag_ids:
                         tag = self.ds.Tag.query.get(tag_id)
+                        if tag is None:
+                            # TODO: properly respond to case of tag-not-found
+                            raise Exception('Tag not found')
                         t.tags.append(tag)
                     for user_id in user_ids:
-                        tul = self.ds.TaskUserLink(t.id, user_id)
-                        db_objects.append(tul)
+                        user = self.ds.User.query.get(user_id)
+                        if user is None:
+                            # TODO: properly respond to case of user-not-found
+                            raise Exception('User not found')
+                        t.users.append(user)
                     db_objects.append(t)
 
             if 'notes' in src:
@@ -844,9 +849,6 @@ class LogicLayer(object):
                 child.tags.append(tag2)
             self.db.session.add(child)
 
-        for tul in task.users:
-            self.db.session.delete(tul)
-
         task.parent = None
         self.db.session.add(task)
 
@@ -870,8 +872,7 @@ class LogicLayer(object):
 
         if not current_user.is_admin:
             query = query.filter(
-                self.ds.Task.users.any(
-                    self.ds.TaskUserLink.user_id == current_user.id))
+                self.ds.Task.users.contains(current_user))
 
         if not include_done:
             query = query.filter_by(is_done=False)
@@ -911,8 +912,7 @@ class LogicLayer(object):
                 query = self.ds.Task.query
                 if not current_user.is_admin:
                     query = query.filter(
-                        self.ds.Task.users.any(
-                            self.ds.TaskUserLink.user_id == current_user.id))
+                        self.ds.Task.users.contains(current_user))
                 query = query.filter(self.ds.Task.parent_id.in_(next_ids),
                                      self.ds.Task.id.notin_(already_ids))
                 if not include_done:
@@ -943,8 +943,7 @@ class LogicLayer(object):
 
         if not current_user.is_admin:
             query = query.filter(
-                self.ds.Task.users.any(
-                    self.ds.TaskUserLink.user_id == current_user.id))
+                self.ds.Task.users.contains(current_user))
 
         if not include_done:
             query = query.filter_by(is_done=False)

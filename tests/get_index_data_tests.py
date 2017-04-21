@@ -82,13 +82,10 @@ class GetIndexDataTest(unittest.TestCase):
 
         self.db.session.add(t1)
         self.db.session.add(t2)
+
+        t2.users.append(self.user)
+
         self.db.session.commit()
-
-        tul = self.app.ds.TaskUserLink(None, None)
-        tul.task = t2
-        tul.user = self.user
-
-        self.db.session.add(tul)
 
         # when
         data = self.ll.get_index_data(True, True, True, self.user)

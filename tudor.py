@@ -247,14 +247,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             parent_id = None
 
-        task, tul = ll.create_new_task(summary, parent_id, current_user)
+        task = ll.create_new_task(summary, parent_id, current_user)
 
         db.session.add(task)
-        # TODO: extra commit in view
-        db.session.commit()
-        # TODO: modifying return value from logic layer in view
-        tul.task_id = task.id
-        db.session.add(tul)
         db.session.commit()
 
         if 'next_url' in request.form:

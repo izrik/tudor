@@ -16,7 +16,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.app = app
         self.ll = app.ll
         self.Task = app.ds.Task
-        self.TaskUserLink = app.ds.TaskUserLink
         self.admin = app.ds.User('name@example.org', None, True)
         self.db.session.add(self.admin)
         self.user = app.ds.User('name2@example.org', None, False)
@@ -122,18 +121,11 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.db.session.add(t3)
         self.db.session.add(t4)
         self.db.session.add(t5)
-        self.db.session.commit()
 
-        tul = self.TaskUserLink(t2.id, self.user.id)
-        self.db.session.add(tul)
-        self.db.session.commit()
+        t2.users.append(self.user)
+        t3.users.append(self.user)
+        t4.users.append(self.user)
 
-        tul = self.TaskUserLink(t3.id, self.user.id)
-        self.db.session.add(tul)
-        self.db.session.commit()
-
-        tul = self.TaskUserLink(t4.id, self.user.id)
-        self.db.session.add(tul)
         self.db.session.commit()
 
         # when

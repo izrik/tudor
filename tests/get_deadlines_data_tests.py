@@ -64,13 +64,10 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
         self.db.session.add(t1)
         self.db.session.add(t2)
+
+        t2.users.append(self.user)
+
         self.db.session.commit()
-
-        tul = self.app.ds.TaskUserLink(None, None)
-        tul.task = t2
-        tul.user = self.user
-
-        self.db.session.add(tul)
 
         # when
         result = self.ll.get_deadlines_data(self.user)
@@ -89,13 +86,10 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
         self.db.session.add(t1)
         self.db.session.add(t2)
+
+        t2.users.append(self.user)
+
         self.db.session.commit()
-
-        tul = self.app.ds.TaskUserLink(None, None)
-        tul.task = t2
-        tul.user = self.user
-
-        self.db.session.add(tul)
 
         # when
         result = self.ll.get_deadlines_data(self.admin)
