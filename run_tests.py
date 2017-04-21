@@ -12,7 +12,6 @@ from tests.convert_task_to_tag_tests import *
 from tests.db_loader_tests import *
 from tests.user_tests import *
 from tests.is_user_authorized_or_admin_tests import *
-from tests.task_hierarchy_tests import *
 from tests.sort_by_hierarchy_tests import *
 from tests.get_index_data_tests import *
 from tests.get_deadlines_data_tests import *

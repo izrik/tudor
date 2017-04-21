@@ -90,24 +90,6 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table):
 
             return children
 
-        def get_all_descendants(self, include_deleted=True,
-                                descending=False, ascending=False,
-                                visited=None, result=None):
-            if visited is None:
-                visited = set()
-            if result is None:
-                result = []
-
-            if self not in visited:
-                visited.add(self)
-                result.append(self)
-                for child in self.get_children(include_deleted, descending,
-                                               ascending):
-                    child.get_all_descendants(include_deleted, descending,
-                                              ascending, visited, result)
-
-            return result
-
         def get_css_class(self):
             if self.is_deleted and self.is_done:
                 return 'done-deleted'
