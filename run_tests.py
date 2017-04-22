@@ -26,6 +26,7 @@ from tests.task_sibling_tests import *
 from tests.task_tests import *
 from tests.task_id_tests import *
 from tests.task_get_children_tests import *
+from tests.task_css_tests import *
 
 
 def run():
