@@ -3,12 +3,10 @@
 from flask.ext.sqlalchemy import SQLAlchemy
 from models.task import generate_task_class
 from models.tag import generate_tag_class
-from models.task_tag_link import generate_task_tag_link_class
 from models.note import generate_note_class
 from models.attachment import generate_attachment_class
 from models.user import generate_user_class
 from models.option import generate_option_class
-from models.task_user_link import generate_task_user_link_class
 
 
 class SqlAlchemyDataSource(object):
@@ -20,28 +18,37 @@ class SqlAlchemyDataSource(object):
         db = self.db
 
         Tag = generate_tag_class(db)
-        TaskTagLink = generate_task_tag_link_class(db)
-        Task = generate_task_class(db, Tag, TaskTagLink)
+
+        tags_tasks_table = db.Table(
+            'tags_tasks',
+            db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'),
+                      index=True),
+            db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
+                      index=True))
+
+        users_tasks_table = db.Table(
+            'users_tasks',
+            db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+                      index=True),
+            db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
+                      index=True))
+
+        Task = generate_task_class(db, tags_tasks_table, users_tasks_table)
         Note = generate_note_class(db)
         Attachment = generate_attachment_class(db)
         User = generate_user_class(db, app.bcrypt)
         Option = generate_option_class(db)
-        TaskUserLink = generate_task_user_link_class(db)
 
         db.Task = Task
         db.Tag = Tag
-        db.TaskTagLink = TaskTagLink
         db.Note = Note
         db.Attachment = Attachment
         db.User = User
         db.Option = Option
-        db.TaskUserLink = TaskUserLink
 
         self.Task = Task
         self.Tag = Tag
-        self.TaskTagLink = TaskTagLink
         self.Note = Note
         self.Attachment = Attachment
         self.User = User
         self.Option = Option
-        self.TaskUserLink = TaskUserLink

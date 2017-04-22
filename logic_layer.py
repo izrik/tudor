@@ -26,13 +26,6 @@ class LogicLayer(object):
             return True
         return False
 
-    def get_tasks_and_all_descendants_from_tasks(self, tasks):
-        visited = set()
-        result = []
-        for task in tasks:
-            task.get_all_descendants(visited=visited, result=result)
-        return result
-
     def sort_by_hierarchy(self, tasks, root=None):
         tasks_by_parent = {}
 
@@ -103,9 +96,9 @@ class LogicLayer(object):
                 raise werkzeug.exceptions.Forbidden()
             task.parent = parent
 
-        tul = self.ds.TaskUserLink(task.id, current_user.id)
+        task.users.append(current_user)
 
-        return (task, tul)
+        return task
 
     def task_set_done(self, id, current_user):
         task = self.ds.Task.query.filter_by(id=id).first()
@@ -283,7 +276,7 @@ class LogicLayer(object):
 
         if next_task:
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(descending=True))
+                self.reorder_tasks(task.get_siblings(ordered=True))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
@@ -324,7 +317,7 @@ class LogicLayer(object):
 
         if next_task:
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(descending=True))
+                self.reorder_tasks(task.get_siblings(ordered=True))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
@@ -407,12 +400,11 @@ class LogicLayer(object):
             tag = self.ds.Tag(value)
             self.db.session.add(tag)
 
-        ttl = self.ds.TaskTagLink.query.get((task.id, tag.id))
-        if ttl is None:
-            ttl = self.ds.TaskTagLink(task.id, tag.id)
-            self.db.session.add(ttl)
+        if tag not in task.tags:
+            task.tags.append(tag)
+            self.db.session.add(task)
 
-        return ttl
+        return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
         if tag_id is None:
@@ -425,11 +417,14 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        ttl = self.ds.TaskTagLink.query.get((task_id, tag_id))
-        if ttl is not None:
-            self.db.session.delete(ttl)
+        tag = self.ds.Tag.query.get(tag_id)
+        if tag is not None:
+            if tag in task.tags:
+                task.tags.remove(tag)
+                self.db.session.add(task)
+                self.db.session.add(tag)
 
-        return ttl
+        return tag
 
     def do_authorize_user_for_task(self, task, user_to_authorize,
                                    current_user):
@@ -440,12 +435,10 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        tul = self.ds.TaskUserLink.query.get((task.id, user_to_authorize.id))
-        if tul is None:
-            tul = self.ds.TaskUserLink(task.id, user_to_authorize.id)
-            self.db.session.add(tul)
+        if user_to_authorize not in task.users:
+            task.users.append(user_to_authorize)
 
-        return tul
+        return task
 
     def do_authorize_user_for_task_by_email(self, task_id, user_email,
                                             current_user):
@@ -509,17 +502,18 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if task.users.count() < 2:
+        if len(task.users) < 2:
             raise werkzeug.exceptions.Conflict(
                 "The user cannot be de-authorized. It is the last authorized "
                 "user for the task. De-authorizing the user would make the "
                 "task inaccessible.")
 
-        tul = self.ds.TaskUserLink.query.get((task_id, user_id))
-        if tul is not None:
-            self.db.session.delete(tul)
+        if user_to_deauthorize in task.users:
+            task.users.remove(user_to_deauthorize)
+            self.db.session.add(task)
+            self.db.session.add(user_to_deauthorize)
 
-        return tul
+        return task
 
     def do_add_new_user(self, email, is_admin):
         user = self.ds.User.query.filter_by(email=email).first()
@@ -641,11 +635,25 @@ class LogicLayer(object):
                     t.parent_id = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
-                        ttl = self.ds.TaskTagLink(t.id, tag_id)
-                        db_objects.append(ttl)
+                        tag = self.ds.Tag.query.get(tag_id)
+                        if tag is None:
+                            tag = next((obj for obj in db_objects
+                                        if isinstance(obj, self.ds.Tag)
+                                        and obj.id == tag_id),
+                                       None)
+                        if tag is None:
+                            raise Exception('Tag not found')
+                        t.tags.append(tag)
                     for user_id in user_ids:
-                        tul = self.ds.TaskUserLink(t.id, user_id)
-                        db_objects.append(tul)
+                        user = self.ds.User.query.get(user_id)
+                        if user is None:
+                            user = next((obj for obj in db_objects
+                                        if isinstance(obj, self.ds.User)
+                                        and obj.id == user_id),
+                                       None)
+                        if user is None:
+                            raise Exception('User not found')
+                        t.users.append(user)
                     db_objects.append(t)
 
             if 'notes' in src:
@@ -788,7 +796,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
         tasks = self.load_no_hierarchy(current_user, include_done=True,
-                                       include_deleted=True, tags=tag)
+                                       include_deleted=True, tag=tag)
         return {
             'tag': tag,
             'tasks': tasks,
@@ -836,16 +844,11 @@ class LogicLayer(object):
         self.db.session.add(tag)
 
         for child in task.children:
-            ttl = self.ds.TaskTagLink(child.id, tag.id)
-            self.db.session.add(ttl)
+            child.tags.append(tag)
             child.parent = task.parent
+            for tag2 in task.tags:
+                child.tags.append(tag2)
             self.db.session.add(child)
-            for ttl2 in task.tags:
-                ttl3 = self.ds.TaskTagLink(child.id, ttl2.tag_id)
-                self.db.session.add(ttl3)
-
-        for ttl2 in task.tags:
-            self.db.session.delete(ttl2)
 
         task.parent = None
         self.db.session.add(task)
@@ -870,8 +873,7 @@ class LogicLayer(object):
 
         if not current_user.is_admin:
             query = query.filter(
-                self.ds.Task.users.any(
-                    self.ds.TaskUserLink.user_id == current_user.id))
+                self.ds.Task.users.contains(current_user))
 
         if not include_done:
             query = query.filter_by(is_done=False)
@@ -911,8 +913,7 @@ class LogicLayer(object):
                 query = self.ds.Task.query
                 if not current_user.is_admin:
                     query = query.filter(
-                        self.ds.Task.users.any(
-                            self.ds.TaskUserLink.user_id == current_user.id))
+                        self.ds.Task.users.contains(current_user))
                 query = query.filter(self.ds.Task.parent_id.in_(next_ids),
                                      self.ds.Task.id.notin_(already_ids))
                 if not include_done:
@@ -938,13 +939,12 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
-                          tags=None, query_post_op=None):
+                          tag=None, query_post_op=None):
         query = self.ds.Task.query
 
         if not current_user.is_admin:
             query = query.filter(
-                self.ds.Task.users.any(
-                    self.ds.TaskUserLink.user_id == current_user.id))
+                self.ds.Task.users.contains(current_user))
 
         if not include_done:
             query = query.filter_by(is_done=False)
@@ -955,27 +955,16 @@ class LogicLayer(object):
         if exclude_undeadlined:
             query = query.filter(self.ds.Task.deadline.isnot(None))
 
-        if tags is not None:
-            if not hasattr(tags, '__iter__'):
-                tags = [tags]
-            if len(tags) < 1:
-                tags = None
-
-        if tags is not None:
-            def get_tag_id(tag):
-                if tag is None:
-                    return None
-                if tag == str(tag):
-                    return self.ds.Tag.query.filter_by(value=tag).all()[0].id
-                if isinstance(tag, self.ds.Tag):
-                    return tag.id
+        if tag is not None:
+            if tag == str(tag):
+                tag = self.ds.Tag.query.filter_by(value=tag).all()[0]
+            elif isinstance(tag, self.ds.Tag):
+                pass
+            else:
                 raise TypeError(
-                    "Unknown type ('{}') of argument 'tag'".format(
-                        type(tag)))
+                    "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
-            tag_ids = map(get_tag_id, tags)
-            query = query.join(self.ds.TaskTagLink).filter(
-                self.ds.TaskTagLink.tag_id.in_(tag_ids))
+            query = query.filter(self.ds.Task.tags.contains(tag))
 
         if query_post_op:
             query = query_post_op(query)

@@ -152,7 +152,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     app.Task = ds.Task
     app.Tag = ds.Tag
-    app.TaskTagLink = ds.TaskTagLink
     app.Note = ds.Note
     app.Attachment = ds.Attachment
     app.User = ds.User
@@ -248,14 +247,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         else:
             parent_id = None
 
-        task, tul = ll.create_new_task(summary, parent_id, current_user)
+        task = ll.create_new_task(summary, parent_id, current_user)
 
         db.session.add(task)
-        # TODO: extra commit in view
-        db.session.commit()
-        # TODO: modifying return value from logic layer in view
-        tul.task_id = task.id
-        db.session.add(tul)
         db.session.commit()
 
         if 'next_url' in request.form:
@@ -778,7 +772,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
 
-            tag = ll._convert_task_to_tag(id)
+            tag = ll._convert_task_to_tag(id, current_user)
 
             return redirect(
                 request.args.get('next') or url_for('view_tag', id=tag.id))

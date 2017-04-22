@@ -19,3 +19,11 @@ or:
     # run tudor.py --create-db
     insert into task_tag_link (task_id, tag_id) select task_id, tag_id from task_tag_link2;
     drop table task_tag_link2;
+
+--------
+
+insert tags_tasks (task_id, tag_id) select task_id, tag_id from task_tag_link;
+drop table task_tag_link;
+
+insert users_tasks (task_id, user_id) select task_id, user_id from task_user_link;
+drop table task_user_link;

@@ -4,7 +4,7 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(db, Tag, TaskTagLink):
+def generate_task_class(db, tags_tasks_table, users_tasks_table):
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -15,6 +15,10 @@ def generate_task_class(db, Tag, TaskTagLink):
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
         expected_cost = db.Column(db.Numeric)
+        tags = db.relationship('Tag', secondary=tags_tasks_table,
+                               backref=db.backref('tasks', lazy='dynamic'))
+        users = db.relationship('User', secondary=users_tasks_table,
+                                backref=db.backref('tasks', lazy='dynamic'))
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -50,59 +54,34 @@ def generate_task_class(db, Tag, TaskTagLink):
                 'expected_duration_minutes':
                     self.expected_duration_minutes,
                 'expected_cost': self.get_expected_cost_for_export(),
-                'tag_ids': [ttl.tag_id for ttl in self.tags],
-                'user_ids': [tul.user_id for tul in self.users]
+                'tag_ids': [tag.id for tag in self.tags],
+                'user_ids': [user.id for user in self.users]
             }
 
-        def get_siblings(self, include_deleted=True, descending=False,
-                         ascending=False):
+        def get_siblings(self, include_deleted=True, ordered=False):
             if self.parent_id is not None:
-                return self.parent.get_children(include_deleted,
-                                                descending, ascending)
+                return self.parent.get_children(include_deleted, ordered)
 
             siblings = Task.query.filter(Task.parent_id == None)
 
             if not include_deleted:
                 siblings = siblings.filter(Task.is_deleted == False)
 
-            if descending:
+            if ordered:
                 siblings = siblings.order_by(Task.order_num.desc())
-            elif ascending:
-                siblings = siblings.order_by(Task.order_num.asc())
 
             return siblings
 
-        def get_children(self, include_deleted=True, descending=False,
-                         ascending=False):
+        def get_children(self, include_deleted=True, ordered=False):
             children = self.children
 
             if not include_deleted:
                 children = children.filter(Task.is_deleted == False)
 
-            if descending:
+            if ordered:
                 children = children.order_by(Task.order_num.desc())
-            elif ascending:
-                children = children.order_by(Task.order_num.asc())
 
             return children
-
-        def get_all_descendants(self, include_deleted=True,
-                                descending=False, ascending=False,
-                                visited=None, result=None):
-            if visited is None:
-                visited = set()
-            if result is None:
-                result = []
-
-            if self not in visited:
-                visited.add(self)
-                result.append(self)
-                for child in self.get_children(include_deleted, descending,
-                                               ascending):
-                    child.get_all_descendants(include_deleted, descending,
-                                              ascending, visited, result)
-
-            return result
 
         def get_css_class(self):
             if self.is_deleted and self.is_done:
@@ -141,9 +120,6 @@ def generate_task_class(db, Tag, TaskTagLink):
             return '{:.2f}'.format(self.expected_cost)
 
         def is_user_authorized(self, user):
-            for tul in self.users:
-                if tul.user == user:
-                    return True
-            return False
+            return user in self.users
 
     return Task

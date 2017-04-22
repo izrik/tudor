@@ -23,17 +23,13 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_admin_adds_first_task(self):
         # when
-        result = self.ll.create_new_task('t1', None, self.admin)
+        task = self.ll.create_new_task('t1', None, self.admin)
 
         # then
-        self.assertIsInstance(result, tuple)
-        self.assertEqual(2, len(result))
-        task = result[0]
-        tul = result[1]
+        self.assertIsNotNone(task)
         self.assertIsInstance(task, self.Task)
         self.assertEqual('t1', task.summary)
         self.assertIsNone(task.parent)
-        self.assertIsInstance(tul, self.app.ds.TaskUserLink)
 
     def test_admin_adds_second_task(self):
         # given
@@ -43,17 +39,13 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.add(t1)
 
         # when
-        result = self.ll.create_new_task('t2', None, self.admin)
+        task = self.ll.create_new_task('t2', None, self.admin)
 
         # then
-        self.assertIsInstance(result, tuple)
-        self.assertEqual(2, len(result))
-        task = result[0]
-        tul = result[1]
+        self.assertIsNotNone(task)
         self.assertIsInstance(task, self.Task)
         self.assertEqual('t2', task.summary)
         self.assertIsNone(task.parent)
-        self.assertIsInstance(tul, self.app.ds.TaskUserLink)
 
     def test_admin_adds_child_task_to_parent(self):
         # given
@@ -64,44 +56,31 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.commit()
 
         # when
-        result = self.ll.create_new_task('c', p.id, self.admin)
+        task = self.ll.create_new_task('c', p.id, self.admin)
 
         # then
-        self.assertIsInstance(result, tuple)
-        self.assertEqual(2, len(result))
-        task = result[0]
-        tul = result[1]
+        self.assertIsNotNone(task)
         self.assertIsInstance(task, self.Task)
         self.assertEqual('c', task.summary)
         self.assertIs(p, task.parent)
-        self.assertIsInstance(tul, self.app.ds.TaskUserLink)
 
     def test_user_adds_task_to_authorized_parent_succeeds(self):
         # given
         p = self.Task('p')
         p.order_num = 1
+        p.users.append(self.user)
 
         self.db.session.add(p)
         self.db.session.commit()
 
-        tul = self.app.ds.TaskUserLink(None, None)
-        tul.task = p
-        tul.user = self.user
-
-        self.db.session.add(tul)
-
         # when
-        result = self.ll.create_new_task('c', p.id, self.user)
+        task = self.ll.create_new_task('c', p.id, self.user)
 
         # then
-        self.assertIsInstance(result, tuple)
-        self.assertEqual(2, len(result))
-        task = result[0]
-        tul = result[1]
+        self.assertIsNotNone(task)
         self.assertIsInstance(task, self.Task)
         self.assertEqual('c', task.summary)
         self.assertIs(p, task.parent)
-        self.assertIsInstance(tul, self.app.ds.TaskUserLink)
 
     def test_user_adds_task_to_non_authorized_parent_raises_403(self):
         # given

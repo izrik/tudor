@@ -52,9 +52,9 @@
         <tr>
             <td>Tags</td>
             <td>
-                {% for ttl in task.tags %}
-                    <a href="{{ url_for('view_tag', id=ttl.tag_id) }}">{{ ttl.value }}</a>
-                    <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=ttl.tag_id) }}">
+                {% for tag in task.tags %}
+                    <a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a>
+                    <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=tag.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
                 {% endfor %}
@@ -68,10 +68,10 @@
         <tr>
             <td>Authorized Users</td>
             <td>
-                {% for tul in task.users %}
-                    <a href="{{ url_for('view_user', user_id=tul.user_id) }}">{{ tul.email }}</a>
-                    {% if task.users.count() > 1 %}
-                    <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=tul.user_id) }}">
+                {% for user in task.users %}
+                    <a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.email }}</a>
+                    {% if task.users.__len__() > 1 %}
+                    <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=user.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
                     {% endif %}
