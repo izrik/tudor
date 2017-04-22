@@ -28,6 +28,7 @@ from tests.task_id_tests import *
 from tests.task_get_children_tests import *
 from tests.task_css_tests import *
 from tests.task_tags_tests import *
+from tests.task_duration_text_tests import *
 
 
 def run():
