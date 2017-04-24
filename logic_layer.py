@@ -939,7 +939,8 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
-                          tag=None, query_post_op=None):
+                          tag=None, query_post_op=None,
+                          order_by_order_num=False):
         query = self.ds.Task.query
 
         if not current_user.is_admin:
@@ -965,6 +966,9 @@ class LogicLayer(object):
                     "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
             query = query.filter(self.ds.Task.tags.contains(tag))
+
+        if order_by_order_num:
+            query = query.order_by(self.ds.Task.order_num)
 
         if query_post_op:
             query = query_post_op(query)
