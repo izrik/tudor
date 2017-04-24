@@ -981,7 +981,7 @@ class LogicLayer(object):
         like_term = '%{}%'.format(search_query)
         query = self.ds.Task.query
         if not current_user.is_admin:
-            query.filter(self.ds.Task.users.contains(current_user))
+            query = query.filter(self.ds.Task.users.contains(current_user))
 
         results = query.filter(
             self.ds.Task.summary.like(like_term) |
