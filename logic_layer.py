@@ -976,3 +976,15 @@ class LogicLayer(object):
             task.depth = depth
 
         return tasks
+
+    def search(self, search_query, current_user):
+        like_term = '%{}%'.format(search_query)
+        query = self.ds.Task.query
+        if not current_user.is_admin:
+            query = query.filter(self.ds.Task.users.contains(current_user))
+
+        results = query.filter(
+            self.ds.Task.summary.like(like_term) |
+            self.ds.Task.description.like(like_term))
+
+        return results

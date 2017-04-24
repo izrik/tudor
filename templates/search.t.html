@@ -1,0 +1,22 @@
+{% extends "base.t.html" %}
+{% from 'task_table.t.html' import render_task_table %}
+{% block content scoped %}
+<div class="container">
+<div>
+    <form class="form-inline" action="{{ url_for('search') }}" method="post">
+        <input type="text" class="form-control" name="query" id="query" placeholder="Search query" value="{{query}}"/>
+        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+    </form>
+</div>
+<div>
+{% if results and results.count() > 0 %}
+    <hr>
+{% for task in results %}
+    <p><a href="{{url_for('view_task', id=task.id)}}">{{task.summary}} ({{task.id}})</a></p>
+{% else %}
+    <p>No results found.</p>
+{% endfor %}
+{% endif %}
+</div>
+</div>
+{% endblock %}
