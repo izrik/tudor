@@ -53,9 +53,9 @@ class LogicLayer(object):
         max_depth = None
         if not show_hierarchy:
             max_depth = 0
-        tasks_h = self.load(current_user, root_task_id=None,
+        tasks_h, pager = self.load(current_user, root_task_id=None,
                             max_depth=max_depth, include_done=show_done,
-                            include_deleted=show_deleted)
+                            include_deleted=show_deleted, paginate=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         all_tags = self.ds.Tag.query.all()
@@ -65,6 +65,7 @@ class LogicLayer(object):
             'show_hierarchy': show_hierarchy,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
+            'pager': pager,
         }
 
     def get_deadlines_data(self, current_user):
@@ -862,7 +863,8 @@ class LogicLayer(object):
 
     def load(self, current_user, root_task_id=None, max_depth=0,
              include_done=False, include_deleted=False,
-             exclude_undeadlined=False):
+             exclude_undeadlined=False, paginate=False, page=None,
+             per_page=None):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
@@ -891,6 +893,10 @@ class LogicLayer(object):
 
         query = query.order_by(self.ds.Task.id.asc())
         query = query.order_by(self.ds.Task.order_num.desc())
+
+        pager = None
+        if paginate:
+            pager = query.paginate(page=page, per_page=per_page)
 
         tasks = query.all()
 
@@ -934,6 +940,9 @@ class LogicLayer(object):
                 buckets.append(children)
             tasks = list(
                 set([task for bucket in buckets for task in bucket]))
+
+        if pager:
+            return tasks, pager
 
         return tasks
 

@@ -222,7 +222,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                             cycle=itertools.cycle,
                             user=current_user,
                             tasks_h=data['tasks_h'],
-                            tags=data['all_tags']))
+                            tags=data['all_tags'],
+                            pager=data['pager']))
         return resp
 
     @app.route('/deadlines')
