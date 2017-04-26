@@ -223,7 +223,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                             user=current_user,
                             tasks_h=data['tasks_h'],
                             tags=data['all_tags'],
-                            pager=data['pager']))
+                            pager=data['pager'],
+                            pager_link_page='index',
+                            pager_link_args={}))
         return resp
 
     @app.route('/hierarchy')
@@ -349,7 +351,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
                                show_deleted=show_deleted, show_done=show_done,
-                               show_hierarchy=show_hierarchy)
+                               show_hierarchy=show_hierarchy,
+                               pager=data['pager'],
+                               pager_link_page='view_task',
+                               pager_link_args={'id':id})
 
     @app.route('/task/<int:id>/hierarchy')
     @login_required
@@ -361,7 +366,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                           include_deleted=show_deleted,
                                           include_done=show_done)
 
-        return render_template('task.t.html', task=data['task'],
+        return render_template('task_hierarchy.t.html', task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
                                show_deleted=show_deleted, show_done=show_done,

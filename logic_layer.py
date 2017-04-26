@@ -161,9 +161,13 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        descendants = self.load(current_user, root_task_id=task.id,
-                                max_depth=1, include_done=include_done,
-                                include_deleted=include_deleted)
+        query = self.query_no_hierarchy(current_user=current_user,
+                                        include_done=include_done,
+                                        include_deleted=include_deleted,
+                                        order_by_order_num=True,
+                                        root_task_id=task.id)
+        pager = query.paginate()
+        descendants = query
 
         hierarchy_sort = True
         if hierarchy_sort:
@@ -172,6 +176,7 @@ class LogicLayer(object):
         return {
             'task': task,
             'descendants': descendants,
+            'pager': pager,
         }
 
     def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
