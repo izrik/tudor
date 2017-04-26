@@ -980,11 +980,16 @@ class LogicLayer(object):
 
         return tasks
 
-    def load_no_hierarchy(self, current_user, include_done=False,
-                          include_deleted=False, exclude_undeadlined=False,
-                          tag=None, query_post_op=None,
-                          order_by_order_num=False):
+    def query_no_hierarchy(self, current_user, include_done=False,
+                           include_deleted=False, exclude_undeadlined=False,
+                           tag=None, query_post_op=None,
+                           order_by_order_num=False, root_task_id=None):
         query = self.ds.Task.query
+
+        if root_task_id is None:
+            query = query.filter(self.ds.Task.parent_id.is_(None))
+        else:
+            query = query.filter_by(parent_id=root_task_id)
 
         if not current_user.is_admin:
             query = query.filter(
@@ -1011,10 +1016,23 @@ class LogicLayer(object):
             query = query.filter(self.ds.Task.tags.contains(tag))
 
         if order_by_order_num:
-            query = query.order_by(self.ds.Task.order_num)
+            query = query.order_by(self.ds.Task.order_num.desc())
 
         if query_post_op:
             query = query_post_op(query)
+
+        return query
+
+    def load_no_hierarchy(self, current_user, include_done=False,
+                          include_deleted=False, exclude_undeadlined=False,
+                          tag=None, query_post_op=None,
+                          order_by_order_num=False):
+        query = self.query_no_hierarchy(current_user=current_user,
+                                        include_done=include_done,
+                                        include_deleted=include_deleted,
+                                        exclude_undeadlined=exclude_undeadlined,
+                                        tag=tag, query_post_op=query_post_op,
+                                        order_by_order_num=order_by_order_num)
 
         tasks = query.all()
 
