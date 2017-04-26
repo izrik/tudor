@@ -166,6 +166,7 @@ class LogicLayer(object):
                                         include_deleted=include_deleted,
                                         order_by_order_num=True,
                                         root_task_id=task.id)
+        query = query.filter_by(parent_id=task.id)
         pager = query.paginate()
         descendants = query
 
@@ -990,11 +991,6 @@ class LogicLayer(object):
                            tag=None, query_post_op=None,
                            order_by_order_num=False, root_task_id=None):
         query = self.ds.Task.query
-
-        if root_task_id is None:
-            query = query.filter(self.ds.Task.parent_id.is_(None))
-        else:
-            query = query.filter_by(parent_id=root_task_id)
 
         if not current_user.is_admin:
             query = query.filter(
