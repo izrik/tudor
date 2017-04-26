@@ -341,10 +341,25 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy')
+        show_hierarchy = False
         data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
-                                include_done=show_done,
-                                show_hierarchy=show_hierarchy)
+                                include_done=show_done)
+
+        return render_template('task.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle,
+                               show_deleted=show_deleted, show_done=show_done,
+                               show_hierarchy=show_hierarchy)
+
+    @app.route('/task/<int:id>/hierarchy')
+    @login_required
+    def view_task_hierarchy(id):
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        show_hierarchy = True
+        data = ll.get_task_hierarchy_data(id, current_user,
+                                          include_deleted=show_deleted,
+                                          include_done=show_done)
 
         return render_template('task.t.html', task=data['task'],
                                descendants=data['descendants'],

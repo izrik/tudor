@@ -154,18 +154,36 @@ class LogicLayer(object):
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
-                      include_done=True, show_hierarchy=True):
+                      include_done=True):
         task = self.ds.Task.query.filter_by(id=id).first()
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        max_depth = None
-        if not show_hierarchy:
-            max_depth = 1
         descendants = self.load(current_user, root_task_id=task.id,
-                                max_depth=max_depth, include_done=include_done,
+                                max_depth=1, include_done=include_done,
+                                include_deleted=include_deleted)
+
+        hierarchy_sort = True
+        if hierarchy_sort:
+            descendants = self.sort_by_hierarchy(descendants, root=task)
+
+        return {
+            'task': task,
+            'descendants': descendants,
+        }
+
+    def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
+                                include_done=True):
+        task = self.ds.Task.query.filter_by(id=id).first()
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        descendants = self.load(current_user, root_task_id=task.id,
+                                max_depth=None, include_done=include_done,
                                 include_deleted=include_deleted)
 
         hierarchy_sort = True
