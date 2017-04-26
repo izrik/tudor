@@ -68,6 +68,22 @@ class LogicLayer(object):
             'pager': pager,
         }
 
+    def get_index_hierarchy_data(self, show_deleted, show_done, current_user):
+        max_depth = None
+        tasks_h = self.load(current_user, root_task_id=None,
+                            max_depth=max_depth, include_done=show_done,
+                            include_deleted=show_deleted, paginate=False)
+        tasks_h = self.sort_by_hierarchy(tasks_h)
+
+        all_tags = self.ds.Tag.query.all()
+        return {
+            'show_deleted': show_deleted,
+            'show_done': show_done,
+            'show_hierarchy': True,
+            'tasks_h': tasks_h,
+            'all_tags': all_tags,
+        }
+
     def get_deadlines_data(self, current_user):
         def order_by_deadline(query):
             return query.order_by(self.ds.Task.deadline)

@@ -226,6 +226,26 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                             pager=data['pager']))
         return resp
 
+    @app.route('/hierarchy')
+    @login_required
+    def hierarchy():
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+
+        data = ll.get_index_hierarchy_data(show_deleted, show_done,
+                                           current_user)
+
+        resp = make_response(
+            render_template('hierarchy.t.html',
+                            show_deleted=data['show_deleted'],
+                            show_done=data['show_done'],
+                            show_hierarchy=True,
+                            cycle=itertools.cycle,
+                            user=current_user,
+                            tasks_h=data['tasks_h'],
+                            tags=data['all_tags']))
+        return resp
+
     @app.route('/deadlines')
     @login_required
     def deadlines():
