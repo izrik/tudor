@@ -55,13 +55,13 @@ class LogicLayer(object):
             include_deleted=show_deleted, order_by_order_num=True)
         query = query.filter(self.ds.Task.parent_id.is_(None))
         pager = query.paginate()
-        tasks_h = query
+        tasks = query
 
         all_tags = self.ds.Tag.query.all()
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
-            'tasks_h': tasks_h,
+            'tasks': tasks,
             'all_tags': all_tags,
             'pager': pager,
         }

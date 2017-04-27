@@ -45,7 +45,7 @@ class GetIndexDataTest(unittest.TestCase):
         data = self.ll.get_index_data(True, True, self.admin)
 
         # then
-        self.assertEqual([t4, t2, t1], list(data['tasks_h']))
+        self.assertEqual([t4, t2, t1], list(data['tasks']))
         self.assertEqual([tag1], data['all_tags'])
 
     def test_show_deleted_returns_as_is(self):
@@ -91,7 +91,7 @@ class GetIndexDataTest(unittest.TestCase):
         data = self.ll.get_index_data(True, True, self.user)
 
         # then
-        self.assertEqual([t2], list(data['tasks_h']))
+        self.assertEqual([t2], list(data['tasks']))
 
     def test_get_index_hierarchy_data_returns_tasks_and_tags(self):
 
@@ -222,7 +222,7 @@ class GetIndexDataTest(unittest.TestCase):
         data = self.ll.get_index_data(True, True, self.admin)
 
         # then
-        tasks = list(data['tasks_h'])
+        tasks = list(data['tasks'])
         self.assertEqual([t4, t2, t1], tasks)
         self.assertEqual(0, tasks[0].depth)
         self.assertEqual(0, tasks[1].depth)
