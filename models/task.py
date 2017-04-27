@@ -129,4 +129,17 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
         def is_user_authorized(self, user):
             return user in self.users
 
+        def contains_dependency_cycle(self, visited=None):
+            if visited is None:
+                visited = set()
+            if self in visited:
+                return True
+            visited.add(self)
+            for dependee in self.dependees:
+                if dependee.contains_dependency_cycle(visited):
+                    return True
+
+            return False
+
+
     return Task
