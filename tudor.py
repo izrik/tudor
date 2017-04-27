@@ -238,7 +238,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             render_template('hierarchy.t.html',
                             show_deleted=data['show_deleted'],
                             show_done=data['show_done'],
-                            show_hierarchy=True,
                             cycle=itertools.cycle,
                             user=current_user,
                             tasks_h=data['tasks_h'],
@@ -340,7 +339,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = False
         data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
                                 include_done=show_done)
 
@@ -348,7 +346,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
                                show_deleted=show_deleted, show_done=show_done,
-                               show_hierarchy=show_hierarchy,
                                pager=data['pager'],
                                pager_link_page='view_task',
                                pager_link_args={'id':id})
@@ -358,7 +355,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task_hierarchy(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = True
         data = ll.get_task_hierarchy_data(id, current_user,
                                           include_deleted=show_deleted,
                                           include_done=show_done)
@@ -366,8 +362,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return render_template('task_hierarchy.t.html', task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done,
-                               show_hierarchy=show_hierarchy)
+                               show_deleted=show_deleted, show_done=show_done)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
