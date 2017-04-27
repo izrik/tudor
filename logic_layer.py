@@ -48,21 +48,35 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done, show_hierarchy,
+    def get_index_data(self, show_deleted, show_done,
                        current_user):
+        query = self.query_no_hierarchy(
+            current_user=current_user, include_done=show_done,
+            include_deleted=show_deleted, order_by_order_num=True)
+        query = query.filter(self.ds.Task.parent_id.is_(None))
+        pager = query.paginate()
+        tasks = query
+
+        all_tags = self.ds.Tag.query.all()
+        return {
+            'show_deleted': show_deleted,
+            'show_done': show_done,
+            'tasks': tasks,
+            'all_tags': all_tags,
+            'pager': pager,
+        }
+
+    def get_index_hierarchy_data(self, show_deleted, show_done, current_user):
         max_depth = None
-        if not show_hierarchy:
-            max_depth = 0
         tasks_h = self.load(current_user, root_task_id=None,
                             max_depth=max_depth, include_done=show_done,
-                            include_deleted=show_deleted)
+                            include_deleted=show_deleted, paginate=False)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         all_tags = self.ds.Tag.query.all()
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
-            'show_hierarchy': show_hierarchy,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
         }
@@ -137,23 +151,45 @@ class LogicLayer(object):
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
-                      include_done=True, show_hierarchy=True):
+                      include_done=True):
         task = self.ds.Task.query.filter_by(id=id).first()
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        max_depth = None
-        if not show_hierarchy:
-            max_depth = 1
-        descendants = self.load(current_user, root_task_id=task.id,
-                                max_depth=max_depth, include_done=include_done,
-                                include_deleted=include_deleted)
+        query = self.query_no_hierarchy(current_user=current_user,
+                                        include_done=include_done,
+                                        include_deleted=include_deleted,
+                                        order_by_order_num=True,
+                                        root_task_id=task.id)
+        query = query.filter_by(parent_id=task.id)
+        pager = query.paginate()
+        descendants = query
 
         hierarchy_sort = True
         if hierarchy_sort:
             descendants = self.sort_by_hierarchy(descendants, root=task)
+
+        return {
+            'task': task,
+            'descendants': descendants,
+            'pager': pager,
+        }
+
+    def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
+                                include_done=True):
+        task = self.ds.Task.query.filter_by(id=id).first()
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        descendants = self.load(current_user, root_task_id=task.id,
+                                max_depth=None, include_done=include_done,
+                                include_deleted=include_deleted)
+
+        descendants = self.sort_by_hierarchy(descendants, root=task)
 
         return {
             'task': task,
@@ -862,7 +898,8 @@ class LogicLayer(object):
 
     def load(self, current_user, root_task_id=None, max_depth=0,
              include_done=False, include_deleted=False,
-             exclude_undeadlined=False):
+             exclude_undeadlined=False, paginate=False, page=None,
+             per_page=None):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
@@ -891,6 +928,10 @@ class LogicLayer(object):
 
         query = query.order_by(self.ds.Task.id.asc())
         query = query.order_by(self.ds.Task.order_num.desc())
+
+        pager = None
+        if paginate:
+            pager = query.paginate(page=page, per_page=per_page)
 
         tasks = query.all()
 
@@ -935,11 +976,15 @@ class LogicLayer(object):
             tasks = list(
                 set([task for bucket in buckets for task in bucket]))
 
+        if pager:
+            return tasks, pager
+
         return tasks
 
-    def load_no_hierarchy(self, current_user, include_done=False,
-                          include_deleted=False, exclude_undeadlined=False,
-                          tag=None, query_post_op=None):
+    def query_no_hierarchy(self, current_user, include_done=False,
+                           include_deleted=False, exclude_undeadlined=False,
+                           tag=None, query_post_op=None,
+                           order_by_order_num=False, root_task_id=None):
         query = self.ds.Task.query
 
         if not current_user.is_admin:
@@ -966,8 +1011,24 @@ class LogicLayer(object):
 
             query = query.filter(self.ds.Task.tags.contains(tag))
 
+        if order_by_order_num:
+            query = query.order_by(self.ds.Task.order_num.desc())
+
         if query_post_op:
             query = query_post_op(query)
+
+        return query
+
+    def load_no_hierarchy(self, current_user, include_done=False,
+                          include_deleted=False, exclude_undeadlined=False,
+                          tag=None, query_post_op=None,
+                          order_by_order_num=False):
+        query = self.query_no_hierarchy(current_user=current_user,
+                                        include_done=include_done,
+                                        include_deleted=include_deleted,
+                                        exclude_undeadlined=exclude_undeadlined,
+                                        tag=tag, query_post_op=query_post_op,
+                                        order_by_order_num=order_by_order_num)
 
         tasks = query.all()
 

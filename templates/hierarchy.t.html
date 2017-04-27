@@ -3,16 +3,13 @@
 {% block content scoped %}
 <div class="container">
 <div>
-    {% include 'page_links.fragment.html' %}
 
-    {{ render_task_table(pager.items, root=None, cycle=cycle,
+    {{ render_task_table(tasks_h, root=None, cycle=cycle,
         page_url=url_for('index'),
         child_task_view='view_task',
         show_move_links=True,
-        show_new_task_form=True,
-        show_order_num=True) }}
+        show_new_task_form=True) }}
 
-    {% include 'page_links.fragment.html' %}
 </div>
 <div>
     <p>
@@ -29,11 +26,8 @@
         <a href="{{ url_for('show_hide_done', show_done=1) }}">show done</a>
         {% endif -%}
     </p>
-    {% if user.is_admin %}
-    <p><a class="btn btn-danger" href="{{ url_for('purge_deleted_tasks') }}">purge deleted</a></p>
-    {% endif %}
     <p><a class="btn btn-warning" href="{{ url_for('reset_order_nums') }}">reset order numbers</a></p>
-    <p><a class="btn btn-default" href="{{ url_for('hierarchy') }}">hierarchy view</a></p>
+    <p><a class="btn btn-default" href="{{ url_for('index') }}">paginated view</a></p>
 </div>
 </div>
 {% endblock %}

@@ -209,16 +209,35 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def index():
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy')
 
-        data = ll.get_index_data(show_deleted, show_done, show_hierarchy,
-                                 current_user)
+        data = ll.get_index_data(show_deleted, show_done, current_user)
 
         resp = make_response(
             render_template('index.t.html',
                             show_deleted=data['show_deleted'],
                             show_done=data['show_done'],
-                            show_hierarchy=data['show_hierarchy'],
+                            cycle=itertools.cycle,
+                            user=current_user,
+                            tasks=data['tasks'],
+                            tags=data['all_tags'],
+                            pager=data['pager'],
+                            pager_link_page='index',
+                            pager_link_args={}))
+        return resp
+
+    @app.route('/hierarchy')
+    @login_required
+    def hierarchy():
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+
+        data = ll.get_index_hierarchy_data(show_deleted, show_done,
+                                           current_user)
+
+        resp = make_response(
+            render_template('hierarchy.t.html',
+                            show_deleted=data['show_deleted'],
+                            show_done=data['show_done'],
                             cycle=itertools.cycle,
                             user=current_user,
                             tasks_h=data['tasks_h'],
@@ -320,16 +339,30 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def view_task(id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
-        show_hierarchy = request.cookies.get('show_hierarchy')
         data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
-                                include_done=show_done,
-                                show_hierarchy=show_hierarchy)
+                                include_done=show_done)
 
         return render_template('task.t.html', task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
                                show_deleted=show_deleted, show_done=show_done,
-                               show_hierarchy=show_hierarchy)
+                               pager=data['pager'],
+                               pager_link_page='view_task',
+                               pager_link_args={'id':id})
+
+    @app.route('/task/<int:id>/hierarchy')
+    @login_required
+    def view_task_hierarchy(id):
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        data = ll.get_task_hierarchy_data(id, current_user,
+                                          include_deleted=show_deleted,
+                                          include_done=show_done)
+
+        return render_template('task_hierarchy.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle,
+                               show_deleted=show_deleted, show_done=show_done)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
@@ -632,18 +665,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             resp.set_cookie('show_done', '1')
         else:
             resp.set_cookie('show_done', '')
-        return resp
-
-    @app.route('/show_hide_hierarchy')
-    @login_required
-    def show_hide_hierarchy():
-        show_hierarchy = request.args.get('show_hierarchy')
-        resp = make_response(
-            redirect(request.args.get('next') or url_for('index')))
-        if show_hierarchy and show_hierarchy != '0':
-            resp.set_cookie('show_hierarchy', '1')
-        else:
-            resp.set_cookie('show_hierarchy', '')
         return resp
 
     @app.route('/options', methods=['GET', 'POST'])

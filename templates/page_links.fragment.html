@@ -1,0 +1,52 @@
+{# blogware - a python blogging system
+   Copyright (C) 2016-2017 izrik
+
+   This file is a part of blogware.
+
+   Blogware is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Affero General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   Blogware is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with blogware.  If not, see <http://www.gnu.org/licenses/>.
+#}
+<nav class="paginate-container">
+<ul class="pagination">
+    <li>
+        <a rel="prev" {% if pager.has_prev %} href="{{ url_for(pager_link_page, page=pager.prev_num, per_page=pager.per_page, **pager_link_args) }}" {% endif %}>
+            <span>
+                <span class="glyphicon glyphicon-chevron-left input-xs"></span>
+            </span>
+        </a>
+    </li>
+
+    {% for page in pager.iter_pages(left_current=1, right_current=2, left_edge=1, right_edge=1) %}
+    <li {%if page == pager.page and pager.pages > 1%} class="active"{%endif%}>
+        {% if page %}
+            {% if page != pager.page %}
+                <a href="{{ url_for(pager_link_page, page=page, per_page=pager.per_page, **pager_link_args) }}">{{ page }}</a>
+            {% else %}
+                <a rel="current">{{ page }}</a>
+            {% endif %}
+        {% else %}
+            <a><span>…</span></a>
+        {% endif %}
+    </li>
+    {% else %}
+    <li>
+        <a><span>…</span></a>
+    </li>
+    {% endfor %}
+    <li>
+        <a rel="next" {% if pager.has_next %} href="{{ url_for(pager_link_page, page=pager.next_num, per_page=pager.per_page, **pager_link_args) }}" {% endif %}>
+            <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+    </li>
+</ul>
+</nav>
