@@ -48,21 +48,19 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
-    def get_index_data(self, show_deleted, show_done, show_hierarchy,
+    def get_index_data(self, show_deleted, show_done,
                        current_user):
-        max_depth = None
-        if not show_hierarchy:
-            max_depth = 0
-        tasks_h, pager = self.load(current_user, root_task_id=None,
-                            max_depth=max_depth, include_done=show_done,
-                            include_deleted=show_deleted, paginate=True)
-        tasks_h = self.sort_by_hierarchy(tasks_h)
+        query = self.query_no_hierarchy(
+            current_user=current_user, include_done=show_done,
+            include_deleted=show_deleted, order_by_order_num=True)
+        query = query.filter(self.ds.Task.parent_id.is_(None))
+        pager = query.paginate()
+        tasks_h = query
 
         all_tags = self.ds.Tag.query.all()
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
-            'show_hierarchy': show_hierarchy,
             'tasks_h': tasks_h,
             'all_tags': all_tags,
             'pager': pager,
@@ -192,9 +190,7 @@ class LogicLayer(object):
                                 max_depth=None, include_done=include_done,
                                 include_deleted=include_deleted)
 
-        hierarchy_sort = True
-        if hierarchy_sort:
-            descendants = self.sort_by_hierarchy(descendants, root=task)
+        descendants = self.sort_by_hierarchy(descendants, root=task)
 
         return {
             'task': task,
