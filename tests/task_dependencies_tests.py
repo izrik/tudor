@@ -99,3 +99,20 @@ class TaskDependenciesTest(unittest.TestCase):
         self.assertTrue(t4.contains_dependency_cycle())
         self.assertTrue(t5.contains_dependency_cycle())
         self.assertTrue(t6.contains_dependency_cycle())
+
+    def test_cycle_check_yields_false_for_trees(self):
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        t3 = self.Task('t3')
+        t4 = self.Task('t4')
+        t1.dependers.append(t2)
+        t1.dependers.append(t3)
+        t2.dependers.append(t4)
+        t3.dependers.append(t4)
+
+        # expect
+        self.assertFalse(t1.contains_dependency_cycle())
+        self.assertFalse(t2.contains_dependency_cycle())
+        self.assertFalse(t3.contains_dependency_cycle())
+        self.assertFalse(t4.contains_dependency_cycle())

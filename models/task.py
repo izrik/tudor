@@ -134,6 +134,7 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
                 visited = set()
             if self in visited:
                 return True
+            visited = set(visited)
             visited.add(self)
             for dependee in self.dependees:
                 if dependee.contains_dependency_cycle(visited):
