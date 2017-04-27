@@ -672,18 +672,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             resp.set_cookie('show_done', '')
         return resp
 
-    @app.route('/show_hide_hierarchy')
-    @login_required
-    def show_hide_hierarchy():
-        show_hierarchy = request.args.get('show_hierarchy')
-        resp = make_response(
-            redirect(request.args.get('next') or url_for('index')))
-        if show_hierarchy and show_hierarchy != '0':
-            resp.set_cookie('show_hierarchy', '1')
-        else:
-            resp.set_cookie('show_hierarchy', '')
-        return resp
-
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
     @admin_required
