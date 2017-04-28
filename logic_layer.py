@@ -1105,3 +1105,29 @@ class LogicLayer(object):
             self.db.session.add(dependee)
 
         return task, dependee
+
+    def do_add_dependant_to_task(self, task_id, dependant_id, current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependant_id is None:
+            raise ValueError("No dependant_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        dependant, task = self.do_add_dependee_to_task(dependant_id, task_id,
+                                                       current_user)
+        return task, dependant
+
+    def do_remove_dependant_from_task(self, task_id, dependant_id,
+                                      current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependant_id is None:
+            raise ValueError("No dependant_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        dependant, task = self.do_remove_dependee_from_task(dependant_id,
+                                                            task_id,
+                                                            current_user)
+        return task, dependant
