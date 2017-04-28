@@ -1049,3 +1049,57 @@ class LogicLayer(object):
             self.ds.Task.description.like(like_term))
 
         return results
+
+    def do_add_dependee_to_task(self, task_id, dependee_id, current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependee_id is None:
+            raise ValueError("No dependee_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        dependee = self.ds.Task.query.get(dependee_id)
+        if dependee is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(dependee_id))
+        if not self.is_user_authorized_or_admin(dependee, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if dependee not in task.dependees:
+            task.dependees.append(dependee)
+
+        return task, dependee
+
+    def do_remove_dependee_from_task(self, task_id, dependee_id, current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependee_id is None:
+            raise ValueError("No dependee_id was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        dependee = self.ds.Task.query.get(dependee_id)
+        if dependee is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(dependee_id))
+        if not self.is_user_authorized_or_admin(dependee, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if dependee in task.dependees:
+            task.dependees.remove(dependee)
+            self.db.session.add(task)
+            self.db.session.add(dependee)
+
+        return task, dependee
