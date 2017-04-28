@@ -348,7 +348,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                show_deleted=show_deleted, show_done=show_done,
                                pager=data['pager'],
                                pager_link_page='view_task',
-                               pager_link_args={'id':id})
+                               pager_link_args={'id': id})
 
     @app.route('/task/<int:id>/hierarchy')
     @login_required
