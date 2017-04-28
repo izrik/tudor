@@ -101,6 +101,23 @@
                 <!--<a href="{ { url_for('pick_dependee_to_add', task_id=task.id) } }">Pick a task</a>-->
             </td>
         </tr>
+        <tr>
+            <td>Is depended on by</td>
+            <td>
+                {% for dependant in task.dependants %}
+                    <a href="{{ url_for('view_task', id=dependant.id) }}">{{ dependant.summary }} ({{ dependant.id }})</a>
+                    <a href="{{ url_for('remove_dependant_from_task', task_id=task.id, dependant_id=dependant.id) }}">
+                        <img src="{{ url_for('static', filename='delete.png') }}" />
+                    </a>
+                {% endfor %}
+                <form action="{{ url_for('add_dependant_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="dependant_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
+            </td>
+        </tr>
     </table>
     <p></p>
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
