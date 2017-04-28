@@ -493,7 +493,7 @@ class LogicLayer(object):
         user_to_authorize = self.ds.User.query.filter_by(
             email=user_email).first()
         if user_to_authorize is None:
-            raise werkzeug.exceptions.BadRequest(
+            raise werkzeug.exceptions.NotFound(
                 "No user found for the email '{}'".format(user_email))
 
         return self.do_authorize_user_for_task(task, user_to_authorize,
@@ -514,7 +514,7 @@ class LogicLayer(object):
 
         user_to_authorize = self.ds.User.query.get(user_id)
         if user_to_authorize is None:
-            raise werkzeug.exceptions.BadRequest(
+            raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
 
         return self.do_authorize_user_for_task(task, user_to_authorize,
@@ -1049,3 +1049,85 @@ class LogicLayer(object):
             self.ds.Task.description.like(like_term))
 
         return results
+
+    def do_add_dependee_to_task(self, task_id, dependee_id, current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependee_id is None:
+            raise ValueError("No dependee_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        dependee = self.ds.Task.query.get(dependee_id)
+        if dependee is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(dependee_id))
+        if not self.is_user_authorized_or_admin(dependee, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if dependee not in task.dependees:
+            task.dependees.append(dependee)
+
+        return task, dependee
+
+    def do_remove_dependee_from_task(self, task_id, dependee_id, current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependee_id is None:
+            raise ValueError("No dependee_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        dependee = self.ds.Task.query.get(dependee_id)
+        if dependee is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(dependee_id))
+        if not self.is_user_authorized_or_admin(dependee, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if dependee in task.dependees:
+            task.dependees.remove(dependee)
+            self.db.session.add(task)
+            self.db.session.add(dependee)
+
+        return task, dependee
+
+    def do_add_dependant_to_task(self, task_id, dependant_id, current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependant_id is None:
+            raise ValueError("No dependant_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        dependant, task = self.do_add_dependee_to_task(dependant_id, task_id,
+                                                       current_user)
+        return task, dependant
+
+    def do_remove_dependant_from_task(self, task_id, dependant_id,
+                                      current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if dependant_id is None:
+            raise ValueError("No dependant_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        dependant, task = self.do_remove_dependee_from_task(dependant_id,
+                                                            task_id,
+                                                            current_user)
+        return task, dependant

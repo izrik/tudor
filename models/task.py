@@ -4,7 +4,8 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(db, tags_tasks_table, users_tasks_table):
+def generate_task_class(db, tags_tasks_table, users_tasks_table,
+                        task_dependencies_table):
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -25,6 +26,14 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table):
         parent = db.relationship('Task', remote_side=[id],
                                  backref=db.backref('children',
                                                     lazy='dynamic'))
+
+        # self depends on self.dependees
+        # self.dependants depend on self
+        dependees = db.relationship(
+            'Task', secondary=task_dependencies_table,
+            primaryjoin=task_dependencies_table.c.dependant_id==id,
+            secondaryjoin=task_dependencies_table.c.dependee_id==id,
+            backref='dependants')
 
         depth = 0
 
@@ -121,5 +130,19 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table):
 
         def is_user_authorized(self, user):
             return user in self.users
+
+        def contains_dependency_cycle(self, visited=None):
+            if visited is None:
+                visited = set()
+            if self in visited:
+                return True
+            visited = set(visited)
+            visited.add(self)
+            for dependee in self.dependees:
+                if dependee.contains_dependency_cycle(visited):
+                    return True
+
+            return False
+
 
     return Task

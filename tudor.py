@@ -348,7 +348,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                                show_deleted=show_deleted, show_done=show_done,
                                pager=data['pager'],
                                pager_link_page='view_task',
-                               pager_link_args={'id':id})
+                               pager_link_args={'id': id})
 
     @app.route('/task/<int:id>/hierarchy')
     @login_required
@@ -820,6 +820,88 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         return render_template('search.t.html', query=search_query,
                                results=results)
+
+    @app.route('/task/<int:task_id>/add_dependee', methods=['GET', 'POST'],
+               defaults={'dependee_id': None})
+    @app.route('/task/<int:task_id>/add_dependee/', methods=['GET', 'POST'],
+               defaults={'dependee_id': None})
+    @app.route('/task/<int:task_id>/add_dependee/<int:dependee_id>',
+               methods=['GET', 'POST'])
+    @login_required
+    def add_dependee_to_task(task_id, dependee_id):
+        if dependee_id is None or dependee_id == '':
+            dependee_id = get_form_or_arg('dependee_id')
+        if dependee_id is None or dependee_id == '':
+            return (redirect(request.args.get('next') or
+                             request.args.get('next_url') or
+                             url_for('view_task', id=task_id)))
+
+        ll.do_add_dependee_to_task(task_id, dependee_id, current_user)
+        db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    @app.route('/task/<int:task_id>/remove_dependee',
+               methods=['GET', 'POST'], defaults={'dependee_id': None})
+    @app.route('/task/<int:task_id>/remove_dependee/',
+               methods=['GET', 'POST'], defaults={'dependee_id': None})
+    @app.route('/task/<int:task_id>/remove_dependee/<int:dependee_id>',
+               methods=['GET', 'POST'])
+    def remove_dependee_from_task(task_id, dependee_id):
+        if dependee_id is None:
+            dependee_id = get_form_or_arg('dependee_id')
+
+        ll.do_remove_dependee_from_task(task_id, dependee_id, current_user)
+        db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    @app.route('/task/<int:task_id>/add_dependant', methods=['GET', 'POST'],
+               defaults={'dependant_id': None})
+    @app.route('/task/<int:task_id>/add_dependant/', methods=['GET', 'POST'],
+               defaults={'dependant_id': None})
+    @app.route('/task/<int:task_id>/add_dependant/<int:dependant_id>',
+               methods=['GET', 'POST'])
+    @login_required
+    def add_dependant_to_task(task_id, dependant_id):
+        if dependant_id is None or dependant_id == '':
+            dependant_id = get_form_or_arg('dependant_id')
+        if dependant_id is None or dependant_id == '':
+            return (redirect(request.args.get('next') or
+                             request.args.get('next_url') or
+                             url_for('view_task', id=task_id)))
+
+        ll.do_add_dependant_to_task(task_id, dependant_id, current_user)
+        db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    @app.route('/task/<int:task_id>/remove_dependant',
+               methods=['GET', 'POST'], defaults={'dependant_id': None})
+    @app.route('/task/<int:task_id>/remove_dependant/',
+               methods=['GET', 'POST'], defaults={'dependant_id': None})
+    @app.route('/task/<int:task_id>/remove_dependant/<int:dependant_id>',
+               methods=['GET', 'POST'])
+    def remove_dependant_from_task(task_id, dependant_id):
+        if dependant_id is None:
+            dependant_id = get_form_or_arg('dependant_id')
+
+        ll.do_remove_dependant_from_task(task_id, dependant_id, current_user)
+        db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
 
     @app.template_filter(name='gfm')
     def render_gfm(s):

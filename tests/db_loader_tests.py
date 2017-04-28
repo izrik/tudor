@@ -728,34 +728,36 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         self.user = self.app.User('name@example.org', None, True)
         db.session.add(self.user)
 
-        abcd = Tag('abcd')
-        efgh = Tag('efgh')
-        ijkl = Tag('ijkl')
+        self.abcd = abcd = Tag('abcd')
+        self.efgh = efgh = Tag('efgh')
+        self.ijkl = ijkl = Tag('ijkl')
 
         db.session.add(abcd)
         db.session.add(efgh)
         db.session.add(ijkl)
 
-        normal = Task(summary='normal')
+        self.normal = normal = Task(summary='normal')
         db.session.add(normal)
 
-        parent = Task(summary='parent')
-        child = Task(summary='child')
+        self.parent = parent = Task(summary='parent')
+        self.child = child = Task(summary='child')
         child.parent = parent
         db.session.add(parent)
         db.session.add(child)
 
-        parent2 = Task(summary='parent2')
-        child2 = Task(summary='child2', is_done=True, deadline='2016-01-01')
+        self.parent2 = parent2 = Task(summary='parent2')
+        self.child2 = child2 = Task(summary='child2', is_done=True,
+                                    deadline='2016-01-01')
         child2.parent = parent2
-        child3 = Task(summary='child3', is_deleted=True)
+        self.child3 = child3 = Task(summary='child3', is_deleted=True)
         child3.parent = parent2
-        grandchild = Task(summary='grandchild')
+        self.grandchild = grandchild = Task(summary='grandchild')
         grandchild.parent = child3
-        great_grandchild = Task(summary='great_grandchild',
-                                deadline='2016-12-31')
+        self.great_grandchild = great_grandchild = Task(
+            summary='great_grandchild', deadline='2016-12-31')
         great_grandchild.parent = grandchild
-        great_great_grandchild = Task(summary='great_great_grandchild')
+        self.great_great_grandchild = great_great_grandchild = Task(
+            summary='great_great_grandchild')
         great_great_grandchild.parent = great_grandchild
         db.session.add(parent2)
         db.session.add(child2)
@@ -930,3 +932,24 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         expected_summaries = {'normal', 'parent'}
         summaries = set(t.summary for t in tasks)
         self.assertEqual(expected_summaries, summaries)
+
+    def test_tag_object_also_works(self):
+        # when
+        tasks = self.ll.load_no_hierarchy(self.user, include_done=True,
+                                          include_deleted=True,
+                                          tag=self.abcd)
+
+        # then
+        self.assertEqual(2, len(tasks))
+        self.assertIsInstance(tasks[0], self.app.Task)
+        self.assertIsInstance(tasks[1], self.app.Task)
+
+        expected_summaries = {'normal', 'great_great_grandchild'}
+        summaries = set(t.summary for t in tasks)
+        self.assertEqual(expected_summaries, summaries)
+
+    def test_unknown_tag_object_type_raises_exception(self):
+        # expect
+        self.assertRaises(TypeError, self.ll.load_no_hierarchy,
+                          self.user, include_done=True, include_deleted=True,
+                          tag=1234)

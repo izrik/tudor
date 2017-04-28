@@ -33,7 +33,15 @@ class SqlAlchemyDataSource(object):
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
                       index=True))
 
-        Task = generate_task_class(db, tags_tasks_table, users_tasks_table)
+        task_dependencies_table = db.Table(
+            'task_dependencies',
+            db.Column('dependee_id', db.Integer, db.ForeignKey('task.id'),
+                      primary_key=True),
+            db.Column('dependant_id', db.Integer, db.ForeignKey('task.id'),
+                      primary_key=True))
+
+        Task = generate_task_class(db, tags_tasks_table, users_tasks_table,
+                                   task_dependencies_table)
         Note = generate_note_class(db)
         Attachment = generate_attachment_class(db)
         User = generate_user_class(db, app.bcrypt)
