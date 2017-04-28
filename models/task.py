@@ -27,6 +27,8 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
                                  backref=db.backref('children',
                                                     lazy='dynamic'))
 
+        # self depends on self.dependees
+        # self.dependers depend on self
         dependees = db.relationship(
             'Task', secondary=task_dependencies_table,
             primaryjoin=task_dependencies_table.c.depender_id==id,
