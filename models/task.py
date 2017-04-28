@@ -28,12 +28,12 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
                                                     lazy='dynamic'))
 
         # self depends on self.dependees
-        # self.dependers depend on self
+        # self.dependants depend on self
         dependees = db.relationship(
             'Task', secondary=task_dependencies_table,
-            primaryjoin=task_dependencies_table.c.depender_id==id,
+            primaryjoin=task_dependencies_table.c.dependant_id==id,
             secondaryjoin=task_dependencies_table.c.dependee_id==id,
-            backref='dependers')
+            backref='dependants')
 
         depth = 0
 

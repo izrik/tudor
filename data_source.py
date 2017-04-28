@@ -37,7 +37,7 @@ class SqlAlchemyDataSource(object):
             'task_dependencies',
             db.Column('dependee_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True),
-            db.Column('depender_id', db.Integer, db.ForeignKey('task.id'),
+            db.Column('dependant_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
 
         Task = generate_task_class(db, tags_tasks_table, users_tasks_table,
