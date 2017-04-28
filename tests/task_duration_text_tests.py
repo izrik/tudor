@@ -84,4 +84,3 @@ class TaskDurationTextTest(unittest.TestCase):
 
         # then
         self.assertEqual('12345 minutes', result)
-

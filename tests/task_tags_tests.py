@@ -51,4 +51,3 @@ class TaskTagsTest(unittest.TestCase):
 
         # then
         self.assertEqual({tag1.value, tag2.value}, result)
-

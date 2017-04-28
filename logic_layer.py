@@ -674,8 +674,8 @@ class LogicLayer(object):
                         tag = self.ds.Tag.query.get(tag_id)
                         if tag is None:
                             tag = next((obj for obj in db_objects
-                                        if isinstance(obj, self.ds.Tag)
-                                        and obj.id == tag_id),
+                                        if isinstance(obj, self.ds.Tag) and
+                                        obj.id == tag_id),
                                        None)
                         if tag is None:
                             raise Exception('Tag not found')
@@ -684,9 +684,9 @@ class LogicLayer(object):
                         user = self.ds.User.query.get(user_id)
                         if user is None:
                             user = next((obj for obj in db_objects
-                                        if isinstance(obj, self.ds.User)
-                                        and obj.id == user_id),
-                                       None)
+                                        if isinstance(obj, self.ds.User) and
+                                         obj.id == user_id),
+                                        None)
                         if user is None:
                             raise Exception('User not found')
                         t.users.append(user)
@@ -1023,12 +1023,11 @@ class LogicLayer(object):
                           include_deleted=False, exclude_undeadlined=False,
                           tag=None, query_post_op=None,
                           order_by_order_num=False):
-        query = self.query_no_hierarchy(current_user=current_user,
-                                        include_done=include_done,
-                                        include_deleted=include_deleted,
-                                        exclude_undeadlined=exclude_undeadlined,
-                                        tag=tag, query_post_op=query_post_op,
-                                        order_by_order_num=order_by_order_num)
+        query = self.query_no_hierarchy(
+            current_user=current_user, include_done=include_done,
+            include_deleted=include_deleted,
+            exclude_undeadlined=exclude_undeadlined, tag=tag,
+            query_post_op=query_post_op, order_by_order_num=order_by_order_num)
 
         tasks = query.all()
 

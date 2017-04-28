@@ -90,4 +90,3 @@ class TaskCssTest(unittest.TestCase):
 
         # then
         self.assertEqual(' class="done-deleted" ', result)
-
