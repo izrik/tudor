@@ -43,7 +43,7 @@
             <td>Parent Task</td>
             <td>
                 {% if task.parent_id != None %}
-                <a href="{{ url_for('view_task', id=task.parent_id) }}">{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
+                <a href="{{ url_for('view_task', id=task.parent_id) }}" {{ task.parent.get_css_class_attr()|safe }}>{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
                 {% else %}
                 None
                 {% endif %}
