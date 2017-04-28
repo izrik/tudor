@@ -9,7 +9,7 @@
     <p></p>
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
-        <tr><td>Summary</td><td>{{ task.summary|d }}</td></tr>
+        <tr><td>Summary</td><td{{ task.get_css_class_attr()|safe }}>{{ task.summary|d }}</td></tr>
         <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
         <tr><td>Deadline</td><td>{{ task.deadline|d }}</td></tr>
         <tr>
