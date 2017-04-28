@@ -493,7 +493,7 @@ class LogicLayer(object):
         user_to_authorize = self.ds.User.query.filter_by(
             email=user_email).first()
         if user_to_authorize is None:
-            raise werkzeug.exceptions.BadRequest(
+            raise werkzeug.exceptions.NotFound(
                 "No user found for the email '{}'".format(user_email))
 
         return self.do_authorize_user_for_task(task, user_to_authorize,
@@ -514,7 +514,7 @@ class LogicLayer(object):
 
         user_to_authorize = self.ds.User.query.get(user_id)
         if user_to_authorize is None:
-            raise werkzeug.exceptions.BadRequest(
+            raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
 
         return self.do_authorize_user_for_task(task, user_to_authorize,
