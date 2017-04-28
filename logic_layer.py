@@ -1082,6 +1082,8 @@ class LogicLayer(object):
             raise ValueError("No task_id was specified.")
         if dependee_id is None:
             raise ValueError("No dependee_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
 
         task = self.ds.Task.query.get(task_id)
         if task is None:

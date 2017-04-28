@@ -230,7 +230,7 @@ class TaskDependenciesLogicLayerTest(unittest.TestCase):
         self.assertEqual(0, len(t2.dependers))
         self.assertEqual(0, len(t2.dependees))
 
-    def test_null_users_raises_exception(self):
+    def test_null_user_raises_exception(self):
         # given
         t1 = self.Task('t1')
         t2 = self.Task('t2')
@@ -351,6 +351,259 @@ class TaskDependenciesLogicLayerTest(unittest.TestCase):
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_dependee_to_task,
+                          t1.id, t1.id + 1, user)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(0, len(t1.dependees))
+        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+
+    def test_remove_dependee_removes_dependee(self):
+
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t1.users.append(user)
+        t2.users.append(user)
+        t1.dependees.append(t2)
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+        # when
+        results = self.ll.do_remove_dependee_from_task(t1.id, t2.id, user)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(0, len(t1.dependees))
+        self.assertEqual(0, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertIsNotNone(results)
+        self.assertEqual([t1, t2], list(results))
+
+    def test_if_dependee_already_removed_still_succeeds(self):
+
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t1.users.append(user)
+        t2.users.append(user)
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(0, len(t1.dependees))
+        self.assertEqual(0, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+
+        # when
+        results = self.ll.do_remove_dependee_from_task(t1.id, t2.id, user)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(0, len(t1.dependees))
+        self.assertEqual(0, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertIsNotNone(results)
+        self.assertEqual([t1, t2], list(results))
+
+    def test_remove_dependee_with_null_ids_raises_exception(self):
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t1.users.append(user)
+        t2.users.append(user)
+        t1.dependees.append(t2)
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+        # expect
+        self.assertRaises(ValueError, self.ll.do_remove_dependee_from_task,
+                          None, t2.id, user)
+
+        # expect
+        self.assertRaises(ValueError, self.ll.do_remove_dependee_from_task,
+                          t1.id, None, user)
+
+        # expect
+        self.assertRaises(ValueError, self.ll.do_remove_dependee_from_task,
+                          None, None, user)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+    def test_remove_dependee_with_null_user_raises_exception(self):
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t1.users.append(user)
+        t2.users.append(user)
+        t1.dependees.append(t2)
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+        # expect
+        self.assertRaises(ValueError, self.ll.do_remove_dependee_from_task,
+                          t1.id, t2.id, None)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+    def test_remove_dependee_user_unauthorized_for_task_raises_exception(self):
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t2.users.append(user)
+        t1.dependees.append(t2)
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+        # note that this situation shouldn't happen anyways. a task shouldn't
+        # be able to depend on another task unless both share a common set of
+        # one or more authorized users
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+        # expect
+        self.assertRaises(Forbidden, self.ll.do_remove_dependee_from_task,
+                          t1.id, t2.id, user)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+    def test_remove_user_not_authorized_for_dependee_raises_exception(self):
+        # given
+        t1 = self.Task('t1')
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t1.users.append(user)
+        t1.dependees.append(t2)
+        self.db.session.add(t1)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+        # note that this situation shouldn't happen anyways. a task shouldn't
+        # be able to depend on another task unless both share a common set of
+        # one or more authorized users
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+        # expect
+        self.assertRaises(Forbidden, self.ll.do_remove_dependee_from_task,
+                          t1.id, t2.id, user)
+
+        # then
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(1, len(t1.dependees))
+        self.assertEqual(1, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertTrue(t2 in t1.dependees)
+        self.assertTrue(t1 in t2.dependers)
+
+    def test_remove_dependee_task_not_found_raises_exception(self):
+        # given
+        t2 = self.Task('t2')
+        user = self.User('name@example.com')
+        t2.users.append(user)
+        self.db.session.add(t2)
+        self.db.session.add(user)
+        self.db.session.commit()
+
+        # precondition
+        self.assertEqual(0, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+
+        # expect
+        self.assertRaises(NotFound, self.ll.do_remove_dependee_from_task,
+                          t2.id + 1, t2.id, user)
+
+        # then
+        self.assertEqual(0, len(t2.dependers))
+        self.assertEqual(0, len(t2.dependees))
+        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+
+    def test_remove_dependee_dependee_not_found_raises_exception(self):
+        # given
+        t1 = self.Task('t1')
+        user = self.User('name@example.com')
+        t1.users.append(user)
+        self.db.session.add(t1)
+        self.db.session.add(user)
+        self.db.session.commit()
+
+        # precondition
+        self.assertEqual(0, len(t1.dependers))
+        self.assertEqual(0, len(t1.dependees))
+        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+
+        # expect
+        self.assertRaises(NotFound, self.ll.do_remove_dependee_from_task,
                           t1.id, t1.id + 1, user)
 
         # then
