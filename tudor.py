@@ -265,21 +265,38 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
-        summary = request.form['summary']
+        summary = get_form_or_arg('summary')
+        description = get_form_or_arg('description')
+        deadline = get_form_or_arg('deadline')
+        is_done = get_form_or_arg('is_done')
+        is_deleted = get_form_or_arg('is_deleted')
+        order_num = get_form_or_arg('order_num')
+        expected_duration_minutes = get_form_or_arg(
+            'expected_duration_minutes')
+        expected_cost = get_form_or_arg('expected_cost')
+        parent_id = get_form_or_arg('parent_id')
 
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-        else:
-            parent_id = None
+        tags = get_form_or_arg('tags')
+        if tags:
+            tags = [s.strip() for s in tags.split(',')]
 
-        task = ll.create_new_task(summary, parent_id, current_user)
+        task = ll.create_new_task(
+            summary=summary, description=description, is_done=is_done,
+            is_deleted=is_deleted, deadline=deadline, order_num=order_num,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost, parent_id=parent_id,
+            current_user=current_user)
+
+        for tag_name in tags:
+            tag = ll.get_or_create_tag(tag_name)
+            task.tags.append(tag)
+            db.session.add(tag)
 
         db.session.add(task)
         db.session.commit()
 
-        if 'next_url' in request.form:
-            next_url = request.form['next_url']
-        else:
+        next_url = get_form_or_arg('next_url')
+        if not next_url:
             next_url = url_for('view_task', id=task.id)
 
         return redirect(next_url)
