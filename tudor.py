@@ -256,6 +256,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 cycle=itertools.cycle,
                 deadline_tasks=data['deadline_tasks']))
 
+    @app.route('/task/new', methods=['GET'])
+    @login_required
+    def get_new_task():
+        return render_template('new_task.t.html', prev_url='prev_url',
+                               tag_list='tag_list', parent_id='parent_id')
+
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
