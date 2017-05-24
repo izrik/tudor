@@ -280,7 +280,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         if 'next_url' in request.form:
             next_url = request.form['next_url']
         else:
-            next_url = url_for('index')
+            next_url = url_for('view_task', id=task.id)
 
         return redirect(next_url)
 
