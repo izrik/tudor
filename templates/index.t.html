@@ -3,6 +3,7 @@
 {% block content scoped %}
 <div class="container">
 <div>
+    <p><a class="btn btn-default" href="{{ url_for('new_task') }}"><span class="glyphicon glyphicon-plus"></span> New Task</a></p>
     {% include 'page_links.fragment.html' %}
 
     {{ render_task_table(pager.items, root=None, cycle=cycle,
@@ -13,6 +14,7 @@
         show_order_num=True) }}
 
     {% include 'page_links.fragment.html' %}
+    <p><a class="btn btn-default" href="{{ url_for('new_task') }}"><span class="glyphicon glyphicon-plus"></span> New Task</a></p>
 </div>
 <div>
     <p>
