@@ -259,8 +259,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/new', methods=['GET'])
     @login_required
     def get_new_task():
-        return render_template('new_task.t.html', prev_url='prev_url',
-                               tag_list='tag_list', parent_id='parent_id')
+
+        summary = get_form_or_arg('summary')
+        description = get_form_or_arg('description')
+        deadline = get_form_or_arg('deadline')
+        is_done = get_form_or_arg('is_done')
+        is_deleted = get_form_or_arg('is_deleted')
+        order_num = get_form_or_arg('order_num')
+        expected_duration_minutes = get_form_or_arg(
+            'expected_duration_minutes')
+        expected_cost = get_form_or_arg('expected_cost')
+        parent_id = get_form_or_arg('parent_id')
+        tags = get_form_or_arg('tags')
+
+        prev_url = get_form_or_arg('prev_url')
+
+        return render_template(
+            'new_task.t.html', prev_url=prev_url, summary=summary,
+            description=description, deadline=deadline, is_done=is_done,
+            is_deleted=is_deleted, order_num=order_num,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost, parent_id=parent_id, tags=tags)
 
     @app.route('/task/new', methods=['POST'])
     @login_required
