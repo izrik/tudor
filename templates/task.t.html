@@ -139,6 +139,9 @@
     {% if pager.pages > 1 %}
         {% include 'page_links.fragment.html' %}
     {% endif %}
+
+    <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
+
 </div>
 <div>
     <p>
