@@ -92,9 +92,10 @@ class LogicLayer(object):
             'deadline_tasks': deadline_tasks,
         }
 
-    def create_new_task(self, summary, description, is_done, is_deleted,
-                        deadline, expected_duration_minutes, expected_cost,
-                        order_num, parent_id, current_user):
+    def create_new_task(self, summary, current_user, description=None,
+                        is_done=None, is_deleted=None, deadline=None,
+                        expected_duration_minutes=None, expected_cost=None,
+                        order_num=None, parent_id=None):
         task = self.ds.Task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,

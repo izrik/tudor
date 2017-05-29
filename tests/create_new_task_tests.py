@@ -23,7 +23,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_admin_adds_first_task(self):
         # when
-        task = self.ll.create_new_task('t1', None, self.admin)
+        task = self.ll.create_new_task(summary='t1', current_user=self.admin)
 
         # then
         self.assertIsNotNone(task)
@@ -39,7 +39,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.add(t1)
 
         # when
-        task = self.ll.create_new_task('t2', None, self.admin)
+        task = self.ll.create_new_task(summary='t2', current_user=self.admin)
 
         # then
         self.assertIsNotNone(task)
@@ -56,7 +56,8 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.commit()
 
         # when
-        task = self.ll.create_new_task('c', p.id, self.admin)
+        task = self.ll.create_new_task(summary='c', parent_id=p.id,
+                                       current_user=self.admin)
 
         # then
         self.assertIsNotNone(task)
@@ -74,7 +75,8 @@ class CreateNewTaskTest(unittest.TestCase):
         self.db.session.commit()
 
         # when
-        task = self.ll.create_new_task('c', p.id, self.user)
+        task = self.ll.create_new_task(summary='c', parent_id=p.id,
+                                       current_user=self.user)
 
         # then
         self.assertIsNotNone(task)
@@ -92,4 +94,5 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # expect
         self.assertRaises(werkzeug.exceptions.Forbidden,
-                          self.ll.create_new_task, 'c', p.id, self.user)
+                          self.ll.create_new_task,
+                          summary='c', parent_id=p.id, current_user=self.user)
