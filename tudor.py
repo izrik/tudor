@@ -289,7 +289,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         deadline = get_form_or_arg('deadline') or None
         is_done = get_form_or_arg('is_done') or None
         is_deleted = get_form_or_arg('is_deleted') or None
-        order_num = get_form_or_arg('order_num') or None
+        order_type = get_form_or_arg('order_type') or 'bottom'
         expected_duration_minutes = get_form_or_arg(
             'expected_duration_minutes') or None
         expected_cost = get_form_or_arg('expected_cost') or None
@@ -298,6 +298,21 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         tags = get_form_or_arg('tags')
         if tags:
             tags = [s.strip() for s in tags.split(',')]
+
+        if order_type == 'top':
+            order_num = ll.get_highest_order_num()
+            if order_num is not None:
+                order_num += 2
+            else:
+                order_num = 0
+        elif order_type == 'order_num':
+            order_num = get_form_or_arg('order_num') or None
+        else:  # bottom
+            order_num = ll.get_lowest_order_num()
+            if order_num is not None:
+                order_num -= 2
+            else:
+                order_num = 0
 
         task = ll.create_new_task(
             summary=summary, description=description, is_done=is_done,

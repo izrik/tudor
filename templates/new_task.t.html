@@ -18,7 +18,9 @@
             <tr><td>Deadline</td><td><input type="text" name="deadline" value=""></td></tr>
             <tr><td>Done?</td><td><input type="checkbox" name="is_done" /></td></tr>
             <tr><td>Deleted?</td><td><input type="checkbox" name="is_deleted"/></td></tr>
-            <tr><td>Order #</td><td><input type="text" name="order_num" value="" /></td></tr>
+            <tr><td rowspan="3">Order:</td><td><input type="radio" name="order_type" value="bottom" checked/> Bottom of the list </td></tr>
+            <tr>                           <td><input type="radio" name="order_type" value="top" /> Top of the list</td></tr>
+            <tr>                           <td><input type="radio" name="order_type" value="order_num" /> Specific order_num: <input type="text" name="order_num" value="" /></td></tr>
             <tr><td>Expected duration (in minutes)</td><td><input type="text" name="expected_duration_minutes" value="" /></td></tr>
             <tr><td>Expected cost</td><td><input type="text" name="expected_cost" value="" /></td></tr>
             <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ parent_id if parent_id != None }}" /></td></tr>
