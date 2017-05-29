@@ -286,14 +286,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def new_task():
         summary = get_form_or_arg('summary')
         description = get_form_or_arg('description')
-        deadline = get_form_or_arg('deadline')
-        is_done = get_form_or_arg('is_done')
-        is_deleted = get_form_or_arg('is_deleted')
-        order_num = get_form_or_arg('order_num')
+        deadline = get_form_or_arg('deadline') or None
+        is_done = get_form_or_arg('is_done') or False
+        is_deleted = get_form_or_arg('is_deleted') or False
+        order_num = get_form_or_arg('order_num') or None
         expected_duration_minutes = get_form_or_arg(
-            'expected_duration_minutes')
-        expected_cost = get_form_or_arg('expected_cost')
-        parent_id = get_form_or_arg('parent_id')
+            'expected_duration_minutes') or None
+        expected_cost = get_form_or_arg('expected_cost') or None
+        parent_id = get_form_or_arg('parent_id') or None
 
         tags = get_form_or_arg('tags')
         if tags:
