@@ -103,13 +103,11 @@ class LogicLayer(object):
             expected_cost=expected_cost)
 
         if order_num is None:
-            # get lowest order number
-            query = self.ds.Task.query.order_by(
-                self.ds.Task.order_num.asc()).limit(1)
-            lowest_order_num_tasks = query.all()
-            order_num = 0
-            if len(lowest_order_num_tasks) > 0:
-                order_num = lowest_order_num_tasks[0].order_num - 2
+            order_num = self.get_lowest_order_num()
+            if order_num is not None:
+                order_num -= 2
+            else:
+                order_num = 0
 
         task.order_num = order_num
 
@@ -123,6 +121,22 @@ class LogicLayer(object):
         task.users.append(current_user)
 
         return task
+
+    def get_lowest_order_num(self):
+        query = self.ds.Task.query.order_by(
+            self.ds.Task.order_num.asc()).limit(1)
+        lowest_order_num_tasks = query.all()
+        if len(lowest_order_num_tasks) > 0:
+            return lowest_order_num_tasks[0].order_num
+        return None
+
+    def get_highest_order_num(self):
+        query = self.ds.Task.query.order_by(
+            self.ds.Task.order_num.desc()).limit(1)
+        highest_order_num_tasks = query.all()
+        if len(highest_order_num_tasks) > 0:
+            return highest_order_num_tasks[0].order_num
+        return None
 
     def task_set_done(self, id, current_user):
         task = self.ds.Task.query.filter_by(id=id).first()

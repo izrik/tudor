@@ -33,6 +33,7 @@ from tests.task_cost_text_tests import *
 from tests.search_tests import *
 from tests.task_dependencies_tests import *
 from tests.ll_task_tags_tests import *
+from tests.get_lowest_highest_order_num import *
 
 
 def run():
