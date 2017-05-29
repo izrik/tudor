@@ -42,8 +42,8 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
                      expected_duration_minutes=None, expected_cost=None):
             self.summary = summary
             self.description = description
-            self.is_done = is_done
-            self.is_deleted = is_deleted
+            self.is_done = not not is_done
+            self.is_deleted = not not is_deleted
             if isinstance(deadline, basestring):
                 deadline = dparse(deadline)
             self.deadline = deadline
