@@ -107,9 +107,9 @@ class LogicLayer(object):
             query = self.ds.Task.query.order_by(
                 self.ds.Task.order_num.asc()).limit(1)
             lowest_order_num_tasks = query.all()
-            task.order_num = 0
+            order_num = 0
             if len(lowest_order_num_tasks) > 0:
-                task.order_num = lowest_order_num_tasks[0].order_num - 2
+                order_num = lowest_order_num_tasks[0].order_num - 2
 
         task.order_num = order_num
 
