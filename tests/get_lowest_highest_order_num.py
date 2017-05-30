@@ -7,7 +7,7 @@ from werkzeug.exceptions import NotFound, Forbidden
 from tudor import generate_app
 
 
-class LogicLayerTaskTagsTest(unittest.TestCase):
+class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
