@@ -134,11 +134,14 @@
         page_url=url_for('view_task', id=task.id),
         child_task_view='view_task',
         show_move_links=True,
-        show_new_task_form=True, new_task_parent=task) }}
+        show_new_task_form=False, new_task_parent=task) }}
 
     {% if pager.pages > 1 %}
         {% include 'page_links.fragment.html' %}
     {% endif %}
+
+    <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
+
 </div>
 <div>
     <p>

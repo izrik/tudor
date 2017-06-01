@@ -256,25 +256,82 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                 cycle=itertools.cycle,
                 deadline_tasks=data['deadline_tasks']))
 
+    @app.route('/task/new', methods=['GET'])
+    @login_required
+    def get_new_task():
+
+        summary = get_form_or_arg('summary')
+        description = get_form_or_arg('description')
+        deadline = get_form_or_arg('deadline')
+        is_done = get_form_or_arg('is_done')
+        is_deleted = get_form_or_arg('is_deleted')
+        order_num = get_form_or_arg('order_num')
+        expected_duration_minutes = get_form_or_arg(
+            'expected_duration_minutes')
+        expected_cost = get_form_or_arg('expected_cost')
+        parent_id = get_form_or_arg('parent_id')
+        tags = get_form_or_arg('tags')
+
+        prev_url = get_form_or_arg('prev_url')
+
+        return render_template(
+            'new_task.t.html', prev_url=prev_url, summary=summary,
+            description=description, deadline=deadline, is_done=is_done,
+            is_deleted=is_deleted, order_num=order_num,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost, parent_id=parent_id, tags=tags)
+
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
-        summary = request.form['summary']
+        summary = get_form_or_arg('summary')
+        description = get_form_or_arg('description')
+        deadline = get_form_or_arg('deadline') or None
+        is_done = get_form_or_arg('is_done') or None
+        is_deleted = get_form_or_arg('is_deleted') or None
+        order_type = get_form_or_arg('order_type') or 'bottom'
+        expected_duration_minutes = get_form_or_arg(
+            'expected_duration_minutes') or None
+        expected_cost = get_form_or_arg('expected_cost') or None
+        parent_id = get_form_or_arg('parent_id') or None
 
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-        else:
-            parent_id = None
+        tags = get_form_or_arg('tags')
+        if tags:
+            tags = [s.strip() for s in tags.split(',')]
 
-        task = ll.create_new_task(summary, parent_id, current_user)
+        if order_type == 'top':
+            order_num = ll.get_highest_order_num()
+            if order_num is not None:
+                order_num += 2
+            else:
+                order_num = 0
+        elif order_type == 'order_num':
+            order_num = get_form_or_arg('order_num') or None
+        else:  # bottom
+            order_num = ll.get_lowest_order_num()
+            if order_num is not None:
+                order_num -= 2
+            else:
+                order_num = 0
+
+        task = ll.create_new_task(
+            summary=summary, description=description, is_done=is_done,
+            is_deleted=is_deleted, deadline=deadline, order_num=order_num,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost, parent_id=parent_id,
+            current_user=current_user)
+
+        for tag_name in tags:
+            tag = ll.get_or_create_tag(tag_name)
+            task.tags.append(tag)
+            db.session.add(tag)
 
         db.session.add(task)
         db.session.commit()
 
-        if 'next_url' in request.form:
-            next_url = request.form['next_url']
-        else:
-            next_url = url_for('index')
+        next_url = get_form_or_arg('next_url')
+        if not next_url:
+            next_url = url_for('view_task', id=task.id)
 
         return redirect(next_url)
 

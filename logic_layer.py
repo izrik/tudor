@@ -92,16 +92,24 @@ class LogicLayer(object):
             'deadline_tasks': deadline_tasks,
         }
 
-    def create_new_task(self, summary, parent_id, current_user):
-        task = self.ds.Task(summary)
+    def create_new_task(self, summary, current_user, description=None,
+                        is_done=None, is_deleted=None, deadline=None,
+                        expected_duration_minutes=None, expected_cost=None,
+                        order_num=None, parent_id=None):
+        task = self.ds.Task(
+            summary=summary, description=description, is_done=is_done,
+            is_deleted=is_deleted, deadline=deadline,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost)
 
-        # get lowest order number
-        query = self.ds.Task.query.order_by(
-            self.ds.Task.order_num.asc()).limit(1)
-        lowest_order_num_tasks = query.all()
-        task.order_num = 0
-        if len(lowest_order_num_tasks) > 0:
-            task.order_num = lowest_order_num_tasks[0].order_num - 2
+        if order_num is None:
+            order_num = self.get_lowest_order_num()
+            if order_num is not None:
+                order_num -= 2
+            else:
+                order_num = 0
+
+        task.order_num = order_num
 
         if parent_id is not None:
             parent = self.ds.Task.query.get(parent_id)
@@ -113,6 +121,22 @@ class LogicLayer(object):
         task.users.append(current_user)
 
         return task
+
+    def get_lowest_order_num(self):
+        query = self.ds.Task.query.order_by(
+            self.ds.Task.order_num.asc()).limit(1)
+        lowest_order_num_tasks = query.all()
+        if len(lowest_order_num_tasks) > 0:
+            return lowest_order_num_tasks[0].order_num
+        return None
+
+    def get_highest_order_num(self):
+        query = self.ds.Task.query.order_by(
+            self.ds.Task.order_num.desc()).limit(1)
+        highest_order_num_tasks = query.all()
+        if len(highest_order_num_tasks) > 0:
+            return highest_order_num_tasks[0].order_num
+        return None
 
     def task_set_done(self, id, current_user):
         task = self.ds.Task.query.filter_by(id=id).first()
@@ -431,15 +455,19 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        tag = self.ds.Tag.query.filter_by(value=value).first()
-        if tag is None:
-            tag = self.ds.Tag(value)
-            self.db.session.add(tag)
+        tag = self.get_or_create_tag(value)
 
         if tag not in task.tags:
             task.tags.append(tag)
             self.db.session.add(task)
 
+        return tag
+
+    def get_or_create_tag(self, value):
+        tag = self.ds.Tag.query.filter_by(value=value).first()
+        if tag is None:
+            tag = self.ds.Tag(value)
+            self.db.session.add(tag)
         return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
