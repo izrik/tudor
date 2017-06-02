@@ -40,8 +40,16 @@ class SqlAlchemyDataSource(object):
             db.Column('dependant_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
 
+        task_prioritize_table = db.Table(
+            'task_prioritize',
+            db.Column('prioritize_before_id', db.Integer,
+                      db.ForeignKey('task.id'), primary_key=True),
+            db.Column('prioritize_after_id', db.Integer,
+                      db.ForeignKey('task.id'), primary_key=True))
+
         Task = generate_task_class(db, tags_tasks_table, users_tasks_table,
-                                   task_dependencies_table)
+                                   task_dependencies_table,
+                                   task_prioritize_table)
         Note = generate_note_class(db)
         Attachment = generate_attachment_class(db)
         User = generate_user_class(db, app.bcrypt)

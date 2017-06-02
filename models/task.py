@@ -5,7 +5,7 @@ from conversions import str_from_datetime
 
 
 def generate_task_class(db, tags_tasks_table, users_tasks_table,
-                        task_dependencies_table):
+                        task_dependencies_table, task_prioritize_table):
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -34,6 +34,12 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
             primaryjoin=task_dependencies_table.c.dependant_id == id,
             secondaryjoin=task_dependencies_table.c.dependee_id == id,
             backref='dependants')
+
+        prioritize_before = db.relationship(
+            'Task', secondary=task_prioritize_table,
+            primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
+            secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
+            backref='prioritize_after')
 
         depth = 0
 
