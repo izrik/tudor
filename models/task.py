@@ -150,4 +150,16 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
 
             return False
 
+        def contains_priority_cycle(self, visited=None):
+            if visited is None:
+                visited = set()
+            if self in visited:
+                return True
+            visited = set(visited)
+            visited.add(self)
+            for before in self.prioritize_before:
+                if before.contains_priority_cycle(visited):
+                    return True
+            return False
+
     return Task
