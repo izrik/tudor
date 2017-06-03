@@ -1158,3 +1158,91 @@ class LogicLayer(object):
                                                             task_id,
                                                             current_user)
         return task, dependant
+
+    def do_add_prioritize_before_to_task(self, task_id, prioritize_before_id,
+                                         current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if prioritize_before_id is None:
+            raise ValueError("No prioritize_before_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        prioritize_before = self.ds.Task.query.get(prioritize_before_id)
+        if prioritize_before is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(prioritize_before_id))
+        if not self.is_user_authorized_or_admin(prioritize_before,
+                                                current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if prioritize_before not in task.prioritize_before:
+            task.prioritize_before.append(prioritize_before)
+
+        return task, prioritize_before
+
+    def do_remove_prioritize_before_from_task(self, task_id,
+                                              prioritize_before_id,
+                                              current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if prioritize_before_id is None:
+            raise ValueError("No prioritize_before_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        task = self.ds.Task.query.get(task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task_id))
+        if not self.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        prioritize_before = self.ds.Task.query.get(prioritize_before_id)
+        if prioritize_before is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(prioritize_before_id))
+        if not self.is_user_authorized_or_admin(prioritize_before,
+                                                current_user):
+            raise werkzeug.exceptions.Forbidden()
+
+        if prioritize_before in task.prioritize_before:
+            task.prioritize_before.remove(prioritize_before)
+            self.db.session.add(task)
+            self.db.session.add(prioritize_before)
+
+        return task, prioritize_before
+
+    def do_add_prioritize_after_to_task(self, task_id, prioritize_after_id,
+                                        current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if prioritize_after_id is None:
+            raise ValueError("No prioritize_after_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        prioritize_after, task = self.do_add_prioritize_before_to_task(
+            prioritize_after_id, task_id, current_user)
+        return task, prioritize_after
+
+    def do_remove_prioritize_after_from_task(self, task_id,
+                                             prioritize_after_id,
+                                             current_user):
+        if task_id is None:
+            raise ValueError("No task_id was specified.")
+        if prioritize_after_id is None:
+            raise ValueError("No prioritize_after_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
+
+        prioritize_after, task = self.do_remove_prioritize_before_from_task(
+            prioritize_after_id, task_id, current_user)
+        return task, prioritize_after

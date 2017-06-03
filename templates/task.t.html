@@ -118,6 +118,41 @@
                 <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
             </td>
         </tr>
+        <tr>
+            <td>Is prioritized before</td>
+            <td>
+                {% for ptask in task.prioritize_after %}
+                    <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
+                    <a href="{{ url_for('remove_prioritize_after_from_task', task_id=task.id, prioritize_after_id=ptask.id) }}">
+                        <img src="{{ url_for('static', filename='delete.png') }}" />
+                    </a>
+
+                {% endfor %}
+                <form action="{{ url_for('add_prioritize_after_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="prioritize_after_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                <!--<a href="{ { url_for('pick_prioritize_after_to_add', task_id=task.id) } }">Pick a task</a>-->
+            </td>
+        </tr>
+        <tr>
+            <td>Is prioritized after</td>
+            <td>
+                {% for ptask in task.prioritize_before %}
+                    <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
+                    <a href="{{ url_for('remove_prioritize_before_from_task', task_id=task.id, prioritize_before_id=ptask.id) }}">
+                        <img src="{{ url_for('static', filename='delete.png') }}" />
+                    </a>
+                {% endfor %}
+                <form action="{{ url_for('add_prioritize_before_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="prioritize_before_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                <!--<a href="{ { url_for('pick_prioritize_before_to_add', task_id=task.id) } }">Pick a task</a>-->
+            </td>
+        </tr>
     </table>
     <p></p>
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
