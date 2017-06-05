@@ -28,6 +28,7 @@ from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
+from view_layer import ViewLayer
 import base64
 
 try:
@@ -160,6 +161,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     ll = LogicLayer(ds, upload_folder, allowed_extensions)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
+
+    vl = ViewLayer()
+    app.vl = vl
 
     # Flask setup functions
 
