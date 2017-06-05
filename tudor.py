@@ -162,7 +162,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
-    vl = ViewLayer()
+    vl = ViewLayer(ll)
     app.vl = vl
 
     # Flask setup functions
@@ -211,23 +211,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/')
     @login_required
     def index():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-
-        data = ll.get_index_data(show_deleted, show_done, current_user)
-
-        resp = make_response(
-            render_template('index.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks=data['tasks'],
-                            tags=data['all_tags'],
-                            pager=data['pager'],
-                            pager_link_page='index',
-                            pager_link_args={}))
-        return resp
+        return vl.index(request, current_user)
 
     @app.route('/hierarchy')
     @login_required
