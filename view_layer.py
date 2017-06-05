@@ -1,0 +1,3 @@
+
+class ViewLayer(object):
+    pass
