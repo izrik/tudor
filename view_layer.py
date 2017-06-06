@@ -1,14 +1,18 @@
 
 import itertools
 
+import flask
 from flask import make_response, render_template, url_for, redirect
+
+from conversions import int_from_str, money_from_str
 
 
 class ViewLayer(object):
-    def __init__(self, ll, db, app):
+    def __init__(self, ll, db, app, upload_folder):
         self.ll = ll
         self.db = db
         self.app = app
+        self.upload_folder = upload_folder
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -158,7 +162,8 @@ class ViewLayer(object):
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_purge(self, request, current_user, task_id):
-        task = self.app.Task.query.filter_by(id=task_id, is_deleted=True).first()
+        task = self.app.Task.query.filter_by(id=task_id,
+                                             is_deleted=True).first()
         if not task:
             return 404
         self.db.session.delete(task)
@@ -189,3 +194,101 @@ class ViewLayer(object):
                                pager=data['pager'],
                                pager_link_page='view_task',
                                pager_link_args={'id': task_id})
+
+    def task_hierarchy(self, request, current_user, task_id):
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        data = self.ll.get_task_hierarchy_data(task_id, current_user,
+                                               include_deleted=show_deleted,
+                                               include_done=show_done)
+
+        return render_template('task_hierarchy.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle,
+                               show_deleted=show_deleted, show_done=show_done)
+
+    def note_new_post(self, request, current_user):
+        if 'task_id' not in request.form:
+            return ('No task_id specified', 400)
+        task_id = request.form['task_id']
+        content = request.form['content']
+
+        note = self.ll.create_new_note(task_id, content, current_user)
+
+        self.db.session.add(note)
+        self.db.session.commit()
+
+        return redirect(url_for('view_task', id=task_id))
+
+    def task_edit(self, request, current_user, task_id):
+
+        def render_get_response():
+            data = self.ll.get_edit_task_data(task_id, current_user)
+            return render_template("edit_task.t.html", task=data['task'],
+                                   tag_list=data['tag_list'])
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'summary' not in request.form or 'description' not in request.form:
+            return render_get_response()
+
+        summary = request.form['summary']
+        description = request.form['description']
+        deadline = request.form['deadline']
+
+        is_done = ('is_done' in request.form and
+                   not not request.form['is_done'])
+        is_deleted = ('is_deleted' in request.form and
+                      not not request.form['is_deleted'])
+
+        order_num = None
+        if 'order_num' in request.form:
+            order_num = request.form['order_num']
+
+        parent_id = None
+        if 'parent_id' in request.form:
+            parent_id = request.form['parent_id']
+
+        duration = int_from_str(request.form['expected_duration_minutes'])
+
+        expected_cost = money_from_str(request.form['expected_cost'])
+
+        task = self.ll.set_task(task_id, current_user, summary, description,
+                                deadline, is_done, is_deleted, order_num,
+                                duration, expected_cost, parent_id)
+
+        self.db.session.add(task)
+        self.db.session.commit()
+
+        return redirect(url_for('view_task', id=task.id))
+
+    def attachment_new(self, request, current_user):
+        if 'task_id' not in request.form:
+            return ('No task_id specified', 400)
+        task_id = request.form['task_id']
+
+        f = request.files['filename']
+        if f is None or not f or not self.ll.allowed_file(f.filename):
+            return 'Invalid file', 400
+
+        if 'description' in request.form:
+            description = request.form['description']
+        else:
+            description = ''
+
+        att = self.ll.create_new_attachment(task_id, f, description,
+                                            current_user)
+
+        self.db.session.add(att)
+        self.db.session.commit()
+
+        return redirect(url_for('view_task', id=task_id))
+
+    def attachment(self, request, current_user, attachment_id, name):
+        att = self.app.Attachment.query.filter_by(id=attachment_id).first()
+        if att is None:
+            return (('No attachment found for the id "%s"' % attachment_id),
+                    404)
+
+        return flask.send_from_directory(self.upload_folder, att.path)

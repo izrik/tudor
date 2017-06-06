@@ -162,7 +162,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
-    vl = ViewLayer(ll, db, app)
+    vl = ViewLayer(ll, db, app, upload_folder)
     app.vl = vl
 
     # Flask setup functions
@@ -273,110 +273,29 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/hierarchy')
     @login_required
     def view_task_hierarchy(id):
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        data = ll.get_task_hierarchy_data(id, current_user,
-                                          include_deleted=show_deleted,
-                                          include_done=show_done)
-
-        return render_template('task_hierarchy.t.html', task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done)
+        return vl.task_hierarchy(request, current_user, id)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
     def new_note():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-        content = request.form['content']
-
-        note = ll.create_new_note(task_id, content, current_user)
-
-        db.session.add(note)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task_id))
+        return vl.note_new_post(request, current_user)
 
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_task(id):
-
-        def render_get_response():
-            data = ll.get_edit_task_data(id, current_user)
-            return render_template("edit_task.t.html", task=data['task'],
-                                   tag_list=data['tag_list'])
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'summary' not in request.form or 'description' not in request.form:
-            return render_get_response()
-
-        summary = request.form['summary']
-        description = request.form['description']
-        deadline = request.form['deadline']
-
-        is_done = ('is_done' in request.form and
-                   not not request.form['is_done'])
-        is_deleted = ('is_deleted' in request.form and
-                      not not request.form['is_deleted'])
-
-        order_num = None
-        if 'order_num' in request.form:
-            order_num = request.form['order_num']
-
-        parent_id = None
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-
-        duration = int_from_str(request.form['expected_duration_minutes'])
-
-        expected_cost = money_from_str(request.form['expected_cost'])
-
-        task = ll.set_task(id, current_user, summary, description, deadline,
-                           is_done, is_deleted, order_num, duration,
-                           expected_cost, parent_id)
-
-        db.session.add(task)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task.id))
+        return vl.task_edit(request, current_user, id)
 
     @app.route('/attachment/new', methods=['POST'])
     @login_required
     def new_attachment():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-
-        f = request.files['filename']
-        if f is None or not f or not ll.allowed_file(f.filename):
-            return 'Invalid file', 400
-
-        if 'description' in request.form:
-            description = request.form['description']
-        else:
-            description = ''
-
-        att = ll.create_new_attachment(task_id, f, description, current_user)
-
-        db.session.add(att)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task_id))
+        return vl.attachment_new(request, current_user)
 
     @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/<path:x>')
     @login_required
     def get_attachment(aid, x):
-        att = app.Attachment.query.filter_by(id=aid).first()
-        if att is None:
-            return (('No attachment found for the id "%s"' % aid), 404)
-
-        return flask.send_from_directory(upload_folder, att.path)
+        return vl.attachment(request, current_user, aid, x)
 
     @app.route('/task/<int:id>/up')
     @login_required
