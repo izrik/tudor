@@ -5,9 +5,10 @@ from flask import make_response, render_template, url_for, redirect
 
 
 class ViewLayer(object):
-    def __init__(self, ll, db):
+    def __init__(self, ll, db, app):
         self.ll = ll
         self.db = db
+        self.app = app
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -131,3 +132,60 @@ class ViewLayer(object):
             next_url = url_for('view_task', id=task.id)
 
         return redirect(next_url)
+
+    def task_mark_done(self, request, current_user, task_id):
+        task = self.ll.task_set_done(task_id, current_user)
+        self.db.session.add(task)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_mark_undone(self, request, current_user, task_id):
+        task = self.ll.task_unset_done(task_id, current_user)
+        self.db.session.add(task)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_delete(self, request, current_user, task_id):
+        task = self.ll.task_set_deleted(task_id, current_user)
+        self.db.session.add(task)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_undelete(self, request, current_user, task_id):
+        task = self.ll.task_unset_deleted(task_id, current_user)
+        self.db.session.add(task)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_purge(self, request, current_user, task_id):
+        task = self.app.Task.query.filter_by(id=task_id, is_deleted=True).first()
+        if not task:
+            return 404
+        self.db.session.delete(task)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def purge_all(self, request, current_user):
+        are_you_sure = request.args.get('are_you_sure')
+        if are_you_sure:
+            deleted_tasks = self.app.Task.query.filter_by(is_deleted=True)
+            for task in deleted_tasks:
+                self.db.session.delete(task)
+            self.db.session.commit()
+            return redirect(request.args.get('next') or url_for('index'))
+        return render_template('purge.t.html')
+
+    def task(self, request, current_user, task_id):
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
+        data = self.ll.get_task_data(task_id, current_user,
+                                     include_deleted=show_deleted,
+                                     include_done=show_done)
+
+        return render_template('task.t.html', task=data['task'],
+                               descendants=data['descendants'],
+                               cycle=itertools.cycle,
+                               show_deleted=show_deleted, show_done=show_done,
+                               pager=data['pager'],
+                               pager_link_page='view_task',
+                               pager_link_args={'id': task_id})

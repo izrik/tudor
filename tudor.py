@@ -162,7 +162,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
-    vl = ViewLayer(ll, db)
+    vl = ViewLayer(ll, db, app)
     app.vl = vl
 
     # Flask setup functions
@@ -236,74 +236,39 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
-        task = ll.task_set_done(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_mark_done(request, current_user, id)
 
     @app.route('/task/<int:id>/mark_undone')
     @login_required
     def task_undo(id):
-        task = ll.task_unset_done(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_mark_undone(request, current_user, id)
 
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
-        task = ll.task_set_deleted(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_delete(request, current_user, id)
 
     @app.route('/task/<int:id>/undelete')
     @login_required
     def undelete_task(id):
-        task = ll.task_unset_deleted(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_undelete(request, current_user, id)
 
     @app.route('/task/<int:id>/purge')
     @login_required
     @admin_required
     def purge_task(id):
-        task = app.Task.query.filter_by(id=id, is_deleted=True).first()
-        if not task:
-            return 404
-        db.session.delete(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_purge(request, current_user, id)
 
     @app.route('/purge_all')
     @login_required
     @admin_required
     def purge_deleted_tasks():
-        are_you_sure = request.args.get('are_you_sure')
-        if are_you_sure:
-            deleted_tasks = app.Task.query.filter_by(is_deleted=True)
-            for task in deleted_tasks:
-                db.session.delete(task)
-            db.session.commit()
-            return redirect(request.args.get('next') or url_for('index'))
-        return render_template('purge.t.html')
+        return vl.purge_all(request, current_user)
 
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
-                                include_done=show_done)
-
-        return render_template('task.t.html', task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done,
-                               pager=data['pager'],
-                               pager_link_page='view_task',
-                               pager_link_args={'id': id})
+        return vl.task(request, current_user, id)
 
     @app.route('/task/<int:id>/hierarchy')
     @login_required
