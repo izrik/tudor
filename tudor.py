@@ -162,7 +162,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
-    vl = ViewLayer(ll)
+    vl = ViewLayer(ll, db)
     app.vl = vl
 
     # Flask setup functions
@@ -216,112 +216,22 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/hierarchy')
     @login_required
     def hierarchy():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-
-        data = ll.get_index_hierarchy_data(show_deleted, show_done,
-                                           current_user)
-
-        resp = make_response(
-            render_template('hierarchy.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks_h=data['tasks_h'],
-                            tags=data['all_tags']))
-        return resp
+        return vl.hierarchy(request, current_user)
 
     @app.route('/deadlines')
     @login_required
     def deadlines():
-
-        data = ll.get_deadlines_data(current_user)
-
-        return make_response(
-            render_template(
-                'deadlines.t.html',
-                cycle=itertools.cycle,
-                deadline_tasks=data['deadline_tasks']))
+        return vl.deadlines(request, current_user)
 
     @app.route('/task/new', methods=['GET'])
     @login_required
     def get_new_task():
-
-        summary = get_form_or_arg('summary')
-        description = get_form_or_arg('description')
-        deadline = get_form_or_arg('deadline')
-        is_done = get_form_or_arg('is_done')
-        is_deleted = get_form_or_arg('is_deleted')
-        order_num = get_form_or_arg('order_num')
-        expected_duration_minutes = get_form_or_arg(
-            'expected_duration_minutes')
-        expected_cost = get_form_or_arg('expected_cost')
-        parent_id = get_form_or_arg('parent_id')
-        tags = get_form_or_arg('tags')
-
-        prev_url = get_form_or_arg('prev_url')
-
-        return render_template(
-            'new_task.t.html', prev_url=prev_url, summary=summary,
-            description=description, deadline=deadline, is_done=is_done,
-            is_deleted=is_deleted, order_num=order_num,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, parent_id=parent_id, tags=tags)
+        return vl.task_new_get(request, current_user)
 
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
-        summary = get_form_or_arg('summary')
-        description = get_form_or_arg('description')
-        deadline = get_form_or_arg('deadline') or None
-        is_done = get_form_or_arg('is_done') or None
-        is_deleted = get_form_or_arg('is_deleted') or None
-        order_type = get_form_or_arg('order_type') or 'bottom'
-        expected_duration_minutes = get_form_or_arg(
-            'expected_duration_minutes') or None
-        expected_cost = get_form_or_arg('expected_cost') or None
-        parent_id = get_form_or_arg('parent_id') or None
-
-        tags = get_form_or_arg('tags')
-        if tags:
-            tags = [s.strip() for s in tags.split(',')]
-
-        if order_type == 'top':
-            order_num = ll.get_highest_order_num()
-            if order_num is not None:
-                order_num += 2
-            else:
-                order_num = 0
-        elif order_type == 'order_num':
-            order_num = get_form_or_arg('order_num') or None
-        else:  # bottom
-            order_num = ll.get_lowest_order_num()
-            if order_num is not None:
-                order_num -= 2
-            else:
-                order_num = 0
-
-        task = ll.create_new_task(
-            summary=summary, description=description, is_done=is_done,
-            is_deleted=is_deleted, deadline=deadline, order_num=order_num,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, parent_id=parent_id,
-            current_user=current_user)
-
-        for tag_name in tags:
-            tag = ll.get_or_create_tag(tag_name)
-            task.tags.append(tag)
-            db.session.add(tag)
-
-        db.session.add(task)
-        db.session.commit()
-
-        next_url = get_form_or_arg('next_url')
-        if not next_url:
-            next_url = url_for('view_task', id=task.id)
-
-        return redirect(next_url)
+        return vl.task_new_post(request, current_user)
 
     @app.route('/task/<int:id>/mark_done')
     @login_required
