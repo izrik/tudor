@@ -325,17 +325,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required
     def add_tag_to_task(id):
-
-        value = get_form_or_arg('value')
-        if value is None or value == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=id)))
-
-        ll.do_add_tag_to_task(id, value, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=id)))
+        return vl.task_add_tag(request, current_user, id)
 
     @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
                defaults={'tag_id': None})
@@ -344,15 +334,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
     @login_required
     def delete_tag_from_task(id, tag_id):
-
-        if tag_id is None:
-            tag_id = get_form_or_arg('tag_id')
-
-        ll.do_delete_tag_from_task(id, tag_id, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=id)))
+        return vl.task_delete_tag(request, current_user, id, tag_id)
 
     @app.route('/task/<int:task_id>/authorize_user', methods=['GET', 'POST'])
     @login_required

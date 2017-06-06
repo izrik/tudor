@@ -334,3 +334,27 @@ class ViewLayer(object):
         self.db.session.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
+
+    def task_add_tag(self, request, current_user, task_id):
+
+        value = self.get_form_or_arg(request, 'value')
+        if value is None or value == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_add_tag_to_task(task_id, value, current_user)
+        self.db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
+
+    def task_delete_tag(self, request, current_user, task_id, tag_id):
+
+        if tag_id is None:
+            tag_id = self.get_form_or_arg(request, 'tag_id')
+
+        self.ll.do_delete_tag_from_task(task_id, tag_id, current_user)
+        self.db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
