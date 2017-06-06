@@ -300,54 +300,27 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/up')
     @login_required
     def move_task_up(id):
-        show_deleted = request.cookies.get('show_deleted')
-        ll.do_move_task_up(id, show_deleted, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_up(request, current_user, id)
 
     @app.route('/task/<int:id>/top')
     @login_required
     def move_task_to_top(id):
-        ll.do_move_task_to_top(id, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_top(request, current_user, id)
 
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
-        show_deleted = request.cookies.get('show_deleted')
-        ll.do_move_task_down(id, show_deleted, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_down(request, current_user, id)
 
     @app.route('/task/<int:id>/bottom')
     @login_required
     def move_task_to_bottom(id):
-        ll.do_move_task_to_bottom(id, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_bottom(request, current_user, id)
 
     @app.route('/long_order_change', methods=['POST'])
     @login_required
     def long_order_change():
-
-        task_to_move_id = get_form_or_arg('long_order_task_to_move')
-        if task_to_move_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-
-        target_id = get_form_or_arg('long_order_target')
-        if target_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-
-        ll.do_long_order_change(task_to_move_id, target_id, current_user)
-
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.long_order_change(request, current_user)
 
     @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required

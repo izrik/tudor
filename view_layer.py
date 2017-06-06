@@ -292,3 +292,45 @@ class ViewLayer(object):
                     404)
 
         return flask.send_from_directory(self.upload_folder, att.path)
+
+    def task_up(self, request, current_user, task_id):
+        show_deleted = request.cookies.get('show_deleted')
+        self.ll.do_move_task_up(task_id, show_deleted, current_user)
+        self.db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_top(self, request, current_user, task_id):
+        self.ll.do_move_task_to_top(task_id, current_user)
+        self.db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_down(self, request, current_user, task_id):
+        show_deleted = request.cookies.get('show_deleted')
+        self.ll.do_move_task_down(task_id, show_deleted, current_user)
+        self.db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def task_bottom(self, request, current_user, task_id):
+        self.ll.do_move_task_to_bottom(task_id, current_user)
+        self.db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def long_order_change(self, request, current_user):
+        task_to_move_id = self.get_form_or_arg(request,
+                                               'long_order_task_to_move')
+        if task_to_move_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        target_id = self.get_form_or_arg(request, 'long_order_target')
+        if target_id is None:
+            redirect(request.args.get('next') or url_for('index'))
+
+        self.ll.do_long_order_change(task_to_move_id, target_id, current_user)
+
+        self.db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('index'))
