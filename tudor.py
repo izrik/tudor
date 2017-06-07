@@ -384,26 +384,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/show_hide_deleted')
     @login_required
     def show_hide_deleted():
-        show_deleted = request.args.get('show_deleted')
-        resp = make_response(
-            redirect(request.args.get('next') or url_for('index')))
-        if show_deleted and show_deleted != '0':
-            resp.set_cookie('show_deleted', '1')
-        else:
-            resp.set_cookie('show_deleted', '')
-        return resp
+        return vl.show_hide_deleted(request, current_user)
 
     @app.route('/show_hide_done')
     @login_required
     def show_hide_done():
-        show_done = request.args.get('show_done')
-        resp = make_response(
-            redirect(request.args.get('next') or url_for('index')))
-        if show_done and show_done != '0':
-            resp.set_cookie('show_done', '1')
-        else:
-            resp.set_cookie('show_done', '')
-        return resp
+        return vl.show_hide_done(request, current_user)
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required

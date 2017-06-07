@@ -443,3 +443,23 @@ class ViewLayer(object):
     def users_user_get(self, request, current_user, user_id):
         user = self.ll.do_get_user_data(user_id, current_user)
         return render_template('view_user.t.html', user=user)
+
+    def show_hide_deleted(self, request, current_user):
+        show_deleted = request.args.get('show_deleted')
+        resp = make_response(
+            redirect(request.args.get('next') or url_for('index')))
+        if show_deleted and show_deleted != '0':
+            resp.set_cookie('show_deleted', '1')
+        else:
+            resp.set_cookie('show_deleted', '')
+        return resp
+
+    def show_hide_done(self, request, current_user):
+        show_done = request.args.get('show_done')
+        resp = make_response(
+            redirect(request.args.get('next') or url_for('index')))
+        if show_done and show_done != '0':
+            resp.set_cookie('show_done', '1')
+        else:
+            resp.set_cookie('show_done', '')
+        return resp
