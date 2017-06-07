@@ -169,7 +169,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.pl = pl
 
     if ll is None:
-        ll = LogicLayer(ds, upload_folder, allowed_extensions)
+        ll = LogicLayer(ds, upload_folder, allowed_extensions, pl)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 

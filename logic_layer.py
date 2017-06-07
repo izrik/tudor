@@ -13,11 +13,12 @@ from conversions import int_from_str, money_from_str
 
 class LogicLayer(object):
 
-    def __init__(self, ds, upload_folder, allowed_extensions):
+    def __init__(self, ds, upload_folder, allowed_extensions, pl):
         self.ds = ds
         self.db = self.ds.db
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
+        self.pl = pl
 
     def is_user_authorized_or_admin(self, task, user):
         if user.is_admin:
@@ -319,7 +320,7 @@ class LogicLayer(object):
         N = len(tasks)
         for i in xrange(N):
             tasks[i].order_num = 2 * (N - i)
-            self.db.session.add(tasks[i])
+            self.pl.add(tasks[i])
 
     def do_move_task_up(self, id, show_deleted, current_user):
         task = self.ds.Task.query.get(id)
@@ -341,8 +342,8 @@ class LogicLayer(object):
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
 
-            self.db.session.add(task)
-            self.db.session.add(next_task)
+            self.pl.add(task)
+            self.pl.add(next_task)
 
         return task
 
@@ -358,7 +359,7 @@ class LogicLayer(object):
         if top_task:
             task.order_num = top_task.order_num + 1
 
-            self.db.session.add(task)
+            self.pl.add(task)
 
         return task
 
@@ -382,8 +383,8 @@ class LogicLayer(object):
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
 
-            self.db.session.add(task)
-            self.db.session.add(next_task)
+            self.pl.add(task)
+            self.pl.add(next_task)
 
         return task
 
@@ -399,7 +400,7 @@ class LogicLayer(object):
         if bottom_task:
             task.order_num = bottom_task.order_num - 2
 
-            self.db.session.add(task)
+            self.pl.add(task)
 
         return task
 
@@ -443,7 +444,7 @@ class LogicLayer(object):
         for s in siblings2:
             s.order_num = k
             k -= 2
-            self.db.session.add(s)
+            self.pl.add(s)
 
         return task_to_move, target
 
@@ -459,7 +460,7 @@ class LogicLayer(object):
 
         if tag not in task.tags:
             task.tags.append(tag)
-            self.db.session.add(task)
+            self.pl.add(task)
 
         return tag
 
@@ -467,7 +468,7 @@ class LogicLayer(object):
         tag = self.ds.Tag.query.filter_by(value=value).first()
         if tag is None:
             tag = self.ds.Tag(value)
-            self.db.session.add(tag)
+            self.pl.add(tag)
         return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
@@ -485,8 +486,8 @@ class LogicLayer(object):
         if tag is not None:
             if tag in task.tags:
                 task.tags.remove(tag)
-                self.db.session.add(task)
-                self.db.session.add(tag)
+                self.pl.add(task)
+                self.pl.add(tag)
 
         return tag
 
@@ -574,8 +575,8 @@ class LogicLayer(object):
 
         if user_to_deauthorize in task.users:
             task.users.remove(user_to_deauthorize)
-            self.db.session.add(task)
-            self.db.session.add(user_to_deauthorize)
+            self.pl.add(task)
+            self.pl.add(user_to_deauthorize)
 
         return task
 
@@ -586,7 +587,7 @@ class LogicLayer(object):
                 "A user already exists with the email address '{}'".format(
                     email))
         user = self.ds.User(email=email, is_admin=is_admin)
-        self.db.session.add(user)
+        self.pl.add(user)
         return user
 
     def do_get_user_data(self, user_id, current_user):
@@ -611,13 +612,13 @@ class LogicLayer(object):
             option.value = value
         else:
             option = self.ds.Option(key, value)
-        self.db.session.add(option)
+        self.pl.add(option)
         return option
 
     def do_delete_option(self, key):
         option = self.ds.Option.query.get(key)
         if option is not None:
-            self.db.session.delete(option)
+            self.pl.delete(option)
         return option
 
     def do_reset_order_nums(self, current_user):
@@ -630,7 +631,7 @@ class LogicLayer(object):
             if task is None:
                 continue
             task.order_num = 2 * k
-            self.db.session.add(task)
+            self.pl.add(task)
             k -= 1
         return tasks_h
 
@@ -806,7 +807,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.BadRequest('The data was incorrect')
 
         for dbo in db_objects:
-            self.db.session.add(dbo)
+            self.pl.add(dbo)
 
     def get_task_crud_data(self, current_user):
         return self.load_no_hierarchy(current_user, include_done=True,
@@ -849,7 +850,7 @@ class LogicLayer(object):
             task.expected_cost = cost
             task.parent_id = parent_id
 
-            self.db.session.add(task)
+            self.pl.add(task)
 
     def get_tags(self):
         return self.ds.Tag.query.all()
@@ -880,7 +881,7 @@ class LogicLayer(object):
                 "No tag found for the id '{}'".format(tag_id))
         tag.value = value
         tag.description = description
-        self.db.session.add(tag)
+        self.pl.add(tag)
         return tag
 
     def get_task(self, task_id, current_user):
@@ -905,22 +906,22 @@ class LogicLayer(object):
                     task.summary))
 
         tag = self.ds.Tag(task.summary, task.description)
-        self.db.session.add(tag)
+        self.pl.add(tag)
 
         for child in task.children:
             child.tags.append(tag)
             child.parent = task.parent
             for tag2 in task.tags:
                 child.tags.append(tag2)
-            self.db.session.add(child)
+            self.pl.add(child)
 
         task.parent = None
-        self.db.session.add(task)
+        self.pl.add(task)
 
-        self.db.session.delete(task)
+        self.pl.delete(task)
 
         # TODO: commit in a non-view function
-        self.db.session.commit()
+        self.pl.commit()
 
         return tag
 
@@ -1128,8 +1129,8 @@ class LogicLayer(object):
 
         if dependee in task.dependees:
             task.dependees.remove(dependee)
-            self.db.session.add(task)
-            self.db.session.add(dependee)
+            self.pl.add(task)
+            self.pl.add(dependee)
 
         return task, dependee
 
@@ -1215,8 +1216,8 @@ class LogicLayer(object):
 
         if prioritize_before in task.prioritize_before:
             task.prioritize_before.remove(prioritize_before)
-            self.db.session.add(task)
-            self.db.session.add(prioritize_before)
+            self.pl.add(task)
+            self.pl.add(prioritize_before)
 
         return task, prioritize_before
 
