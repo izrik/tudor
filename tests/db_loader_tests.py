@@ -14,6 +14,8 @@ class DbLoaderTest(unittest.TestCase):
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
+        self.pl = app.pl
+        pl = self.pl
         db = app.pl.db
         db.create_all()
         Task = app.Task
@@ -24,16 +26,16 @@ class DbLoaderTest(unittest.TestCase):
         # deadline=None):
 
         self.user = self.app.User('name@example.org', None, True)
-        db.session.add(self.user)
+        pl.add(self.user)
 
         normal = Task(summary='normal')
-        db.session.add(normal)
+        pl.add(normal)
 
         parent = Task(summary='parent')
         child = Task(summary='child')
         child.parent = parent
-        db.session.add(parent)
-        db.session.add(child)
+        pl.add(parent)
+        pl.add(child)
 
         parent2 = Task(summary='parent2')
         child2 = Task(summary='child2')
@@ -46,14 +48,14 @@ class DbLoaderTest(unittest.TestCase):
         great_grandchild.parent = grandchild
         great_great_grandchild = Task(summary='great_great_grandchild')
         great_great_grandchild.parent = great_grandchild
-        db.session.add(parent2)
-        db.session.add(child2)
-        db.session.add(child3)
-        db.session.add(grandchild)
-        db.session.add(great_grandchild)
-        db.session.add(great_great_grandchild)
+        pl.add(parent2)
+        pl.add(child2)
+        pl.add(child3)
+        pl.add(grandchild)
+        pl.add(great_grandchild)
+        pl.add(great_great_grandchild)
 
-        db.session.commit()
+        pl.commit()
 
         for t in [normal, parent, child, parent2, child2, child3, grandchild,
                   great_grandchild, great_great_grandchild]:
@@ -190,6 +192,8 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
+        pl = self.pl
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
@@ -198,37 +202,37 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         Task = app.Task
 
         self.user = self.app.User('name@example.org', None, True)
-        db.session.add(self.user)
+        pl.add(self.user)
 
         normal = Task(summary='normal')
-        db.session.add(normal)
+        pl.add(normal)
 
         done = Task(summary='done')
         done.is_done = True
-        db.session.add(done)
+        pl.add(done)
 
         deleted = Task(summary='deleted')
         deleted.is_deleted = True
-        db.session.add(deleted)
+        pl.add(deleted)
 
         done_and_deleted = Task(summary='done_and_deleted')
         done_and_deleted.is_done = True
         done_and_deleted.is_deleted = True
-        db.session.add(done_and_deleted)
+        pl.add(done_and_deleted)
 
         parent1 = Task(summary='parent1')
         child1 = Task(summary='child1')
         child1.parent = parent1
         child1.is_done = True
-        db.session.add(parent1)
-        db.session.add(child1)
+        pl.add(parent1)
+        pl.add(child1)
 
         parent2 = Task(summary='parent2')
         parent2.is_done = True
         child2 = Task(summary='child2')
         child2.parent = parent2
-        db.session.add(parent2)
-        db.session.add(child2)
+        pl.add(parent2)
+        pl.add(child2)
 
         parent3 = Task(summary='parent3')
         child3 = Task(summary='child3')
@@ -240,11 +244,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         great_grandchild3.parent = grandchild3
         great_great_grandchild3 = Task(summary='great_great_grandchild3')
         great_great_grandchild3.parent = great_grandchild3
-        db.session.add(parent3)
-        db.session.add(child3)
-        db.session.add(grandchild3)
-        db.session.add(great_grandchild3)
-        db.session.add(great_great_grandchild3)
+        pl.add(parent3)
+        pl.add(child3)
+        pl.add(grandchild3)
+        pl.add(great_grandchild3)
+        pl.add(great_great_grandchild3)
 
         parent4 = Task(summary='parent4')
         child4 = Task(summary='child4')
@@ -256,11 +260,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         great_grandchild4.parent = grandchild4
         great_great_grandchild4 = Task(summary='great_great_grandchild4')
         great_great_grandchild4.parent = great_grandchild4
-        db.session.add(parent4)
-        db.session.add(child4)
-        db.session.add(grandchild4)
-        db.session.add(great_grandchild4)
-        db.session.add(great_great_grandchild4)
+        pl.add(parent4)
+        pl.add(child4)
+        pl.add(grandchild4)
+        pl.add(great_grandchild4)
+        pl.add(great_great_grandchild4)
 
         parent5 = Task(summary='parent5')
         child5 = Task(summary='child5')
@@ -273,20 +277,20 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         great_grandchild5.parent = grandchild5
         great_great_grandchild5 = Task(summary='great_great_grandchild5')
         great_great_grandchild5.parent = great_grandchild5
-        db.session.add(parent5)
-        db.session.add(child5)
-        db.session.add(grandchild5)
-        db.session.add(great_grandchild5)
-        db.session.add(great_great_grandchild5)
+        pl.add(parent5)
+        pl.add(child5)
+        pl.add(grandchild5)
+        pl.add(great_grandchild5)
+        pl.add(great_great_grandchild5)
 
         parent6 = Task(summary='parent6')
         parent6.is_deleted = True
         child6 = Task(summary='child6')
         child6.parent = parent6
-        db.session.add(parent6)
-        db.session.add(child6)
+        pl.add(parent6)
+        pl.add(child6)
 
-        db.session.commit()
+        pl.commit()
 
         for t in [normal, done, deleted, done_and_deleted,
 
@@ -571,6 +575,8 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
+        pl = self.pl
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
@@ -579,13 +585,13 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         Task = app.Task
 
         self.user = self.app.User('name@example.org', None, True)
-        db.session.add(self.user)
+        pl.add(self.user)
 
         no_deadline = Task(summary='no_deadline')
-        db.session.add(no_deadline)
+        pl.add(no_deadline)
 
         with_deadline = Task(summary='with_deadline', deadline='2015-10-05')
-        db.session.add(with_deadline)
+        pl.add(with_deadline)
 
         parent1 = Task(summary='parent1')
         child1 = Task(summary='child1')
@@ -597,11 +603,11 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         great_grandchild1.parent = grandchild1
         great_great_grandchild1 = Task(summary='great_great_grandchild1')
         great_great_grandchild1.parent = great_grandchild1
-        db.session.add(parent1)
-        db.session.add(child1)
-        db.session.add(grandchild1)
-        db.session.add(great_grandchild1)
-        db.session.add(great_great_grandchild1)
+        pl.add(parent1)
+        pl.add(child1)
+        pl.add(grandchild1)
+        pl.add(great_grandchild1)
+        pl.add(great_great_grandchild1)
 
         parent2 = Task(summary='parent2', deadline='2015-10-05')
         child2 = Task(summary='child2', deadline='2015-10-05')
@@ -613,13 +619,13 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         great_great_grandchild2 = Task(summary='great_great_grandchild2',
                                        deadline='2015-10-05')
         great_great_grandchild2.parent = great_grandchild2
-        db.session.add(parent2)
-        db.session.add(child2)
-        db.session.add(grandchild2)
-        db.session.add(great_grandchild2)
-        db.session.add(great_great_grandchild2)
+        pl.add(parent2)
+        pl.add(child2)
+        pl.add(grandchild2)
+        pl.add(great_grandchild2)
+        pl.add(great_great_grandchild2)
 
-        db.session.commit()
+        pl.commit()
 
         for t in [no_deadline, with_deadline,
 
@@ -717,6 +723,8 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
+        pl = self.pl
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
@@ -726,24 +734,24 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         Tag = app.Tag
 
         self.user = self.app.User('name@example.org', None, True)
-        db.session.add(self.user)
+        pl.add(self.user)
 
         self.abcd = abcd = Tag('abcd')
         self.efgh = efgh = Tag('efgh')
         self.ijkl = ijkl = Tag('ijkl')
 
-        db.session.add(abcd)
-        db.session.add(efgh)
-        db.session.add(ijkl)
+        pl.add(abcd)
+        pl.add(efgh)
+        pl.add(ijkl)
 
         self.normal = normal = Task(summary='normal')
-        db.session.add(normal)
+        pl.add(normal)
 
         self.parent = parent = Task(summary='parent')
         self.child = child = Task(summary='child')
         child.parent = parent
-        db.session.add(parent)
-        db.session.add(child)
+        pl.add(parent)
+        pl.add(child)
 
         self.parent2 = parent2 = Task(summary='parent2')
         self.child2 = child2 = Task(summary='child2', is_done=True,
@@ -759,12 +767,12 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         self.great_great_grandchild = great_great_grandchild = Task(
             summary='great_great_grandchild')
         great_great_grandchild.parent = great_grandchild
-        db.session.add(parent2)
-        db.session.add(child2)
-        db.session.add(child3)
-        db.session.add(grandchild)
-        db.session.add(great_grandchild)
-        db.session.add(great_great_grandchild)
+        pl.add(parent2)
+        pl.add(child2)
+        pl.add(child3)
+        pl.add(grandchild)
+        pl.add(great_grandchild)
+        pl.add(great_great_grandchild)
 
         normal.tags.append(abcd)
         normal.tags.append(efgh)
@@ -773,7 +781,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         parent2.tags.append(efgh)
         great_great_grandchild.tags.append(abcd)
 
-        db.session.commit()
+        pl.commit()
 
         for t in [normal, parent, child, parent2, child2, child3, grandchild,
                   great_grandchild, great_great_grandchild]:

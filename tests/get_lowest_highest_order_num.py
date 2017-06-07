@@ -11,6 +11,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
         self.db = app.pl.db
         self.db.create_all()
         self.Task = app.pl.Task
@@ -41,7 +42,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         # given
         task = self.Task('task')
         task.order_num = 1
-        self.db.session.add(task)
+        self.pl.add(task)
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -53,7 +54,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         # given
         task = self.Task('task')
         task.order_num = 1
-        self.db.session.add(task)
+        self.pl.add(task)
 
         # when
         order_num = self.ll.get_highest_order_num()
@@ -69,9 +70,9 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         t2.order_num = 2
         t3 = self.Task('t3')
         t3.order_num = 3
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(t3)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -87,9 +88,9 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         t2.order_num = 2
         t3 = self.Task('t3')
         t3.order_num = 3
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(t3)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
 
         # when
         order_num = self.ll.get_highest_order_num()

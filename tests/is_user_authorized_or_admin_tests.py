@@ -11,6 +11,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
         self.db = app.pl.db
         self.db.create_all()
         self.app = app
@@ -23,9 +24,9 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         # given
         task = self.Task('task')
         user = self.User('name@example.org')
-        self.db.session.add(task)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
 
         # when
         result = self.ll.is_user_authorized_or_admin(task, user)
@@ -38,10 +39,10 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         # given
         task = self.Task('task')
         user = self.User('name@example.org')
-        self.db.session.add(task)
-        self.db.session.add(user)
+        self.pl.add(task)
+        self.pl.add(user)
         task.users.append(user)
-        self.db.session.commit()
+        self.pl.commit()
 
         # when
         result = self.ll.is_user_authorized_or_admin(task, user)
@@ -54,9 +55,9 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         # given
         task = self.Task('task')
         user = self.User('name@example.org', None, True)
-        self.db.session.add(task)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
 
         # when
         result = self.ll.is_user_authorized_or_admin(task, user)
@@ -69,10 +70,10 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         # given
         task = self.Task('task')
         user = self.User('name@example.org', None, True)
-        self.db.session.add(task)
-        self.db.session.add(user)
+        self.pl.add(task)
+        self.pl.add(user)
         task.users.append(user)
-        self.db.session.commit()
+        self.pl.commit()
 
         # when
         result = self.ll.is_user_authorized_or_admin(task, user)

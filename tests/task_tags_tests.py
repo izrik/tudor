@@ -9,6 +9,7 @@ class TaskTagsTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
         self.db = app.pl.db
         self.Task = app.pl.Task
         self.Tag = app.pl.Tag
@@ -34,11 +35,11 @@ class TaskTagsTest(unittest.TestCase):
         t2.tags.append(tag2)
 
         self.db.create_all()
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(tag1)
-        self.db.session.add(tag2)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(tag1)
+        self.pl.add(tag2)
+        self.pl.commit()
 
         # when
         result = set(t1.get_tag_values())

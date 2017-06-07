@@ -11,23 +11,24 @@ class TaskUnsetDoneTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
         self.db = app.pl.db
         self.db.create_all()
         self.app = app
         self.ll = app.ll
         self.Task = app.pl.Task
         self.admin = app.pl.User('name@example.org', None, True)
-        self.db.session.add(self.admin)
+        self.pl.add(self.admin)
         self.user = app.pl.User('name2@example.org', None, False)
-        self.db.session.add(self.user)
+        self.pl.add(self.user)
 
     def test_task_unset_done_unsets_is_done(self):
         # given
         t1 = self.Task('t1')
         t1.is_done = True
 
-        self.db.session.add(t1)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.commit()
 
         # precondition
         self.assertTrue(t1.is_done)
@@ -44,8 +45,8 @@ class TaskUnsetDoneTest(unittest.TestCase):
         t1 = self.Task('t1')
         t1.is_done = True
 
-        self.db.session.add(t1)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.commit()
 
         # precondition
         self.assertTrue(t1.is_done)
@@ -64,8 +65,8 @@ class TaskUnsetDoneTest(unittest.TestCase):
         t1 = self.Task('t1')
         t1.is_done = False
 
-        self.db.session.add(t1)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.commit()
 
         # precondition
         self.assertFalse(t1.is_done)

@@ -9,6 +9,7 @@ class SortByHierarchyTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
         self.db = app.pl.db
         self.db.create_all()
         self.app = app

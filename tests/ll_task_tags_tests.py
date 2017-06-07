@@ -11,6 +11,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
+        self.pl = app.pl
         self.db = app.pl.db
         self.db.create_all()
         self.Task = app.pl.Task
@@ -18,9 +19,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         self.ll = app.ll
         self.User = app.pl.User
         self.admin = self.User('name@example.org', None, True)
-        self.db.session.add(self.admin)
+        self.pl.add(self.admin)
         self.user = self.User('name2@example.org', None, False)
-        self.db.session.add(self.user)
+        self.pl.add(self.user)
 
     def test_get_or_create_tag_nonexistent_creates_tag(self):
         # precondition
@@ -38,7 +39,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def test_get_or_create_tag_existent_gets_tag(self):
         # given
         tag1 = self.Tag('def')
-        self.db.session.add(tag1)
+        self.pl.add(tag1)
 
         # precondition
         self.assertEqual(1, self.Tag.query.count())
@@ -56,8 +57,8 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def test_add_tag_to_task_admin_nonexistent_adds_tag(self):
         # given
         task = self.Task('task')
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -76,9 +77,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # given
         task = self.Task('task')
         tag1 = self.Tag('jkl')
-        self.db.session.add(task)
-        self.db.session.add(tag1)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.add(tag1)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -98,8 +99,8 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # given
         task = self.Task('task')
         task.users.append(self.user)
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -119,9 +120,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         task = self.Task('task')
         tag1 = self.Tag('pqr')
         task.users.append(self.user)
-        self.db.session.add(task)
-        self.db.session.add(tag1)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.add(tag1)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -149,10 +150,10 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def test_add_tag_to_task_user_not_authorized_raises_forbidden(self):
         # given
         other_user = self.User('name3@example.org', None, False)
-        self.db.session.add(other_user)
+        self.pl.add(other_user)
         task = self.Task('task')
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)

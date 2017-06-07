@@ -10,6 +10,7 @@ from tudor import generate_app
 class TaskDependenciesTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
         self.db = self.app.pl.db
         self.db.create_all()
         self.Task = self.app.Task
@@ -123,6 +124,7 @@ class TaskDependenciesTest(unittest.TestCase):
 class TaskDependeesLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
         self.db = self.app.pl.db
         self.db.create_all()
         self.ll = self.app.ll
@@ -136,10 +138,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -168,10 +170,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -201,10 +203,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -237,10 +239,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -264,10 +266,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -291,10 +293,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -317,9 +319,9 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.dependants))
@@ -340,9 +342,9 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -367,10 +369,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.dependees.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -399,10 +401,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -429,10 +431,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.dependees.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -470,10 +472,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.dependees.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -502,10 +504,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t2.users.append(user)
         t1.dependees.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be able to depend on another task unless both share a common set of
         # one or more authorized users
@@ -537,10 +539,10 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t1.dependees.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be able to depend on another task unless both share a common set of
         # one or more authorized users
@@ -570,9 +572,9 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.dependants))
@@ -593,9 +595,9 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -615,6 +617,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
 class TaskDependantsLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
         self.db = self.app.pl.db
         self.db.create_all()
         self.ll = self.app.ll
@@ -628,10 +631,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -660,10 +663,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -693,10 +696,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -729,10 +732,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -756,10 +759,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -783,10 +786,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -809,9 +812,9 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.dependees))
@@ -832,9 +835,9 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -859,10 +862,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.dependants.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -891,10 +894,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -921,10 +924,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.dependants.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -962,10 +965,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.dependants.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
@@ -994,10 +997,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t2.users.append(user)
         t1.dependants.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be able to depend on another task unless both share a common set of
         # one or more authorized users
@@ -1029,10 +1032,10 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t1.dependants.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be able to depend on another task unless both share a common set of
         # one or more authorized users
@@ -1062,9 +1065,9 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.dependees))
@@ -1085,9 +1088,9 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.dependees))
