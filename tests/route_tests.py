@@ -653,3 +653,268 @@ class RouteTest(unittest.TestCase):
         resp = self.client.post('/task/1/remove_prioritize_after/2')
         self.assertEqual(606, resp.status_code)
         self.mock_method.assert_called()
+
+    def test_index_put(self):
+        resp = self.client.put('/')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_hierarchy_put(self):
+        resp = self.client.put('/hierarchy')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_deadlines_put(self):
+        resp = self.client.put('/deadlines')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_new_get_put(self):
+        resp = self.client.put('/task/new')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_new_post_put(self):
+        resp = self.client.put('/task/new')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_mark_done_put(self):
+        resp = self.client.put('/task/1/mark_done')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_mark_undone_put(self):
+        resp = self.client.put('/task/1/mark_undone')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_delete_put(self):
+        resp = self.client.put('/task/1/delete')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_undelete_put(self):
+        resp = self.client.put('/task/1/undelete')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_purge_put(self):
+        resp = self.client.put('/task/1/purge')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_purge_all_put(self):
+        resp = self.client.put('/purge_all')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_put(self):
+        resp = self.client.put('/task/1')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_hierarchy_put(self):
+        resp = self.client.put('/task/1/hierarchy')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_note_new_post_put(self):
+        resp = self.client.put('/note/new')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_edit_put(self):
+        resp = self.client.put('/task/1/edit')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_attachment_new_put(self):
+        resp = self.client.put('/attachment/new')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_attachment_put(self):
+        resp = self.client.put('/attachment/1')
+        self.assertEqual(301, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_up_put(self):
+        resp = self.client.put('/task/1/up')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_top_put(self):
+        resp = self.client.put('/task/1/top')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_down_put(self):
+        resp = self.client.put('/task/1/down')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_bottom_put(self):
+        resp = self.client.put('/task/1/bottom')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_long_order_change_put(self):
+        resp = self.client.put('/long_order_change')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_add_tag_put(self):
+        resp = self.client.put('/task/1/add_tag')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_delete_tag_put(self):
+        resp = self.client.put('/task/1/delete_tag')
+        self.assertEqual(301, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_authorize_user_put(self):
+        resp = self.client.put('/task/1/authorize_user')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_pick_user_put(self):
+        resp = self.client.put('/task/1/pick_user')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_authorize_user_user_put(self):
+        resp = self.client.put('/task/1/authorize_user/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_deauthorize_user_put(self):
+        resp = self.client.put('/task/1/deauthorize_user/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_login_put(self):
+        resp = self.client.put('/login')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_logout_put(self):
+        resp = self.client.put('/logout')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_users_put(self):
+        resp = self.client.put('/users')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_users_user_get_put(self):
+        resp = self.client.put('/users/1')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_show_hide_deleted_put(self):
+        resp = self.client.put('/show_hide_deleted')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_show_hide_done_put(self):
+        resp = self.client.put('/show_hide_done')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_options_put(self):
+        resp = self.client.put('/options')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_option_delete_put(self):
+        resp = self.client.put('/option/1/delete')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_reset_order_nums_put(self):
+        resp = self.client.put('/reset_order_nums')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_export_put(self):
+        resp = self.client.put('/export')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_import__put(self):
+        resp = self.client.put('/import')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_crud_put(self):
+        resp = self.client.put('/task_crud')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_tags_put(self):
+        resp = self.client.put('/tags')
+        self.assertEqual(301, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_tags_id_get_put(self):
+        resp = self.client.put('/tags/1')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_tags_id_edit_put(self):
+        resp = self.client.put('/tags/1/edit')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_convert_to_tag_put(self):
+        resp = self.client.put('/task/1/convert_to_tag')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_search_put(self):
+        resp = self.client.put('/search')
+        self.assertEqual(301, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_add_dependee_put(self):
+        resp = self.client.put('/task/1/add_dependee/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_remove_dependee_put(self):
+        resp = self.client.put('/task/1/remove_dependee/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_add_dependant_put(self):
+        resp = self.client.put('/task/1/add_dependant/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_remove_dependant_put(self):
+        resp = self.client.put('/task/1/remove_dependant/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_add_prioritize_before_put(self):
+        resp = self.client.put('/task/1/add_prioritize_before/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_remove_prioritize_before_put(self):
+        resp = self.client.put('/task/1/remove_prioritize_before/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_add_prioritize_after_put(self):
+        resp = self.client.put('/task/1/add_prioritize_after/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
+
+    def test_task_id_remove_prioritize_after_put(self):
+        resp = self.client.put('/task/1/remove_prioritize_after/2')
+        self.assertEqual(405, resp.status_code)
+        self.mock_method.assert_not_called()
