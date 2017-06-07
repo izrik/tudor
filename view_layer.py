@@ -576,3 +576,12 @@ class ViewLayer(object):
                                tag_description=task.description,
                                cycle=itertools.cycle,
                                tasks=task.children)
+
+    def search(self, request, current_user, search_query):
+        if search_query is None and request.method == 'POST':
+            search_query = request.form['query']
+
+        results = self.ll.search(search_query, current_user)
+
+        return render_template('search.t.html', query=search_query,
+                               results=results)

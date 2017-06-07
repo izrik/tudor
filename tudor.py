@@ -454,13 +454,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/search/<query>', methods=['GET'])
     @login_required
     def search(search_query):
-        if search_query is None and request.method == 'POST':
-            search_query = request.form['query']
-
-        results = ll.search(search_query, current_user)
-
-        return render_template('search.t.html', query=search_query,
-                               results=results)
+        return vl.search(request, current_user, search_query)
 
     @app.route('/task/<int:task_id>/add_dependee', methods=['GET', 'POST'],
                defaults={'dependee_id': None})
