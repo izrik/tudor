@@ -29,6 +29,7 @@ from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
 from view_layer import ViewLayer
+from persistence_layer import PersistenceLayer
 import base64
 
 try:
@@ -104,7 +105,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 ll=None, vl=None, configs=None, disable_admin_check=False):
+                 ll=None, vl=None, pl=None, configs=None,
+                 disable_admin_check=False):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
@@ -161,6 +163,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.Attachment = ds.Attachment
     app.User = ds.User
     app.Option = ds.Option
+
+    if pl is None:
+        pl = PersistenceLayer(ds, db)
+    app.pl = pl
 
     if ll is None:
         ll = LogicLayer(ds, upload_folder, allowed_extensions)
