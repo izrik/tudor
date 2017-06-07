@@ -10,7 +10,6 @@ class SearchTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.Task = self.app.Task
-        self.db = self.app.pl.db
         self.User = self.app.pl.User
         self.admin = self.User('name@example.org', None, True)
         self.pl.create_all()

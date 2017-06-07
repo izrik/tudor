@@ -12,7 +12,6 @@ class TaskSetDeletedTest(unittest.TestCase):
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
         self.pl = app.pl
-        self.db = app.pl.db
         self.pl.create_all()
         self.app = app
         self.ll = app.ll

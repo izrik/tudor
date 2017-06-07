@@ -16,7 +16,6 @@ class DbLoaderTest(unittest.TestCase):
         self.task_ids = {}
         self.pl = app.pl
         pl = self.pl
-        db = app.pl.db
         pl.create_all()
         Task = app.Task
         # summary,
@@ -197,7 +196,6 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
-        db = app.pl.db
         pl.create_all()
         Task = app.Task
 
@@ -580,7 +578,6 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
-        db = app.pl.db
         pl.create_all()
         Task = app.Task
 
@@ -728,7 +725,6 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         self.app = app
         self.ll = app.ll
         self.task_ids = {}
-        db = app.pl.db
         pl.create_all()
         Task = app.Task
         Tag = app.Tag
