@@ -406,60 +406,25 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        ll.do_reset_order_nums(current_user)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl. reset_order_nums(request, current_user)
 
     @app.route('/export', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def export_data():
-        if request.method == 'GET':
-            return render_template('export.t.html', results=None)
-        types_to_export = set(k for k in request.form.keys() if
-                              k in request.form and request.form[k] == 'all')
-        results = ll.do_export_data(types_to_export)
-        return jsonify(results)
+        return vl.export(request, current_user)
 
     @app.route('/import', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def import_data():
-        if request.method == 'GET':
-            return render_template('import.t.html')
-
-        f = request.files['file']
-        if f is None or not f:
-            r = request.form['raw']
-            src = json.loads(r)
-        else:
-            src = json.load(f)
-
-        ll.do_import_data(src)
-        db.session.commit()
-
-        return redirect(url_for('index'))
+        return vl.import_(request, current_user)
 
     @app.route('/task_crud', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def task_crud():
-
-        if request.method == 'GET':
-            tasks = ll.get_task_crud_data(current_user)
-            return render_template('task_crud.t.html', tasks=tasks,
-                                   cycle=itertools.cycle)
-
-        crud_data = {}
-        for key in request.form.keys():
-            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
-                        r'order_num|duration|cost|parent_id)', key):
-                crud_data[key] = request.form[key]
-
-        ll.do_submit_task_crud(crud_data, current_user)
-        db.session.commit()
-
-        return redirect(url_for('task_crud'))
+        return vl.task_crud(request, current_user)
 
     @app.route('/tags')
     @app.route('/tags/')

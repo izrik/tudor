@@ -1,8 +1,10 @@
 
 import itertools
+import re
 
 import flask
 from flask import make_response, render_template, url_for, redirect, flash
+from flask import jsonify, json
 from flask_login import login_user, logout_user
 
 from conversions import int_from_str, money_from_str, bool_from_str
@@ -483,3 +485,49 @@ class ViewLayer(object):
         self.ll.do_delete_option(key)
         self.db.session.commit()
         return redirect(request.args.get('next') or url_for('view_options'))
+
+    def reset_order_nums(self, request, current_user):
+        self.ll.do_reset_order_nums(current_user)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def export(self, request, current_user):
+        if request.method == 'GET':
+            return render_template('export.t.html', results=None)
+        types_to_export = set(k for k in request.form.keys() if
+                              k in request.form and request.form[k] == 'all')
+        results = self.ll.do_export_data(types_to_export)
+        return jsonify(results)
+
+    def import_(self, request, current_user):
+        if request.method == 'GET':
+            return render_template('import.t.html')
+
+        f = request.files['file']
+        if f is None or not f:
+            r = request.form['raw']
+            src = json.loads(r)
+        else:
+            src = json.load(f)
+
+        self.ll.do_import_data(src)
+        self.db.session.commit()
+
+        return redirect(url_for('index'))
+
+    def task_crud(self, request, current_user):
+        if request.method == 'GET':
+            tasks = self.ll.get_task_crud_data(current_user)
+            return render_template('task_crud.t.html', tasks=tasks,
+                                   cycle=itertools.cycle)
+
+        crud_data = {}
+        for key in request.form.keys():
+            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
+                        r'order_num|duration|cost|parent_id)', key):
+                crud_data[key] = request.form[key]
+
+        self.ll.do_submit_task_crud(crud_data, current_user)
+        self.db.session.commit()
+
+        return redirect(url_for('task_crud'))
