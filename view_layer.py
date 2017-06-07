@@ -463,3 +463,23 @@ class ViewLayer(object):
         else:
             resp.set_cookie('show_done', '')
         return resp
+
+    def options(self, request, current_user):
+        if request.method == 'GET' or 'key' not in request.form:
+            data = self.ll.get_view_options_data()
+            return render_template('options.t.html', options=data)
+
+        key = request.form['key']
+        value = ''
+        if 'value' in request.form:
+            value = request.form['value']
+
+        self.ll.do_set_option(key, value)
+        self.db.session.commit()
+
+        return redirect(request.args.get('next') or url_for('view_options'))
+
+    def option_delete(self, request, current_user, key):
+        self.ll.do_delete_option(key)
+        self.db.session.commit()
+        return redirect(request.args.get('next') or url_for('view_options'))

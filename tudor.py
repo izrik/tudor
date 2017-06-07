@@ -395,27 +395,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     @admin_required
     def view_options():
-        if request.method == 'GET' or 'key' not in request.form:
-            data = ll.get_view_options_data()
-            return render_template('options.t.html', options=data)
-
-        key = request.form['key']
-        value = ''
-        if 'value' in request.form:
-            value = request.form['value']
-
-        ll.do_set_option(key, value)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('view_options'))
+        return vl.options(request, current_user)
 
     @app.route('/option/<path:key>/delete')
     @login_required
     @admin_required
     def delete_option(key):
-        ll.do_delete_option(key)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('view_options'))
+        return vl.option_delete(request, current_user, key)
 
     @app.route('/reset_order_nums')
     @login_required
