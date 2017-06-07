@@ -174,7 +174,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app._convert_task_to_tag = ll._convert_task_to_tag
 
     if vl is None:
-        vl = ViewLayer(ll, db, app, upload_folder)
+        vl = ViewLayer(ll, db, app, upload_folder, pl)
     app.vl = vl
 
     # Flask setup functions

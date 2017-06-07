@@ -11,11 +11,12 @@ from conversions import int_from_str, money_from_str, bool_from_str
 
 
 class ViewLayer(object):
-    def __init__(self, ll, db, app, upload_folder):
+    def __init__(self, ll, db, app, upload_folder, pl):
         self.ll = ll
         self.db = db
         self.app = app
         self.upload_folder = upload_folder
+        self.pl = pl
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -129,10 +130,10 @@ class ViewLayer(object):
         for tag_name in tags:
             tag = self.ll.get_or_create_tag(tag_name)
             task.tags.append(tag)
-            self.db.session.add(tag)
+            self.pl.add(tag)
 
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         next_url = self.get_form_or_arg(request, 'next_url')
         if not next_url:
@@ -142,26 +143,26 @@ class ViewLayer(object):
 
     def task_mark_done(self, request, current_user, task_id):
         task = self.ll.task_set_done(task_id, current_user)
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_mark_undone(self, request, current_user, task_id):
         task = self.ll.task_unset_done(task_id, current_user)
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_delete(self, request, current_user, task_id):
         task = self.ll.task_set_deleted(task_id, current_user)
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_undelete(self, request, current_user, task_id):
         task = self.ll.task_unset_deleted(task_id, current_user)
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_purge(self, request, current_user, task_id):
@@ -169,8 +170,8 @@ class ViewLayer(object):
                                              is_deleted=True).first()
         if not task:
             return 404
-        self.db.session.delete(task)
-        self.db.session.commit()
+        self.pl.delete(task)
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def purge_all(self, request, current_user):
@@ -178,8 +179,8 @@ class ViewLayer(object):
         if are_you_sure:
             deleted_tasks = self.app.Task.query.filter_by(is_deleted=True)
             for task in deleted_tasks:
-                self.db.session.delete(task)
-            self.db.session.commit()
+                self.pl.delete(task)
+            self.pl.commit()
             return redirect(request.args.get('next') or url_for('index'))
         return render_template('purge.t.html')
 
@@ -218,8 +219,8 @@ class ViewLayer(object):
 
         note = self.ll.create_new_note(task_id, content, current_user)
 
-        self.db.session.add(note)
-        self.db.session.commit()
+        self.pl.add(note)
+        self.pl.commit()
 
         return redirect(url_for('view_task', id=task_id))
 
@@ -261,8 +262,8 @@ class ViewLayer(object):
                                 deadline, is_done, is_deleted, order_num,
                                 duration, expected_cost, parent_id)
 
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         return redirect(url_for('view_task', id=task.id))
 
@@ -283,8 +284,8 @@ class ViewLayer(object):
         att = self.ll.create_new_attachment(task_id, f, description,
                                             current_user)
 
-        self.db.session.add(att)
-        self.db.session.commit()
+        self.pl.add(att)
+        self.pl.commit()
 
         return redirect(url_for('view_task', id=task_id))
 
@@ -299,26 +300,26 @@ class ViewLayer(object):
     def task_up(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
         self.ll.do_move_task_up(task_id, show_deleted, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_top(self, request, current_user, task_id):
         self.ll.do_move_task_to_top(task_id, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_down(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
         self.ll.do_move_task_down(task_id, show_deleted, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_bottom(self, request, current_user, task_id):
         self.ll.do_move_task_to_bottom(task_id, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
 
@@ -334,7 +335,7 @@ class ViewLayer(object):
 
         self.ll.do_long_order_change(task_to_move_id, target_id, current_user)
 
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
 
@@ -346,7 +347,7 @@ class ViewLayer(object):
                              url_for('view_task', id=task_id)))
 
         self.ll.do_add_tag_to_task(task_id, value, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -357,7 +358,7 @@ class ViewLayer(object):
             tag_id = self.get_form_or_arg(request, 'tag_id')
 
         self.ll.do_delete_tag_from_task(task_id, tag_id, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -371,7 +372,7 @@ class ViewLayer(object):
 
         self.ll.do_authorize_user_for_task_by_email(task_id, email,
                                                     current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -390,7 +391,7 @@ class ViewLayer(object):
 
         self.ll.do_authorize_user_for_task_by_id(task_id, user_id,
                                                  current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -400,7 +401,7 @@ class ViewLayer(object):
             user_id = self.get_form_or_arg(request, 'user_id')
 
         self.ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -438,7 +439,7 @@ class ViewLayer(object):
             is_admin = bool_from_str(request.form['is_admin'])
 
         self.ll.do_add_new_user(email, is_admin)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(url_for('list_users'))
 
@@ -477,18 +478,18 @@ class ViewLayer(object):
             value = request.form['value']
 
         self.ll.do_set_option(key, value)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('view_options'))
 
     def option_delete(self, request, current_user, key):
         self.ll.do_delete_option(key)
-        self.db.session.commit()
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('view_options'))
 
     def reset_order_nums(self, request, current_user):
         self.ll.do_reset_order_nums(current_user)
-        self.db.session.commit()
+        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def export(self, request, current_user):
@@ -511,7 +512,7 @@ class ViewLayer(object):
             src = json.load(f)
 
         self.ll.do_import_data(src)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(url_for('index'))
 
@@ -528,7 +529,7 @@ class ViewLayer(object):
                 crud_data[key] = request.form[key]
 
         self.ll.do_submit_task_crud(crud_data, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(url_for('task_crud'))
 
@@ -556,7 +557,7 @@ class ViewLayer(object):
         value = request.form['value']
         description = request.form['description']
         self.ll.do_edit_tag(tag_id, value, description)
-        self.db.session.commit()
+        self.pl.commit()
 
         return redirect(url_for('view_tag', id=tag_id))
 
@@ -596,7 +597,7 @@ class ViewLayer(object):
                              url_for('view_task', id=task_id)))
 
         self.ll.do_add_dependee_to_task(task_id, dependee_id, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -610,7 +611,7 @@ class ViewLayer(object):
 
         self.ll.do_remove_dependee_from_task(task_id, dependee_id,
                                              current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -627,7 +628,7 @@ class ViewLayer(object):
                              url_for('view_task', id=task_id)))
 
         self.ll.do_add_dependant_to_task(task_id, dependant_id, current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -641,7 +642,7 @@ class ViewLayer(object):
 
         self.ll.do_remove_dependant_from_task(task_id, dependant_id,
                                               current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -660,7 +661,7 @@ class ViewLayer(object):
 
         self.ll.do_add_prioritize_before_to_task(task_id, prioritize_before_id,
                                                  current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -676,7 +677,7 @@ class ViewLayer(object):
         self.ll.do_remove_prioritize_before_from_task(task_id,
                                                       prioritize_before_id,
                                                       current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -695,7 +696,7 @@ class ViewLayer(object):
 
         self.ll.do_add_prioritize_after_to_task(task_id, prioritize_after_id,
                                                 current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -711,7 +712,7 @@ class ViewLayer(object):
         self.ll.do_remove_prioritize_after_from_task(task_id,
                                                      prioritize_after_id,
                                                      current_user)
-        self.db.session.commit()
+        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
