@@ -103,7 +103,8 @@ def create_sqlalchemy_ds_factory(db_uri=DEFAULT_TUDOR_DB_URI):
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
-                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
+                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+                 ll=None, vl=None):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
@@ -158,11 +159,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.User = ds.User
     app.Option = ds.Option
 
-    ll = LogicLayer(ds, upload_folder, allowed_extensions)
+    if ll is None:
+        ll = LogicLayer(ds, upload_folder, allowed_extensions)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
-    vl = ViewLayer(ll, db, app, upload_folder)
+    if vl is None:
+        vl = ViewLayer(ll, db, app, upload_folder)
     app.vl = vl
 
     # Flask setup functions
