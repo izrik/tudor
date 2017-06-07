@@ -585,3 +585,65 @@ class ViewLayer(object):
 
         return render_template('search.t.html', query=search_query,
                                results=results)
+
+    def task_id_add_dependee(self, request, current_user, task_id,
+                             dependee_id):
+        if dependee_id is None or dependee_id == '':
+            dependee_id = self.get_form_or_arg(request, 'dependee_id')
+        if dependee_id is None or dependee_id == '':
+            return (redirect(request.args.get('next') or
+                             request.args.get('next_url') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_add_dependee_to_task(task_id, dependee_id, current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    def task_id_remove_dependee(self, request, current_user, task_id,
+                                dependee_id):
+        if dependee_id is None:
+            dependee_id = self.get_form_or_arg(request, 'dependee_id')
+
+        self.ll.do_remove_dependee_from_task(task_id, dependee_id,
+                                             current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    def task_id_add_dependant(self, request, current_user, task_id,
+                              dependant_id):
+        if dependant_id is None or dependant_id == '':
+            dependant_id = self.get_form_or_arg(request, 'dependant_id')
+        if dependant_id is None or dependant_id == '':
+            return (redirect(request.args.get('next') or
+                             request.args.get('next_url') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_add_dependant_to_task(task_id, dependant_id, current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    def task_id_remove_dependant(self, request, current_user, task_id,
+                                 dependant_id):
+        if dependant_id is None:
+            dependant_id = self.get_form_or_arg(request, 'dependant_id')
+
+        self.ll.do_remove_dependant_from_task(task_id, dependant_id,
+                                              current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
