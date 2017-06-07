@@ -104,7 +104,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 ll=None, vl=None, configs=None):
+                 ll=None, vl=None, configs=None, disable_admin_check=False):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
@@ -196,7 +196,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def admin_required(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
-            if not current_user.is_admin:
+            if not disable_admin_check and not current_user.is_admin:
                 return ('You are not authorized to view this page', 403)
             return func(*args, **kwargs)
         return decorated_view
@@ -457,7 +457,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                defaults={'search_query': None})
     @app.route('/search/', methods=['GET', 'POST'],
                defaults={'search_query': None})
-    @app.route('/search/<query>', methods=['GET'])
+    @app.route('/search/<search_query>', methods=['GET'])
     @login_required
     def search(search_query):
         return vl.search(request, current_user, search_query)
