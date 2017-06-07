@@ -430,36 +430,17 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/tags/')
     @login_required
     def list_tags():
-        tags = ll.get_tags()
-        return render_template('list_tags.t.html', tags=tags,
-                               cycle=itertools.cycle)
+        return vl.tags(request, current_user)
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        data = ll.get_tag_data(id, current_user)
-        return render_template('tag.t.html', tag=data['tag'],
-                               tasks=data['tasks'], cycle=itertools.cycle)
+        return vl.tags_id_get(request, current_user, id)
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_tag(id):
-
-        def render_get_response():
-            tag = ll.get_tag(id)
-            return render_template("edit_tag.t.html", tag=tag)
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'value' not in request.form or 'description' not in request.form:
-            return render_get_response()
-        value = request.form['value']
-        description = request.form['description']
-        ll.do_edit_tag(id, value, description)
-        db.session.commit()
-
-        return redirect(url_for('view_tag', id=id))
+        return vl.tags_id_edit(request, current_user, id)
 
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required

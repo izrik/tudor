@@ -531,3 +531,31 @@ class ViewLayer(object):
         self.db.session.commit()
 
         return redirect(url_for('task_crud'))
+
+    def tags(self, request, current_user):
+        tags = self.ll.get_tags()
+        return render_template('list_tags.t.html', tags=tags,
+                               cycle=itertools.cycle)
+
+    def tags_id_get(self, request, current_user, tag_id):
+        data = self.ll.get_tag_data(tag_id, current_user)
+        return render_template('tag.t.html', tag=data['tag'],
+                               tasks=data['tasks'], cycle=itertools.cycle)
+
+    def tags_id_edit(self, request, current_user, tag_id):
+
+        def render_get_response():
+            tag = self.ll.get_tag(tag_id)
+            return render_template("edit_tag.t.html", tag=tag)
+
+        if request.method == 'GET':
+            return render_get_response()
+
+        if 'value' not in request.form or 'description' not in request.form:
+            return render_get_response()
+        value = request.form['value']
+        description = request.form['description']
+        self.ll.do_edit_tag(tag_id, value, description)
+        self.db.session.commit()
+
+        return redirect(url_for('view_tag', id=tag_id))
