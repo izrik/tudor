@@ -10,7 +10,7 @@ from tudor import generate_app
 class TaskDependenciesTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.Task = self.app.Task
 
@@ -123,7 +123,7 @@ class TaskDependenciesTest(unittest.TestCase):
 class TaskDependeesLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.ll = self.app.ll
         self.Task = self.app.Task
@@ -324,7 +324,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.dependants))
         self.assertEqual(0, len(t2.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_dependee_to_task,
@@ -333,7 +333,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.dependants))
         self.assertEqual(0, len(t2.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_dependee_not_found_raises_exception(self):
         # given
@@ -347,7 +347,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.dependants))
         self.assertEqual(0, len(t1.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_dependee_to_task,
@@ -356,7 +356,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.dependants))
         self.assertEqual(0, len(t1.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
     def test_remove_dependee_removes_dependee(self):
 
@@ -577,7 +577,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.dependants))
         self.assertEqual(0, len(t2.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_remove_dependee_from_task,
@@ -586,7 +586,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.dependants))
         self.assertEqual(0, len(t2.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_remove_dependee_dependee_not_found_raises_exception(self):
         # given
@@ -600,7 +600,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.dependants))
         self.assertEqual(0, len(t1.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_remove_dependee_from_task,
@@ -609,13 +609,13 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.dependants))
         self.assertEqual(0, len(t1.dependees))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
 
 class TaskDependantsLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.ll = self.app.ll
         self.Task = self.app.Task
@@ -816,7 +816,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.dependees))
         self.assertEqual(0, len(t2.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_dependant_to_task,
@@ -825,7 +825,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.dependees))
         self.assertEqual(0, len(t2.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_dependant_not_found_raises_exception(self):
         # given
@@ -839,7 +839,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.dependees))
         self.assertEqual(0, len(t1.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_dependant_to_task,
@@ -848,7 +848,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.dependees))
         self.assertEqual(0, len(t1.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
     def test_remove_dependant_removes_dependant(self):
 
@@ -1069,7 +1069,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.dependees))
         self.assertEqual(0, len(t2.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_remove_dependant_from_task,
@@ -1078,7 +1078,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.dependees))
         self.assertEqual(0, len(t2.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_remove_dependant_dependant_not_found_raises_exception(self):
         # given
@@ -1092,7 +1092,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.dependees))
         self.assertEqual(0, len(t1.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_remove_dependant_from_task,
@@ -1101,4 +1101,4 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.dependees))
         self.assertEqual(0, len(t1.dependants))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))

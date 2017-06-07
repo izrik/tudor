@@ -11,9 +11,8 @@ from conversions import int_from_str, money_from_str, bool_from_str
 
 
 class ViewLayer(object):
-    def __init__(self, ll, db, app, upload_folder, pl):
+    def __init__(self, ll, app, upload_folder, pl):
         self.ll = ll
-        self.db = db
         self.app = app
         self.upload_folder = upload_folder
         self.pl = pl

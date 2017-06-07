@@ -9,8 +9,8 @@ class SearchTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
         self.Task = self.app.Task
-        self.db = self.app.ds.db
-        self.User = self.app.ds.User
+        self.db = self.app.pl.db
+        self.User = self.app.pl.User
         self.admin = self.User('name@example.org', None, True)
         self.db.create_all()
         self.db.session.add(self.admin)

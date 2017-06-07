@@ -10,7 +10,7 @@ from tudor import generate_app
 class TaskPrioritizeTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.Task = self.app.Task
 
@@ -123,7 +123,7 @@ class TaskPrioritizeTest(unittest.TestCase):
 class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.ll = self.app.ll
         self.Task = self.app.Task
@@ -324,7 +324,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_before_to_task,
@@ -333,7 +333,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_prioritize_before_not_found_raises_exception(self):
         # given
@@ -347,7 +347,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_before_to_task,
@@ -356,7 +356,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
     def test_remove_prioritize_before_removes_prioritize_before(self):
 
@@ -585,7 +585,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -595,7 +595,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_remove_prioritize_before_when_not_found_raises_exception(self):
         # given
@@ -609,7 +609,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -619,14 +619,14 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
 
 class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.ll = self.app.ll
         self.Task = self.app.Task
@@ -827,7 +827,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_after_to_task,
@@ -836,7 +836,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_prioritize_after_not_found_raises_exception(self):
         # given
@@ -850,7 +850,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_after_to_task,
@@ -859,7 +859,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
     def test_remove_prioritize_after_removes_prioritize_after(self):
 
@@ -1088,7 +1088,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -1098,7 +1098,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.app.pl.Task.query.get(t2.id+1))
 
     def test_remove_prioritize_after_when_not_found_raises_exception(self):
         # given
@@ -1112,7 +1112,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -1122,4 +1122,4 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.app.pl.Task.query.get(t1.id + 1))

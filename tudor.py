@@ -27,7 +27,6 @@ import werkzeug.exceptions
 from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
-from data_source import SqlAlchemyDataSource
 from view_layer import ViewLayer
 from persistence_layer import PersistenceLayer
 import base64
@@ -126,17 +125,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
-    if ds_factory is None:
-        ds_factory = create_sqlalchemy_ds_factory(db_uri)
-
-    ds = ds_factory(app)
-    db = ds.db
-    app.ds = ds
+    if pl is None:
+        pl = PersistenceLayer(app, db_uri)
+    app.pl = pl
 
     class Options(object):
         @staticmethod
         def get(key, default_value=None):
-            option = ds.Option.query.get(key)
+            option = pl.Option.query.get(key)
             if option is None:
                 return default_value
             return option.value
@@ -157,24 +153,20 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def get_user():
             return current_user
 
-    app.Task = ds.Task
-    app.Tag = ds.Tag
-    app.Note = ds.Note
-    app.Attachment = ds.Attachment
-    app.User = ds.User
-    app.Option = ds.Option
-
-    if pl is None:
-        pl = PersistenceLayer(ds, db)
-    app.pl = pl
+    app.Task = pl.Task
+    app.Tag = pl.Tag
+    app.Note = pl.Note
+    app.Attachment = pl.Attachment
+    app.User = pl.User
+    app.Option = pl.Option
 
     if ll is None:
-        ll = LogicLayer(ds, upload_folder, allowed_extensions, pl)
+        ll = LogicLayer(upload_folder, allowed_extensions, pl)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
     if vl is None:
-        vl = ViewLayer(ll, db, app, upload_folder, pl)
+        vl = ViewLayer(ll, app, upload_folder, pl)
     app.vl = vl
 
     # Flask setup functions

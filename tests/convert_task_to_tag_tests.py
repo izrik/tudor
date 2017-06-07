@@ -9,12 +9,12 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.ds = self.app.ds
-        self.db = self.ds.db
+        self.pl = self.app.pl
+        self.db = self.app.pl.db
         self.db.create_all()
         self.Task = self.app.Task
         self.Tag = self.app.Tag
-        self.user = self.ds.User('name@example.org', None, True)
+        self.user = self.pl.User('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):
         # given

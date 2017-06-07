@@ -9,14 +9,14 @@ class TaskSiblingTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
+        self.db = app.pl.db
         self.db.create_all()
         self.app = app
         self.ll = app.ll
-        self.Task = app.ds.Task
-        self.admin = app.ds.User('name@example.org', None, True)
+        self.Task = app.pl.Task
+        self.admin = app.pl.User('name@example.org', None, True)
         self.db.session.add(self.admin)
-        self.user = app.ds.User('name2@example.org', None, False)
+        self.user = app.pl.User('name2@example.org', None, False)
         self.db.session.add(self.user)
 
     def test_gets_tasks_with_same_parent(self):

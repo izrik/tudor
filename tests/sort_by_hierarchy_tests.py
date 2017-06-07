@@ -9,11 +9,11 @@ class SortByHierarchyTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
+        self.db = app.pl.db
         self.db.create_all()
         self.app = app
         self.ll = app.ll
-        self.Task = app.ds.Task
+        self.Task = app.pl.Task
 
     def test_errant_leading_none_when_no_root_specified(self):
         # TODO: Fix this. The None should not be there. Only return tasks.

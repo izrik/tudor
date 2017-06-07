@@ -11,10 +11,10 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
+        self.db = app.pl.db
         self.db.create_all()
-        self.Task = app.ds.Task
-        self.Tag = app.ds.Tag
+        self.Task = app.pl.Task
+        self.Tag = app.pl.Tag
         self.ll = app.ll
 
     def test_no_tasks_lowest_returns_none(self):

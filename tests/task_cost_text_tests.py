@@ -10,7 +10,7 @@ class TaskCostTextTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.Task = app.ds.Task
+        self.Task = app.pl.Task
 
     def test_no_duration_yields_empty(self):
         # given

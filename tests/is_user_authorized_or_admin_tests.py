@@ -11,12 +11,12 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
+        self.db = app.pl.db
         self.db.create_all()
         self.app = app
         self.ll = app.ll
-        self.User = app.ds.User
-        self.Task = app.ds.Task
+        self.User = app.pl.User
+        self.Task = app.pl.Task
 
     def test_unauthorized_nonadmin_cannot_access_task(self):
 

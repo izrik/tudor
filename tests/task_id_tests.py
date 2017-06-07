@@ -8,7 +8,7 @@ from tudor import generate_app
 class TaskIdTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
+        self.db = self.app.pl.db
         self.db.create_all()
         self.Task = self.app.Task
 
