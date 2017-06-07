@@ -5,7 +5,7 @@ import flask
 from flask import make_response, render_template, url_for, redirect, flash
 from flask_login import login_user, logout_user
 
-from conversions import int_from_str, money_from_str
+from conversions import int_from_str, money_from_str, bool_from_str
 
 
 class ViewLayer(object):
@@ -423,3 +423,23 @@ class ViewLayer(object):
     def logout(self, request, current_user):
         logout_user()
         return redirect(url_for('index'))
+
+    def users(self, request, current_user):
+        if request.method == 'GET':
+            users = self.ll.get_users()
+            return render_template('list_users.t.html', users=users,
+                                   cycle=itertools.cycle)
+
+        email = request.form['email']
+        is_admin = False
+        if 'is_admin' in request.form:
+            is_admin = bool_from_str(request.form['is_admin'])
+
+        self.ll.do_add_new_user(email, is_admin)
+        self.db.session.commit()
+
+        return redirect(url_for('list_users'))
+
+    def users_user_get(self, request, current_user, user_id):
+        user = self.ll.do_get_user_data(user_id, current_user)
+        return render_template('view_user.t.html', user=user)

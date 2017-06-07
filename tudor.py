@@ -374,27 +374,12 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @login_required
     @admin_required
     def list_users():
-
-        if request.method == 'GET':
-            users = ll.get_users()
-            return render_template('list_users.t.html', users=users,
-                                   cycle=itertools.cycle)
-
-        email = request.form['email']
-        is_admin = False
-        if 'is_admin' in request.form:
-            is_admin = bool_from_str(request.form['is_admin'])
-
-        ll.do_add_new_user(email, is_admin)
-        db.session.commit()
-
-        return redirect(url_for('list_users'))
+        return vl.users(request, current_user)
 
     @app.route('/users/<int:user_id>', methods=['GET'])
     @login_required
     def view_user(user_id):
-        user = ll.do_get_user_data(user_id, current_user)
-        return render_template('view_user.t.html', user=user)
+        return vl.users_user_get(request, current_user, user_id)
 
     @app.route('/show_hide_deleted')
     @login_required
