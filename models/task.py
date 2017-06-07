@@ -76,6 +76,32 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
                 'tag_ids': [tag.id for tag in self.tags],
                 'user_ids': [user.id for user in self.users]
             }
+        
+        @staticmethod
+        def from_dict(d):
+            task_id = d.get('id', None)
+            summary = d.get('summary')
+            description = d.get('description', '')
+            is_done = d.get('is_done', False)
+            is_deleted = d.get('is_deleted', False)
+            order_num = d.get('order_num', 0)
+            deadline = d.get('deadline', None)
+            parent_id = d.get('parent_id', None)
+            expected_duration_minutes = d.get('expected_duration_minutes', None)
+            expected_cost = d.get('expected_cost', None)
+            # 'tag_ids': [tag.id for tag in self.tags],
+            # 'user_ids': [user.id for user in self.users]
+
+            task = Task(summary=summary, description=description,
+                        is_done=is_done, is_deleted=is_deleted,
+                        deadline=deadline,
+                        expected_duration_minutes=expected_duration_minutes,
+                        expected_cost=expected_cost)
+            if task_id is not None:
+                task.id = task_id
+            task.order_num = order_num
+            task.parent_id = parent_id
+            return task
 
         def get_siblings(self, include_deleted=True, ordered=False):
             if self.parent_id is not None:

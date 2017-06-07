@@ -32,4 +32,17 @@ def generate_note_class(db):
                 'task_id': self.task_id
             }
 
+        @staticmethod
+        def from_dict(d):
+            note_id = d.get('id', None)
+            content = d.get('content')
+            timestamp = d.get('timestamp', None)
+            task_id = d.get('task_id')
+
+            note = Note(content, timestamp)
+            if note_id is not None:
+                note.id = note_id
+            note.task_id = task_id
+            return note
+
     return Note

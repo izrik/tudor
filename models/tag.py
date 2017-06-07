@@ -16,4 +16,15 @@ def generate_tag_class(db):
                 'description': self.description,
             }
 
+        @staticmethod
+        def from_dict(d):
+            tag_id = d.get('id', None)
+            value = d.get('value')
+            description = d.get('description', None)
+
+            tag = Tag(value, description)
+            if tag_id is not None:
+                tag.id = tag_id
+            return tag
+
     return Tag

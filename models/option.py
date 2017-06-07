@@ -14,4 +14,10 @@ def generate_option_class(db):
                 'value': self.value
             }
 
+        @staticmethod
+        def from_dict(d):
+            key = d.get('key')
+            value = d.get('value', None)
+            return Option(key, value)
+
     return Option
