@@ -559,3 +559,20 @@ class ViewLayer(object):
         self.db.session.commit()
 
         return redirect(url_for('view_tag', id=tag_id))
+
+    def task_id_convert_to_tag(self, request, current_user, task_id):
+        are_you_sure = request.args.get('are_you_sure')
+        if are_you_sure:
+
+            tag = self.ll._convert_task_to_tag(task_id, current_user)
+
+            return redirect(
+                request.args.get('next') or url_for('view_tag', id=tag.id))
+
+        task = self.ll.get_task(task_id, current_user)
+        return render_template('convert_task_to_tag.t.html',
+                               task_id=task.id,
+                               tag_value=task.summary,
+                               tag_description=task.description,
+                               cycle=itertools.cycle,
+                               tasks=task.children)

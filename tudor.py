@@ -445,22 +445,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
     def convert_task_to_tag(id):
-
-        are_you_sure = request.args.get('are_you_sure')
-        if are_you_sure:
-
-            tag = ll._convert_task_to_tag(id, current_user)
-
-            return redirect(
-                request.args.get('next') or url_for('view_tag', id=tag.id))
-
-        task = ll.get_task(id, current_user)
-        return render_template('convert_task_to_tag.t.html',
-                               task_id=task.id,
-                               tag_value=task.summary,
-                               tag_description=task.description,
-                               cycle=itertools.cycle,
-                               tasks=task.children)
+        return vl.task_id_convert_to_tag(request, current_user, id)
 
     @app.route('/search', methods=['GET', 'POST'],
                defaults={'search_query': None})
