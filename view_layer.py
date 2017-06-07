@@ -2,7 +2,8 @@
 import itertools
 
 import flask
-from flask import make_response, render_template, url_for, redirect
+from flask import make_response, render_template, url_for, redirect, flash
+from flask_login import login_user, logout_user
 
 from conversions import int_from_str, money_from_str
 
@@ -401,3 +402,24 @@ class ViewLayer(object):
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
+
+    def login(self, request, current_user):
+        if request.method == 'GET':
+            return render_template('login.t.html')
+        email = request.form['email']
+        password = request.form['password']
+        user = self.app.User.query.filter_by(email=email).first()
+
+        if (user is None or
+                not self.app.bcrypt.check_password_hash(user.hashed_password,
+                                                        password)):
+            flash('Username or Password is invalid', 'error')
+            return redirect(url_for('login'))
+
+        login_user(user)
+        flash('Logged in successfully')
+        return redirect(request.args.get('next') or url_for('index'))
+
+    def logout(self, request, current_user):
+        logout_user()
+        return redirect(url_for('index'))

@@ -364,26 +364,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        if request.method == 'GET':
-            return render_template('login.t.html')
-        email = request.form['email']
-        password = request.form['password']
-        user = app.User.query.filter_by(email=email).first()
-
-        if (user is None or
-                not bcrypt.check_password_hash(user.hashed_password,
-                                               password)):
-            flash('Username or Password is invalid', 'error')
-            return redirect(url_for('login'))
-
-        login_user(user)
-        flash('Logged in successfully')
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.login(request, current_user)
 
     @app.route('/logout')
     def logout():
-        logout_user()
-        return redirect(url_for('index'))
+        return vl.logout(request, current_user)
 
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
