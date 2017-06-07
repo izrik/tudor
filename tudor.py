@@ -28,6 +28,7 @@ from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
 from data_source import SqlAlchemyDataSource
+from view_layer import ViewLayer
 import base64
 
 try:
@@ -102,10 +103,14 @@ def create_sqlalchemy_ds_factory(db_uri=DEFAULT_TUDOR_DB_URI):
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
-                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS):
+                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+                 ll=None, vl=None, configs=None, disable_admin_check=False):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
+    if configs:
+        for k, v in configs.iteritems():
+            app.config[k] = v
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
                                                      allowed_extensions)
@@ -157,9 +162,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     app.User = ds.User
     app.Option = ds.Option
 
-    ll = LogicLayer(ds, upload_folder, allowed_extensions)
+    if ll is None:
+        ll = LogicLayer(ds, upload_folder, allowed_extensions)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
+
+    if vl is None:
+        vl = ViewLayer(ll, db, app, upload_folder)
+    app.vl = vl
 
     # Flask setup functions
 
@@ -186,7 +196,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     def admin_required(func):
         @wraps(func)
         def decorated_view(*args, **kwargs):
-            if not current_user.is_admin:
+            if not disable_admin_check and not current_user.is_admin:
                 return ('You are not authorized to view this page', 403)
             return func(*args, **kwargs)
         return decorated_view
@@ -207,380 +217,121 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/')
     @login_required
     def index():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-
-        data = ll.get_index_data(show_deleted, show_done, current_user)
-
-        resp = make_response(
-            render_template('index.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks=data['tasks'],
-                            tags=data['all_tags'],
-                            pager=data['pager'],
-                            pager_link_page='index',
-                            pager_link_args={}))
-        return resp
+        return vl.index(request, current_user)
 
     @app.route('/hierarchy')
     @login_required
     def hierarchy():
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-
-        data = ll.get_index_hierarchy_data(show_deleted, show_done,
-                                           current_user)
-
-        resp = make_response(
-            render_template('hierarchy.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks_h=data['tasks_h'],
-                            tags=data['all_tags']))
-        return resp
+        return vl.hierarchy(request, current_user)
 
     @app.route('/deadlines')
     @login_required
     def deadlines():
-
-        data = ll.get_deadlines_data(current_user)
-
-        return make_response(
-            render_template(
-                'deadlines.t.html',
-                cycle=itertools.cycle,
-                deadline_tasks=data['deadline_tasks']))
+        return vl.deadlines(request, current_user)
 
     @app.route('/task/new', methods=['GET'])
     @login_required
     def get_new_task():
-
-        summary = get_form_or_arg('summary')
-        description = get_form_or_arg('description')
-        deadline = get_form_or_arg('deadline')
-        is_done = get_form_or_arg('is_done')
-        is_deleted = get_form_or_arg('is_deleted')
-        order_num = get_form_or_arg('order_num')
-        expected_duration_minutes = get_form_or_arg(
-            'expected_duration_minutes')
-        expected_cost = get_form_or_arg('expected_cost')
-        parent_id = get_form_or_arg('parent_id')
-        tags = get_form_or_arg('tags')
-
-        prev_url = get_form_or_arg('prev_url')
-
-        return render_template(
-            'new_task.t.html', prev_url=prev_url, summary=summary,
-            description=description, deadline=deadline, is_done=is_done,
-            is_deleted=is_deleted, order_num=order_num,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, parent_id=parent_id, tags=tags)
+        return vl.task_new_get(request, current_user)
 
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
-        summary = get_form_or_arg('summary')
-        description = get_form_or_arg('description')
-        deadline = get_form_or_arg('deadline') or None
-        is_done = get_form_or_arg('is_done') or None
-        is_deleted = get_form_or_arg('is_deleted') or None
-        order_type = get_form_or_arg('order_type') or 'bottom'
-        expected_duration_minutes = get_form_or_arg(
-            'expected_duration_minutes') or None
-        expected_cost = get_form_or_arg('expected_cost') or None
-        parent_id = get_form_or_arg('parent_id') or None
-
-        tags = get_form_or_arg('tags')
-        if tags:
-            tags = [s.strip() for s in tags.split(',')]
-
-        if order_type == 'top':
-            order_num = ll.get_highest_order_num()
-            if order_num is not None:
-                order_num += 2
-            else:
-                order_num = 0
-        elif order_type == 'order_num':
-            order_num = get_form_or_arg('order_num') or None
-        else:  # bottom
-            order_num = ll.get_lowest_order_num()
-            if order_num is not None:
-                order_num -= 2
-            else:
-                order_num = 0
-
-        task = ll.create_new_task(
-            summary=summary, description=description, is_done=is_done,
-            is_deleted=is_deleted, deadline=deadline, order_num=order_num,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, parent_id=parent_id,
-            current_user=current_user)
-
-        for tag_name in tags:
-            tag = ll.get_or_create_tag(tag_name)
-            task.tags.append(tag)
-            db.session.add(tag)
-
-        db.session.add(task)
-        db.session.commit()
-
-        next_url = get_form_or_arg('next_url')
-        if not next_url:
-            next_url = url_for('view_task', id=task.id)
-
-        return redirect(next_url)
+        return vl.task_new_post(request, current_user)
 
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
-        task = ll.task_set_done(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_mark_done(request, current_user, id)
 
     @app.route('/task/<int:id>/mark_undone')
     @login_required
     def task_undo(id):
-        task = ll.task_unset_done(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_mark_undone(request, current_user, id)
 
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
-        task = ll.task_set_deleted(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_delete(request, current_user, id)
 
     @app.route('/task/<int:id>/undelete')
     @login_required
     def undelete_task(id):
-        task = ll.task_unset_deleted(id, current_user)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_undelete(request, current_user, id)
 
     @app.route('/task/<int:id>/purge')
     @login_required
     @admin_required
     def purge_task(id):
-        task = app.Task.query.filter_by(id=id, is_deleted=True).first()
-        if not task:
-            return 404
-        db.session.delete(task)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_purge(request, current_user, id)
 
     @app.route('/purge_all')
     @login_required
     @admin_required
     def purge_deleted_tasks():
-        are_you_sure = request.args.get('are_you_sure')
-        if are_you_sure:
-            deleted_tasks = app.Task.query.filter_by(is_deleted=True)
-            for task in deleted_tasks:
-                db.session.delete(task)
-            db.session.commit()
-            return redirect(request.args.get('next') or url_for('index'))
-        return render_template('purge.t.html')
+        return vl.purge_all(request, current_user)
 
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        data = ll.get_task_data(id, current_user, include_deleted=show_deleted,
-                                include_done=show_done)
-
-        return render_template('task.t.html', task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done,
-                               pager=data['pager'],
-                               pager_link_page='view_task',
-                               pager_link_args={'id': id})
+        return vl.task(request, current_user, id)
 
     @app.route('/task/<int:id>/hierarchy')
     @login_required
     def view_task_hierarchy(id):
-        show_deleted = request.cookies.get('show_deleted')
-        show_done = request.cookies.get('show_done')
-        data = ll.get_task_hierarchy_data(id, current_user,
-                                          include_deleted=show_deleted,
-                                          include_done=show_done)
-
-        return render_template('task_hierarchy.t.html', task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done)
+        return vl.task_hierarchy(request, current_user, id)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
     def new_note():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-        content = request.form['content']
-
-        note = ll.create_new_note(task_id, content, current_user)
-
-        db.session.add(note)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task_id))
+        return vl.note_new_post(request, current_user)
 
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_task(id):
-
-        def render_get_response():
-            data = ll.get_edit_task_data(id, current_user)
-            return render_template("edit_task.t.html", task=data['task'],
-                                   tag_list=data['tag_list'])
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'summary' not in request.form or 'description' not in request.form:
-            return render_get_response()
-
-        summary = request.form['summary']
-        description = request.form['description']
-        deadline = request.form['deadline']
-
-        is_done = ('is_done' in request.form and
-                   not not request.form['is_done'])
-        is_deleted = ('is_deleted' in request.form and
-                      not not request.form['is_deleted'])
-
-        order_num = None
-        if 'order_num' in request.form:
-            order_num = request.form['order_num']
-
-        parent_id = None
-        if 'parent_id' in request.form:
-            parent_id = request.form['parent_id']
-
-        duration = int_from_str(request.form['expected_duration_minutes'])
-
-        expected_cost = money_from_str(request.form['expected_cost'])
-
-        task = ll.set_task(id, current_user, summary, description, deadline,
-                           is_done, is_deleted, order_num, duration,
-                           expected_cost, parent_id)
-
-        db.session.add(task)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task.id))
+        return vl.task_edit(request, current_user, id)
 
     @app.route('/attachment/new', methods=['POST'])
     @login_required
     def new_attachment():
-        if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
-        task_id = request.form['task_id']
-
-        f = request.files['filename']
-        if f is None or not f or not ll.allowed_file(f.filename):
-            return 'Invalid file', 400
-
-        if 'description' in request.form:
-            description = request.form['description']
-        else:
-            description = ''
-
-        att = ll.create_new_attachment(task_id, f, description, current_user)
-
-        db.session.add(att)
-        db.session.commit()
-
-        return redirect(url_for('view_task', id=task_id))
+        return vl.attachment_new(request, current_user)
 
     @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/<path:x>')
     @login_required
     def get_attachment(aid, x):
-        att = app.Attachment.query.filter_by(id=aid).first()
-        if att is None:
-            return (('No attachment found for the id "%s"' % aid), 404)
-
-        return flask.send_from_directory(upload_folder, att.path)
+        return vl.attachment(request, current_user, aid, x)
 
     @app.route('/task/<int:id>/up')
     @login_required
     def move_task_up(id):
-        show_deleted = request.cookies.get('show_deleted')
-        ll.do_move_task_up(id, show_deleted, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_up(request, current_user, id)
 
     @app.route('/task/<int:id>/top')
     @login_required
     def move_task_to_top(id):
-        ll.do_move_task_to_top(id, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_top(request, current_user, id)
 
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
-        show_deleted = request.cookies.get('show_deleted')
-        ll.do_move_task_down(id, show_deleted, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_down(request, current_user, id)
 
     @app.route('/task/<int:id>/bottom')
     @login_required
     def move_task_to_bottom(id):
-        ll.do_move_task_to_bottom(id, current_user)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.task_bottom(request, current_user, id)
 
     @app.route('/long_order_change', methods=['POST'])
     @login_required
     def long_order_change():
-
-        task_to_move_id = get_form_or_arg('long_order_task_to_move')
-        if task_to_move_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-
-        target_id = get_form_or_arg('long_order_target')
-        if target_id is None:
-            redirect(request.args.get('next') or url_for('index'))
-
-        ll.do_long_order_change(task_to_move_id, target_id, current_user)
-
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.long_order_change(request, current_user)
 
     @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required
     def add_tag_to_task(id):
-
-        value = get_form_or_arg('value')
-        if value is None or value == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=id)))
-
-        ll.do_add_tag_to_task(id, value, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=id)))
+        return vl.task_add_tag(request, current_user, id)
 
     @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
                defaults={'tag_id': None})
@@ -589,51 +340,23 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
     @login_required
     def delete_tag_from_task(id, tag_id):
-
-        if tag_id is None:
-            tag_id = get_form_or_arg('tag_id')
-
-        ll.do_delete_tag_from_task(id, tag_id, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=id)))
+        return vl.task_delete_tag(request, current_user, id, tag_id)
 
     @app.route('/task/<int:task_id>/authorize_user', methods=['GET', 'POST'])
     @login_required
     def authorize_user_for_task(task_id):
-
-        email = get_form_or_arg('email')
-        if email is None or email == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_authorize_user_for_task_by_email(task_id, email, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return vl.task_authorize_user(request, current_user, task_id)
 
     @app.route('/task/<int:task_id>/pick_user')
     def pick_user_to_authorize(task_id):
-        task = ll.get_task(task_id, current_user)
-        users = ll.get_users()
-        return render_template('pick_user.t.html', task=task, users=users,
-                               cycle=itertools.cycle)
+        return vl.task_pick_user(request, current_user, task_id)
 
     @app.route('/task/<int:task_id>/authorize_user/<int:user_id>',
                methods=['GET', 'POST'])
     @login_required
     def authorize_picked_user_for_task(task_id, user_id):
-        if user_id is None or user_id == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_authorize_user_for_task_by_id(task_id, user_id, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return vl.task_authorize_user_user(request, current_user, task_id,
+                                           user_id)
 
     @app.route('/task/<int:task_id>/deauthorize_user', methods=['GET', 'POST'],
                defaults={'user_id': None})
@@ -642,241 +365,102 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:task_id>/deauthorize_user/<int:user_id>',
                methods=['GET', 'POST'])
     def deauthorize_user_for_task(task_id, user_id):
-        if user_id is None:
-            user_id = get_form_or_arg('user_id')
-
-        ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return vl.task_deauthorize_user(request, current_user, task_id,
+                                        user_id)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        if request.method == 'GET':
-            return render_template('login.t.html')
-        email = request.form['email']
-        password = request.form['password']
-        user = app.User.query.filter_by(email=email).first()
-
-        if (user is None or
-                not bcrypt.check_password_hash(user.hashed_password,
-                                               password)):
-            flash('Username or Password is invalid', 'error')
-            return redirect(url_for('login'))
-
-        login_user(user)
-        flash('Logged in successfully')
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl.login(request, current_user)
 
     @app.route('/logout')
     def logout():
-        logout_user()
-        return redirect(url_for('index'))
+        return vl.logout(request, current_user)
 
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def list_users():
-
-        if request.method == 'GET':
-            users = ll.get_users()
-            return render_template('list_users.t.html', users=users,
-                                   cycle=itertools.cycle)
-
-        email = request.form['email']
-        is_admin = False
-        if 'is_admin' in request.form:
-            is_admin = bool_from_str(request.form['is_admin'])
-
-        ll.do_add_new_user(email, is_admin)
-        db.session.commit()
-
-        return redirect(url_for('list_users'))
+        return vl.users(request, current_user)
 
     @app.route('/users/<int:user_id>', methods=['GET'])
     @login_required
     def view_user(user_id):
-        user = ll.do_get_user_data(user_id, current_user)
-        return render_template('view_user.t.html', user=user)
+        return vl.users_user_get(request, current_user, user_id)
 
     @app.route('/show_hide_deleted')
     @login_required
     def show_hide_deleted():
-        show_deleted = request.args.get('show_deleted')
-        resp = make_response(
-            redirect(request.args.get('next') or url_for('index')))
-        if show_deleted and show_deleted != '0':
-            resp.set_cookie('show_deleted', '1')
-        else:
-            resp.set_cookie('show_deleted', '')
-        return resp
+        return vl.show_hide_deleted(request, current_user)
 
     @app.route('/show_hide_done')
     @login_required
     def show_hide_done():
-        show_done = request.args.get('show_done')
-        resp = make_response(
-            redirect(request.args.get('next') or url_for('index')))
-        if show_done and show_done != '0':
-            resp.set_cookie('show_done', '1')
-        else:
-            resp.set_cookie('show_done', '')
-        return resp
+        return vl.show_hide_done(request, current_user)
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def view_options():
-        if request.method == 'GET' or 'key' not in request.form:
-            data = ll.get_view_options_data()
-            return render_template('options.t.html', options=data)
-
-        key = request.form['key']
-        value = ''
-        if 'value' in request.form:
-            value = request.form['value']
-
-        ll.do_set_option(key, value)
-        db.session.commit()
-
-        return redirect(request.args.get('next') or url_for('view_options'))
+        return vl.options(request, current_user)
 
     @app.route('/option/<path:key>/delete')
     @login_required
     @admin_required
     def delete_option(key):
-        ll.do_delete_option(key)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('view_options'))
+        return vl.option_delete(request, current_user, key)
 
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        ll.do_reset_order_nums(current_user)
-        db.session.commit()
-        return redirect(request.args.get('next') or url_for('index'))
+        return vl. reset_order_nums(request, current_user)
 
     @app.route('/export', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def export_data():
-        if request.method == 'GET':
-            return render_template('export.t.html', results=None)
-        types_to_export = set(k for k in request.form.keys() if
-                              k in request.form and request.form[k] == 'all')
-        results = ll.do_export_data(types_to_export)
-        return jsonify(results)
+        return vl.export(request, current_user)
 
     @app.route('/import', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def import_data():
-        if request.method == 'GET':
-            return render_template('import.t.html')
-
-        f = request.files['file']
-        if f is None or not f:
-            r = request.form['raw']
-            src = json.loads(r)
-        else:
-            src = json.load(f)
-
-        ll.do_import_data(src)
-        db.session.commit()
-
-        return redirect(url_for('index'))
+        return vl.import_(request, current_user)
 
     @app.route('/task_crud', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def task_crud():
-
-        if request.method == 'GET':
-            tasks = ll.get_task_crud_data(current_user)
-            return render_template('task_crud.t.html', tasks=tasks,
-                                   cycle=itertools.cycle)
-
-        crud_data = {}
-        for key in request.form.keys():
-            if re.match(r'task_\d+_(summary|deadline|is_done|is_deleted|'
-                        r'order_num|duration|cost|parent_id)', key):
-                crud_data[key] = request.form[key]
-
-        ll.do_submit_task_crud(crud_data, current_user)
-        db.session.commit()
-
-        return redirect(url_for('task_crud'))
+        return vl.task_crud(request, current_user)
 
     @app.route('/tags')
     @app.route('/tags/')
     @login_required
     def list_tags():
-        tags = ll.get_tags()
-        return render_template('list_tags.t.html', tags=tags,
-                               cycle=itertools.cycle)
+        return vl.tags(request, current_user)
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        data = ll.get_tag_data(id, current_user)
-        return render_template('tag.t.html', tag=data['tag'],
-                               tasks=data['tasks'], cycle=itertools.cycle)
+        return vl.tags_id_get(request, current_user, id)
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_tag(id):
-
-        def render_get_response():
-            tag = ll.get_tag(id)
-            return render_template("edit_tag.t.html", tag=tag)
-
-        if request.method == 'GET':
-            return render_get_response()
-
-        if 'value' not in request.form or 'description' not in request.form:
-            return render_get_response()
-        value = request.form['value']
-        description = request.form['description']
-        ll.do_edit_tag(id, value, description)
-        db.session.commit()
-
-        return redirect(url_for('view_tag', id=id))
+        return vl.tags_id_edit(request, current_user, id)
 
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
     def convert_task_to_tag(id):
-
-        are_you_sure = request.args.get('are_you_sure')
-        if are_you_sure:
-
-            tag = ll._convert_task_to_tag(id, current_user)
-
-            return redirect(
-                request.args.get('next') or url_for('view_tag', id=tag.id))
-
-        task = ll.get_task(id, current_user)
-        return render_template('convert_task_to_tag.t.html',
-                               task_id=task.id,
-                               tag_value=task.summary,
-                               tag_description=task.description,
-                               cycle=itertools.cycle,
-                               tasks=task.children)
+        return vl.task_id_convert_to_tag(request, current_user, id)
 
     @app.route('/search', methods=['GET', 'POST'],
                defaults={'search_query': None})
     @app.route('/search/', methods=['GET', 'POST'],
                defaults={'search_query': None})
-    @app.route('/search/<query>', methods=['GET'])
+    @app.route('/search/<search_query>', methods=['GET'])
     @login_required
     def search(search_query):
-        if search_query is None and request.method == 'POST':
-            search_query = request.form['query']
-
-        results = ll.search(search_query, current_user)
-
-        return render_template('search.t.html', query=search_query,
-                               results=results)
+        return vl.search(request, current_user, search_query)
 
     @app.route('/task/<int:task_id>/add_dependee', methods=['GET', 'POST'],
                defaults={'dependee_id': None})
@@ -886,20 +470,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'])
     @login_required
     def add_dependee_to_task(task_id, dependee_id):
-        if dependee_id is None or dependee_id == '':
-            dependee_id = get_form_or_arg('dependee_id')
-        if dependee_id is None or dependee_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_add_dependee_to_task(task_id, dependee_id, current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_add_dependee(request, current_user, task_id,
+                                       dependee_id)
 
     @app.route('/task/<int:task_id>/remove_dependee',
                methods=['GET', 'POST'], defaults={'dependee_id': None})
@@ -908,16 +480,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:task_id>/remove_dependee/<int:dependee_id>',
                methods=['GET', 'POST'])
     def remove_dependee_from_task(task_id, dependee_id):
-        if dependee_id is None:
-            dependee_id = get_form_or_arg('dependee_id')
-
-        ll.do_remove_dependee_from_task(task_id, dependee_id, current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_remove_dependee(request, current_user, task_id,
+                                          dependee_id)
 
     @app.route('/task/<int:task_id>/add_dependant', methods=['GET', 'POST'],
                defaults={'dependant_id': None})
@@ -927,20 +491,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'])
     @login_required
     def add_dependant_to_task(task_id, dependant_id):
-        if dependant_id is None or dependant_id == '':
-            dependant_id = get_form_or_arg('dependant_id')
-        if dependant_id is None or dependant_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_add_dependant_to_task(task_id, dependant_id, current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_add_dependant(request, current_user, task_id,
+                                        dependant_id)
 
     @app.route('/task/<int:task_id>/remove_dependant',
                methods=['GET', 'POST'], defaults={'dependant_id': None})
@@ -949,16 +501,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:task_id>/remove_dependant/<int:dependant_id>',
                methods=['GET', 'POST'])
     def remove_dependant_from_task(task_id, dependant_id):
-        if dependant_id is None:
-            dependant_id = get_form_or_arg('dependant_id')
-
-        ll.do_remove_dependant_from_task(task_id, dependant_id, current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_remove_dependant(request, current_user, task_id,
+                                           dependant_id)
 
     @app.route('/task/<int:task_id>/add_prioritize_before',
                methods=['GET', 'POST'],
@@ -971,21 +515,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         methods=['GET', 'POST'])
     @login_required
     def add_prioritize_before_to_task(task_id, prioritize_before_id):
-        if prioritize_before_id is None or prioritize_before_id == '':
-            prioritize_before_id = get_form_or_arg('prioritize_before_id')
-        if prioritize_before_id is None or prioritize_before_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_add_prioritize_before_to_task(task_id, prioritize_before_id,
-                                            current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_add_prioritize_before(request, current_user, task_id,
+                                                prioritize_before_id)
 
     @app.route('/task/<int:task_id>/remove_prioritize_before',
                methods=['GET', 'POST'],
@@ -998,17 +529,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '<int:prioritize_before_id>',
         methods=['GET', 'POST'])
     def remove_prioritize_before_from_task(task_id, prioritize_before_id):
-        if prioritize_before_id is None:
-            prioritize_before_id = get_form_or_arg('prioritize_before_id')
-
-        ll.do_remove_prioritize_before_from_task(task_id, prioritize_before_id,
-                                                 current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_remove_prioritize_before(request, current_user,
+                                                   task_id,
+                                                   prioritize_before_id)
 
     @app.route('/task/<int:task_id>/add_prioritize_after',
                methods=['GET', 'POST'], defaults={'prioritize_after_id': None})
@@ -1019,21 +542,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         methods=['GET', 'POST'])
     @login_required
     def add_prioritize_after_to_task(task_id, prioritize_after_id):
-        if prioritize_after_id is None or prioritize_after_id == '':
-            prioritize_after_id = get_form_or_arg('prioritize_after_id')
-        if prioritize_after_id is None or prioritize_after_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_add_prioritize_after_to_task(task_id, prioritize_after_id,
-                                           current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_add_prioritize_after(request, current_user, task_id,
+                                               prioritize_after_id)
 
     @app.route('/task/<int:task_id>/remove_prioritize_after',
                methods=['GET', 'POST'], defaults={'prioritize_after_id': None})
@@ -1044,17 +554,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '<int:prioritize_after_id>',
         methods=['GET', 'POST'])
     def remove_prioritize_after_from_task(task_id, prioritize_after_id):
-        if prioritize_after_id is None:
-            prioritize_after_id = get_form_or_arg('prioritize_after_id')
-
-        ll.do_remove_prioritize_after_from_task(task_id, prioritize_after_id,
-                                                current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_remove_prioritize_after(request, current_user,
+                                                  task_id, prioritize_after_id)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
