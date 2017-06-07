@@ -12,7 +12,7 @@ class TaskPrioritizeTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.db = self.app.pl.db
-        self.db.create_all()
+        self.pl.create_all()
         self.Task = self.app.Task
 
     def test_setting_task_as_before_sets_other_task_as_after(self):
@@ -126,7 +126,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.db = self.app.pl.db
-        self.db.create_all()
+        self.pl.create_all()
         self.ll = self.app.ll
         self.Task = self.app.Task
         self.User = self.app.User
@@ -630,7 +630,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.db = self.app.pl.db
-        self.db.create_all()
+        self.pl.create_all()
         self.ll = self.app.ll
         self.Task = self.app.Task
         self.User = self.app.User

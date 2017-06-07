@@ -34,7 +34,7 @@ class TaskTagsTest(unittest.TestCase):
         t2.tags.append(tag1)
         t2.tags.append(tag2)
 
-        self.db.create_all()
+        self.pl.create_all()
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(tag1)

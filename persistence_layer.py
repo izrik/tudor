@@ -70,3 +70,6 @@ class PersistenceLayer(object):
 
     def commit(self):
         self.db.session.commit()
+
+    def create_all(self):
+        self.db.create_all()

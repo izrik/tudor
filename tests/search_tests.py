@@ -13,7 +13,7 @@ class SearchTest(unittest.TestCase):
         self.db = self.app.pl.db
         self.User = self.app.pl.User
         self.admin = self.User('name@example.org', None, True)
-        self.db.create_all()
+        self.pl.create_all()
         self.pl.add(self.admin)
         # self.pl.commit()
         self.ll = self.app.ll

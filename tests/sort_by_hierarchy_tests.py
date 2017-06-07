@@ -11,7 +11,7 @@ class SortByHierarchyTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.pl = app.pl
         self.db = app.pl.db
-        self.db.create_all()
+        self.pl.create_all()
         self.app = app
         self.ll = app.ll
         self.Task = app.pl.Task

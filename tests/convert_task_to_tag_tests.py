@@ -11,7 +11,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.db = self.app.pl.db
-        self.db.create_all()
+        self.pl.create_all()
         self.Task = self.app.Task
         self.Tag = self.app.Tag
         self.user = self.pl.User('name@example.org', None, True)
