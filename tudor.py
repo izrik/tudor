@@ -339,38 +339,18 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:task_id>/authorize_user', methods=['GET', 'POST'])
     @login_required
     def authorize_user_for_task(task_id):
-
-        email = get_form_or_arg('email')
-        if email is None or email == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_authorize_user_for_task_by_email(task_id, email, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return vl.task_authorize_user(request, current_user, task_id)
 
     @app.route('/task/<int:task_id>/pick_user')
     def pick_user_to_authorize(task_id):
-        task = ll.get_task(task_id, current_user)
-        users = ll.get_users()
-        return render_template('pick_user.t.html', task=task, users=users,
-                               cycle=itertools.cycle)
+        return vl.task_pick_user(request, current_user, task_id)
 
     @app.route('/task/<int:task_id>/authorize_user/<int:user_id>',
                methods=['GET', 'POST'])
     @login_required
     def authorize_picked_user_for_task(task_id, user_id):
-        if user_id is None or user_id == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_authorize_user_for_task_by_id(task_id, user_id, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return vl.task_authorize_user_user(request, current_user, task_id,
+                                           user_id)
 
     @app.route('/task/<int:task_id>/deauthorize_user', methods=['GET', 'POST'],
                defaults={'user_id': None})
@@ -379,14 +359,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:task_id>/deauthorize_user/<int:user_id>',
                methods=['GET', 'POST'])
     def deauthorize_user_for_task(task_id, user_id):
-        if user_id is None:
-            user_id = get_form_or_arg('user_id')
-
-        ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
-        db.session.commit()
-
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return vl.task_deauthorize_user(request, current_user, task_id,
+                                        user_id)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():

@@ -358,3 +358,46 @@ class ViewLayer(object):
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
+
+    def task_authorize_user(self, request, current_user, task_id):
+
+        email = self.get_form_or_arg(request, 'email')
+        if email is None or email == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_authorize_user_for_task_by_email(task_id, email,
+                                                    current_user)
+        self.db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
+
+    def task_pick_user(self, request, current_user, task_id):
+        task = self.ll.get_task(task_id, current_user)
+        users = self.ll.get_users()
+        return render_template('pick_user.t.html', task=task, users=users,
+                               cycle=itertools.cycle)
+
+    def task_authorize_user_user(self, request, current_user, task_id,
+                                 user_id):
+        if user_id is None or user_id == '':
+            return (redirect(request.args.get('next') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_authorize_user_for_task_by_id(task_id, user_id,
+                                                 current_user)
+        self.db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
+
+    def task_deauthorize_user(self, request, current_user, task_id, user_id):
+        if user_id is None:
+            user_id = self.get_form_or_arg(request, 'user_id')
+
+        self.ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
+        self.db.session.commit()
+
+        return (redirect(request.args.get('next') or
+                         url_for('view_task', id=task_id)))
