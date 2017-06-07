@@ -647,3 +647,73 @@ class ViewLayer(object):
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
+
+    def task_id_add_prioritize_before(self, request, current_user, task_id,
+                                      prioritize_before_id):
+        if prioritize_before_id is None or prioritize_before_id == '':
+            prioritize_before_id = self.get_form_or_arg(request,
+                                                        'prioritize_before_id')
+        if prioritize_before_id is None or prioritize_before_id == '':
+            return (redirect(request.args.get('next') or
+                             request.args.get('next_url') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_add_prioritize_before_to_task(task_id, prioritize_before_id,
+                                                 current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    def task_id_remove_prioritize_before(self, request, current_user, task_id,
+                                         prioritize_before_id):
+        if prioritize_before_id is None:
+            prioritize_before_id = self.get_form_or_arg(request,
+                                                        'prioritize_before_id')
+
+        self.ll.do_remove_prioritize_before_from_task(task_id,
+                                                      prioritize_before_id,
+                                                      current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    def task_id_add_prioritize_after(self, request, current_user, task_id,
+                                     prioritize_after_id):
+        if prioritize_after_id is None or prioritize_after_id == '':
+            prioritize_after_id = self.get_form_or_arg(request,
+                                                       'prioritize_after_id')
+        if prioritize_after_id is None or prioritize_after_id == '':
+            return (redirect(request.args.get('next') or
+                             request.args.get('next_url') or
+                             url_for('view_task', id=task_id)))
+
+        self.ll.do_add_prioritize_after_to_task(task_id, prioritize_after_id,
+                                                current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))
+
+    def task_id_remove_prioritize_after(self, request, current_user, task_id,
+                                        prioritize_after_id):
+        if prioritize_after_id is None:
+            prioritize_after_id = self.get_form_or_arg(request,
+                                                       'prioritize_after_id')
+
+        self.ll.do_remove_prioritize_after_from_task(task_id,
+                                                     prioritize_after_id,
+                                                     current_user)
+        self.db.session.commit()
+
+        return (redirect(
+            request.args.get('next') or
+            request.args.get('next_url') or
+            url_for('view_task', id=task_id)))

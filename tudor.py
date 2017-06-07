@@ -509,21 +509,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         methods=['GET', 'POST'])
     @login_required
     def add_prioritize_before_to_task(task_id, prioritize_before_id):
-        if prioritize_before_id is None or prioritize_before_id == '':
-            prioritize_before_id = get_form_or_arg('prioritize_before_id')
-        if prioritize_before_id is None or prioritize_before_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_add_prioritize_before_to_task(task_id, prioritize_before_id,
-                                            current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_add_prioritize_before(request, current_user, task_id,
+                                                prioritize_before_id)
 
     @app.route('/task/<int:task_id>/remove_prioritize_before',
                methods=['GET', 'POST'],
@@ -536,17 +523,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '<int:prioritize_before_id>',
         methods=['GET', 'POST'])
     def remove_prioritize_before_from_task(task_id, prioritize_before_id):
-        if prioritize_before_id is None:
-            prioritize_before_id = get_form_or_arg('prioritize_before_id')
-
-        ll.do_remove_prioritize_before_from_task(task_id, prioritize_before_id,
-                                                 current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_remove_prioritize_before(request, current_user,
+                                                   task_id,
+                                                   prioritize_before_id)
 
     @app.route('/task/<int:task_id>/add_prioritize_after',
                methods=['GET', 'POST'], defaults={'prioritize_after_id': None})
@@ -557,21 +536,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         methods=['GET', 'POST'])
     @login_required
     def add_prioritize_after_to_task(task_id, prioritize_after_id):
-        if prioritize_after_id is None or prioritize_after_id == '':
-            prioritize_after_id = get_form_or_arg('prioritize_after_id')
-        if prioritize_after_id is None or prioritize_after_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
-
-        ll.do_add_prioritize_after_to_task(task_id, prioritize_after_id,
-                                           current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_add_prioritize_after(request, current_user, task_id,
+                                               prioritize_after_id)
 
     @app.route('/task/<int:task_id>/remove_prioritize_after',
                methods=['GET', 'POST'], defaults={'prioritize_after_id': None})
@@ -582,17 +548,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '<int:prioritize_after_id>',
         methods=['GET', 'POST'])
     def remove_prioritize_after_from_task(task_id, prioritize_after_id):
-        if prioritize_after_id is None:
-            prioritize_after_id = get_form_or_arg('prioritize_after_id')
-
-        ll.do_remove_prioritize_after_from_task(task_id, prioritize_after_id,
-                                                current_user)
-        db.session.commit()
-
-        return (redirect(
-            request.args.get('next') or
-            request.args.get('next_url') or
-            url_for('view_task', id=task_id)))
+        return vl.task_id_remove_prioritize_after(request, current_user,
+                                                  task_id, prioritize_after_id)
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
