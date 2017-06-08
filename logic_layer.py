@@ -482,7 +482,7 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        tag = self.pl.tag_query.get(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if tag is not None:
             if tag in task.tags:
                 task.tags.remove(tag)
@@ -541,7 +541,7 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        user_to_authorize = self.pl.user_query.get(user_id)
+        user_to_authorize = self.pl.get_user(user_id)
         if user_to_authorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
@@ -560,7 +560,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
 
-        user_to_deauthorize = self.pl.user_query.get(user_id)
+        user_to_deauthorize = self.pl.get_user(user_id)
         if user_to_deauthorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
@@ -591,7 +591,7 @@ class LogicLayer(object):
         return user
 
     def do_get_user_data(self, user_id, current_user):
-        user = self.pl.user_query.get(user_id)
+        user = self.pl.get_user(user_id)
         if user is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '%s'".format(user_id))
@@ -607,7 +607,7 @@ class LogicLayer(object):
         return self.pl.option_query
 
     def do_set_option(self, key, value):
-        option = self.pl.option_query.get(key)
+        option = self.pl.get_option(key)
         if option is not None:
             option.value = value
         else:
@@ -616,7 +616,7 @@ class LogicLayer(object):
         return option
 
     def do_delete_option(self, key):
-        option = self.pl.option_query.get(key)
+        option = self.pl.get_option(key)
         if option is not None:
             self.pl.delete(option)
         return option
@@ -700,7 +700,7 @@ class LogicLayer(object):
                     t.parent_id = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
-                        tag = self.pl.tag_query.get(tag_id)
+                        tag = self.pl.get_tag(tag_id)
                         if tag is None:
                             tag = next((obj for obj in db_objects
                                         if isinstance(obj, self.pl.Tag) and
@@ -710,7 +710,7 @@ class LogicLayer(object):
                             raise Exception('Tag not found')
                         t.tags.append(tag)
                     for user_id in user_ids:
-                        user = self.pl.user_query.get(user_id)
+                        user = self.pl.get_user(user_id)
                         if user is None:
                             user = next((obj for obj in db_objects
                                         if isinstance(obj, self.pl.User) and
@@ -856,7 +856,7 @@ class LogicLayer(object):
         return self.pl.tag_query.all()
 
     def get_tag_data(self, tag_id, current_user):
-        tag = self.pl.tag_query.get(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
@@ -868,7 +868,7 @@ class LogicLayer(object):
         }
 
     def get_tag(self, tag_id):
-        tag = self.pl.tag_query.get(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))

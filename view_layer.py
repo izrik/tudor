@@ -289,7 +289,7 @@ class ViewLayer(object):
         return redirect(url_for('view_task', id=task_id))
 
     def attachment(self, request, current_user, attachment_id, name):
-        att = self.pl.attachment_query.filter_by(id=attachment_id).first()
+        att = self.pl.get_attachment(attachment_id)
         if att is None:
             return (('No attachment found for the id "%s"' % attachment_id),
                     404)

@@ -85,18 +85,33 @@ class PersistenceLayer(object):
     def tag_query(self):
         return self.Tag.query
 
+    def get_tag(self, tag_id):
+        return self.tag_query.get(tag_id)
+
     @property
     def note_query(self):
         return self.Note.query
+
+    def get_note(self, note_id):
+        return self.note_query.get(note_id)
 
     @property
     def attachment_query(self):
         return self.Attachment.query
 
+    def get_attachment(self, attachment_id):
+        return self.attachment_query.get(attachment_id)
+
     @property
     def user_query(self):
         return self.User.query
 
+    def get_user(self, user_id):
+        return self.user_query.get(user_id)
+
     @property
     def option_query(self):
         return self.Option.query
+
+    def get_option(self, key):
+        return self.option_query.get(key)
