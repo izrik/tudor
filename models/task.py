@@ -7,6 +7,7 @@ from conversions import str_from_datetime
 def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                         task_dependencies_table, task_prioritize_table):
     db = pl.db
+
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -77,7 +78,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 'tag_ids': [tag.id for tag in self.tags],
                 'user_ids': [user.id for user in self.users]
             }
-        
+
         @staticmethod
         def from_dict(d):
             task_id = d.get('id', None)
@@ -88,7 +89,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             order_num = d.get('order_num', 0)
             deadline = d.get('deadline', None)
             parent_id = d.get('parent_id', None)
-            expected_duration_minutes = d.get('expected_duration_minutes', None)
+            expected_duration_minutes = d.get('expected_duration_minutes',
+                                              None)
             expected_cost = d.get('expected_cost', None)
             # 'tag_ids': [tag.id for tag in self.tags],
             # 'user_ids': [user.id for user in self.users]

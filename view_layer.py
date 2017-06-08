@@ -166,7 +166,7 @@ class ViewLayer(object):
 
     def task_purge(self, request, current_user, task_id):
         task = self.pl.task_query.filter_by(id=task_id,
-                                             is_deleted=True).first()
+                                            is_deleted=True).first()
         if not task:
             return 404
         self.pl.delete(task)
