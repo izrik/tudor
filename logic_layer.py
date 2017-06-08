@@ -140,7 +140,7 @@ class LogicLayer(object):
         return None
 
     def task_set_done(self, id, current_user):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -149,7 +149,7 @@ class LogicLayer(object):
         return task
 
     def task_unset_done(self, id, current_user):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -158,7 +158,7 @@ class LogicLayer(object):
         return task
 
     def task_set_deleted(self, id, current_user):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -167,7 +167,7 @@ class LogicLayer(object):
         return task
 
     def task_unset_deleted(self, id, current_user):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -177,7 +177,7 @@ class LogicLayer(object):
 
     def get_task_data(self, id, current_user, include_deleted=True,
                       include_done=True):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -204,7 +204,7 @@ class LogicLayer(object):
 
     def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
                                 include_done=True):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -222,7 +222,7 @@ class LogicLayer(object):
         }
 
     def create_new_note(self, task_id, content, current_user):
-        task = self.pl.task_query.filter_by(id=task_id).first()
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -236,7 +236,7 @@ class LogicLayer(object):
                  order_num=None, duration=None, expected_cost=None,
                  parent_id=None):
 
-        task = self.pl.task_query.filter_by(id=task_id).first()
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -282,7 +282,7 @@ class LogicLayer(object):
         return task
 
     def get_edit_task_data(self, id, current_user):
-        task = self.pl.task_query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -301,7 +301,7 @@ class LogicLayer(object):
 
     def create_new_attachment(self, task_id, f, description, current_user):
 
-        task = self.pl.task_query.filter_by(id=task_id).first()
+        task = self.pl.get_task(task_id)
         if task is None:
             return (('No task found for the task_id "%s"' % task_id), 404)
         if not self.is_user_authorized_or_admin(task, current_user):
