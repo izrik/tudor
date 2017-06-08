@@ -1,4 +1,6 @@
 
+import collections
+
 from flask_sqlalchemy import SQLAlchemy
 from models.task import generate_task_class
 from models.tag import generate_tag_class
@@ -6,6 +8,16 @@ from models.note import generate_note_class
 from models.attachment import generate_attachment_class
 from models.user import generate_user_class
 from models.option import generate_option_class
+
+
+def is_iterable(x):
+    return isinstance(x, collections.Iterable)
+
+
+def as_iterable(x):
+    if is_iterable(x):
+        return x
+    return (x,)
 
 
 class PersistenceLayer(object):
@@ -76,6 +88,16 @@ class PersistenceLayer(object):
 
     UNSPECIFIED = object()
 
+    ASCENDING = object()
+    DESCENDING = object()
+
+    ORDER_NUM = object()
+
+    def get_db_field_by_order_field(self, f):
+        if f is self.ORDER_NUM:
+            return self.Task.order_num
+        raise Exception('Unhandled order_by field: {}'.format(f))
+
     @property
     def task_query(self):
         return self.Task.query
@@ -84,7 +106,14 @@ class PersistenceLayer(object):
         return self.task_query.get(task_id)
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
-                  parent_id=UNSPECIFIED, users_contains=UNSPECIFIED):
+                  parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
+                  order_by=UNSPECIFIED):
+
+        """order_by is a list of order directives. Each such directive is
+         either a field (e.g. ORDER_NUM) or a sequence of field and direction
+          (e.g. [ORDER_NUM, ASCENDING]). Default direction is ASCENDING if not
+           specified."""
+
         query = self.task_query
         if is_done is not self.UNSPECIFIED:
             query = query.filter_by(is_done=is_done)
@@ -97,6 +126,28 @@ class PersistenceLayer(object):
                 query = query.filter_by(parent_id=parent_id)
         if users_contains is not self.UNSPECIFIED:
             query = query.filter(self.Task.users.contains(users_contains))
+
+        if order_by is not self.UNSPECIFIED:
+            if not is_iterable(order_by):
+                db_field = self.get_db_field_by_order_field(order_by)
+                query = query.order_by(db_field)
+            else:
+                for ordering in order_by:
+                    direction = self.ASCENDING
+                    if is_iterable(ordering):
+                        order_field = ordering[0]
+                        if len(ordering) > 1:
+                            direction = ordering[1]
+                    else:
+                        order_field = ordering
+                    db_field = self.get_db_field_by_order_field(order_field)
+                    if direction is self.ASCENDING:
+                        query = query.order_by(db_field.asc())
+                    elif direction is self.DESCENDING:
+                        query = query.order_by(db_field.desc())
+                    else:
+                        raise Exception(
+                            'Unknown order_by direction: {}'.format(direction))
 
         return query
 

@@ -125,3 +125,81 @@ class PersistenceLayerTest(unittest.TestCase):
         results = self.pl.get_tasks(users_contains=user3)
         # then
         self.assertEqual(set(), set(results))
+
+
+class PersistenceLayerOrderByTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1')
+        self.pl.add(self.t1)
+        self.t2 = self.pl.Task('t2', is_done=True)
+        self.pl.add(self.t2)
+        self.t3 = self.pl.Task('t3', is_deleted=True)
+        self.t3.parent = self.t2
+        self.pl.add(self.t3)
+        self.t4 = self.pl.Task('t4', is_done=True, is_deleted=True)
+        self.pl.add(self.t4)
+
+        self.t1.order_num = 1
+        self.t2.order_num = 2
+        self.t3.order_num = 3
+        self.t4.order_num = 4
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+        self.pl.add(self.t4)
+
+        self.pl.commit()
+
+    def test_get_tasks_order_by_order_num_single(self):
+
+        # when
+        results = self.pl.get_tasks(order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_order_num_list(self):
+
+        # when
+        results = self.pl.get_tasks(order_by=[self.pl.ORDER_NUM])
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_direction_in_list_raises(self):
+
+        # expect
+        self.assertRaises(Exception,
+                          self.pl.get_tasks,
+                          order_by=[self.pl.ORDER_NUM, self.pl.ASCENDING])
+
+    def test_get_tasks_order_by_order_num_list_list(self):
+
+        # when
+        results = self.pl.get_tasks(order_by=[[self.pl.ORDER_NUM]])
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_order_num_list_list_with_asc(self):
+
+        # when
+        results = self.pl.get_tasks(
+            order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]])
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_order_num_list_list_with_desc(self):
+
+        # when
+        results = self.pl.get_tasks(
+            order_by=[[self.pl.ORDER_NUM, self.pl.DESCENDING]])
+        # then
+        self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
+
+    def test_get_tasks_order_by_unknown_direction_raises(self):
+
+        # expect
+        self.assertRaises(Exception,
+                          self.pl.get_tasks,
+                          order_by=[[self.pl.ORDER_NUM, 123]])
