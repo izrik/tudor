@@ -239,7 +239,7 @@ class RouteTest(unittest.TestCase):
 
     def test_attachment_post(self):
         resp = self.client.post('/attachment/1')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(405, resp.status_code)
         self.vl.attachment.assert_not_called()
 
     def test_task_up_get(self):
@@ -514,7 +514,7 @@ class RouteTest(unittest.TestCase):
 
     def test_tags_post(self):
         resp = self.client.post('/tags')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(405, resp.status_code)
         self.vl.tags.assert_not_called()
 
     def test_tags_slash_post(self):
@@ -744,7 +744,7 @@ class RouteTest(unittest.TestCase):
 
     def test_attachment_put(self):
         resp = self.client.put('/attachment/1')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(405, resp.status_code)
         self.vl.attachment.assert_not_called()
 
     def test_task_up_put(self):
@@ -779,7 +779,7 @@ class RouteTest(unittest.TestCase):
 
     def test_task_delete_tag_put(self):
         resp = self.client.put('/task/1/delete_tag')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(405, resp.status_code)
         self.vl.task_delete_tag.assert_not_called()
 
     def test_task_authorize_user_put(self):
@@ -864,7 +864,7 @@ class RouteTest(unittest.TestCase):
 
     def test_tags_put(self):
         resp = self.client.put('/tags')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(405, resp.status_code)
         self.vl.tags.assert_not_called()
 
     def test_tags_slash_put(self):
@@ -889,7 +889,7 @@ class RouteTest(unittest.TestCase):
 
     def test_search_put(self):
         resp = self.client.put('/search')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(405, resp.status_code)
         self.vl.search.assert_not_called()
 
     def test_task_id_add_dependee_put(self):
