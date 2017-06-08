@@ -78,6 +78,9 @@ class PersistenceLayer(object):
     def task_query(self):
         return self.Task.query
 
+    def get_task(self, task_id):
+        return self.task_query.get(task_id)
+
     @property
     def tag_query(self):
         return self.Tag.query

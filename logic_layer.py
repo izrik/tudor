@@ -113,7 +113,7 @@ class LogicLayer(object):
         task.order_num = order_num
 
         if parent_id is not None:
-            parent = self.pl.task_query.get(parent_id)
+            parent = self.pl.get_task(parent_id)
             if parent is not None and not self.is_user_authorized_or_admin(
                     parent, current_user):
                 raise werkzeug.exceptions.Forbidden()
@@ -323,7 +323,7 @@ class LogicLayer(object):
             self.pl.add(tasks[i])
 
     def do_move_task_up(self, id, show_deleted, current_user):
-        task = self.pl.task_query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -348,7 +348,7 @@ class LogicLayer(object):
         return task
 
     def do_move_task_to_top(self, id, current_user):
-        task = self.pl.task_query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -364,7 +364,7 @@ class LogicLayer(object):
         return task
 
     def do_move_task_down(self, id, show_deleted, current_user):
-        task = self.pl.task_query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -389,7 +389,7 @@ class LogicLayer(object):
         return task
 
     def do_move_task_to_bottom(self, id, current_user):
-        task = self.pl.task_query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -405,14 +405,14 @@ class LogicLayer(object):
         return task
 
     def do_long_order_change(self, task_to_move_id, target_id, current_user):
-        task_to_move = self.pl.task_query.get(task_to_move_id)
+        task_to_move = self.pl.get_task(task_to_move_id)
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
         if not self.is_user_authorized_or_admin(task_to_move, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        target = self.pl.task_query.get(target_id)
+        target = self.pl.get_task(target_id)
         if target is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(target_id))
@@ -449,7 +449,7 @@ class LogicLayer(object):
         return task_to_move, target
 
     def do_add_tag_to_task(self, id, value, current_user):
-        task = self.pl.task_query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(id))
@@ -475,7 +475,7 @@ class LogicLayer(object):
         if tag_id is None:
             raise ValueError("No tag_id was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
@@ -512,7 +512,7 @@ class LogicLayer(object):
         if user_email is None or user_email == '':
             raise ValueError("No user_email was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
@@ -534,7 +534,7 @@ class LogicLayer(object):
         if user_id is None:
             raise ValueError("No user_id was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
@@ -555,7 +555,7 @@ class LogicLayer(object):
         if user_id is None:
             raise ValueError("No user_id was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
@@ -885,7 +885,7 @@ class LogicLayer(object):
         return tag
 
     def get_task(self, task_id, current_user):
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -1086,14 +1086,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        dependee = self.pl.task_query.get(dependee_id)
+        dependee = self.pl.get_task(dependee_id)
         if dependee is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(dependee_id))
@@ -1113,14 +1113,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        dependee = self.pl.task_query.get(dependee_id)
+        dependee = self.pl.get_task(dependee_id)
         if dependee is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(dependee_id))
@@ -1169,14 +1169,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        prioritize_before = self.pl.task_query.get(prioritize_before_id)
+        prioritize_before = self.pl.get_task(prioritize_before_id)
         if prioritize_before is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
@@ -1199,14 +1199,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.pl.task_query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        prioritize_before = self.pl.task_query.get(prioritize_before_id)
+        prioritize_before = self.pl.get_task(prioritize_before_id)
         if prioritize_before is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
