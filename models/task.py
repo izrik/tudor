@@ -110,26 +110,28 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if self.parent_id is not None:
                 return self.parent.get_children(include_deleted, ordered)
 
-            siblings = pl.task_query.filter(Task.parent_id.is_(None))
+            kwargs = {
+                'parent_id': None
+            }
 
             if not include_deleted:
-                siblings = siblings.filter(Task.is_deleted.__eq__(False))
+                kwargs['is_deleted'] = False
 
             if ordered:
-                siblings = siblings.order_by(Task.order_num.desc())
+                kwargs['order_by'] = [[pl.ORDER_NUM, pl.DESCENDING]]
 
-            return siblings
+            return pl.get_tasks(**kwargs)
 
         def get_children(self, include_deleted=True, ordered=False):
-            children = self.children
+            kwargs = {'parent_id': self.id}
 
             if not include_deleted:
-                children = children.filter(Task.is_deleted.__eq__(False))
+                kwargs['is_deleted'] = False
 
             if ordered:
-                children = children.order_by(Task.order_num.desc())
+                kwargs['order_by'] = [[pl.ORDER_NUM, pl.DESCENDING]]
 
-            return children
+            return pl.get_tasks(**kwargs)
 
         def get_css_class(self):
             if self.is_deleted and self.is_done:
