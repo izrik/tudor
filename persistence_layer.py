@@ -74,6 +74,8 @@ class PersistenceLayer(object):
     def create_all(self):
         self.db.create_all()
 
+    UNSPECIFIED = object()
+
     @property
     def task_query(self):
         return self.Task.query
@@ -81,8 +83,12 @@ class PersistenceLayer(object):
     def get_task(self, task_id):
         return self.task_query.get(task_id)
 
-    def get_tasks(self):
+    def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED):
         query = self.task_query
+        if is_done is not self.UNSPECIFIED:
+            query = query.filter_by(is_done=is_done)
+        if is_deleted is not self.UNSPECIFIED:
+            query = query.filter_by(is_deleted=is_deleted)
         return query
 
     @property

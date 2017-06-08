@@ -36,6 +36,7 @@ from tests.ll_task_tags_tests import *
 from tests.get_lowest_highest_order_num import *
 from tests.task_prioritize_tests import *
 from tests.route_tests import *
+from tests.persistence_layer_tests import *
 
 
 def run():
