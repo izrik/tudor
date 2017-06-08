@@ -9,7 +9,7 @@ from models.option import generate_option_class
 
 
 class PersistenceLayer(object):
-    def __init__(self, app, db_uri):
+    def __init__(self, app, db_uri, bcrypt):
 
         self.app = app
         self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
@@ -52,7 +52,7 @@ class PersistenceLayer(object):
                                    task_prioritize_table)
         Note = generate_note_class(db)
         Attachment = generate_attachment_class(db)
-        User = generate_user_class(db, app.bcrypt)
+        User = generate_user_class(db, bcrypt)
         Option = generate_option_class(db)
 
         self.Task = Task
