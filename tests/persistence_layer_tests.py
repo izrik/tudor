@@ -16,9 +16,11 @@ class PersistenceLayerTest(unittest.TestCase):
         self.t2 = self.pl.Task('t2', is_done=True)
         self.pl.add(self.t2)
         self.t3 = self.pl.Task('t3', is_deleted=True)
+        self.t3.parent = self.t2
         self.pl.add(self.t3)
         self.t4 = self.pl.Task('t4', is_done=True, is_deleted=True)
         self.pl.add(self.t4)
+        self.pl.commit()
 
     def test_get_tasks(self):
         # when
@@ -79,3 +81,15 @@ class PersistenceLayerTest(unittest.TestCase):
 
         # then
         self.assertEqual({self.t4}, set(results))
+
+    def test_get_tasks_parent_id_none_yields_top_level(self):
+        # when
+        results = self.pl.get_tasks(parent_id=None)
+        # then
+        self.assertEqual({self.t1, self.t2, self.t4}, set(results))
+
+    def test_get_tasks_parent_id_non_null_yields_indicated(self):
+        # when
+        results = self.pl.get_tasks(parent_id=self.t2.id)
+        # then
+        self.assertEqual({self.t3}, set(results))
