@@ -24,13 +24,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_get_or_create_tag_nonexistent_creates_tag(self):
         # precondition
-        self.assertEqual(0, self.Tag.query.count())
+        self.assertEqual(0, self.pl.tag_query.count())
 
         # when
         tag = self.ll.get_or_create_tag('abc')
 
         # then
-        self.assertEqual(1, self.Tag.query.count())
+        self.assertEqual(1, self.pl.tag_query.count())
         self.assertIsNotNone(tag)
         self.assertIsInstance(tag, self.Tag)
         self.assertEqual('abc', tag.value)
@@ -41,13 +41,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         self.pl.add(tag1)
 
         # precondition
-        self.assertEqual(1, self.Tag.query.count())
+        self.assertEqual(1, self.pl.tag_query.count())
 
         # when
         tag2 = self.ll.get_or_create_tag('def')
 
         # then
-        self.assertEqual(1, self.Tag.query.count())
+        self.assertEqual(1, self.pl.tag_query.count())
         self.assertIsNotNone(tag2)
         self.assertIsInstance(tag2, self.Tag)
         self.assertEqual('def', tag2.value)
@@ -139,7 +139,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_missing_tasks_raises_not_found(self):
         # precondition
-        self.assertEqual(0, self.Task.query.count())
+        self.assertEqual(0, self.pl.task_query.count())
 
         # expect
         self.assertRaises(NotFound,

@@ -132,7 +132,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     class Options(object):
         @staticmethod
         def get(key, default_value=None):
-            option = pl.Option.query.get(key)
+            option = pl.option_query.get(key)
             if option is None:
                 return default_value
             return option.value
@@ -173,7 +173,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     @login_manager.user_loader
     def load_user(userid):
-        return app.User.query.filter_by(email=userid).first()
+        return pl.user_query.filter_by(email=userid).first()
 
     @login_manager.request_loader
     def load_user_with_basic_auth(request):
@@ -182,7 +182,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             api_key = api_key.replace('Basic ', '', 1)
             api_key = base64.b64decode(api_key)
             email, password = api_key.split(':', 1)
-            user = app.User.query.filter_by(email=email).first()
+            user = pl.user_query.filter_by(email=email).first()
 
             if (user is None or
                     not bcrypt.check_password_hash(

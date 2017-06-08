@@ -165,7 +165,7 @@ class ViewLayer(object):
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_purge(self, request, current_user, task_id):
-        task = self.app.Task.query.filter_by(id=task_id,
+        task = self.pl.task_query.filter_by(id=task_id,
                                              is_deleted=True).first()
         if not task:
             return 404
@@ -176,7 +176,7 @@ class ViewLayer(object):
     def purge_all(self, request, current_user):
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
-            deleted_tasks = self.app.Task.query.filter_by(is_deleted=True)
+            deleted_tasks = self.pl.task_query.filter_by(is_deleted=True)
             for task in deleted_tasks:
                 self.pl.delete(task)
             self.pl.commit()
@@ -289,7 +289,7 @@ class ViewLayer(object):
         return redirect(url_for('view_task', id=task_id))
 
     def attachment(self, request, current_user, attachment_id, name):
-        att = self.app.Attachment.query.filter_by(id=attachment_id).first()
+        att = self.pl.attachment_query.filter_by(id=attachment_id).first()
         if att is None:
             return (('No attachment found for the id "%s"' % attachment_id),
                     404)
@@ -410,7 +410,7 @@ class ViewLayer(object):
             return render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
-        user = self.app.User.query.filter_by(email=email).first()
+        user = self.pl.user_query.filter_by(email=email).first()
 
         if (user is None or
                 not self.app.bcrypt.check_password_hash(user.hashed_password,

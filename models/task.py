@@ -4,8 +4,9 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(db, tags_tasks_table, users_tasks_table,
+def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                         task_dependencies_table, task_prioritize_table):
+    db = pl.db
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -107,7 +108,7 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
             if self.parent_id is not None:
                 return self.parent.get_children(include_deleted, ordered)
 
-            siblings = Task.query.filter(Task.parent_id.is_(None))
+            siblings = pl.task_query.filter(Task.parent_id.is_(None))
 
             if not include_deleted:
                 siblings = siblings.filter(Task.is_deleted.__eq__(False))

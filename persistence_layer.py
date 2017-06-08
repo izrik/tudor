@@ -47,7 +47,7 @@ class PersistenceLayer(object):
             db.Column('prioritize_after_id', db.Integer,
                       db.ForeignKey('task.id'), primary_key=True))
 
-        Task = generate_task_class(db, tags_tasks_table, users_tasks_table,
+        Task = generate_task_class(self, tags_tasks_table, users_tasks_table,
                                    task_dependencies_table,
                                    task_prioritize_table)
         Note = generate_note_class(db)
@@ -73,3 +73,27 @@ class PersistenceLayer(object):
 
     def create_all(self):
         self.db.create_all()
+
+    @property
+    def task_query(self):
+        return self.Task.query
+
+    @property
+    def tag_query(self):
+        return self.Tag.query
+
+    @property
+    def note_query(self):
+        return self.Note.query
+
+    @property
+    def attachment_query(self):
+        return self.Attachment.query
+
+    @property
+    def user_query(self):
+        return self.User.query
+
+    @property
+    def option_query(self):
+        return self.Option.query

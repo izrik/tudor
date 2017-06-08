@@ -21,15 +21,15 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.pl.add(task)
         self.pl.commit()
 
-        self.assertEquals(0, self.Tag.query.count())
+        self.assertEquals(0, self.pl.tag_query.count())
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertIsNotNone(tag)
-        self.assertEquals(1, self.Tag.query.count())
-        self.assertIs(tag, self.Tag.query.first())
+        self.assertEquals(1, self.pl.tag_query.count())
+        self.assertIs(tag, self.pl.tag_query.first())
 
     def test_old_task_gets_deleted(self):
         # given
@@ -37,13 +37,13 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.pl.add(task)
         self.pl.commit()
 
-        self.assertEquals(1, self.Task.query.count())
+        self.assertEquals(1, self.pl.task_query.count())
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(0, self.Task.query.count())
+        self.assertEquals(0, self.pl.task_query.count())
 
     def test_child_tasks_get_the_new_tag(self):
         # given
@@ -62,7 +62,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
         self.pl.commit()
 
-        self.assertEquals(4, self.Task.query.count())
+        self.assertEquals(4, self.pl.task_query.count())
         self.assertEquals(0, len(child1.tags))
         self.assertEquals(0, len(child2.tags))
         self.assertEquals(0, len(child3.tags))
@@ -75,7 +75,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(3, self.Task.query.count())
+        self.assertEquals(3, self.pl.task_query.count())
         self.assertEquals(1, len(child1.tags))
         self.assertEquals(1, len(child2.tags))
         self.assertEquals(1, len(child3.tags))
