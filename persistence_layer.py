@@ -84,7 +84,7 @@ class PersistenceLayer(object):
         return self.task_query.get(task_id)
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
-                  parent_id=UNSPECIFIED):
+                  parent_id=UNSPECIFIED, users_contains=UNSPECIFIED):
         query = self.task_query
         if is_done is not self.UNSPECIFIED:
             query = query.filter_by(is_done=is_done)
@@ -95,6 +95,9 @@ class PersistenceLayer(object):
                 query = query.filter(self.Task.parent_id.is_(None))
             else:
                 query = query.filter_by(parent_id=parent_id)
+        if users_contains is not self.UNSPECIFIED:
+            query = query.filter(self.Task.users.contains(users_contains))
+
         return query
 
     @property

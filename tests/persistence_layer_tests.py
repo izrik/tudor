@@ -93,3 +93,35 @@ class PersistenceLayerTest(unittest.TestCase):
         results = self.pl.get_tasks(parent_id=self.t2.id)
         # then
         self.assertEqual({self.t3}, set(results))
+
+    def test_get_tasks_users_contains(self):
+        # given
+        user1 = self.pl.User('name@example.com')
+        user2 = self.pl.User('name2@example.com')
+        user3 = self.pl.User('name3@example.com')
+        self.pl.add(user1)
+        self.pl.add(user2)
+        self.pl.add(user3)
+        self.t1.users.append(user1)
+        self.t2.users.append(user2)
+        self.t3.users.append(user1)
+        self.t3.users.append(user2)
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+        self.pl.commit()
+
+        # when
+        results = self.pl.get_tasks(users_contains=user1)
+        # then
+        self.assertEqual({self.t1, self.t3}, set(results))
+
+        # when
+        results = self.pl.get_tasks(users_contains=user2)
+        # then
+        self.assertEqual({self.t2, self.t3}, set(results))
+
+        # when
+        results = self.pl.get_tasks(users_contains=user3)
+        # then
+        self.assertEqual(set(), set(results))
