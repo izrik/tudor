@@ -638,7 +638,7 @@ class LogicLayer(object):
     def do_export_data(self, types_to_export):
         results = {}
         if 'tasks' in types_to_export:
-            results['tasks'] = [t.to_dict() for t in self.pl.task_query.all()]
+            results['tasks'] = [t.to_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
             results['tags'] = [t.to_dict() for t in self.pl.tag_query.all()]
         if 'notes' in types_to_export:
