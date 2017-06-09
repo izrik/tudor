@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
+from datetime import datetime
 
 from tudor import generate_app
 from persistence_layer import PersistenceLayer
@@ -427,3 +428,36 @@ class PersistenceLayerLimitTest(unittest.TestCase):
         results = self.pl.get_tasks(limit=-1)
         # then
         self.assertEqual(3, len(list(results)))
+
+
+class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1', deadline=datetime(2017, 1, 1))
+        self.pl.add(self.t1)
+        self.t2 = self.pl.Task('t2')
+        self.pl.add(self.t2)
+        self.t3 = self.pl.Task('t3', deadline=datetime(2017, 1, 2))
+        self.pl.add(self.t3)
+
+        self.pl.commit()
+
+    def test_get_tasks_not_specified_does_not_filter(self):
+        # when
+        results = self.pl.get_tasks()
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_false_does_not_filter(self):
+        # when
+        results = self.pl.get_tasks(deadline_is_not_none=False)
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_true_excludes_null_deadlines(self):
+        # when
+        results = self.pl.get_tasks(deadline_is_not_none=True)
+        # then
+        self.assertEqual({self.t1, self.t3}, set(results))
