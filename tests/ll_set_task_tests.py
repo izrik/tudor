@@ -190,3 +190,95 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         # then
         self.assertIsNotNone(task.deadline)
         self.assertEqual(datetime(2017, 1, 1), task.deadline)
+
+    def test_set_task_parent_id(self):
+        # given
+        ptask = self.pl.Task('parent')
+        self.pl.add(ptask)
+        self.pl.commit()
+
+        # precondition
+        self.assertIsNone(self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+        self.assertEqual(2, self.pl.count_tasks())
+        self.assertIsNotNone(ptask.id)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            parent_id=ptask.id)
+
+        # then
+        self.assertEqual(ptask.id, self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+
+        # when
+        self.pl.commit()
+
+        #then
+        self.assertIs(ptask, self.task.parent)
+
+    def test_set_task_parent_id_is_empty_string(self):
+        # precondition
+        self.assertIsNone(self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            parent_id='')
+
+        # then
+        self.assertIsNone(self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+
+    def test_set_task_parent_id_invalid_id_silently_ignores(self):
+        # given
+
+        # precondition
+        self.assertIsNone(self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+        self.assertEqual(1, self.pl.count_tasks())
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            parent_id=self.task.id + 1)
+
+        # then
+        self.assertIsNone(self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+
+        # when
+        self.pl.commit()
+
+        #then
+        self.assertIsNone(self.task.parent_id)
+        self.assertIsNone(self.task.parent)
+
+    def test_set_task_order_num_none_becomes_zero(self):
+        # given
+        self.task.order_num = None
+
+        # precondition
+        self.assertIsNone(self.task.order_num)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            order_num=None)
+
+        # then
+        self.assertEqual(0, self.task.order_num)
