@@ -4,6 +4,7 @@ import unittest
 from datetime import datetime
 
 from flask import json
+from werkzeug.exceptions import Conflict
 
 from tudor import generate_app
 
@@ -229,6 +230,32 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual([], list(t2.dependants))
         self.assertEqual([], list(t2.prioritize_before))
         self.assertEqual([], list(t2.prioritize_after))
+
+    def test_do_import_data_task_conflict_id_already_exists(self):
+        # given
+        t0 = self.pl.Task('pre-existing')
+        self.pl.add(t0)
+        self.pl.commit()
+        src = '{"tasks":[{"id": ' + str(t0.id) + ',"summary":"summary"}]}'
+
+        # precondition
+        self.assertEqual(1, self.pl.task_query.count())
+        t0_ = self.pl.get_task(t0.id)
+        self.assertIsNotNone(t0_)
+        self.assertIs(t0, t0_)
+        self.assertEqual(0, self.pl.tag_query.count())
+        self.assertEqual(0, self.pl.note_query.count())
+        self.assertEqual(0, self.pl.attachment_query.count())
+        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.option_query.count())
+
+        # expect
+        self.assertRaisesRegexp(
+            Conflict,
+            r"^409 Conflict: Some specified task id's already exist in the "
+            r"database$",
+            self.ll.do_import_data,
+            json.loads(src))
 
     def test_do_import_data_empty_tags(self):
         # given
