@@ -118,7 +118,6 @@ class PersistenceLayer(object):
         # TODO: summary_description_like?
         # TODO: parent_id_in
         # TODO: pagination
-        # TODO: task_id_not_in
         # TODO: deadline_is_not_none
 
         """order_by is a list of order directives. Each such directive is
