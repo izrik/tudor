@@ -261,9 +261,6 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t2, self.t3}, set(results))
 
     def test_get_tasks_id_in_some_missing(self):
-        # given
-        ids = [self.t1.id, self.t2.id, self.t3.id]
-        next_id = max(ids) + 1
         # when
         results = self.pl.get_tasks(task_id_in=[self.t1.id, self.t2.id])
         # then
@@ -305,6 +302,82 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         results = self.pl.get_tasks(task_id_in=[], order_by=self.pl.ORDER_NUM)
         # then
         self.assertEqual([], list(results))
+
+    def test_get_tasks_id_not_in(self):
+        # when
+        results = self.pl.get_tasks(
+            task_id_not_in=[self.t1.id, self.t2.id, self.t3.id])
+        # then
+        self.assertEqual(set(), set(results))
+
+    def test_get_tasks_id_not_in_order_does_not_matter(self):
+        # when
+        results = self.pl.get_tasks(
+            task_id_not_in=[self.t3.id, self.t2.id, self.t1.id])
+        # then
+        self.assertEqual(set(), set(results))
+
+    def test_get_tasks_id_not_in_some_missing(self):
+        # when
+        results = self.pl.get_tasks(task_id_not_in=[self.t1.id, self.t2.id])
+        # then
+        self.assertEqual({self.t3}, set(results))
+
+    def test_get_tasks_id_not_in_some_extra(self):
+        # given
+        ids = [self.t1.id, self.t2.id, self.t3.id]
+        next_id = max(ids) + 1
+        ids.append(next_id)
+        # when
+        results = self.pl.get_tasks(task_id_not_in=ids)
+        # then
+        self.assertEqual(set(), set(results))
+
+    def test_get_tasks_id_not_in_some_missing_some_extra(self):
+        # given
+        ids = [self.t1.id, self.t2.id, self.t3.id]
+        next_id = max(ids) + 1
+        ids = [self.t2.id, self.t3.id, next_id]
+        # when
+        results = self.pl.get_tasks(task_id_not_in=ids)
+        # then
+        self.assertEqual({self.t1}, set(results))
+
+    def test_get_tasks_id_not_in_empty(self):
+        # when
+        results = self.pl.get_tasks(task_id_not_in=[])
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_id_not_in_with_order_by(self):
+        # given
+        self.t1.order_num = 1
+        self.t2.order_num = 2
+        self.t3.order_num = 3
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+
+        # when
+        results = self.pl.get_tasks(
+            task_id_not_in=[self.t1.id, self.t2.id, self.t3.id],
+            order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([], list(results))
+
+        # when
+        results = self.pl.get_tasks(task_id_not_in=[], order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3], list(results))
+
+    def test_get_tasks_both_params(self):
+
+        # when
+        results = self.pl.get_tasks(
+            task_id_in=[self.t1.id, self.t3.id],
+            task_id_not_in=[self.t2.id, self.t3.id])
+        # then
+        self.assertEqual({self.t1}, set(results))
 
 
 class PersistenceLayerLimitTest(unittest.TestCase):
