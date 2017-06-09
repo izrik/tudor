@@ -366,7 +366,8 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         self.assertEqual([], list(results))
 
         # when
-        results = self.pl.get_tasks(task_id_not_in=[], order_by=self.pl.ORDER_NUM)
+        results = self.pl.get_tasks(task_id_not_in=[],
+                                    order_by=self.pl.ORDER_NUM)
         # then
         self.assertEqual([self.t1, self.t2, self.t3], list(results))
 
