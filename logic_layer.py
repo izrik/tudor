@@ -261,7 +261,7 @@ class LogicLayer(object):
             pass
         elif parent_id == '':
             parent_id = None
-        elif self.pl.task_query.filter_by(id=parent_id).count() > 0:
+        elif self.pl.get_task(parent_id):
             pass
         else:
             parent_id = None
