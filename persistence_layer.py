@@ -107,7 +107,7 @@ class PersistenceLayer(object):
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                          parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                         order_by=UNSPECIFIED, id_in=UNSPECIFIED,
+                         id_in=UNSPECIFIED, order_by=UNSPECIFIED,
                          limit=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
@@ -167,7 +167,7 @@ class PersistenceLayer(object):
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                   parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                  order_by=UNSPECIFIED, id_in=UNSPECIFIED, limit=UNSPECIFIED):
+                  id_in=UNSPECIFIED, order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             users_contains=users_contains, order_by=order_by, id_in=id_in,
@@ -176,7 +176,7 @@ class PersistenceLayer(object):
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                    order_by=UNSPECIFIED, id_in=UNSPECIFIED,
+                    id_in=UNSPECIFIED, order_by=UNSPECIFIED,
                     limit=UNSPECIFIED):
         return self._get_tasks_query(is_done=is_done, is_deleted=is_deleted,
                                      parent_id=parent_id,
