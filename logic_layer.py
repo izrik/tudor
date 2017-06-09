@@ -3,6 +3,7 @@
 import re
 import itertools
 import os
+from datetime import datetime
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
@@ -248,6 +249,8 @@ class LogicLayer(object):
             deadline = None
         elif not deadline:
             deadline = None
+        elif isinstance(deadline, datetime):
+            pass
         else:
             deadline = dparse(deadline)
 

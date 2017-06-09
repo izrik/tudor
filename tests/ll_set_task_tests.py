@@ -174,3 +174,19 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNone(task.deadline)
+
+    def test_set_task_deadline_is_datetime(self):
+        # precondition
+        self.assertIsNone(self.task.deadline)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            deadline=datetime(2017, 1, 1))
+
+        # then
+        self.assertIsNotNone(task.deadline)
+        self.assertEqual(datetime(2017, 1, 1), task.deadline)
