@@ -218,7 +218,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         # when
         self.pl.commit()
 
-        #then
+        # then
         self.assertIs(ptask, self.task.parent)
 
     def test_set_task_parent_id_is_empty_string(self):
@@ -261,7 +261,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         # when
         self.pl.commit()
 
-        #then
+        # then
         self.assertIsNone(self.task.parent_id)
         self.assertIsNone(self.task.parent)
 
