@@ -673,8 +673,7 @@ class LogicLayer(object):
                 for task in src['tasks']:
                     ids.add(task['id'])
                 if ids:
-                    existing_tasks = self.pl.task_query.filter(
-                        self.pl.Task.id.in_(ids)).count()
+                    existing_tasks = self.pl.get_tasks(id_in=ids).count()
                     if existing_tasks > 0:
                         raise werkzeug.exceptions.Conflict(
                             'Some specified task id\'s already exist in the '
