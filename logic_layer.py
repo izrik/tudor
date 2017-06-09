@@ -125,17 +125,17 @@ class LogicLayer(object):
         return task
 
     def get_lowest_order_num(self):
-        query = self.pl.task_query.order_by(
-            self.pl.Task.order_num.asc()).limit(1)
-        lowest_order_num_tasks = query.all()
+        query = self.pl.get_tasks(
+            order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
+        lowest_order_num_tasks = list(query)
         if len(lowest_order_num_tasks) > 0:
             return lowest_order_num_tasks[0].order_num
         return None
 
     def get_highest_order_num(self):
-        query = self.pl.task_query.order_by(
-            self.pl.Task.order_num.desc()).limit(1)
-        highest_order_num_tasks = query.all()
+        query = self.pl.get_tasks(
+            order_by=[[self.pl.ORDER_NUM, self.pl.DESCENDING]], limit=1)
+        highest_order_num_tasks = list(query)
         if len(highest_order_num_tasks) > 0:
             return highest_order_num_tasks[0].order_num
         return None
