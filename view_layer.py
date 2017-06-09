@@ -165,8 +165,7 @@ class ViewLayer(object):
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_purge(self, request, current_user, task_id):
-        task = self.pl.task_query.filter_by(id=task_id,
-                                            is_deleted=True).first()
+        task = self.pl.get_task(task_id)
         if not task:
             return 404
         self.pl.delete(task)
@@ -176,7 +175,7 @@ class ViewLayer(object):
     def purge_all(self, request, current_user):
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
-            deleted_tasks = self.pl.task_query.filter_by(is_deleted=True)
+            deleted_tasks = self.pl.get_tasks(is_deleted=True)
             for task in deleted_tasks:
                 self.pl.delete(task)
             self.pl.commit()
