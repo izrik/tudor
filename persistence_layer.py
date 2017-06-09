@@ -107,7 +107,7 @@ class PersistenceLayer(object):
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                   parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                  order_by=UNSPECIFIED):
+                  order_by=UNSPECIFIED, id_in=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
          either a field (e.g. ORDER_NUM) or a sequence of field and direction
@@ -126,6 +126,16 @@ class PersistenceLayer(object):
                 query = query.filter_by(parent_id=parent_id)
         if users_contains is not self.UNSPECIFIED:
             query = query.filter(self.Task.users.contains(users_contains))
+
+        if id_in is not self.UNSPECIFIED:
+            # Using in_ on an empty set works but is expensive for some db
+            # engines. In the case of an empty collection, just use a query
+            # that always returns an empty set, without the performance
+            # penalty.
+            if id_in:
+                query = query.filter(self.Task.id.in_(id_in))
+            else:
+                query = query.filter(False)
 
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):

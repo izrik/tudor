@@ -203,3 +203,75 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
         self.assertRaises(Exception,
                           self.pl.get_tasks,
                           order_by=[[self.pl.ORDER_NUM, 123]])
+
+
+class PersistenceLayerIdInTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1')
+        self.pl.add(self.t1)
+        self.t2 = self.pl.Task('t2')
+        self.pl.add(self.t2)
+        self.t3 = self.pl.Task('t3')
+        self.pl.add(self.t3)
+
+        self.pl.commit()
+
+    def test_get_tasks_id_in(self):
+        # when
+        results = self.pl.get_tasks(id_in=[self.t1.id, self.t2.id, self.t3.id])
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_id_in_order_does_not_matter(self):
+        # when
+        results = self.pl.get_tasks(id_in=[self.t3.id, self.t2.id, self.t1.id])
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_id_in_some_missing(self):
+        # given
+        ids = [self.t1.id, self.t2.id, self.t3.id]
+        next_id = max(ids) + 1
+        # when
+        results = self.pl.get_tasks(id_in=[self.t1.id, self.t2.id])
+        # then
+        self.assertEqual({self.t1, self.t2}, set(results))
+
+    def test_get_tasks_id_in_some_extra(self):
+        # given
+        ids = [self.t1.id, self.t2.id, self.t3.id]
+        next_id = max(ids) + 1
+        ids.append(next_id)
+        # when
+        results = self.pl.get_tasks(id_in=ids)
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_id_in_empty(self):
+        # when
+        results = self.pl.get_tasks(id_in=[])
+        # then
+        self.assertEqual(set(), set(results))
+
+    def test_get_tasks_id_in_with_order_by(self):
+        # given
+        self.t1.order_num = 1
+        self.t2.order_num = 2
+        self.t3.order_num = 3
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+
+        # when
+        results = self.pl.get_tasks(id_in=[self.t1.id, self.t2.id, self.t3.id],
+                                    order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3], list(results))
+
+        # when
+        results = self.pl.get_tasks(id_in=[], order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([], list(results))
