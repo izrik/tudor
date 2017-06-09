@@ -139,7 +139,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_missing_tasks_raises_not_found(self):
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
 
         # expect
         self.assertRaises(NotFound,

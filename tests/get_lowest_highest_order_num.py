@@ -19,7 +19,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def test_no_tasks_lowest_returns_none(self):
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -29,7 +29,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def test_no_tasks_highest_returns_none(self):
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
 
         # when
         order_num = self.ll.get_highest_order_num()

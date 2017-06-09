@@ -37,13 +37,13 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.pl.add(task)
         self.pl.commit()
 
-        self.assertEquals(1, self.pl.task_query.count())
+        self.assertEquals(1, self.pl.count_tasks())
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(0, self.pl.task_query.count())
+        self.assertEquals(0, self.pl.count_tasks())
 
     def test_child_tasks_get_the_new_tag(self):
         # given
@@ -62,7 +62,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
         self.pl.commit()
 
-        self.assertEquals(4, self.pl.task_query.count())
+        self.assertEquals(4, self.pl.count_tasks())
         self.assertEquals(0, len(child1.tags))
         self.assertEquals(0, len(child2.tags))
         self.assertEquals(0, len(child3.tags))
@@ -75,7 +75,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(3, self.pl.task_query.count())
+        self.assertEquals(3, self.pl.count_tasks())
         self.assertEquals(1, len(child1.tags))
         self.assertEquals(1, len(child2.tags))
         self.assertEquals(1, len(child3.tags))

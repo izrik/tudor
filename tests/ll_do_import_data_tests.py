@@ -21,7 +21,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -32,7 +32,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -44,7 +44,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"tasks":[]}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -55,7 +55,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -70,7 +70,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         }]}'''
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -81,7 +81,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(1, self.pl.task_query.count())
+        self.assertEqual(1, self.pl.count_tasks())
         task = self.pl.get_task(1)
         self.assertIsNotNone(task)
         self.assertEqual(1, task.id)
@@ -123,7 +123,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         }]}'''
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -134,7 +134,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(1, self.pl.task_query.count())
+        self.assertEqual(1, self.pl.count_tasks())
         task = self.pl.get_task(1)
         self.assertIsNotNone(task)
         self.assertEqual(1, task.id)
@@ -174,7 +174,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         }]}'''
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -185,7 +185,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(2, self.pl.task_query.count())
+        self.assertEqual(2, self.pl.count_tasks())
 
         t1 = self.pl.get_task(1)
         self.assertIsNotNone(t1)
@@ -239,7 +239,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"tasks":[{"id": ' + str(t0.id) + ',"summary":"summary"}]}'
 
         # precondition
-        self.assertEqual(1, self.pl.task_query.count())
+        self.assertEqual(1, self.pl.count_tasks())
         t0_ = self.pl.get_task(t0.id)
         self.assertIsNotNone(t0_)
         self.assertIs(t0, t0_)
@@ -262,7 +262,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"tags":[]}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -273,7 +273,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -285,7 +285,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"notes":[]}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -296,7 +296,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -308,7 +308,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"attachments":[]}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -319,7 +319,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -331,7 +331,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"users":[]}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -342,7 +342,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -354,7 +354,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         src = '{"options":[]}'
 
         # precondition
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
@@ -365,7 +365,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
-        self.assertEqual(0, self.pl.task_query.count())
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.tag_query.count())
         self.assertEqual(0, self.pl.note_query.count())
         self.assertEqual(0, self.pl.attachment_query.count())
