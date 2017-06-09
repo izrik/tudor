@@ -672,12 +672,13 @@ class LogicLayer(object):
                 ids = set()
                 for task in src['tasks']:
                     ids.add(task['id'])
-                existing_tasks = self.pl.task_query.filter(
-                    self.pl.Task.id.in_(ids)).count()
-                if existing_tasks > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified task id\'s already exist in the '
-                        'database')
+                if ids:
+                    existing_tasks = self.pl.task_query.filter(
+                        self.pl.Task.id.in_(ids)).count()
+                    if existing_tasks > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified task id\'s already exist in the '
+                            'database')
                 for task in src['tasks']:
                     id = task['id']
                     summary = task['summary']
@@ -725,12 +726,13 @@ class LogicLayer(object):
                 ids = set()
                 for note in src['notes']:
                     ids.add(note['id'])
-                existing_notes = self.pl.note_query.filter(
-                    self.pl.Note.id.in_(ids)).count()
-                if existing_notes > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified note id\'s already exist in the '
-                        'database')
+                if ids:
+                    existing_notes = self.pl.note_query.filter(
+                        self.pl.Note.id.in_(ids)).count()
+                    if existing_notes > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified note id\'s already exist in the '
+                            'database')
                 for note in src['notes']:
                     id = note['id']
                     content = note['content']
@@ -746,12 +748,13 @@ class LogicLayer(object):
                 ids = set()
                 for attachment in attachments:
                     ids.add(attachment['id'])
-                existing_attachments = self.pl.attachment_query.filter(
-                    self.pl.Attachment.id.in_(ids)).count()
-                if existing_attachments > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified attachment id\'s already exist in '
-                        'the database')
+                if ids:
+                    existing_attachments = self.pl.attachment_query.filter(
+                        self.pl.Attachment.id.in_(ids)).count()
+                    if existing_attachments > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified attachment id\'s already exist in '
+                            'the database')
                 for attachment in attachments:
                     id = attachment['id']
                     timestamp = attachment['timestamp']
@@ -771,12 +774,13 @@ class LogicLayer(object):
                 emails = set()
                 for user in users:
                     emails.add(user['email'])
-                existing_users = self.pl.user_query.filter(
-                    self.pl.User.email.in_(emails)).count()
-                if existing_users > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified user email addresses already exist'
-                        ' in the database')
+                if emails:
+                    existing_users = self.pl.user_query.filter(
+                        self.pl.User.email.in_(emails)).count()
+                    if existing_users > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified user email addresses already exist'
+                            ' in the database')
                 for user in users:
                     email = user['email']
                     hashed_password = user['hashed_password']
@@ -790,12 +794,13 @@ class LogicLayer(object):
                 keys = set()
                 for option in src['options']:
                     keys.add(option['key'])
-                existing_options = self.pl.option_query.filter(
-                    self.pl.Option.key.in_(keys)).count()
-                if existing_options > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified option keys already exist in the '
-                        'database')
+                if keys:
+                    existing_options = self.pl.option_query.filter(
+                        self.pl.Option.key.in_(keys)).count()
+                    if existing_options > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified option keys already exist in the '
+                            'database')
                 for option in src['options']:
                     key = option['key']
                     value = option['value']
