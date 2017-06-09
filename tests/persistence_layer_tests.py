@@ -275,3 +275,51 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         results = self.pl.get_tasks(id_in=[], order_by=self.pl.ORDER_NUM)
         # then
         self.assertEqual([], list(results))
+
+
+class PersistenceLayerLimitTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1')
+        self.t1.order_num = 1
+        self.pl.add(self.t1)
+        self.t2 = self.pl.Task('t2')
+        self.t2.order_num = 2
+        self.pl.add(self.t2)
+        self.t3 = self.pl.Task('t3')
+        self.t3.order_num = 3
+        self.pl.add(self.t3)
+
+        self.pl.commit()
+
+    def test_get_tasks_no_limit(self):
+        # when
+        results = self.pl.get_tasks()
+        # then
+        self.assertEqual(3, len(list(results)))
+
+    def test_get_tasks_with_limit(self):
+        # when
+        results = self.pl.get_tasks(limit=2)
+        # then
+        self.assertEqual(2, len(list(results)))
+
+    def test_get_tasks_limit_greater_than_count_returns_count(self):
+        # when
+        results = self.pl.get_tasks(limit=4)
+        # then
+        self.assertEqual(3, len(list(results)))
+
+    def test_get_tasks_limit_zero_returns_zero(self):
+        # when
+        results = self.pl.get_tasks(limit=0)
+        # then
+        self.assertEqual(0, len(list(results)))
+
+    def test_get_tasks_limit_negative_returns_all(self):
+        # when
+        results = self.pl.get_tasks(limit=-1)
+        # then
+        self.assertEqual(3, len(list(results)))

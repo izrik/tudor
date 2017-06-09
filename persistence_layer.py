@@ -107,7 +107,7 @@ class PersistenceLayer(object):
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                   parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                  order_by=UNSPECIFIED, id_in=UNSPECIFIED):
+                  order_by=UNSPECIFIED, id_in=UNSPECIFIED, limit=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
          either a field (e.g. ORDER_NUM) or a sequence of field and direction
@@ -159,15 +159,19 @@ class PersistenceLayer(object):
                         raise Exception(
                             'Unknown order_by direction: {}'.format(direction))
 
+        if limit is not self.UNSPECIFIED:
+            query = query.limit(limit)
+
         return query
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                    order_by=UNSPECIFIED, id_in=UNSPECIFIED):
+                    order_by=UNSPECIFIED, id_in=UNSPECIFIED,
+                    limit=UNSPECIFIED):
         return self.get_tasks(is_done=is_done, is_deleted=is_deleted,
                               parent_id=parent_id,
                               users_contains=users_contains, order_by=order_by,
-                              id_in=id_in).count()
+                              id_in=id_in, limit=limit).count()
 
     @property
     def tag_query(self):
