@@ -168,11 +168,11 @@ class PersistenceLayer(object):
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                   parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
                   order_by=UNSPECIFIED, id_in=UNSPECIFIED, limit=UNSPECIFIED):
-        return self._get_tasks_query(is_done=is_done, is_deleted=is_deleted,
-                                     parent_id=parent_id,
-                                     users_contains=users_contains,
-                                     order_by=order_by, id_in=id_in,
-                                     limit=limit)
+        query = self._get_tasks_query(
+            is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
+            users_contains=users_contains, order_by=order_by, id_in=id_in,
+            limit=limit)
+        return (_ for _ in query)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
