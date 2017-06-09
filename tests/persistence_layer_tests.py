@@ -133,13 +133,17 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
         self.t1 = self.pl.Task('t1')
+        self.t1.id = 5
         self.pl.add(self.t1)
         self.t2 = self.pl.Task('t2', is_done=True)
+        self.t2.id = 7
         self.pl.add(self.t2)
         self.t3 = self.pl.Task('t3', is_deleted=True)
         self.t3.parent = self.t2
+        self.t3.id = 11
         self.pl.add(self.t3)
         self.t4 = self.pl.Task('t4', is_done=True, is_deleted=True)
+        self.t4.id = 13
         self.pl.add(self.t4)
 
         self.t1.order_num = 1
@@ -203,6 +207,29 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
         self.assertRaises(Exception,
                           self.pl.get_tasks,
                           order_by=[[self.pl.ORDER_NUM, 123]])
+
+    def test_get_tasks_order_by_task_id_single(self):
+
+        # when
+        results = self.pl.get_tasks(order_by=self.pl.TASK_ID)
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_task_id_list_list_with_asc(self):
+
+        # when
+        results = self.pl.get_tasks(
+            order_by=[[self.pl.TASK_ID, self.pl.ASCENDING]])
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_task_id_list_list_with_desc(self):
+
+        # when
+        results = self.pl.get_tasks(
+            order_by=[[self.pl.TASK_ID, self.pl.DESCENDING]])
+        # then
+        self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
 
 
 class PersistenceLayerIdInTest(unittest.TestCase):
