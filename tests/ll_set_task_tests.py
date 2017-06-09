@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime
 
 from flask import json
-from werkzeug.exceptions import Conflict
+from werkzeug.exceptions import Conflict, NotFound, Forbidden
 
 from tudor import generate_app
 
@@ -16,10 +16,29 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
         self.admin = self.pl.User('admin@example.com', is_admin=True)
+        self.user = self.pl.User('user@example.com', is_admin=False)
         self.task = self.pl.Task('summary')
         self.pl.add(self.admin)
+        self.pl.add(self.user)
         self.pl.add(self.task)
         self.pl.commit()
+
+    def test_set_task_missing_raises(self):
+        # precondition
+        self.assertIsNone(self.pl.get_task(self.task.id + 1))
+
+        # expect
+        self.assertRaises(NotFound, self.ll.set_task, self.task.id + 1,
+                          self.admin, 'asdf', 'zxcv')
+
+    def test_set_task_user_not_authorized_raises(self):
+        # precondition
+        self.assertNotIn(self.user, self.task.users)
+        self.assertFalse(self.user.is_admin)
+
+        # expect
+        self.assertRaises(Forbidden, self.ll.set_task, self.task.id, self.user,
+                          'asdf', 'zxcv')
 
     def test_set_task(self):
         # precondition
@@ -118,3 +137,40 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertEqual([], list(task.dependants))
         self.assertEqual([], list(task.prioritize_before))
         self.assertEqual([], list(task.prioritize_after))
+
+    def test_set_task_deadline_is_falsey(self):
+        # precondition
+        self.assertIsNone(self.task.deadline)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            deadline='')
+
+        # then
+        self.assertIsNone(task.deadline)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            deadline=0)
+
+        # then
+        self.assertIsNone(task.deadline)
+
+        # when
+        task = self.ll.set_task(
+            self.task.id,
+            self.admin,
+            summary='asdf',
+            description='zxcv',
+            deadline=[])
+
+        # then
+        self.assertIsNone(task.deadline)
