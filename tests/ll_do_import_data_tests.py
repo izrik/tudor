@@ -2,6 +2,8 @@
 
 import unittest
 
+from flask import json
+
 from tudor import generate_app
 
 
@@ -25,7 +27,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
-        self.ll.do_import_data(src)
+        self.ll.do_import_data(json.loads(src))
 
         # then
         self.assertEqual(0, self.pl.task_query.count())
