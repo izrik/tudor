@@ -110,7 +110,7 @@ class PersistenceLayer(object):
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                          parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                         id_in=UNSPECIFIED, order_by=UNSPECIFIED,
+                         task_id_in=UNSPECIFIED, order_by=UNSPECIFIED,
                          limit=UNSPECIFIED):
 
         # TODO: summary_like?
@@ -139,13 +139,13 @@ class PersistenceLayer(object):
         if users_contains is not self.UNSPECIFIED:
             query = query.filter(self.Task.users.contains(users_contains))
 
-        if id_in is not self.UNSPECIFIED:
+        if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
             # engines. In the case of an empty collection, just use a query
             # that always returns an empty set, without the performance
             # penalty.
-            if id_in:
-                query = query.filter(self.Task.id.in_(id_in))
+            if task_id_in:
+                query = query.filter(self.Task.id.in_(task_id_in))
             else:
                 query = query.filter(False)
 
@@ -178,21 +178,22 @@ class PersistenceLayer(object):
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                   parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                  id_in=UNSPECIFIED, order_by=UNSPECIFIED, limit=UNSPECIFIED):
+                  task_id_in=UNSPECIFIED, order_by=UNSPECIFIED,
+                  limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
-            users_contains=users_contains, order_by=order_by, id_in=id_in,
-            limit=limit)
+            users_contains=users_contains, order_by=order_by,
+            task_id_in=task_id_in, limit=limit)
         return (_ for _ in query)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                    id_in=UNSPECIFIED, order_by=UNSPECIFIED,
+                    task_id_in=UNSPECIFIED, order_by=UNSPECIFIED,
                     limit=UNSPECIFIED):
         return self._get_tasks_query(is_done=is_done, is_deleted=is_deleted,
                                      parent_id=parent_id,
                                      users_contains=users_contains,
-                                     order_by=order_by, id_in=id_in,
+                                     order_by=order_by, task_id_in=task_id_in,
                                      limit=limit).count()
 
     @property
