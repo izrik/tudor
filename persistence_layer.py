@@ -161,6 +161,14 @@ class PersistenceLayer(object):
 
         return query
 
+    def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+                    parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
+                    order_by=UNSPECIFIED, id_in=UNSPECIFIED):
+        return self.get_tasks(is_done=is_done, is_deleted=is_deleted,
+                              parent_id=parent_id,
+                              users_contains=users_contains, order_by=order_by,
+                              id_in=id_in).count()
+
     @property
     def tag_query(self):
         return self.Tag.query
