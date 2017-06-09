@@ -105,9 +105,10 @@ class PersistenceLayer(object):
     def get_task(self, task_id):
         return self.task_query.get(task_id)
 
-    def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
-                  parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                  order_by=UNSPECIFIED, id_in=UNSPECIFIED, limit=UNSPECIFIED):
+    def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+                         parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
+                         order_by=UNSPECIFIED, id_in=UNSPECIFIED,
+                         limit=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
          either a field (e.g. ORDER_NUM) or a sequence of field and direction
@@ -164,14 +165,24 @@ class PersistenceLayer(object):
 
         return query
 
+    def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+                  parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
+                  order_by=UNSPECIFIED, id_in=UNSPECIFIED, limit=UNSPECIFIED):
+        return self._get_tasks_query(is_done=is_done, is_deleted=is_deleted,
+                                     parent_id=parent_id,
+                                     users_contains=users_contains,
+                                     order_by=order_by, id_in=id_in,
+                                     limit=limit)
+
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
                     order_by=UNSPECIFIED, id_in=UNSPECIFIED,
                     limit=UNSPECIFIED):
-        return self.get_tasks(is_done=is_done, is_deleted=is_deleted,
-                              parent_id=parent_id,
-                              users_contains=users_contains, order_by=order_by,
-                              id_in=id_in, limit=limit).count()
+        return self._get_tasks_query(is_done=is_done, is_deleted=is_deleted,
+                                     parent_id=parent_id,
+                                     users_contains=users_contains,
+                                     order_by=order_by, id_in=id_in,
+                                     limit=limit).count()
 
     @property
     def tag_query(self):
