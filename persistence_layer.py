@@ -113,6 +113,14 @@ class PersistenceLayer(object):
                          id_in=UNSPECIFIED, order_by=UNSPECIFIED,
                          limit=UNSPECIFIED):
 
+        # TODO: summary_like?
+        # TODO: description_like?
+        # TODO: summary_description_like?
+        # TODO: parent_id_in
+        # TODO: pagination
+        # TODO: task_id_not_in
+        # TODO: deadline_is_not_none
+
         """order_by is a list of order directives. Each such directive is
          either a field (e.g. ORDER_NUM) or a sequence of field and direction
           (e.g. [ORDER_NUM, ASCENDING]). Default direction is ASCENDING if not
