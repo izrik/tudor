@@ -150,7 +150,14 @@ class PersistenceLayer(object):
                 query = query.filter(False)
 
         if task_id_not_in is not self.UNSPECIFIED:
-            query = query.filter(self.Task.id.notin_(task_id_not_in))
+            # Using notin_ on an empty set works but is expensive for some db
+            # engines. Moreover, it doesn't affect the actual set of selected
+            # rows. In the case of an empty collection, just use the same query
+            # object again, so we won't incur the performance penalty.
+            if task_id_not_in:
+                query = query.filter(self.Task.id.notin_(task_id_not_in))
+            else:
+                query = query
 
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):
