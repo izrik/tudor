@@ -6,6 +6,7 @@ import flask
 from flask import make_response, render_template, url_for, redirect, flash
 from flask import jsonify, json
 from flask_login import login_user, logout_user
+from werkzeug.exceptions import NotFound, BadRequest
 
 from conversions import int_from_str, money_from_str, bool_from_str
 
@@ -167,7 +168,10 @@ class ViewLayer(object):
     def task_purge(self, request, current_user, task_id):
         task = self.pl.get_task(task_id)
         if not task:
-            return 404
+            raise NotFound("No task found for the id '%s'".format(task_id))
+        if not task.is_deleted:
+            raise BadRequest(
+                "Indicated task (id {}) has not been deleted.".format(task_id))
         self.pl.delete(task)
         self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
