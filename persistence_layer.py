@@ -109,8 +109,9 @@ class PersistenceLayer(object):
         return self.task_query.get(task_id)
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
-                         parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                         task_id_in=UNSPECIFIED, task_id_not_in=UNSPECIFIED,
+                         parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
+                         users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
+                         task_id_not_in=UNSPECIFIED,
                          deadline_is_not_none=False, order_by=UNSPECIFIED,
                          limit=UNSPECIFIED):
 
@@ -126,15 +127,26 @@ class PersistenceLayer(object):
            specified."""
 
         query = self.task_query
+
         if is_done is not self.UNSPECIFIED:
             query = query.filter_by(is_done=is_done)
+
         if is_deleted is not self.UNSPECIFIED:
             query = query.filter_by(is_deleted=is_deleted)
+
         if parent_id is not self.UNSPECIFIED:
             if parent_id is None:
                 query = query.filter(self.Task.parent_id.is_(None))
             else:
                 query = query.filter_by(parent_id=parent_id)
+
+        if parent_id_in is not self.UNSPECIFIED:
+            if parent_id_in:
+                query = query.filter(self.Task.parent_id.in_(parent_id_in))
+            else:
+                # avoid performance penalty
+                query = query.filter(False)
+
         if users_contains is not self.UNSPECIFIED:
             query = query.filter(self.Task.users.contains(users_contains))
 
@@ -189,27 +201,27 @@ class PersistenceLayer(object):
         return query
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
-                  parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                  task_id_in=UNSPECIFIED, task_id_not_in=UNSPECIFIED,
-                  deadline_is_not_none=False, order_by=UNSPECIFIED,
-                  limit=UNSPECIFIED):
+                  parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
+                  users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
+                  task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
+                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
-            users_contains=users_contains, task_id_in=task_id_in,
-            task_id_not_in=task_id_not_in,
-            deadline_is_not_none=deadline_is_not_none,
-            order_by=order_by, limit=limit)
+            parent_id_in=parent_id_in, users_contains=users_contains,
+            task_id_in=task_id_in, task_id_not_in=task_id_not_in,
+            deadline_is_not_none=deadline_is_not_none, order_by=order_by,
+            limit=limit)
         return (_ for _ in query)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
-                    parent_id=UNSPECIFIED, users_contains=UNSPECIFIED,
-                    task_id_in=UNSPECIFIED, task_id_not_in=UNSPECIFIED,
-                    deadline_is_not_none=False, order_by=UNSPECIFIED,
-                    limit=UNSPECIFIED):
+                    parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
+                    users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
+                    task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
+                    order_by=UNSPECIFIED, limit=UNSPECIFIED):
         return self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
-            users_contains=users_contains, task_id_in=task_id_in,
-            task_id_not_in=task_id_not_in,
+            parent_id_in=parent_id_in, users_contains=users_contains,
+            task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none, order_by=order_by,
             limit=limit).count()
 

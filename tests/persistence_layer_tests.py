@@ -461,3 +461,84 @@ class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
         results = self.pl.get_tasks(deadline_is_not_none=True)
         # then
         self.assertEqual({self.t1, self.t3}, set(results))
+
+
+class PersistenceLayerParentIdInTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1')
+        self.pl.add(self.t1)
+        self.t2 = self.pl.Task('t2')
+        self.pl.add(self.t2)
+        self.t3 = self.pl.Task('t3')
+        self.t3.parent = self.t2
+        self.pl.add(self.t3)
+        self.t4 = self.pl.Task('t4')
+        self.t4.parent = self.t3
+        self.pl.add(self.t4)
+        self.t5 = self.pl.Task('t5')
+        self.t5.parent = self.t2
+        self.pl.add(self.t5)
+        self.t6 = self.pl.Task('t6')
+        self.pl.add(self.t6)
+        self.t7 = self.pl.Task('t7')
+        self.t7.parent = self.t6
+        self.pl.add(self.t7)
+
+        self.pl.commit()
+
+    def test_get_tasks_parent_id_in(self):
+        # when
+        results = self.pl.get_tasks(parent_id_in=[self.t2.id, self.t6.id])
+        # then
+        self.assertEqual({self.t3, self.t5, self.t7}, set(results))
+
+    def test_get_tasks_parent_id_in_order_does_not_matter(self):
+        # when
+        results = self.pl.get_tasks(parent_id_in=[self.t6.id, self.t2.id])
+        # then
+        self.assertEqual({self.t3, self.t5, self.t7}, set(results))
+
+    def test_get_tasks_parent_id_in_some_missing(self):
+        # when
+        results = self.pl.get_tasks(parent_id_in=[self.t2.id])
+        # then
+        self.assertEqual({self.t3, self.t5}, set(results))
+
+    def test_get_tasks_parent_id_in_invalid_values_have_no_effect(self):
+        # given
+        next_id = max([self.t1.id, self.t2.id, self.t3.id, self.t4.id,
+                       self.t5.id, self.t6.id, self.t7.id]) + 1
+        # when
+        results = self.pl.get_tasks(parent_id_in=[self.t2.id, next_id])
+        # then
+        self.assertEqual({self.t3, self.t5}, set(results))
+
+    def test_get_tasks_parent_id_in_empty(self):
+        # when
+        results = self.pl.get_tasks(parent_id_in=[])
+        # then
+        self.assertEqual(set(), set(results))
+
+    def test_get_tasks_parent_id_in_with_order_by(self):
+        # given
+        self.t3.order_num = 101
+        self.t4.order_num = 313
+        self.t5.order_num = 207
+        self.pl.add(self.t3)
+        self.pl.add(self.t4)
+        self.pl.add(self.t5)
+
+        # when
+        results = self.pl.get_tasks(
+            parent_id_in=[self.t2.id, self.t3.id],
+            order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([self.t3, self.t5, self.t4], list(results))
+
+        # when
+        results = self.pl.get_tasks(task_id_in=[], order_by=self.pl.ORDER_NUM)
+        # then
+        self.assertEqual([], list(results))
