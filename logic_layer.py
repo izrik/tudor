@@ -72,7 +72,7 @@ class LogicLayer(object):
         max_depth = None
         tasks_h = self.load(current_user, root_task_id=None,
                             max_depth=max_depth, include_done=show_done,
-                            include_deleted=show_deleted, paginate=False)
+                            include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         all_tags = self.pl.tag_query.all()
@@ -934,8 +934,7 @@ class LogicLayer(object):
 
     def load(self, current_user, root_task_id=None, max_depth=0,
              include_done=False, include_deleted=False,
-             exclude_undeadlined=False, paginate=False, page=None,
-             per_page=None):
+             exclude_undeadlined=False, page=None, per_page=None):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
@@ -964,10 +963,6 @@ class LogicLayer(object):
 
         query = query.order_by(self.pl.Task.id.asc())
         query = query.order_by(self.pl.Task.order_num.desc())
-
-        pager = None
-        if paginate:
-            pager = query.paginate(page=page, per_page=per_page)
 
         tasks = query.all()
 
@@ -1010,9 +1005,6 @@ class LogicLayer(object):
                 buckets.append(children)
             tasks = list(
                 set([task for bucket in buckets for task in bucket]))
-
-        if pager:
-            return tasks, pager
 
         return tasks
 
