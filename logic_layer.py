@@ -84,12 +84,10 @@ class LogicLayer(object):
         }
 
     def get_deadlines_data(self, current_user):
-        def order_by_deadline(query):
-            return query.order_by(self.pl.Task.deadline)
         deadline_tasks = self.load_no_hierarchy(
             current_user,
             exclude_undeadlined=True,
-            query_post_op=order_by_deadline)
+            order_by_deadline=True)
         return {
             'deadline_tasks': deadline_tasks,
         }
@@ -1050,12 +1048,15 @@ class LogicLayer(object):
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
                           tag=None, query_post_op=None,
-                          order_by_order_num=False):
+                          order_by_order_num=False, order_by_deadline=False):
         query = self.query_no_hierarchy(
             current_user=current_user, include_done=include_done,
             include_deleted=include_deleted,
             exclude_undeadlined=exclude_undeadlined, tag=tag,
             query_post_op=query_post_op, order_by_order_num=order_by_order_num)
+
+        if order_by_deadline:
+            query = query.order_by(self.pl.Task.deadline)
 
         tasks = query.all()
 
