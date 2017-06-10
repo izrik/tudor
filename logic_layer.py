@@ -987,20 +987,19 @@ class LogicLayer(object):
 
                 depth += 1
 
-                query = self.pl.task_query
+                kwargs = {}
                 if not current_user.is_admin:
-                    query = query.filter(
-                        self.pl.Task.users.contains(current_user))
-                query = query.filter(self.pl.Task.parent_id.in_(next_ids),
-                                     self.pl.Task.id.notin_(already_ids))
+                    kwargs['users_contains'] = current_user
+                kwargs['parent_id_in'] = next_ids
+                kwargs['task_id_not_in'] = already_ids
                 if not include_done:
-                    query = query.filter_by(is_done=False)
+                    kwargs['is_done'] = False
                 if not include_deleted:
-                    query = query.filter_by(is_deleted=False)
+                    kwargs['is_deleted'] = False
                 if exclude_undeadlined:
-                    query = query.filter(self.pl.Task.deadline.isnot(None))
+                    kwargs['deadline_is_not_none'] = True
 
-                children = query.all()
+                children = list(self.pl.get_tasks(**kwargs))
 
                 for child in children:
                     child.depth = depth
