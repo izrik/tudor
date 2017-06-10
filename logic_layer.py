@@ -941,30 +941,31 @@ class LogicLayer(object):
             if not self.is_user_authorized_or_admin(root_task, current_user):
                 raise werkzeug.exceptions.Forbidden()
 
-        query = self.pl.task_query
+        kwargs = {}
 
         if not current_user.is_admin:
-            query = query.filter(
-                self.pl.Task.users.contains(current_user))
+            kwargs['users_contains'] = current_user
 
         if not include_done:
-            query = query.filter_by(is_done=False)
+            kwargs['is_done'] = False
 
         if not include_deleted:
-            query = query.filter_by(is_deleted=False)
+            kwargs['is_deleted'] = False
 
         if exclude_undeadlined:
-            query = query.filter(self.pl.Task.deadline.isnot(None))
+            kwargs['deadline_is_not_none'] = True
 
         if root_task_id is None:
-            query = query.filter(self.pl.Task.parent_id.is_(None))
+            kwargs['parent_id'] = None
         else:
-            query = query.filter_by(id=root_task_id)
+            kwargs['task_id_in'] = [root_task_id]
 
-        query = query.order_by(self.pl.Task.id.asc())
-        query = query.order_by(self.pl.Task.order_num.desc())
+        kwargs['order_by'] = [
+            [self.pl.TASK_ID, self.pl.ASCENDING],
+            [self.pl.ORDER_NUM, self.pl.DESCENDING],
+        ]
 
-        tasks = query.all()
+        tasks = list(self.pl.get_tasks(**kwargs))
 
         depth = 0
         for task in tasks:
