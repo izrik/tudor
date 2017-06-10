@@ -934,7 +934,7 @@ class LogicLayer(object):
 
     def load(self, current_user, root_task_id=None, max_depth=0,
              include_done=False, include_deleted=False,
-             exclude_undeadlined=False, page=None, per_page=None):
+             exclude_undeadlined=False):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
