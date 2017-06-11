@@ -1047,13 +1047,13 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
-                          tag=None, query_post_op=None,
+                          tag=None,
                           order_by_order_num=False, order_by_deadline=False):
         query = self.query_no_hierarchy(
             current_user=current_user, include_done=include_done,
             include_deleted=include_deleted,
             exclude_undeadlined=exclude_undeadlined, tag=tag,
-            query_post_op=query_post_op, order_by_order_num=order_by_order_num)
+            order_by_order_num=order_by_order_num)
 
         if order_by_deadline:
             query = query.order_by(self.pl.Task.deadline)
