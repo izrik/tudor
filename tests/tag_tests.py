@@ -8,7 +8,8 @@ from tudor import generate_app
 class TagTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.Tag = self.app.Tag
+        self.pl = self.app.pl
+        self.Tag = self.pl.Tag
 
     def test_constructor_default_id_is_none(self):
         # when

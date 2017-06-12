@@ -153,13 +153,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def get_user():
             return current_user
 
-    app.Task = pl.Task
-    app.Tag = pl.Tag
-    app.Note = pl.Note
-    app.Attachment = pl.Attachment
-    app.User = pl.User
-    app.Option = pl.Option
-
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
     app.ll = ll

@@ -12,7 +12,7 @@ class TaskDependenciesTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.Task = self.app.Task
+        self.Task = self.pl.Task
 
     def test_setting_task_as_dependee_sets_other_task_as_dependant(self):
         # given
@@ -126,8 +126,8 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
         self.ll = self.app.ll
-        self.Task = self.app.Task
-        self.User = self.app.User
+        self.Task = self.pl.Task
+        self.User = self.pl.User
 
     def test_add_dependee_adds_dependee(self):
         # given
@@ -618,8 +618,8 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
         self.ll = self.app.ll
-        self.Task = self.app.Task
-        self.User = self.app.User
+        self.Task = self.pl.Task
+        self.User = self.pl.User
 
     def test_add_dependant_adds_dependant(self):
         # given

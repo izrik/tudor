@@ -10,7 +10,7 @@ class TaskIdTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.Task = self.app.Task
+        self.Task = self.pl.Task
 
     def test_constructor_default_id_is_none(self):
         # when

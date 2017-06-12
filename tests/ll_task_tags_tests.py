@@ -13,10 +13,10 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.pl = app.pl
         self.pl.create_all()
-        self.Task = app.pl.Task
-        self.Tag = app.pl.Tag
+        self.Task = self.pl.Task
+        self.Tag = self.pl.Tag
         self.ll = app.ll
-        self.User = app.pl.User
+        self.User = self.pl.User
         self.admin = self.User('name@example.org', None, True)
         self.pl.add(self.admin)
         self.user = self.User('name2@example.org', None, False)
