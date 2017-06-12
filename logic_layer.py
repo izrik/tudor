@@ -1014,7 +1014,8 @@ class LogicLayer(object):
                            include_deleted=False, exclude_undeadlined=False,
                            tag=None, parent_id_is_none=False, parent_id=None,
                            order_by_order_num=False, root_task_id=None,
-                           paginate=False, pager=None):
+                           paginate=False, pager=None,
+                           order_by_deadline=False):
         query = self.pl.task_query
 
         if not current_user.is_admin:
@@ -1049,6 +1050,9 @@ class LogicLayer(object):
         if order_by_order_num:
             query = query.order_by(self.pl.Task.order_num.desc())
 
+        if order_by_deadline:
+            query = query.order_by(self.pl.Task.deadline)
+
         if paginate:
             _pager = query.paginate()
             if pager is not None:
@@ -1064,10 +1068,8 @@ class LogicLayer(object):
             current_user=current_user, include_done=include_done,
             include_deleted=include_deleted,
             exclude_undeadlined=exclude_undeadlined, tag=tag,
-            order_by_order_num=order_by_order_num)
-
-        if order_by_deadline:
-            query = query.order_by(self.pl.Task.deadline)
+            order_by_order_num=order_by_order_num,
+            order_by_deadline=order_by_deadline)
 
         tasks = query.all()
 
