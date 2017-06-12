@@ -121,8 +121,6 @@ class PersistenceLayer(object):
         # TODO: summary_like?
         # TODO: description_like?
         # TODO: summary_description_like?
-        # TODO: parent_id_in
-        # TODO: pagination
 
         """order_by is a list of order directives. Each such directive is
          either a field (e.g. ORDER_NUM) or a sequence of field and direction
