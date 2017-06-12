@@ -93,12 +93,15 @@ class PersistenceLayer(object):
 
     TASK_ID = object()
     ORDER_NUM = object()
+    DEADLINE = object()
 
     def get_db_field_by_order_field(self, f):
         if f is self.ORDER_NUM:
             return self.Task.order_num
         if f is self.TASK_ID:
             return self.Task.id
+        if f is self.DEADLINE:
+            return self.Task.deadline
         raise Exception('Unhandled order_by field: {}'.format(f))
 
     @property

@@ -233,6 +233,46 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
         self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
 
 
+class PersistenceLayerOrderByDeadlineTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1', deadline='2017-01-01')
+        self.t2 = self.pl.Task('t2', deadline='2017-01-02')
+        self.t3 = self.pl.Task('t3', deadline='2017-01-03')
+        self.t4 = self.pl.Task('t4', deadline='2017-01-04')
+
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+        self.pl.add(self.t4)
+        self.pl.commit()
+
+    def test_get_tasks_order_by_deadline_single(self):
+
+        # when
+        results = self.pl.get_tasks(order_by=self.pl.DEADLINE)
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_deadline_list_list_with_asc(self):
+
+        # when
+        results = self.pl.get_tasks(
+            order_by=[[self.pl.DEADLINE, self.pl.ASCENDING]])
+        # then
+        self.assertEqual([self.t1, self.t2, self.t3, self.t4], list(results))
+
+    def test_get_tasks_order_by_deadline_list_list_with_desc(self):
+
+        # when
+        results = self.pl.get_tasks(
+            order_by=[[self.pl.DEADLINE, self.pl.DESCENDING]])
+        # then
+        self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
+
+
 class PersistenceLayerIdInTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
