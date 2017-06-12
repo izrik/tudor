@@ -899,3 +899,21 @@ class PersistenceLayerOrderNumberGreaterLessEqualTest(unittest.TestCase):
         # then
         results = list(results)
         self.assertEqual(set(), set(results))
+
+
+class PersistenceLayerGetTagsTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Tag('t1')
+        self.pl.add(self.t1)
+        self.t2 = self.pl.Tag('t2')
+        self.pl.add(self.t2)
+        self.pl.commit()
+
+    def test_get_tags_with_params_returns_all_tags(self):
+        # when
+        results = self.pl.get_tags()
+        # then
+        self.assertEqual({self.t1, self.t2}, set(results))

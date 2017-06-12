@@ -292,6 +292,10 @@ class PersistenceLayer(object):
     def get_tag(self, tag_id):
         return self.tag_query.get(tag_id)
 
+    def get_tags(self):
+        query = self.Tag.query
+        return (_ for _ in query)
+
     @property
     def note_query(self):
         return self.Note.query
