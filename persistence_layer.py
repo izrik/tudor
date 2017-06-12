@@ -292,8 +292,10 @@ class PersistenceLayer(object):
     def get_tag(self, tag_id):
         return self.tag_query.get(tag_id)
 
-    def get_tags(self):
+    def get_tags(self, value=UNSPECIFIED):
         query = self.Tag.query
+        if value is not self.UNSPECIFIED:
+            query = query.filter_by(value=value)
         return (_ for _ in query)
 
     @property

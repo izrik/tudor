@@ -917,3 +917,15 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         results = self.pl.get_tags()
         # then
         self.assertEqual({self.t1, self.t2}, set(results))
+
+    def test_specifying_value_filters_tags_1(self):
+        # when
+        results = self.pl.get_tags(value='t1')
+        # then
+        self.assertEqual({self.t1}, set(results))
+
+    def test_specifying_value_filters_tags_2(self):
+        # when
+        results = self.pl.get_tags(value='t2')
+        # then
+        self.assertEqual({self.t2}, set(results))
