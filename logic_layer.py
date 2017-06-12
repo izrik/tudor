@@ -53,12 +53,11 @@ class LogicLayer(object):
     def get_index_data(self, show_deleted, show_done,
                        current_user):
         _pager = []
-        query = self.load_no_hierarchy(
+        tasks = self.load_no_hierarchy(
             current_user=current_user, include_done=show_done,
             include_deleted=show_deleted, order_by_order_num=True,
             parent_id_is_none=True, paginate=True, pager=_pager)
         pager = _pager[0]
-        tasks = query
 
         all_tags = self.pl.tag_query.all()
         return {
@@ -124,17 +123,17 @@ class LogicLayer(object):
         return task
 
     def get_lowest_order_num(self):
-        query = self.pl.get_tasks(
+        tasks = self.pl.get_tasks(
             order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
-        lowest_order_num_tasks = list(query)
+        lowest_order_num_tasks = list(tasks)
         if len(lowest_order_num_tasks) > 0:
             return lowest_order_num_tasks[0].order_num
         return None
 
     def get_highest_order_num(self):
-        query = self.pl.get_tasks(
+        tasks = self.pl.get_tasks(
             order_by=[[self.pl.ORDER_NUM, self.pl.DESCENDING]], limit=1)
-        highest_order_num_tasks = list(query)
+        highest_order_num_tasks = list(tasks)
         if len(highest_order_num_tasks) > 0:
             return highest_order_num_tasks[0].order_num
         return None
@@ -184,14 +183,13 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
 
         _pager = []
-        query = self.load_no_hierarchy(current_user=current_user,
-                                       include_done=include_done,
-                                       include_deleted=include_deleted,
-                                       order_by_order_num=True,
-                                       parent_id=task.id, paginate=True,
-                                       pager=_pager)
+        descendants = self.load_no_hierarchy(current_user=current_user,
+                                             include_done=include_done,
+                                             include_deleted=include_deleted,
+                                             order_by_order_num=True,
+                                             parent_id=task.id, paginate=True,
+                                             pager=_pager)
         pager = _pager[0]
-        descendants = query
 
         hierarchy_sort = True
         if hierarchy_sort:
