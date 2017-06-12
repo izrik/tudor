@@ -112,8 +112,8 @@ class PersistenceLayer(object):
                          parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                          users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                          task_id_not_in=UNSPECIFIED,
-                         deadline_is_not_none=False, order_by=UNSPECIFIED,
-                         limit=UNSPECIFIED):
+                         deadline_is_not_none=False, tags_contains=UNSPECIFIED,
+                         order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         # TODO: summary_like?
         # TODO: description_like?
@@ -173,6 +173,9 @@ class PersistenceLayer(object):
         if deadline_is_not_none:
             query = query.filter(self.Task.deadline.isnot(None))
 
+        if tags_contains is not self.UNSPECIFIED:
+            query = query.filter(self.Task.tags.contains(tags_contains))
+
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):
                 db_field = self.get_db_field_by_order_field(order_by)
@@ -204,25 +207,28 @@ class PersistenceLayer(object):
                   parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                   users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                   task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
-                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
+                  tags_contains=UNSPECIFIED, order_by=UNSPECIFIED,
+                  limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
-            deadline_is_not_none=deadline_is_not_none, order_by=order_by,
-            limit=limit)
+            deadline_is_not_none=deadline_is_not_none,
+            tags_contains=tags_contains, order_by=order_by, limit=limit)
         return (_ for _ in query)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                     users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                     task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
-                    order_by=UNSPECIFIED, limit=UNSPECIFIED):
+                    tags_contains=UNSPECIFIED, order_by=UNSPECIFIED,
+                    limit=UNSPECIFIED):
         return self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
-            deadline_is_not_none=deadline_is_not_none, order_by=order_by,
+            deadline_is_not_none=deadline_is_not_none,
+            tags_contains=tags_contains, order_by=order_by,
             limit=limit).count()
 
     @property

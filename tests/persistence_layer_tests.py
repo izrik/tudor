@@ -542,3 +542,42 @@ class PersistenceLayerParentIdInTest(unittest.TestCase):
         results = self.pl.get_tasks(task_id_in=[], order_by=self.pl.ORDER_NUM)
         # then
         self.assertEqual([], list(results))
+
+
+class PersistenceLayerTagsTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.t1 = self.pl.Task('t1')
+        self.t2 = self.pl.Task('t2')
+        self.t3 = self.pl.Task('t3')
+        self.tag1 = self.pl.Tag('tag1')
+        self.tag2 = self.pl.Tag('tag2')
+        self.t2.tags.append(self.tag1)
+        self.t3.tags.append(self.tag1)
+        self.t3.tags.append(self.tag2)
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+        self.pl.add(self.tag1)
+        self.pl.add(self.tag2)
+
+        self.pl.commit()
+
+    def test_get_tasks_tag_unspecified_yields_all_tasks(self):
+        # when
+        results = self.pl.get_tasks()
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3}, set(results))
+
+    def test_get_tasks_tag_specified_yields_only_tasks_with_that_tag(self):
+        # when
+        results = self.pl.get_tasks(tags_contains=self.tag1)
+        # then
+        self.assertEqual({self.t2, self.t3}, set(results))
+
+        # when
+        results = self.pl.get_tasks(tags_contains=self.tag2)
+        # then
+        self.assertEqual({self.t3}, set(results))
