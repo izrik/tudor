@@ -52,11 +52,12 @@ class LogicLayer(object):
 
     def get_index_data(self, show_deleted, show_done,
                        current_user):
+        _pager = []
         query = self.query_no_hierarchy(
             current_user=current_user, include_done=show_done,
             include_deleted=show_deleted, order_by_order_num=True,
-            parent_id_is_none=True)
-        pager = query.paginate()
+            parent_id_is_none=True, paginate=True, pager=_pager)
+        pager = _pager[0]
         tasks = query
 
         all_tags = self.pl.tag_query.all()
@@ -182,13 +183,15 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
+        _pager = []
         query = self.query_no_hierarchy(current_user=current_user,
                                         include_done=include_done,
                                         include_deleted=include_deleted,
                                         order_by_order_num=True,
                                         root_task_id=task.id,
-                                        parent_id=task.id)
-        pager = query.paginate()
+                                        parent_id=task.id, paginate=True,
+                                        pager=_pager)
+        pager = _pager[0]
         descendants = query
 
         hierarchy_sort = True
@@ -1010,7 +1013,8 @@ class LogicLayer(object):
     def query_no_hierarchy(self, current_user, include_done=False,
                            include_deleted=False, exclude_undeadlined=False,
                            tag=None, parent_id_is_none=False, parent_id=None,
-                           order_by_order_num=False, root_task_id=None):
+                           order_by_order_num=False, root_task_id=None,
+                           paginate=False, pager=None):
         query = self.pl.task_query
 
         if not current_user.is_admin:
@@ -1044,6 +1048,11 @@ class LogicLayer(object):
 
         if order_by_order_num:
             query = query.order_by(self.pl.Task.order_num.desc())
+
+        if paginate:
+            _pager = query.paginate()
+            if pager is not None:
+                pager.append(_pager)
 
         return query
 
