@@ -1062,14 +1062,15 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
-                          tag=None,
+                          tag=None, paginate=False, pager=None,
                           order_by_order_num=False, order_by_deadline=False):
         query = self.query_no_hierarchy(
             current_user=current_user, include_done=include_done,
             include_deleted=include_deleted,
             exclude_undeadlined=exclude_undeadlined, tag=tag,
             order_by_order_num=order_by_order_num,
-            order_by_deadline=order_by_deadline)
+            order_by_deadline=order_by_deadline, paginate=paginate,
+            pager=pager)
 
         tasks = query.all()
 
