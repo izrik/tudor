@@ -1015,25 +1015,24 @@ class LogicLayer(object):
                           parent_id_is_none=False, parent_id=None,
                           order_by_order_num=False, order_by_deadline=False):
 
-        query = self.pl.task_query
+        kwargs = {}
 
         if not current_user.is_admin:
-            query = query.filter(
-                self.pl.Task.users.contains(current_user))
+            kwargs['users_contains'] = current_user
 
         if not include_done:
-            query = query.filter_by(is_done=False)
+            kwargs['is_done'] = False
 
         if not include_deleted:
-            query = query.filter_by(is_deleted=False)
+            kwargs['is_deleted'] = False
 
         if exclude_undeadlined:
-            query = query.filter(self.pl.Task.deadline.isnot(None))
+            kwargs['deadline_is_not_none'] = True
 
         if parent_id_is_none:
-            query = query.filter(self.pl.Task.parent_id.is_(None))
+            kwargs['parent_id'] = None
         elif parent_id is not None:
-            query = query.filter_by(parent_id=parent_id)
+            kwargs['parent_id'] = parent_id
 
         if tag is not None:
             if tag == str(tag):
@@ -1044,20 +1043,29 @@ class LogicLayer(object):
                 raise TypeError(
                     "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
-            query = query.filter(self.pl.Task.tags.contains(tag))
+            kwargs['tags_contains'] = tag
 
+        order_by = []
         if order_by_order_num:
-            query = query.order_by(self.pl.Task.order_num.desc())
+            order_by.append([self.pl.ORDER_NUM, self.pl.DESCENDING])
 
         if order_by_deadline:
-            query = query.order_by(self.pl.Task.deadline)
+            order_by.append([self.pl.DEADLINE, self.pl.ASCENDING])
+
+        if order_by:
+            kwargs['order_by'] = order_by
 
         if paginate:
-            _pager = query.paginate()
+            _pager = self.pl.get_paginated_tasks(**kwargs)
+            tasks = list(_pager.items)
+            for task in tasks:
+                task.depth = 0
             if pager is not None:
                 pager.append(_pager)
+            return tasks
 
-        tasks = query.all()
+        tasks = self.pl.get_tasks(**kwargs)
+        tasks = list(tasks)
 
         depth = 0
         for task in tasks:
