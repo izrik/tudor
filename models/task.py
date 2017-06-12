@@ -106,17 +106,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             task.parent_id = parent_id
             return task
 
-        def get_children(self, include_deleted=True, ordered=False):
-            kwargs = {'parent_id': self.id}
-
-            if not include_deleted:
-                kwargs['is_deleted'] = False
-
-            if ordered:
-                kwargs['order_by'] = [[pl.ORDER_NUM, pl.DESCENDING]]
-
-            return pl.get_tasks(**kwargs)
-
         def get_css_class(self):
             if self.is_deleted and self.is_done:
                 return 'done-deleted'
