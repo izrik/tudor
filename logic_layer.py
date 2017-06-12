@@ -51,12 +51,13 @@ class LogicLayer(object):
         return list(get_sorted_order(root))
 
     def get_index_data(self, show_deleted, show_done,
-                       current_user):
+                       current_user, page_num=None, tasks_per_page=None):
         _pager = []
         tasks = self.load_no_hierarchy(
             current_user=current_user, include_done=show_done,
             include_deleted=show_deleted, order_by_order_num=True,
-            parent_id_is_none=True, paginate=True, pager=_pager)
+            parent_id_is_none=True, paginate=True, pager=_pager,
+            page_num=page_num, tasks_per_page=tasks_per_page)
         pager = _pager[0]
 
         all_tags = self.pl.tag_query.all()
@@ -1039,9 +1040,10 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
-                          tag=None, paginate=False, pager=None,
-                          parent_id_is_none=False, parent_id=None,
-                          order_by_order_num=False, order_by_deadline=False):
+                          tag=None, paginate=False, pager=None, page_num=None,
+                          tasks_per_page=None, parent_id_is_none=False,
+                          parent_id=None, order_by_order_num=False,
+                          order_by_deadline=False):
 
         kwargs = {}
 
@@ -1084,6 +1086,8 @@ class LogicLayer(object):
             kwargs['order_by'] = order_by
 
         if paginate:
+            kwargs['page_num'] = page_num
+            kwargs['tasks_per_page'] = tasks_per_page
             _pager = self.pl.get_paginated_tasks(**kwargs)
             tasks = list(_pager.items)
             for task in tasks:

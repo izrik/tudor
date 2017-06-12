@@ -251,6 +251,11 @@ class PersistenceLayer(object):
                             order_num_lesseq_than=UNSPECIFIED,
                             order_by=UNSPECIFIED, limit=UNSPECIFIED,
                             page_num=None, tasks_per_page=None):
+        if page_num is None:
+            page_num = 1
+        if tasks_per_page is None:
+            tasks_per_page = 20
+
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -262,7 +267,6 @@ class PersistenceLayer(object):
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
         pager = query.paginate(page=page_num, per_page=tasks_per_page)
-        # tasks = (_ for _ in query)
         return pager
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,

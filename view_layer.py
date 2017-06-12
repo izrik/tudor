@@ -26,8 +26,20 @@ class ViewLayer(object):
     def index(self, request, current_user):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
+        page_num = None
+        try:
+            page_num = int(self.get_form_or_arg(request, 'page'))
+        except:
+            pass
+        tasks_per_page = None
+        try:
+            tasks_per_page = int(self.get_form_or_arg(request, 'per_page'))
+        except:
+            pass
 
-        data = self.ll.get_index_data(show_deleted, show_done, current_user)
+        data = self.ll.get_index_data(show_deleted, show_done, current_user,
+                                      page_num=page_num,
+                                      tasks_per_page=tasks_per_page)
 
         resp = make_response(
             render_template('index.t.html',
