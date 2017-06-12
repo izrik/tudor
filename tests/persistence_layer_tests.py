@@ -796,3 +796,34 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.assertEqual(1, len(items))
         self.assertIn(self.tag1, items[0].tags)
         self.assertIs(self.t3, items[0])
+
+
+class PersistenceLayerSearchTermTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+        self.t1 = self.pl.Task('t1', description='qwerty')
+        self.t2 = self.pl.Task('t2', description='abc')
+        self.t3 = self.pl.Task('t3 abc', description='qwerty')
+        self.t4 = self.pl.Task('t4 abc', description='abc')
+
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+        self.pl.add(self.t4)
+        self.pl.commit()
+
+    def test_specifying_search_term_yiels_all_tasks_that_match(self):
+        # when
+        results = self.pl.get_tasks(summary_description_search_term='abc')
+        # then
+        self.assertEqual({self.t2, self.t3, self.t4}, set(results))
+
+    def test_partial_word_matches(self):
+        # when
+        results = self.pl.get_tasks(summary_description_search_term='wer')
+        # then
+        results = list(results)
+        self.assertEqual({self.t1, self.t3}, set(results))
