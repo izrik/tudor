@@ -331,16 +331,25 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(show_deleted)
-        higher_siblings = siblings.filter(
-            self.pl.Task.order_num >= task.order_num)
-        higher_siblings = higher_siblings.filter(self.pl.Task.id != task.id)
-        next_task = higher_siblings.order_by(
-            self.pl.Task.order_num.asc()).first()
 
-        if next_task:
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_num_greq_than': task.order_num,
+            'task_id_not_in': [task.id],
+            'order_by': self.pl.ORDER_NUM,
+            'limit': 1
+        }
+
+        if not show_deleted:
+            kwargs['is_deleted'] = False
+
+        higher_siblings = list(self.pl.get_tasks(**kwargs))
+        if higher_siblings:
+            next_task = higher_siblings[0]
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(ordered=True))
+                self.reorder_tasks(
+                    self.pl.get_tasks(parent_id=task.parent_id,
+                                      order_by=self.pl.ORDER_NUM))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
@@ -356,11 +365,15 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(True)
-        top_task = siblings.order_by(self.pl.Task.order_num.desc()).first()
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_by': [[self.pl.ORDER_NUM, self.pl.DESCENDING]],
+            'limit': 1
+        }
 
+        top_task = list(self.pl.get_tasks(**kwargs))
         if top_task:
-            task.order_num = top_task.order_num + 1
+            task.order_num = top_task[0].order_num + 1
 
             self.pl.add(task)
 
@@ -372,16 +385,26 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(show_deleted)
-        lower_siblings = siblings.filter(
-            self.pl.Task.order_num <= task.order_num)
-        lower_siblings = lower_siblings.filter(self.pl.Task.id != task.id)
-        next_task = lower_siblings.order_by(
-            self.pl.Task.order_num.desc()).first()
 
-        if next_task:
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_num_lesseq_than': task.order_num,
+            'task_id_not_in': [task.id],
+            'order_by': [[self.pl.ORDER_NUM, self.pl.DESCENDING]],
+            'limit': 1,
+        }
+
+
+        if not show_deleted:
+            kwargs['is_deleted'] = False
+
+        lower_siblings = list(self.pl.get_tasks(**kwargs))
+        if lower_siblings:
+            next_task = lower_siblings[0]
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(ordered=True))
+                self.reorder_tasks(
+                    self.pl.get_tasks(parent_id=task.parent_id,
+                                      order_by=self.pl.ORDER_NUM))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
@@ -397,11 +420,15 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(True)
-        bottom_task = siblings.order_by(self.pl.Task.order_num.asc()).first()
 
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_by': [[self.pl.ORDER_NUM, self.pl.ASCENDING]],
+            'limit': 1,}
+
+        bottom_task = list(self.pl.get_tasks(**kwargs))
         if bottom_task:
-            task.order_num = bottom_task.order_num - 2
+            task.order_num = bottom_task[0].order_num - 2
 
             self.pl.add(task)
 
