@@ -394,7 +394,6 @@ class LogicLayer(object):
             'limit': 1,
         }
 
-
         if not show_deleted:
             kwargs['is_deleted'] = False
 
@@ -424,7 +423,8 @@ class LogicLayer(object):
         kwargs = {
             'parent_id': task.parent_id,
             'order_by': [[self.pl.ORDER_NUM, self.pl.ASCENDING]],
-            'limit': 1,}
+            'limit': 1,
+        }
 
         bottom_task = list(self.pl.get_tasks(**kwargs))
         if bottom_task:
