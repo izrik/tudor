@@ -1074,14 +1074,15 @@ class LogicLayer(object):
         return tasks
 
     def search(self, search_query, current_user):
-        like_term = '%{}%'.format(search_query)
-        query = self.pl.task_query
-        if not current_user.is_admin:
-            query = query.filter(self.pl.Task.users.contains(current_user))
 
-        results = query.filter(
-            self.pl.Task.summary.like(like_term) |
-            self.pl.Task.description.like(like_term))
+        kwargs = {
+            'summary_description_search_term': search_query
+        }
+
+        if not current_user.is_admin:
+            kwargs['users_contains'] = current_user
+
+        results = self.pl.get_tasks(**kwargs)
 
         return results
 
