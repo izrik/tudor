@@ -250,7 +250,7 @@ class PersistenceLayer(object):
                             order_num_greq_than=UNSPECIFIED,
                             order_num_lesseq_than=UNSPECIFIED,
                             order_by=UNSPECIFIED, limit=UNSPECIFIED,
-                            page_num=1, tasks_per_page=20):
+                            page_num=None, tasks_per_page=None):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
