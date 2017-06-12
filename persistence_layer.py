@@ -117,6 +117,8 @@ class PersistenceLayer(object):
                          task_id_not_in=UNSPECIFIED,
                          deadline_is_not_none=False, tags_contains=UNSPECIFIED,
                          summary_description_search_term=UNSPECIFIED,
+                         order_num_greq_than=UNSPECIFIED,
+                         order_num_lesseq_than=UNSPECIFIED,
                          order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         # TODO: summary_like?
@@ -184,6 +186,12 @@ class PersistenceLayer(object):
                 self.Task.summary.like(like_term) |
                 self.Task.description.like(like_term))
 
+        if order_num_greq_than is not self.UNSPECIFIED:
+            query = query.filter(self.Task.order_num >= order_num_greq_than)
+
+        if order_num_lesseq_than is not self.UNSPECIFIED:
+            query = query.filter(self.Task.order_num <= order_num_lesseq_than)
+
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):
                 db_field = self.get_db_field_by_order_field(order_by)
@@ -217,7 +225,9 @@ class PersistenceLayer(object):
                   task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
                   tags_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
-                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
+                  order_num_greq_than=UNSPECIFIED,
+                  order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
+                  limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -225,7 +235,9 @@ class PersistenceLayer(object):
             deadline_is_not_none=deadline_is_not_none,
             tags_contains=tags_contains,
             summary_description_search_term=summary_description_search_term,
-            order_by=order_by, limit=limit)
+            order_num_greq_than=order_num_greq_than,
+            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+            limit=limit)
         return (_ for _ in query)
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
@@ -235,8 +247,10 @@ class PersistenceLayer(object):
                             deadline_is_not_none=False,
                             tags_contains=UNSPECIFIED,
                             summary_description_search_term=UNSPECIFIED,
-                            order_by=UNSPECIFIED,
-                            limit=UNSPECIFIED, page_num=1, tasks_per_page=20):
+                            order_num_greq_than=UNSPECIFIED,
+                            order_num_lesseq_than=UNSPECIFIED,
+                            order_by=UNSPECIFIED, limit=UNSPECIFIED,
+                            page_num=1, tasks_per_page=20):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -244,7 +258,9 @@ class PersistenceLayer(object):
             deadline_is_not_none=deadline_is_not_none,
             tags_contains=tags_contains,
             summary_description_search_term=summary_description_search_term,
-            order_by=order_by, limit=limit)
+            order_num_greq_than=order_num_greq_than,
+            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+            limit=limit)
         pager = query.paginate(page=page_num, per_page=tasks_per_page)
         # tasks = (_ for _ in query)
         return pager
@@ -255,7 +271,9 @@ class PersistenceLayer(object):
                     task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
                     tags_contains=UNSPECIFIED,
                     summary_description_search_term=UNSPECIFIED,
-                    order_by=UNSPECIFIED, limit=UNSPECIFIED):
+                    order_num_greq_than=UNSPECIFIED,
+                    order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
+                    limit=UNSPECIFIED):
         return self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -263,7 +281,9 @@ class PersistenceLayer(object):
             deadline_is_not_none=deadline_is_not_none,
             tags_contains=tags_contains,
             summary_description_search_term=summary_description_search_term,
-            order_by=order_by, limit=limit).count()
+            order_num_greq_than=order_num_greq_than,
+            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+            limit=limit).count()
 
     @property
     def tag_query(self):

@@ -827,3 +827,75 @@ class PersistenceLayerSearchTermTest(unittest.TestCase):
         # then
         results = list(results)
         self.assertEqual({self.t1, self.t3}, set(results))
+
+
+class PersistenceLayerOrderNumberGreaterLessEqualTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+        self.t1 = self.pl.Task('t1')
+        self.t1.order_num = 2
+        self.t2 = self.pl.Task('t2')
+        self.t2.order_num = 3
+        self.t3 = self.pl.Task('t3')
+        self.t3.order_num = 5
+        self.t4 = self.pl.Task('t4')
+        self.t4.order_num = 7
+
+        self.pl.add(self.t1)
+        self.pl.add(self.t2)
+        self.pl.add(self.t3)
+        self.pl.add(self.t4)
+        self.pl.commit()
+
+    def test_unspecified_yields_all_tasks(self):
+        # when
+        results = self.pl.get_tasks()
+        # then
+        self.assertEqual({self.t1, self.t2, self.t3, self.t4}, set(results))
+
+    def test_order_num_g_equal_returns_matching_task(self):
+        # when
+        results = self.pl.get_tasks(order_num_greq_than=7)
+        # then
+        results = list(results)
+        self.assertEqual({self.t4}, set(results))
+
+    def test_order_num_greater_returns_all_matching_tasks(self):
+        # when
+        results = self.pl.get_tasks(order_num_greq_than=4)
+        # then
+        results = list(results)
+        self.assertEqual({self.t3, self.t4}, set(results))
+
+    def test_order_num_l_equal_returns_matching_task(self):
+        # when
+        results = self.pl.get_tasks(order_num_lesseq_than=2)
+        # then
+        results = list(results)
+        self.assertEqual({self.t1}, set(results))
+
+    def test_order_num_less_returns_all_matching_tasks(self):
+        # when
+        results = self.pl.get_tasks(order_num_lesseq_than=4)
+        # then
+        results = list(results)
+        self.assertEqual({self.t1, self.t2}, set(results))
+
+    def test_order_num_both_sets_upper_and_lower_bounds(self):
+        # when
+        results = self.pl.get_tasks(order_num_greq_than=3,
+                                    order_num_lesseq_than=6)
+        # then
+        results = list(results)
+        self.assertEqual({self.t2, self.t3}, set(results))
+
+    def test_order_num_mismatched_bounds_yields_no_tasks(self):
+        # when
+        results = self.pl.get_tasks(order_num_greq_than=6,
+                                    order_num_lesseq_than=3)
+        # then
+        results = list(results)
+        self.assertEqual(set(), set(results))
