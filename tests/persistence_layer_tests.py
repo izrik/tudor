@@ -929,3 +929,29 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         results = self.pl.get_tags(value='t2')
         # then
         self.assertEqual({self.t2}, set(results))
+
+    def test_non_existing_value_yields_empty(self):
+        # when
+        results = self.pl.get_tags(value='tx')
+        # then
+        self.assertEqual(set(), set(results))
+
+    def test_limit_yields_only_that_many_tags(self):
+        # when
+        results = self.pl.get_tags(limit=1)
+        # then
+        results = list(results)
+        self.assertEqual(1, len(results))
+        self.assertIn(results[0], {self.t1, self.t2})
+
+    def test_limit_greater_than_max_yields_max(self):
+        # when
+        results = self.pl.get_tags(limit=3)
+        # then
+        self.assertEqual({self.t1, self.t2}, set(results))
+
+    def test_limit_zero_yields_empty(self):
+        # when
+        results = self.pl.get_tags(limit=0)
+        # then
+        self.assertEqual(set(), set(results))
