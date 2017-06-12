@@ -1009,7 +1009,7 @@ class LogicLayer(object):
 
     def query_no_hierarchy(self, current_user, include_done=False,
                            include_deleted=False, exclude_undeadlined=False,
-                           tag=None, query_post_op=None,
+                           tag=None,
                            order_by_order_num=False, root_task_id=None):
         query = self.pl.task_query
 
@@ -1039,9 +1039,6 @@ class LogicLayer(object):
 
         if order_by_order_num:
             query = query.order_by(self.pl.Task.order_num.desc())
-
-        if query_post_op:
-            query = query_post_op(query)
 
         return query
 
