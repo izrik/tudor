@@ -169,7 +169,7 @@
         page_url=url_for('view_task', id=task.id),
         child_task_view='view_task',
         show_move_links=True,
-        show_new_task_form=False, new_task_parent=task) }}
+        show_new_task_form=False, new_task_parent=task, show_order_num=True) }}
 
     {% if pager.pages > 1 %}
         {% include 'page_links.fragment.html' %}
