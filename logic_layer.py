@@ -457,7 +457,10 @@ class LogicLayer(object):
                     task_to_move_id, target_id, task_to_move.parent_id,
                     target.parent_id))
 
-        siblings = target.get_siblings(True).all()
+        kwargs = {
+            'parent_id': target.parent_id,
+        }
+        siblings = list(self.pl.get_tasks(parent_id=target.parent_id))
         siblings2 = sorted(siblings, key=lambda t: t.order_num,
                            reverse=True)
 
