@@ -54,8 +54,8 @@ class LogicLayer(object):
                        current_user):
         query = self.query_no_hierarchy(
             current_user=current_user, include_done=show_done,
-            include_deleted=show_deleted, order_by_order_num=True)
-        query = query.filter(self.pl.Task.parent_id.is_(None))
+            include_deleted=show_deleted, order_by_order_num=True,
+            parent_id_is_none=True)
         pager = query.paginate()
         tasks = query
 
@@ -186,8 +186,8 @@ class LogicLayer(object):
                                         include_done=include_done,
                                         include_deleted=include_deleted,
                                         order_by_order_num=True,
-                                        root_task_id=task.id)
-        query = query.filter_by(parent_id=task.id)
+                                        root_task_id=task.id,
+                                        parent_id=task.id)
         pager = query.paginate()
         descendants = query
 
@@ -1009,7 +1009,7 @@ class LogicLayer(object):
 
     def query_no_hierarchy(self, current_user, include_done=False,
                            include_deleted=False, exclude_undeadlined=False,
-                           tag=None,
+                           tag=None, parent_id_is_none=False, parent_id=None,
                            order_by_order_num=False, root_task_id=None):
         query = self.pl.task_query
 
@@ -1025,6 +1025,11 @@ class LogicLayer(object):
 
         if exclude_undeadlined:
             query = query.filter(self.pl.Task.deadline.isnot(None))
+
+        if parent_id_is_none:
+            query = query.filter(self.pl.Task.parent_id.is_(None))
+        elif parent_id is not None:
+            query = query.filter_by(parent_id=parent_id)
 
         if tag is not None:
             if tag == str(tag):
