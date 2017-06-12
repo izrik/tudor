@@ -121,10 +121,6 @@ class PersistenceLayer(object):
                          order_num_lesseq_than=UNSPECIFIED,
                          order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
-        # TODO: summary_like?
-        # TODO: description_like?
-        # TODO: summary_description_like?
-
         """order_by is a list of order directives. Each such directive is
          either a field (e.g. ORDER_NUM) or a sequence of field and direction
           (e.g. [ORDER_NUM, ASCENDING]). Default direction is ASCENDING if not
