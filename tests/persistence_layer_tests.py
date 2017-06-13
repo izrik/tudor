@@ -1158,3 +1158,31 @@ class PersistenceLayerGetAttachmentsTest(unittest.TestCase):
     def test_count_attachments_attachment_id_in_empty_yields_no_atts(self):
         # expect
         self.assertEqual(0, self.pl.count_attachments(attachment_id_in=[]))
+
+
+class PersistenceLayerGetUsersTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.user1 = self.pl.User('admin@example.com', is_admin=True)
+        self.pl.add(self.user1)
+        self.user2 = self.pl.User('name@example.com')
+        self.pl.add(self.user2)
+        self.pl.commit()
+
+    def test_get_user_by_email(self):
+        # when
+        results = self.pl.get_user_by_email('admin@example.com')
+        # then
+        self.assertIs(self.user1, results)
+        # when
+        results = self.pl.get_user_by_email('name@example.com')
+        # then
+        self.assertIs(self.user2, results)
+
+    def test_get_user_by_email_invalid_email_yields_none(self):
+        # when
+        results = self.pl.get_user_by_email('someone@example.org')
+        # then
+        self.assertIsNone(results)

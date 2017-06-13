@@ -365,6 +365,9 @@ class PersistenceLayer(object):
     def get_user(self, user_id):
         return self.user_query.get(user_id)
 
+    def get_user_by_email(self, email):
+        return self.user_query.filter_by(email=email).first()
+
     @property
     def option_query(self):
         return self.Option.query
