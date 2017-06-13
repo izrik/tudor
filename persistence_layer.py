@@ -29,7 +29,7 @@ class PersistenceLayer(object):
 
         db = self.db
 
-        Tag = generate_tag_class(db)
+        self.Tag = generate_tag_class(db)
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -59,20 +59,15 @@ class PersistenceLayer(object):
             db.Column('prioritize_after_id', db.Integer,
                       db.ForeignKey('task.id'), primary_key=True))
 
-        Task = generate_task_class(self, tags_tasks_table, users_tasks_table,
-                                   task_dependencies_table,
-                                   task_prioritize_table)
-        Note = generate_note_class(db)
-        Attachment = generate_attachment_class(db)
-        User = generate_user_class(db, bcrypt)
-        Option = generate_option_class(db)
+        self.Task = generate_task_class(self, tags_tasks_table,
+                                        users_tasks_table,
+                                        task_dependencies_table,
+                                        task_prioritize_table)
+        self.Note = generate_note_class(db)
+        self.Attachment = generate_attachment_class(db)
+        self.User = generate_user_class(db, bcrypt)
+        self.Option = generate_option_class(db)
 
-        self.Task = Task
-        self.Tag = Tag
-        self.Note = Note
-        self.Attachment = Attachment
-        self.User = User
-        self.Option = Option
 
     def add(self, obj):
         self.db.session.add(obj)
