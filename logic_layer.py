@@ -1066,7 +1066,11 @@ class LogicLayer(object):
 
         if tag is not None:
             if tag == str(tag):
+                value = tag
                 tag = self.pl.get_tag_by_value(tag)
+                if not tag:
+                    raise werkzeug.exceptions.NotFound(
+                        'No tag found by the name "{}"'.format(value))
             elif isinstance(tag, self.pl.Tag):
                 pass
             else:
