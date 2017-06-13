@@ -936,7 +936,7 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if self.pl.tag_query.filter_by(value=task.summary).first():
+        if self.pl.count_tags(value=task.summary) > 0:
             raise werkzeug.exceptions.Conflict(
                 'A tag already exists with the name "{}"'.format(
                     task.summary))
