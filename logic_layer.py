@@ -674,7 +674,7 @@ class LogicLayer(object):
         if 'tags' in types_to_export:
             results['tags'] = [t.to_dict() for t in self.pl.get_tags()]
         if 'notes' in types_to_export:
-            results['notes'] = [t.to_dict() for t in self.pl.note_query.all()]
+            results['notes'] = [t.to_dict() for t in self.pl.get_notes()]
         if 'attachments' in types_to_export:
             results['attachments'] = [t.to_dict() for t in
                                       self.pl.attachment_query.all()]
