@@ -497,7 +497,7 @@ class LogicLayer(object):
         return tag
 
     def get_or_create_tag(self, value):
-        tag = self.pl.tag_query.filter_by(value=value).first()
+        tag = self.pl.get_tag_by_value(value)
         if tag is None:
             tag = self.pl.Tag(value)
             self.pl.add(tag)
@@ -1066,7 +1066,7 @@ class LogicLayer(object):
 
         if tag is not None:
             if tag == str(tag):
-                tag = self.pl.tag_query.filter_by(value=tag).all()[0]
+                tag = self.pl.get_tag_by_value(tag)
             elif isinstance(tag, self.pl.Tag):
                 pass
             else:
