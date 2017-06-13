@@ -368,6 +368,23 @@ class PersistenceLayer(object):
     def get_user_by_email(self, email):
         return self.user_query.filter_by(email=email).first()
 
+    def _get_users_query(self, email_in=UNSPECIFIED):
+        query = self.user_query
+        if email_in is not self.UNSPECIFIED:
+            if email_in:
+                query = query.filter(self.User.email.in_(email_in))
+            else:
+                # avoid performance penalty
+                query = query.filter(False)
+        return query
+
+    def get_users(self, email_in=UNSPECIFIED):
+        query = self._get_users_query(email_in=email_in)
+        return (_ for _ in query)
+
+    def count_users(self, email_in=UNSPECIFIED):
+        return self._get_users_query(email_in=email_in).count()
+
     @property
     def option_query(self):
         return self.Option.query
