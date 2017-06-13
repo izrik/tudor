@@ -1009,3 +1009,21 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         results = self.pl.get_tag_by_value('x')
         # then
         self.assertIsNone(results)
+
+
+class PersistenceLayerGetNotesTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.n1 = self.pl.Note('n1')
+        self.pl.add(self.n1)
+        self.n2 = self.pl.Note('n2')
+        self.pl.add(self.n2)
+        self.pl.commit()
+
+    def test_get_notes_without_params_returns_all_notes(self):
+        # when
+        results = self.pl.get_notes()
+        # then
+        self.assertEqual({self.n1, self.n2}, set(results))
