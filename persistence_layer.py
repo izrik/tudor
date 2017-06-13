@@ -317,8 +317,12 @@ class PersistenceLayer(object):
     def get_note(self, note_id):
         return self.note_query.get(note_id)
 
-    def get_notes(self):
+    def _get_notes_query(self):
         query = self.note_query
+        return query
+
+    def get_notes(self):
+        query = self._get_notes_query()
         return (_ for _ in query)
 
     @property
