@@ -677,7 +677,7 @@ class LogicLayer(object):
             results['notes'] = [t.to_dict() for t in self.pl.get_notes()]
         if 'attachments' in types_to_export:
             results['attachments'] = [t.to_dict() for t in
-                                      self.pl.attachment_query.all()]
+                                      self.pl.get_attachments()]
         if 'users' in types_to_export:
             results['users'] = [t.to_dict() for t in self.pl.user_query.all()]
         if 'options' in types_to_export:
@@ -778,9 +778,7 @@ class LogicLayer(object):
                 for attachment in attachments:
                     ids.add(attachment['id'])
                 if ids:
-                    existing_attachments = self.pl.attachment_query.filter(
-                        self.pl.Attachment.id.in_(ids)).count()
-                    if existing_attachments > 0:
+                    if self.pl.count_attachments(attachment_id_in=ids) > 0:
                         raise werkzeug.exceptions.Conflict(
                             'Some specified attachment id\'s already exist in '
                             'the database')
