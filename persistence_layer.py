@@ -317,16 +317,18 @@ class PersistenceLayer(object):
     def get_note(self, note_id):
         return self.note_query.get(note_id)
 
-    def _get_notes_query(self):
+    def _get_notes_query(self, note_id_in=UNSPECIFIED):
         query = self.note_query
+        if note_id_in is not self.UNSPECIFIED:
+            query = query.filter(self.Note.id.in_(note_id_in))
         return query
 
-    def get_notes(self):
-        query = self._get_notes_query()
+    def get_notes(self, note_id_in=UNSPECIFIED):
+        query = self._get_notes_query(note_id_in=note_id_in)
         return (_ for _ in query)
 
-    def count_notes(self):
-        return self._get_notes_query().count()
+    def count_notes(self, note_id_in=UNSPECIFIED):
+        return self._get_notes_query(note_id_in=note_id_in).count()
 
     @property
     def attachment_query(self):
