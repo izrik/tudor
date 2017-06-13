@@ -1027,3 +1027,7 @@ class PersistenceLayerGetNotesTest(unittest.TestCase):
         results = self.pl.get_notes()
         # then
         self.assertEqual({self.n1, self.n2}, set(results))
+
+    def test_count_notes_without_params_returns_all_notes(self):
+        # expect
+        self.assertEqual(2, self.pl.count_notes())

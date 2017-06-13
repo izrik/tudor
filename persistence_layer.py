@@ -325,6 +325,9 @@ class PersistenceLayer(object):
         query = self._get_notes_query()
         return (_ for _ in query)
 
+    def count_notes(self):
+        return self._get_notes_query().count()
+
     @property
     def attachment_query(self):
         return self.Attachment.query
