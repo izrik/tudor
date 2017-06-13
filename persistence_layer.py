@@ -320,7 +320,11 @@ class PersistenceLayer(object):
     def _get_notes_query(self, note_id_in=UNSPECIFIED):
         query = self.note_query
         if note_id_in is not self.UNSPECIFIED:
-            query = query.filter(self.Note.id.in_(note_id_in))
+            if note_id_in:
+                query = query.filter(self.Note.id.in_(note_id_in))
+            else:
+                # performance improvement
+                query = query.filter(False)
         return query
 
     def get_notes(self, note_id_in=UNSPECIFIED):
