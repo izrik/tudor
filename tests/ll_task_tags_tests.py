@@ -24,13 +24,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_get_or_create_tag_nonexistent_creates_tag(self):
         # precondition
-        self.assertEqual(0, self.pl.tag_query.count())
+        self.assertEqual(0, self.pl.count_tags())
 
         # when
         tag = self.ll.get_or_create_tag('abc')
 
         # then
-        self.assertEqual(1, self.pl.tag_query.count())
+        self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag)
         self.assertIsInstance(tag, self.Tag)
         self.assertEqual('abc', tag.value)
@@ -41,13 +41,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         self.pl.add(tag1)
 
         # precondition
-        self.assertEqual(1, self.pl.tag_query.count())
+        self.assertEqual(1, self.pl.count_tags())
 
         # when
         tag2 = self.ll.get_or_create_tag('def')
 
         # then
-        self.assertEqual(1, self.pl.tag_query.count())
+        self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag2)
         self.assertIsInstance(tag2, self.Tag)
         self.assertEqual('def', tag2.value)

@@ -21,15 +21,15 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.pl.add(task)
         self.pl.commit()
 
-        self.assertEquals(0, self.pl.tag_query.count())
+        self.assertEquals(0, self.pl.count_tags())
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertIsNotNone(tag)
-        self.assertEquals(1, self.pl.tag_query.count())
-        self.assertIs(tag, self.pl.tag_query.first())
+        self.assertEquals(1, self.pl.count_tags())
+        self.assertIs(tag, list(self.pl.get_tags())[0])
 
     def test_old_task_gets_deleted(self):
         # given
