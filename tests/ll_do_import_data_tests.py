@@ -25,7 +25,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -36,7 +36,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_empty_tasks(self):
@@ -48,7 +48,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -59,7 +59,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_single_task(self):
@@ -74,7 +74,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -105,7 +105,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_single_task_set_all_fields(self):
@@ -127,7 +127,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -158,7 +158,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_tasks_child_and_parent(self):
@@ -178,7 +178,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -246,7 +246,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # expect
@@ -266,7 +266,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -277,7 +277,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_empty_notes(self):
@@ -289,7 +289,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -300,7 +300,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_empty_attachments(self):
@@ -312,7 +312,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -323,7 +323,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_empty_users(self):
@@ -335,7 +335,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -346,7 +346,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
     def test_do_import_data_empty_options(self):
@@ -358,7 +358,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())
 
         # when
@@ -369,5 +369,5 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
-        self.assertEqual(0, self.pl.user_query.count())
+        self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.option_query.count())

@@ -632,7 +632,7 @@ class LogicLayer(object):
         return user
 
     def get_users(self):
-        return self.pl.user_query
+        return self.pl.get_users()
 
     def get_view_options_data(self):
         return self.pl.option_query
@@ -678,7 +678,7 @@ class LogicLayer(object):
             results['attachments'] = [t.to_dict() for t in
                                       self.pl.get_attachments()]
         if 'users' in types_to_export:
-            results['users'] = [t.to_dict() for t in self.pl.user_query.all()]
+            results['users'] = [t.to_dict() for t in self.pl.get_users()]
         if 'options' in types_to_export:
             results['options'] = [t.to_dict() for t in
                                   self.pl.option_query.all()]
@@ -801,9 +801,7 @@ class LogicLayer(object):
                 for user in users:
                     emails.add(user['email'])
                 if emails:
-                    existing_users = self.pl.user_query.filter(
-                        self.pl.User.email.in_(emails)).count()
-                    if existing_users > 0:
+                    if self.pl.count_users(email_in=emails) > 0:
                         raise werkzeug.exceptions.Conflict(
                             'Some specified user email addresses already exist'
                             ' in the database')
