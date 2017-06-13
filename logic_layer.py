@@ -635,7 +635,7 @@ class LogicLayer(object):
         return self.pl.get_users()
 
     def get_view_options_data(self):
-        return self.pl.option_query
+        return self.pl.get_options()
 
     def do_set_option(self, key, value):
         option = self.pl.get_option(key)
@@ -681,7 +681,7 @@ class LogicLayer(object):
             results['users'] = [t.to_dict() for t in self.pl.get_users()]
         if 'options' in types_to_export:
             results['options'] = [t.to_dict() for t in
-                                  self.pl.option_query.all()]
+                                  self.pl.get_options()]
         return results
 
     def do_import_data(self, src):
@@ -819,9 +819,7 @@ class LogicLayer(object):
                 for option in src['options']:
                     keys.add(option['key'])
                 if keys:
-                    existing_options = self.pl.option_query.filter(
-                        self.pl.Option.key.in_(keys)).count()
-                    if existing_options > 0:
+                    if self.pl.count_options(key_in=keys) > 0:
                         raise werkzeug.exceptions.Conflict(
                             'Some specified option keys already exist in the '
                             'database')
