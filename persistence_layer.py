@@ -391,3 +391,20 @@ class PersistenceLayer(object):
 
     def get_option(self, key):
         return self.option_query.get(key)
+
+    def _get_options_query(self, key_in=UNSPECIFIED):
+        query = self.option_query
+        if key_in is not self.UNSPECIFIED:
+            if key_in:
+                query = query.filter(self.Option.key.in_(key_in))
+            else:
+                # avoid performance penalty
+                query = query.filter(False)
+        return query
+
+    def get_options(self, key_in=UNSPECIFIED):
+        query = self._get_options_query(key_in=key_in)
+        return (_ for _ in query)
+
+    def count_options(self, key_in=UNSPECIFIED):
+        return self._get_options_query(key_in=key_in).count()
