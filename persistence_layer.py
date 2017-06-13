@@ -307,6 +307,9 @@ class PersistenceLayer(object):
     def count_tags(self, value=UNSPECIFIED, limit=None):
         return self._get_tags_query(value=value, limit=limit).count()
 
+    def get_tag_by_value(self, value):
+        return self._get_tags_query(value=value).first()
+
     @property
     def note_query(self):
         return self.Note.query

@@ -995,3 +995,17 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         results = self.pl.count_tags(limit=4)
         # then
         self.assertEqual(3, results)
+
+    def test_get_tag_by_value_tag_present_returns_tag(self):
+        # when
+        results = self.pl.get_tag_by_value('t1')
+        # then
+        self.assertIsNotNone(results)
+        self.assertIsInstance(results, self.pl.Tag)
+        self.assertIs(self.t1, results)
+
+    def test_get_tag_by_value_tag_missing_returns_none(self):
+        # when
+        results = self.pl.get_tag_by_value('x')
+        # then
+        self.assertIsNone(results)
