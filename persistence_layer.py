@@ -298,10 +298,14 @@ class PersistenceLayer(object):
             query = query.filter_by(value=value)
         if limit is not None:
             query = query.limit(limit)
-        return (_ for _ in query)
+        return query
 
     def get_tags(self, value=UNSPECIFIED, limit=None):
-        return self._get_tags_query(value=value, limit=limit)
+        query = self._get_tags_query(value=value, limit=limit)
+        return (_ for _ in query)
+
+    def count_tags(self, value=UNSPECIFIED, limit=None):
+        return self._get_tags_query(value=value, limit=limit).count()
 
     @property
     def note_query(self):

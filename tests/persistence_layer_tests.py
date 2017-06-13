@@ -912,7 +912,7 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         self.pl.add(self.t2)
         self.pl.commit()
 
-    def test_get_tags_with_params_returns_all_tags(self):
+    def test_get_tags_without_params_returns_all_tags(self):
         # when
         results = self.pl.get_tags()
         # then
@@ -955,3 +955,43 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         results = self.pl.get_tags(limit=0)
         # then
         self.assertEqual(set(), set(results))
+
+    def test_count_tags_without_params_returns_total_count(self):
+        # when
+        results = self.pl.count_tags()
+        # then
+        self.assertEqual(2, results)
+
+    def test_count_tags_specifying_value_returns_one(self):
+        # when
+        results = self.pl.count_tags(value='t1')
+        # then
+        self.assertEqual(1, results)
+
+    def test_count_tags_specifying_limit_returns_that_limit(self):
+        # given
+        t3 = self.pl.Tag('t3')
+        self.pl.add(t3)
+        self.pl.commit()
+        # when
+        results = self.pl.count_tags(limit=1)
+        # then
+        self.assertEqual(1, results)
+        # when
+        results = self.pl.count_tags(limit=2)
+        # then
+        self.assertEqual(2, results)
+        # when
+        results = self.pl.count_tags(limit=3)
+        # then
+        self.assertEqual(3, results)
+
+    def test_count_tags_limit_greater_than_max_yields_max(self):
+        # given
+        t3 = self.pl.Tag('t3')
+        self.pl.add(t3)
+        self.pl.commit()
+        # when
+        results = self.pl.count_tags(limit=4)
+        # then
+        self.assertEqual(3, results)
