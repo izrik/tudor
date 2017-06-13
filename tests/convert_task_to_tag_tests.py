@@ -9,61 +9,60 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.ds = self.app.ds
-        self.db = self.ds.db
-        self.db.create_all()
-        self.Task = self.app.Task
-        self.Tag = self.app.Tag
-        self.user = self.ds.User('name@example.org', None, True)
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.Task = self.pl.Task
+        self.Tag = self.pl.Tag
+        self.user = self.pl.User('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):
         # given
         task = self.Task('some_task')
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
-        self.assertEquals(0, self.Tag.query.count())
+        self.assertEquals(0, self.pl.count_tags())
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
         self.assertIsNotNone(tag)
-        self.assertEquals(1, self.Tag.query.count())
-        self.assertIs(tag, self.Tag.query.first())
+        self.assertEquals(1, self.pl.count_tags())
+        self.assertIs(tag, list(self.pl.get_tags())[0])
 
     def test_old_task_gets_deleted(self):
         # given
         task = self.Task('some_task')
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
-        self.assertEquals(1, self.Task.query.count())
+        self.assertEquals(1, self.pl.count_tasks())
 
         # when
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(0, self.Task.query.count())
+        self.assertEquals(0, self.pl.count_tasks())
 
     def test_child_tasks_get_the_new_tag(self):
         # given
         task = self.Task('some_task')
-        self.db.session.add(task)
+        self.pl.add(task)
 
         child1 = self.Task('child1')
         child1.parent = task
-        self.db.session.add(child1)
+        self.pl.add(child1)
         child2 = self.Task('child2')
         child2.parent = task
-        self.db.session.add(child2)
+        self.pl.add(child2)
         child3 = self.Task('child3')
         child3.parent = task
-        self.db.session.add(child3)
+        self.pl.add(child3)
 
-        self.db.session.commit()
+        self.pl.commit()
 
-        self.assertEquals(4, self.Task.query.count())
+        self.assertEquals(4, self.pl.count_tasks())
         self.assertEquals(0, len(child1.tags))
         self.assertEquals(0, len(child2.tags))
         self.assertEquals(0, len(child3.tags))
@@ -76,7 +75,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.app._convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(3, self.Task.query.count())
+        self.assertEquals(3, self.pl.count_tasks())
         self.assertEquals(1, len(child1.tags))
         self.assertEquals(1, len(child2.tags))
         self.assertEquals(1, len(child3.tags))
@@ -89,25 +88,25 @@ class ConvertTaskToTagTest(unittest.TestCase):
         # given
 
         tag1 = self.Tag('tag1')
-        self.db.session.add(tag1)
+        self.pl.add(tag1)
 
         task = self.Task('some_task')
-        self.db.session.add(task)
+        self.pl.add(task)
         task.tags.append(tag1)
 
-        self.db.session.commit()
+        self.pl.commit()
 
         child1 = self.Task('child1')
         child1.parent = task
-        self.db.session.add(child1)
+        self.pl.add(child1)
         child2 = self.Task('child2')
         child2.parent = task
-        self.db.session.add(child2)
+        self.pl.add(child2)
         child3 = self.Task('child3')
         child3.parent = task
-        self.db.session.add(child3)
+        self.pl.add(child3)
 
-        self.db.session.commit()
+        self.pl.commit()
 
         self.assertEquals(1, tag1.tasks.count())
         self.assertEquals(0, len(child1.tags))
@@ -130,23 +129,23 @@ class ConvertTaskToTagTest(unittest.TestCase):
         # given
 
         grand_parent = self.Task('grand_parent')
-        self.db.session.add(grand_parent)
+        self.pl.add(grand_parent)
 
         task = self.Task('some_task')
         task.parent = grand_parent
-        self.db.session.add(task)
+        self.pl.add(task)
 
         child1 = self.Task('child1')
         child1.parent = task
-        self.db.session.add(child1)
+        self.pl.add(child1)
         child2 = self.Task('child2')
         child2.parent = task
-        self.db.session.add(child2)
+        self.pl.add(child2)
         child3 = self.Task('child3')
         child3.parent = task
-        self.db.session.add(child3)
+        self.pl.add(child3)
 
-        self.db.session.commit()
+        self.pl.commit()
 
         self.assertEquals(1, grand_parent.children.count())
         self.assertIs(task, child1.parent)

@@ -9,7 +9,7 @@ class TaskCssTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.Task = app.ds.Task
+        self.Task = app.pl.Task
 
     def test_normal_gives_correct_css_class(self):
         # given

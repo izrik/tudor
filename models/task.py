@@ -4,8 +4,10 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(db, tags_tasks_table, users_tasks_table,
+def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                         task_dependencies_table, task_prioritize_table):
+    db = pl.db
+
     class Task(db.Model):
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
@@ -77,30 +79,32 @@ def generate_task_class(db, tags_tasks_table, users_tasks_table,
                 'user_ids': [user.id for user in self.users]
             }
 
-        def get_siblings(self, include_deleted=True, ordered=False):
-            if self.parent_id is not None:
-                return self.parent.get_children(include_deleted, ordered)
+        @staticmethod
+        def from_dict(d):
+            task_id = d.get('id', None)
+            summary = d.get('summary')
+            description = d.get('description', '')
+            is_done = d.get('is_done', False)
+            is_deleted = d.get('is_deleted', False)
+            order_num = d.get('order_num', 0)
+            deadline = d.get('deadline', None)
+            parent_id = d.get('parent_id', None)
+            expected_duration_minutes = d.get('expected_duration_minutes',
+                                              None)
+            expected_cost = d.get('expected_cost', None)
+            # 'tag_ids': [tag.id for tag in self.tags],
+            # 'user_ids': [user.id for user in self.users]
 
-            siblings = Task.query.filter(Task.parent_id.is_(None))
-
-            if not include_deleted:
-                siblings = siblings.filter(Task.is_deleted.__eq__(False))
-
-            if ordered:
-                siblings = siblings.order_by(Task.order_num.desc())
-
-            return siblings
-
-        def get_children(self, include_deleted=True, ordered=False):
-            children = self.children
-
-            if not include_deleted:
-                children = children.filter(Task.is_deleted.__eq__(False))
-
-            if ordered:
-                children = children.order_by(Task.order_num.desc())
-
-            return children
+            task = Task(summary=summary, description=description,
+                        is_done=is_done, is_deleted=is_deleted,
+                        deadline=deadline,
+                        expected_duration_minutes=expected_duration_minutes,
+                        expected_cost=expected_cost)
+            if task_id is not None:
+                task.id = task_id
+            task.order_num = order_num
+            task.parent_id = parent_id
+            return task
 
         def get_css_class(self):
             if self.is_deleted and self.is_done:

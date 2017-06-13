@@ -45,4 +45,19 @@ def generate_attachment_class(db):
                 'task_id': self.task_id
             }
 
+        @staticmethod
+        def from_dict(d):
+            attachment_id = d.get('id', None)
+            timestamp = d.get('timestamp', None)
+            path = d.get('path')
+            filename = d.get('filename', None)
+            description = d.get('description', None)
+            task_id = d.get('task_id')
+
+            attachment = Attachment(path, description, timestamp, filename)
+            if attachment_id is not None:
+                attachment.id = attachment_id
+            attachment.task_id = task_id
+            return attachment
+
     return Attachment

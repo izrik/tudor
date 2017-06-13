@@ -11,26 +11,26 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
-        self.db.create_all()
-        self.Task = app.ds.Task
-        self.Tag = app.ds.Tag
+        self.pl = app.pl
+        self.pl.create_all()
+        self.Task = self.pl.Task
+        self.Tag = self.pl.Tag
         self.ll = app.ll
-        self.User = app.ds.User
+        self.User = self.pl.User
         self.admin = self.User('name@example.org', None, True)
-        self.db.session.add(self.admin)
+        self.pl.add(self.admin)
         self.user = self.User('name2@example.org', None, False)
-        self.db.session.add(self.user)
+        self.pl.add(self.user)
 
     def test_get_or_create_tag_nonexistent_creates_tag(self):
         # precondition
-        self.assertEqual(0, self.Tag.query.count())
+        self.assertEqual(0, self.pl.count_tags())
 
         # when
         tag = self.ll.get_or_create_tag('abc')
 
         # then
-        self.assertEqual(1, self.Tag.query.count())
+        self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag)
         self.assertIsInstance(tag, self.Tag)
         self.assertEqual('abc', tag.value)
@@ -38,16 +38,16 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def test_get_or_create_tag_existent_gets_tag(self):
         # given
         tag1 = self.Tag('def')
-        self.db.session.add(tag1)
+        self.pl.add(tag1)
 
         # precondition
-        self.assertEqual(1, self.Tag.query.count())
+        self.assertEqual(1, self.pl.count_tags())
 
         # when
         tag2 = self.ll.get_or_create_tag('def')
 
         # then
-        self.assertEqual(1, self.Tag.query.count())
+        self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag2)
         self.assertIsInstance(tag2, self.Tag)
         self.assertEqual('def', tag2.value)
@@ -56,8 +56,8 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def test_add_tag_to_task_admin_nonexistent_adds_tag(self):
         # given
         task = self.Task('task')
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -76,9 +76,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # given
         task = self.Task('task')
         tag1 = self.Tag('jkl')
-        self.db.session.add(task)
-        self.db.session.add(tag1)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.add(tag1)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -98,8 +98,8 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # given
         task = self.Task('task')
         task.users.append(self.user)
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -119,9 +119,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         task = self.Task('task')
         tag1 = self.Tag('pqr')
         task.users.append(self.user)
-        self.db.session.add(task)
-        self.db.session.add(tag1)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.add(tag1)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)
@@ -139,7 +139,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_missing_tasks_raises_not_found(self):
         # precondition
-        self.assertEqual(0, self.Task.query.count())
+        self.assertEqual(0, self.pl.count_tasks())
 
         # expect
         self.assertRaises(NotFound,
@@ -149,10 +149,10 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def test_add_tag_to_task_user_not_authorized_raises_forbidden(self):
         # given
         other_user = self.User('name3@example.org', None, False)
-        self.db.session.add(other_user)
+        self.pl.add(other_user)
         task = self.Task('task')
-        self.db.session.add(task)
-        self.db.session.commit()
+        self.pl.add(task)
+        self.pl.commit()
 
         # precondition
         self.assertIsNotNone(task.id)

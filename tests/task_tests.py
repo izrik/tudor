@@ -9,7 +9,8 @@ from tudor import generate_app
 class TaskTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.Task = self.app.Task
+        self.pl = self.app.pl
+        self.Task = self.pl.Task
 
     def test_constructor_sets_summary(self):
         # when

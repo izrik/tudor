@@ -3,6 +3,7 @@
 import re
 import itertools
 import os
+from datetime import datetime
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
@@ -13,11 +14,12 @@ from conversions import int_from_str, money_from_str
 
 class LogicLayer(object):
 
-    def __init__(self, ds, upload_folder, allowed_extensions):
-        self.ds = ds
-        self.db = self.ds.db
+    def __init__(self, upload_folder, allowed_extensions, pl):
+        self.pl = pl
+        self.db = self.pl.db
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
+        self.pl = pl
 
     def is_user_authorized_or_admin(self, task, user):
         if user.is_admin:
@@ -49,15 +51,16 @@ class LogicLayer(object):
         return list(get_sorted_order(root))
 
     def get_index_data(self, show_deleted, show_done,
-                       current_user):
-        query = self.query_no_hierarchy(
+                       current_user, page_num=None, tasks_per_page=None):
+        _pager = []
+        tasks = self.load_no_hierarchy(
             current_user=current_user, include_done=show_done,
-            include_deleted=show_deleted, order_by_order_num=True)
-        query = query.filter(self.ds.Task.parent_id.is_(None))
-        pager = query.paginate()
-        tasks = query
+            include_deleted=show_deleted, order_by_order_num=True,
+            parent_id_is_none=True, paginate=True, pager=_pager,
+            page_num=page_num, tasks_per_page=tasks_per_page)
+        pager = _pager[0]
 
-        all_tags = self.ds.Tag.query.all()
+        all_tags = list(self.pl.get_tags())
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
@@ -70,10 +73,10 @@ class LogicLayer(object):
         max_depth = None
         tasks_h = self.load(current_user, root_task_id=None,
                             max_depth=max_depth, include_done=show_done,
-                            include_deleted=show_deleted, paginate=False)
+                            include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
-        all_tags = self.ds.Tag.query.all()
+        all_tags = list(self.pl.get_tags())
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
@@ -82,12 +85,10 @@ class LogicLayer(object):
         }
 
     def get_deadlines_data(self, current_user):
-        def order_by_deadline(query):
-            return query.order_by(self.ds.Task.deadline)
         deadline_tasks = self.load_no_hierarchy(
             current_user,
             exclude_undeadlined=True,
-            query_post_op=order_by_deadline)
+            order_by_deadline=True)
         return {
             'deadline_tasks': deadline_tasks,
         }
@@ -96,7 +97,7 @@ class LogicLayer(object):
                         is_done=None, is_deleted=None, deadline=None,
                         expected_duration_minutes=None, expected_cost=None,
                         order_num=None, parent_id=None):
-        task = self.ds.Task(
+        task = self.pl.Task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,
             expected_duration_minutes=expected_duration_minutes,
@@ -112,7 +113,7 @@ class LogicLayer(object):
         task.order_num = order_num
 
         if parent_id is not None:
-            parent = self.ds.Task.query.get(parent_id)
+            parent = self.pl.get_task(parent_id)
             if parent is not None and not self.is_user_authorized_or_admin(
                     parent, current_user):
                 raise werkzeug.exceptions.Forbidden()
@@ -123,23 +124,23 @@ class LogicLayer(object):
         return task
 
     def get_lowest_order_num(self):
-        query = self.ds.Task.query.order_by(
-            self.ds.Task.order_num.asc()).limit(1)
-        lowest_order_num_tasks = query.all()
+        tasks = self.pl.get_tasks(
+            order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
+        lowest_order_num_tasks = list(tasks)
         if len(lowest_order_num_tasks) > 0:
             return lowest_order_num_tasks[0].order_num
         return None
 
     def get_highest_order_num(self):
-        query = self.ds.Task.query.order_by(
-            self.ds.Task.order_num.desc()).limit(1)
-        highest_order_num_tasks = query.all()
+        tasks = self.pl.get_tasks(
+            order_by=[[self.pl.ORDER_NUM, self.pl.DESCENDING]], limit=1)
+        highest_order_num_tasks = list(tasks)
         if len(highest_order_num_tasks) > 0:
             return highest_order_num_tasks[0].order_num
         return None
 
     def task_set_done(self, id, current_user):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -148,7 +149,7 @@ class LogicLayer(object):
         return task
 
     def task_unset_done(self, id, current_user):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -157,7 +158,7 @@ class LogicLayer(object):
         return task
 
     def task_set_deleted(self, id, current_user):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -166,7 +167,7 @@ class LogicLayer(object):
         return task
 
     def task_unset_deleted(self, id, current_user):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -176,20 +177,20 @@ class LogicLayer(object):
 
     def get_task_data(self, id, current_user, include_deleted=True,
                       include_done=True):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        query = self.query_no_hierarchy(current_user=current_user,
-                                        include_done=include_done,
-                                        include_deleted=include_deleted,
-                                        order_by_order_num=True,
-                                        root_task_id=task.id)
-        query = query.filter_by(parent_id=task.id)
-        pager = query.paginate()
-        descendants = query
+        _pager = []
+        descendants = self.load_no_hierarchy(current_user=current_user,
+                                             include_done=include_done,
+                                             include_deleted=include_deleted,
+                                             order_by_order_num=True,
+                                             parent_id=task.id, paginate=True,
+                                             pager=_pager)
+        pager = _pager[0]
 
         hierarchy_sort = True
         if hierarchy_sort:
@@ -203,7 +204,7 @@ class LogicLayer(object):
 
     def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
                                 include_done=True):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -221,12 +222,12 @@ class LogicLayer(object):
         }
 
     def create_new_note(self, task_id, content, current_user):
-        task = self.ds.Task.query.filter_by(id=task_id).first()
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        note = self.ds.Note(content)
+        note = self.pl.Note(content)
         note.task = task
         return note
 
@@ -235,7 +236,7 @@ class LogicLayer(object):
                  order_num=None, duration=None, expected_cost=None,
                  parent_id=None):
 
-        task = self.ds.Task.query.filter_by(id=task_id).first()
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -247,6 +248,8 @@ class LogicLayer(object):
             deadline = None
         elif not deadline:
             deadline = None
+        elif isinstance(deadline, datetime):
+            pass
         else:
             deadline = dparse(deadline)
 
@@ -257,7 +260,7 @@ class LogicLayer(object):
             pass
         elif parent_id == '':
             parent_id = None
-        elif self.ds.Task.query.filter_by(id=parent_id).count() > 0:
+        elif self.pl.get_task(parent_id):
             pass
         else:
             parent_id = None
@@ -281,7 +284,7 @@ class LogicLayer(object):
         return task
 
     def get_edit_task_data(self, id, current_user):
-        task = self.ds.Task.query.filter_by(id=id).first()
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -300,7 +303,7 @@ class LogicLayer(object):
 
     def create_new_attachment(self, task_id, f, description, current_user):
 
-        task = self.ds.Task.query.filter_by(id=task_id).first()
+        task = self.pl.get_task(task_id)
         if task is None:
             return (('No task found for the task_id "%s"' % task_id), 404)
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -309,7 +312,7 @@ class LogicLayer(object):
         path = secure_filename(f.filename)
         f.save(os.path.join(self.upload_folder, path))
 
-        att = self.ds.Attachment(path, description)
+        att = self.pl.Attachment(path, description)
         att.task = task
 
         return att
@@ -319,99 +322,126 @@ class LogicLayer(object):
         N = len(tasks)
         for i in xrange(N):
             tasks[i].order_num = 2 * (N - i)
-            self.db.session.add(tasks[i])
+            self.pl.add(tasks[i])
 
     def do_move_task_up(self, id, show_deleted, current_user):
-        task = self.ds.Task.query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(show_deleted)
-        higher_siblings = siblings.filter(
-            self.ds.Task.order_num >= task.order_num)
-        higher_siblings = higher_siblings.filter(self.ds.Task.id != task.id)
-        next_task = higher_siblings.order_by(
-            self.ds.Task.order_num.asc()).first()
 
-        if next_task:
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_num_greq_than': task.order_num,
+            'task_id_not_in': [task.id],
+            'order_by': self.pl.ORDER_NUM,
+            'limit': 1
+        }
+
+        if not show_deleted:
+            kwargs['is_deleted'] = False
+
+        higher_siblings = list(self.pl.get_tasks(**kwargs))
+        if higher_siblings:
+            next_task = higher_siblings[0]
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(ordered=True))
+                self.reorder_tasks(
+                    self.pl.get_tasks(parent_id=task.parent_id,
+                                      order_by=self.pl.ORDER_NUM))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
 
-            self.db.session.add(task)
-            self.db.session.add(next_task)
+            self.pl.add(task)
+            self.pl.add(next_task)
 
         return task
 
     def do_move_task_to_top(self, id, current_user):
-        task = self.ds.Task.query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(True)
-        top_task = siblings.order_by(self.ds.Task.order_num.desc()).first()
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_by': [[self.pl.ORDER_NUM, self.pl.DESCENDING]],
+            'limit': 1
+        }
 
+        top_task = list(self.pl.get_tasks(**kwargs))
         if top_task:
-            task.order_num = top_task.order_num + 1
+            task.order_num = top_task[0].order_num + 1
 
-            self.db.session.add(task)
+            self.pl.add(task)
 
         return task
 
     def do_move_task_down(self, id, show_deleted, current_user):
-        task = self.ds.Task.query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(show_deleted)
-        lower_siblings = siblings.filter(
-            self.ds.Task.order_num <= task.order_num)
-        lower_siblings = lower_siblings.filter(self.ds.Task.id != task.id)
-        next_task = lower_siblings.order_by(
-            self.ds.Task.order_num.desc()).first()
 
-        if next_task:
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_num_lesseq_than': task.order_num,
+            'task_id_not_in': [task.id],
+            'order_by': [[self.pl.ORDER_NUM, self.pl.DESCENDING]],
+            'limit': 1,
+        }
+
+        if not show_deleted:
+            kwargs['is_deleted'] = False
+
+        lower_siblings = list(self.pl.get_tasks(**kwargs))
+        if lower_siblings:
+            next_task = lower_siblings[0]
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(task.get_siblings(ordered=True))
+                self.reorder_tasks(
+                    self.pl.get_tasks(parent_id=task.parent_id,
+                                      order_by=self.pl.ORDER_NUM))
             new_order_num = next_task.order_num
             task.order_num, next_task.order_num =\
                 new_order_num, task.order_num
 
-            self.db.session.add(task)
-            self.db.session.add(next_task)
+            self.pl.add(task)
+            self.pl.add(next_task)
 
         return task
 
     def do_move_task_to_bottom(self, id, current_user):
-        task = self.ds.Task.query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        siblings = task.get_siblings(True)
-        bottom_task = siblings.order_by(self.ds.Task.order_num.asc()).first()
 
+        kwargs = {
+            'parent_id': task.parent_id,
+            'order_by': [[self.pl.ORDER_NUM, self.pl.ASCENDING]],
+            'limit': 1,
+        }
+
+        bottom_task = list(self.pl.get_tasks(**kwargs))
         if bottom_task:
-            task.order_num = bottom_task.order_num - 2
+            task.order_num = bottom_task[0].order_num - 2
 
-            self.db.session.add(task)
+            self.pl.add(task)
 
         return task
 
     def do_long_order_change(self, task_to_move_id, target_id, current_user):
-        task_to_move = self.ds.Task.query.get(task_to_move_id)
+        task_to_move = self.pl.get_task(task_to_move_id)
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
         if not self.is_user_authorized_or_admin(task_to_move, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        target = self.ds.Task.query.get(target_id)
+        target = self.pl.get_task(target_id)
         if target is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(target_id))
@@ -426,7 +456,10 @@ class LogicLayer(object):
                     task_to_move_id, target_id, task_to_move.parent_id,
                     target.parent_id))
 
-        siblings = target.get_siblings(True).all()
+        kwargs = {
+            'parent_id': target.parent_id,
+        }
+        siblings = list(self.pl.get_tasks(parent_id=target.parent_id))
         siblings2 = sorted(siblings, key=lambda t: t.order_num,
                            reverse=True)
 
@@ -443,12 +476,12 @@ class LogicLayer(object):
         for s in siblings2:
             s.order_num = k
             k -= 2
-            self.db.session.add(s)
+            self.pl.add(s)
 
         return task_to_move, target
 
     def do_add_tag_to_task(self, id, value, current_user):
-        task = self.ds.Task.query.get(id)
+        task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(id))
@@ -459,34 +492,34 @@ class LogicLayer(object):
 
         if tag not in task.tags:
             task.tags.append(tag)
-            self.db.session.add(task)
+            self.pl.add(task)
 
         return tag
 
     def get_or_create_tag(self, value):
-        tag = self.ds.Tag.query.filter_by(value=value).first()
+        tag = self.pl.get_tag_by_value(value)
         if tag is None:
-            tag = self.ds.Tag(value)
-            self.db.session.add(tag)
+            tag = self.pl.Tag(value)
+            self.pl.add(tag)
         return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
         if tag_id is None:
             raise ValueError("No tag_id was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        tag = self.ds.Tag.query.get(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if tag is not None:
             if tag in task.tags:
                 task.tags.remove(tag)
-                self.db.session.add(task)
-                self.db.session.add(tag)
+                self.pl.add(task)
+                self.pl.add(tag)
 
         return tag
 
@@ -511,15 +544,14 @@ class LogicLayer(object):
         if user_email is None or user_email == '':
             raise ValueError("No user_email was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        user_to_authorize = self.ds.User.query.filter_by(
-            email=user_email).first()
+        user_to_authorize = self.pl.get_user_by_email(user_email)
         if user_to_authorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the email '{}'".format(user_email))
@@ -533,14 +565,14 @@ class LogicLayer(object):
         if user_id is None:
             raise ValueError("No user_id was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        user_to_authorize = self.ds.User.query.get(user_id)
+        user_to_authorize = self.pl.get_user(user_id)
         if user_to_authorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
@@ -554,12 +586,12 @@ class LogicLayer(object):
         if user_id is None:
             raise ValueError("No user_id was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
 
-        user_to_deauthorize = self.ds.User.query.get(user_id)
+        user_to_deauthorize = self.pl.get_user(user_id)
         if user_to_deauthorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
@@ -574,23 +606,23 @@ class LogicLayer(object):
 
         if user_to_deauthorize in task.users:
             task.users.remove(user_to_deauthorize)
-            self.db.session.add(task)
-            self.db.session.add(user_to_deauthorize)
+            self.pl.add(task)
+            self.pl.add(user_to_deauthorize)
 
         return task
 
     def do_add_new_user(self, email, is_admin):
-        user = self.ds.User.query.filter_by(email=email).first()
+        user = self.pl.get_user_by_email(email)
         if user is not None:
             return werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(
                     email))
-        user = self.ds.User(email=email, is_admin=is_admin)
-        self.db.session.add(user)
+        user = self.pl.User(email=email, is_admin=is_admin)
+        self.pl.add(user)
         return user
 
     def do_get_user_data(self, user_id, current_user):
-        user = self.ds.User.query.get(user_id)
+        user = self.pl.get_user(user_id)
         if user is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '%s'".format(user_id))
@@ -600,24 +632,24 @@ class LogicLayer(object):
         return user
 
     def get_users(self):
-        return self.ds.User.query
+        return self.pl.get_users()
 
     def get_view_options_data(self):
-        return self.ds.Option.query
+        return self.pl.get_options()
 
     def do_set_option(self, key, value):
-        option = self.ds.Option.query.get(key)
+        option = self.pl.get_option(key)
         if option is not None:
             option.value = value
         else:
-            option = self.ds.Option(key, value)
-        self.db.session.add(option)
+            option = self.pl.Option(key, value)
+        self.pl.add(option)
         return option
 
     def do_delete_option(self, key):
-        option = self.ds.Option.query.get(key)
+        option = self.pl.get_option(key)
         if option is not None:
-            self.db.session.delete(option)
+            self.pl.delete(option)
         return option
 
     def do_reset_order_nums(self, current_user):
@@ -630,26 +662,26 @@ class LogicLayer(object):
             if task is None:
                 continue
             task.order_num = 2 * k
-            self.db.session.add(task)
+            self.pl.add(task)
             k -= 1
         return tasks_h
 
     def do_export_data(self, types_to_export):
         results = {}
         if 'tasks' in types_to_export:
-            results['tasks'] = [t.to_dict() for t in self.ds.Task.query.all()]
+            results['tasks'] = [t.to_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
-            results['tags'] = [t.to_dict() for t in self.ds.Tag.query.all()]
+            results['tags'] = [t.to_dict() for t in self.pl.get_tags()]
         if 'notes' in types_to_export:
-            results['notes'] = [t.to_dict() for t in self.ds.Note.query.all()]
+            results['notes'] = [t.to_dict() for t in self.pl.get_notes()]
         if 'attachments' in types_to_export:
             results['attachments'] = [t.to_dict() for t in
-                                      self.ds.Attachment.query.all()]
+                                      self.pl.get_attachments()]
         if 'users' in types_to_export:
-            results['users'] = [t.to_dict() for t in self.ds.User.query.all()]
+            results['users'] = [t.to_dict() for t in self.pl.get_users()]
         if 'options' in types_to_export:
             results['options'] = [t.to_dict() for t in
-                                  self.ds.Option.query.all()]
+                                  self.pl.get_options()]
         return results
 
     def do_import_data(self, src):
@@ -663,7 +695,7 @@ class LogicLayer(object):
                     task_id = tag['id']
                     value = tag['value']
                     description = tag.get('description', '')
-                    t = self.ds.Tag(value=value, description=description)
+                    t = self.pl.Tag(value=value, description=description)
                     t.id = task_id
                     db_objects.append(t)
 
@@ -671,12 +703,12 @@ class LogicLayer(object):
                 ids = set()
                 for task in src['tasks']:
                     ids.add(task['id'])
-                existing_tasks = self.ds.Task.query.filter(
-                    self.ds.Task.id.in_(ids)).count()
-                if existing_tasks > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified task id\'s already exist in the '
-                        'database')
+                if ids:
+                    existing_tasks = self.pl.count_tasks(task_id_in=ids)
+                    if existing_tasks > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified task id\'s already exist in the '
+                            'database')
                 for task in src['tasks']:
                     id = task['id']
                     summary = task['summary']
@@ -690,7 +722,7 @@ class LogicLayer(object):
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])
                     user_ids = task.get('user_ids', [])
-                    t = self.ds.Task(summary=summary, description=description,
+                    t = self.pl.Task(summary=summary, description=description,
                                      is_done=is_done, is_deleted=is_deleted,
                                      deadline=deadline,
                                      expected_duration_minutes=exp_dur_min,
@@ -699,20 +731,20 @@ class LogicLayer(object):
                     t.parent_id = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
-                        tag = self.ds.Tag.query.get(tag_id)
+                        tag = self.pl.get_tag(tag_id)
                         if tag is None:
                             tag = next((obj for obj in db_objects
-                                        if isinstance(obj, self.ds.Tag) and
+                                        if isinstance(obj, self.pl.Tag) and
                                         obj.id == tag_id),
                                        None)
                         if tag is None:
                             raise Exception('Tag not found')
                         t.tags.append(tag)
                     for user_id in user_ids:
-                        user = self.ds.User.query.get(user_id)
+                        user = self.pl.get_user(user_id)
                         if user is None:
                             user = next((obj for obj in db_objects
-                                        if isinstance(obj, self.ds.User) and
+                                        if isinstance(obj, self.pl.User) and
                                          obj.id == user_id),
                                         None)
                         if user is None:
@@ -724,18 +756,17 @@ class LogicLayer(object):
                 ids = set()
                 for note in src['notes']:
                     ids.add(note['id'])
-                existing_notes = self.ds.Note.query.filter(
-                    self.ds.Note.id.in_(ids)).count()
-                if existing_notes > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified note id\'s already exist in the '
-                        'database')
+                if ids:
+                    if self.pl.count_notes(note_id_in=ids) > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified note id\'s already exist in the '
+                            'database')
                 for note in src['notes']:
                     id = note['id']
                     content = note['content']
                     timestamp = note['timestamp']
                     task_id = note['task_id']
-                    n = self.ds.Note(content=content, timestamp=timestamp)
+                    n = self.pl.Note(content=content, timestamp=timestamp)
                     n.id = id
                     n.task_id = task_id
                     db_objects.append(n)
@@ -745,12 +776,11 @@ class LogicLayer(object):
                 ids = set()
                 for attachment in attachments:
                     ids.add(attachment['id'])
-                existing_attachments = self.ds.Attachment.query.filter(
-                    self.ds.Attachment.id.in_(ids)).count()
-                if existing_attachments > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified attachment id\'s already exist in '
-                        'the database')
+                if ids:
+                    if self.pl.count_attachments(attachment_id_in=ids) > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified attachment id\'s already exist in '
+                            'the database')
                 for attachment in attachments:
                     id = attachment['id']
                     timestamp = attachment['timestamp']
@@ -758,7 +788,7 @@ class LogicLayer(object):
                     filename = attachment['filename']
                     description = attachment['description']
                     task_id = attachment['task_id']
-                    a = self.ds.Attachment(path=path, description=description,
+                    a = self.pl.Attachment(path=path, description=description,
                                            timestamp=timestamp,
                                            filename=filename)
                     a.id = id
@@ -770,17 +800,16 @@ class LogicLayer(object):
                 emails = set()
                 for user in users:
                     emails.add(user['email'])
-                existing_users = self.ds.User.query.filter(
-                    self.ds.User.email.in_(emails)).count()
-                if existing_users > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified user email addresses already exist'
-                        ' in the database')
+                if emails:
+                    if self.pl.count_users(email_in=emails) > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified user email addresses already exist'
+                            ' in the database')
                 for user in users:
                     email = user['email']
                     hashed_password = user['hashed_password']
                     is_admin = user['is_admin']
-                    u = self.ds.User(email=email,
+                    u = self.pl.User(email=email,
                                      hashed_password=hashed_password,
                                      is_admin=is_admin)
                     db_objects.append(u)
@@ -789,16 +818,15 @@ class LogicLayer(object):
                 keys = set()
                 for option in src['options']:
                     keys.add(option['key'])
-                existing_options = self.ds.Option.query.filter(
-                    self.ds.Option.key.in_(keys)).count()
-                if existing_options > 0:
-                    raise werkzeug.exceptions.Conflict(
-                        'Some specified option keys already exist in the '
-                        'database')
+                if keys:
+                    if self.pl.count_options(key_in=keys) > 0:
+                        raise werkzeug.exceptions.Conflict(
+                            'Some specified option keys already exist in the '
+                            'database')
                 for option in src['options']:
                     key = option['key']
                     value = option['value']
-                    t = self.ds.Option(key, value)
+                    t = self.pl.Option(key, value)
                     db_objects.append(t)
         except werkzeug.exceptions.HTTPException:
             raise
@@ -806,7 +834,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.BadRequest('The data was incorrect')
 
         for dbo in db_objects:
-            self.db.session.add(dbo)
+            self.pl.add(dbo)
 
     def get_task_crud_data(self, current_user):
         return self.load_no_hierarchy(current_user, include_done=True,
@@ -849,13 +877,13 @@ class LogicLayer(object):
             task.expected_cost = cost
             task.parent_id = parent_id
 
-            self.db.session.add(task)
+            self.pl.add(task)
 
     def get_tags(self):
-        return self.ds.Tag.query.all()
+        return list(self.pl.get_tags())
 
     def get_tag_data(self, tag_id, current_user):
-        tag = self.ds.Tag.query.get(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
@@ -867,7 +895,7 @@ class LogicLayer(object):
         }
 
     def get_tag(self, tag_id):
-        tag = self.ds.Tag.query.get(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
@@ -880,11 +908,11 @@ class LogicLayer(object):
                 "No tag found for the id '{}'".format(tag_id))
         tag.value = value
         tag.description = description
-        self.db.session.add(tag)
+        self.pl.add(tag)
         return tag
 
     def get_task(self, task_id, current_user):
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
@@ -899,69 +927,65 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if self.ds.Tag.query.filter_by(value=task.summary).first():
+        if self.pl.count_tags(value=task.summary) > 0:
             raise werkzeug.exceptions.Conflict(
                 'A tag already exists with the name "{}"'.format(
                     task.summary))
 
-        tag = self.ds.Tag(task.summary, task.description)
-        self.db.session.add(tag)
+        tag = self.pl.Tag(task.summary, task.description)
+        self.pl.add(tag)
 
         for child in task.children:
             child.tags.append(tag)
             child.parent = task.parent
             for tag2 in task.tags:
                 child.tags.append(tag2)
-            self.db.session.add(child)
+            self.pl.add(child)
 
         task.parent = None
-        self.db.session.add(task)
+        self.pl.add(task)
 
-        self.db.session.delete(task)
+        self.pl.delete(task)
 
         # TODO: commit in a non-view function
-        self.db.session.commit()
+        self.pl.commit()
 
         return tag
 
     def load(self, current_user, root_task_id=None, max_depth=0,
              include_done=False, include_deleted=False,
-             exclude_undeadlined=False, paginate=False, page=None,
-             per_page=None):
+             exclude_undeadlined=False):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
             if not self.is_user_authorized_or_admin(root_task, current_user):
                 raise werkzeug.exceptions.Forbidden()
 
-        query = self.ds.Task.query
+        kwargs = {}
 
         if not current_user.is_admin:
-            query = query.filter(
-                self.ds.Task.users.contains(current_user))
+            kwargs['users_contains'] = current_user
 
         if not include_done:
-            query = query.filter_by(is_done=False)
+            kwargs['is_done'] = False
 
         if not include_deleted:
-            query = query.filter_by(is_deleted=False)
+            kwargs['is_deleted'] = False
 
         if exclude_undeadlined:
-            query = query.filter(self.ds.Task.deadline.isnot(None))
+            kwargs['deadline_is_not_none'] = True
 
         if root_task_id is None:
-            query = query.filter(self.ds.Task.parent_id.is_(None))
+            kwargs['parent_id'] = None
         else:
-            query = query.filter_by(id=root_task_id)
+            kwargs['task_id_in'] = [root_task_id]
 
-        query = query.order_by(self.ds.Task.id.asc())
-        query = query.order_by(self.ds.Task.order_num.desc())
+        kwargs['order_by'] = [
+            [self.pl.TASK_ID, self.pl.ASCENDING],
+            [self.pl.ORDER_NUM, self.pl.DESCENDING],
+        ]
 
-        pager = None
-        if paginate:
-            pager = query.paginate(page=page, per_page=per_page)
-
-        tasks = query.all()
+        tasks = list(self.pl.get_tasks(**kwargs))
 
         depth = 0
         for task in tasks:
@@ -979,20 +1003,19 @@ class LogicLayer(object):
 
                 depth += 1
 
-                query = self.ds.Task.query
+                kwargs = {}
                 if not current_user.is_admin:
-                    query = query.filter(
-                        self.ds.Task.users.contains(current_user))
-                query = query.filter(self.ds.Task.parent_id.in_(next_ids),
-                                     self.ds.Task.id.notin_(already_ids))
+                    kwargs['users_contains'] = current_user
+                kwargs['parent_id_in'] = next_ids
+                kwargs['task_id_not_in'] = already_ids
                 if not include_done:
-                    query = query.filter_by(is_done=False)
+                    kwargs['is_done'] = False
                 if not include_deleted:
-                    query = query.filter_by(is_deleted=False)
+                    kwargs['is_deleted'] = False
                 if exclude_undeadlined:
-                    query = query.filter(self.ds.Task.deadline.isnot(None))
+                    kwargs['deadline_is_not_none'] = True
 
-                children = query.all()
+                children = list(self.pl.get_tasks(**kwargs))
 
                 for child in children:
                     child.depth = depth
@@ -1004,60 +1027,72 @@ class LogicLayer(object):
             tasks = list(
                 set([task for bucket in buckets for task in bucket]))
 
-        if pager:
-            return tasks, pager
-
         return tasks
 
-    def query_no_hierarchy(self, current_user, include_done=False,
-                           include_deleted=False, exclude_undeadlined=False,
-                           tag=None, query_post_op=None,
-                           order_by_order_num=False, root_task_id=None):
-        query = self.ds.Task.query
+    def load_no_hierarchy(self, current_user, include_done=False,
+                          include_deleted=False, exclude_undeadlined=False,
+                          tag=None, paginate=False, pager=None, page_num=None,
+                          tasks_per_page=None, parent_id_is_none=False,
+                          parent_id=None, order_by_order_num=False,
+                          order_by_deadline=False):
+
+        kwargs = {}
 
         if not current_user.is_admin:
-            query = query.filter(
-                self.ds.Task.users.contains(current_user))
+            kwargs['users_contains'] = current_user
 
         if not include_done:
-            query = query.filter_by(is_done=False)
+            kwargs['is_done'] = False
 
         if not include_deleted:
-            query = query.filter_by(is_deleted=False)
+            kwargs['is_deleted'] = False
 
         if exclude_undeadlined:
-            query = query.filter(self.ds.Task.deadline.isnot(None))
+            kwargs['deadline_is_not_none'] = True
+
+        if parent_id_is_none:
+            kwargs['parent_id'] = None
+        elif parent_id is not None:
+            kwargs['parent_id'] = parent_id
 
         if tag is not None:
             if tag == str(tag):
-                tag = self.ds.Tag.query.filter_by(value=tag).all()[0]
-            elif isinstance(tag, self.ds.Tag):
+                value = tag
+                tag = self.pl.get_tag_by_value(tag)
+                if not tag:
+                    raise werkzeug.exceptions.NotFound(
+                        'No tag found by the name "{}"'.format(value))
+            elif isinstance(tag, self.pl.Tag):
                 pass
             else:
                 raise TypeError(
                     "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
-            query = query.filter(self.ds.Task.tags.contains(tag))
+            kwargs['tags_contains'] = tag
 
+        order_by = []
         if order_by_order_num:
-            query = query.order_by(self.ds.Task.order_num.desc())
+            order_by.append([self.pl.ORDER_NUM, self.pl.DESCENDING])
 
-        if query_post_op:
-            query = query_post_op(query)
+        if order_by_deadline:
+            order_by.append([self.pl.DEADLINE, self.pl.ASCENDING])
 
-        return query
+        if order_by:
+            kwargs['order_by'] = order_by
 
-    def load_no_hierarchy(self, current_user, include_done=False,
-                          include_deleted=False, exclude_undeadlined=False,
-                          tag=None, query_post_op=None,
-                          order_by_order_num=False):
-        query = self.query_no_hierarchy(
-            current_user=current_user, include_done=include_done,
-            include_deleted=include_deleted,
-            exclude_undeadlined=exclude_undeadlined, tag=tag,
-            query_post_op=query_post_op, order_by_order_num=order_by_order_num)
+        if paginate:
+            kwargs['page_num'] = page_num
+            kwargs['tasks_per_page'] = tasks_per_page
+            _pager = self.pl.get_paginated_tasks(**kwargs)
+            tasks = list(_pager.items)
+            for task in tasks:
+                task.depth = 0
+            if pager is not None:
+                pager.append(_pager)
+            return tasks
 
-        tasks = query.all()
+        tasks = self.pl.get_tasks(**kwargs)
+        tasks = list(tasks)
 
         depth = 0
         for task in tasks:
@@ -1066,14 +1101,15 @@ class LogicLayer(object):
         return tasks
 
     def search(self, search_query, current_user):
-        like_term = '%{}%'.format(search_query)
-        query = self.ds.Task.query
-        if not current_user.is_admin:
-            query = query.filter(self.ds.Task.users.contains(current_user))
 
-        results = query.filter(
-            self.ds.Task.summary.like(like_term) |
-            self.ds.Task.description.like(like_term))
+        kwargs = {
+            'summary_description_search_term': search_query
+        }
+
+        if not current_user.is_admin:
+            kwargs['users_contains'] = current_user
+
+        results = self.pl.get_tasks(**kwargs)
 
         return results
 
@@ -1085,14 +1121,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        dependee = self.ds.Task.query.get(dependee_id)
+        dependee = self.pl.get_task(dependee_id)
         if dependee is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(dependee_id))
@@ -1112,14 +1148,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        dependee = self.ds.Task.query.get(dependee_id)
+        dependee = self.pl.get_task(dependee_id)
         if dependee is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(dependee_id))
@@ -1128,8 +1164,8 @@ class LogicLayer(object):
 
         if dependee in task.dependees:
             task.dependees.remove(dependee)
-            self.db.session.add(task)
-            self.db.session.add(dependee)
+            self.pl.add(task)
+            self.pl.add(dependee)
 
         return task, dependee
 
@@ -1168,14 +1204,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        prioritize_before = self.ds.Task.query.get(prioritize_before_id)
+        prioritize_before = self.pl.get_task(prioritize_before_id)
         if prioritize_before is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
@@ -1198,14 +1234,14 @@ class LogicLayer(object):
         if current_user is None:
             raise ValueError("No current_user was specified.")
 
-        task = self.ds.Task.query.get(task_id)
+        task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        prioritize_before = self.ds.Task.query.get(prioritize_before_id)
+        prioritize_before = self.pl.get_task(prioritize_before_id)
         if prioritize_before is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
@@ -1215,8 +1251,8 @@ class LogicLayer(object):
 
         if prioritize_before in task.prioritize_before:
             task.prioritize_before.remove(prioritize_before)
-            self.db.session.add(task)
-            self.db.session.add(prioritize_before)
+            self.pl.add(task)
+            self.pl.add(prioritize_before)
 
         return task, prioritize_before
 

@@ -9,15 +9,15 @@ class GetIndexDataTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
-        self.db.create_all()
+        self.pl = app.pl
+        self.pl.create_all()
         self.app = app
         self.ll = app.ll
-        self.Task = app.ds.Task
-        self.admin = app.ds.User('name@example.org', None, True)
-        self.db.session.add(self.admin)
-        self.user = app.ds.User('name2@example.org', None, False)
-        self.db.session.add(self.user)
+        self.Task = app.pl.Task
+        self.admin = app.pl.User('name@example.org', None, True)
+        self.pl.add(self.admin)
+        self.user = app.pl.User('name2@example.org', None, False)
+        self.pl.add(self.user)
 
     def test_get_index_data_returns_tasks_and_tags(self):
 
@@ -32,14 +32,14 @@ class GetIndexDataTest(unittest.TestCase):
         t4 = self.Task('t4')
         t4.order_num = 4
 
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(t3)
-        self.db.session.add(t4)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.add(t4)
 
-        tag1 = self.app.ds.Tag('tag1')
+        tag1 = self.app.pl.Tag('tag1')
 
-        self.db.session.add(tag1)
+        self.pl.add(tag1)
 
         # when
         data = self.ll.get_index_data(True, True, self.admin)
@@ -80,12 +80,12 @@ class GetIndexDataTest(unittest.TestCase):
         t2 = self.Task('t2')
         t2.order_num = 2
 
-        self.db.session.add(t1)
-        self.db.session.add(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
 
         t2.users.append(self.user)
 
-        self.db.session.commit()
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_data(True, True, self.user)
@@ -106,14 +106,14 @@ class GetIndexDataTest(unittest.TestCase):
         t4 = self.Task('t4')
         t4.order_num = 4
 
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(t3)
-        self.db.session.add(t4)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.add(t4)
 
-        tag1 = self.app.ds.Tag('tag1')
+        tag1 = self.app.pl.Tag('tag1')
 
-        self.db.session.add(tag1)
+        self.pl.add(tag1)
 
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.admin)
@@ -154,12 +154,12 @@ class GetIndexDataTest(unittest.TestCase):
         t2 = self.Task('t2')
         t2.order_num = 2
 
-        self.db.session.add(t1)
-        self.db.session.add(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
 
         t2.users.append(self.user)
 
-        self.db.session.commit()
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.user)
@@ -180,10 +180,10 @@ class GetIndexDataTest(unittest.TestCase):
         t4 = self.Task('t4')
         t4.order_num = 4
 
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(t3)
-        self.db.session.add(t4)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.add(t4)
 
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.admin)
@@ -213,10 +213,10 @@ class GetIndexDataTest(unittest.TestCase):
         t4 = self.Task('t4')
         t4.order_num = 4
 
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(t3)
-        self.db.session.add(t4)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.add(t4)
 
         # when
         data = self.ll.get_index_data(True, True, self.admin)

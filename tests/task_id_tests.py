@@ -8,9 +8,9 @@ from tudor import generate_app
 class TaskIdTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
-        self.db.create_all()
-        self.Task = self.app.Task
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.Task = self.pl.Task
 
     def test_constructor_default_id_is_none(self):
         # when
@@ -22,15 +22,15 @@ class TaskIdTest(unittest.TestCase):
         # given
         task = self.Task('summary')
         # when
-        self.db.session.add(task)
+        self.pl.add(task)
         # then
         self.assertIsNone(task.id)
 
     def test_db_commit_assigns_non_null_id(self):
         # given
         task = self.Task('summary')
-        self.db.session.add(task)
+        self.pl.add(task)
         # when
-        self.db.session.commit()
+        self.pl.commit()
         # then
         self.assertIsNotNone(task.id)

@@ -9,9 +9,9 @@ class TaskTagsTest(unittest.TestCase):
 
     def setUp(self):
         app = generate_app(db_uri='sqlite://')
-        self.db = app.ds.db
-        self.Task = app.ds.Task
-        self.Tag = app.ds.Tag
+        self.pl = app.pl
+        self.Task = app.pl.Task
+        self.Tag = app.pl.Tag
 
     def test_no_tags_yields_no_tags(self):
         # given
@@ -33,12 +33,12 @@ class TaskTagsTest(unittest.TestCase):
         t2.tags.append(tag1)
         t2.tags.append(tag2)
 
-        self.db.create_all()
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(tag1)
-        self.db.session.add(tag2)
-        self.db.session.commit()
+        self.pl.create_all()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(tag1)
+        self.pl.add(tag2)
+        self.pl.commit()
 
         # when
         result = set(t1.get_tag_values())

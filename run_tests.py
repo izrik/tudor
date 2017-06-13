@@ -22,10 +22,8 @@ from tests.task_unset_done_tests import *
 from tests.task_unset_deleted_tests import *
 from tests.do_reset_order_nums_tests import *
 from tests.tag_tests import *
-from tests.task_sibling_tests import *
 from tests.task_tests import *
 from tests.task_id_tests import *
-from tests.task_get_children_tests import *
 from tests.task_css_tests import *
 from tests.task_tags_tests import *
 from tests.task_duration_text_tests import *
@@ -36,6 +34,9 @@ from tests.ll_task_tags_tests import *
 from tests.get_lowest_highest_order_num import *
 from tests.task_prioritize_tests import *
 from tests.route_tests import *
+from tests.persistence_layer_tests import *
+from tests.ll_do_import_data_tests import *
+from tests.ll_set_task_tests import *
 
 
 def run():

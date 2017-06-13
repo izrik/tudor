@@ -27,8 +27,8 @@ import werkzeug.exceptions
 from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
-from data_source import SqlAlchemyDataSource
 from view_layer import ViewLayer
+from persistence_layer import PersistenceLayer
 import base64
 
 try:
@@ -104,7 +104,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 ll=None, vl=None, configs=None, disable_admin_check=False):
+                 ll=None, vl=None, pl=None, configs=None,
+                 disable_admin_check=False):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
@@ -124,17 +125,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     bcrypt = Bcrypt(app)
     app.bcrypt = bcrypt
 
-    if ds_factory is None:
-        ds_factory = create_sqlalchemy_ds_factory(db_uri)
-
-    ds = ds_factory(app)
-    db = ds.db
-    app.ds = ds
+    if pl is None:
+        pl = PersistenceLayer(app, db_uri, bcrypt)
+    app.pl = pl
 
     class Options(object):
         @staticmethod
         def get(key, default_value=None):
-            option = ds.Option.query.get(key)
+            option = pl.get_option(key)
             if option is None:
                 return default_value
             return option.value
@@ -155,27 +153,20 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         def get_user():
             return current_user
 
-    app.Task = ds.Task
-    app.Tag = ds.Tag
-    app.Note = ds.Note
-    app.Attachment = ds.Attachment
-    app.User = ds.User
-    app.Option = ds.Option
-
     if ll is None:
-        ll = LogicLayer(ds, upload_folder, allowed_extensions)
+        ll = LogicLayer(upload_folder, allowed_extensions, pl)
     app.ll = ll
     app._convert_task_to_tag = ll._convert_task_to_tag
 
     if vl is None:
-        vl = ViewLayer(ll, db, app, upload_folder)
+        vl = ViewLayer(ll, app, upload_folder, pl)
     app.vl = vl
 
     # Flask setup functions
 
     @login_manager.user_loader
     def load_user(userid):
-        return app.User.query.filter_by(email=userid).first()
+        return pl.get_user_by_email(userid)
 
     @login_manager.request_loader
     def load_user_with_basic_auth(request):
@@ -184,7 +175,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             api_key = api_key.replace('Basic ', '', 1)
             api_key = base64.b64decode(api_key)
             email, password = api_key.split(':', 1)
-            user = app.User.query.filter_by(email=email).first()
+            user = pl.get_user_by_email(email)
 
             if (user is None or
                     not bcrypt.check_password_hash(
@@ -572,7 +563,7 @@ if __name__ == '__main__':
 
     if args.create_db:
         print('Setting up the database')
-        app.ds.db.create_all()
+        app.pl.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in xrange(48)))

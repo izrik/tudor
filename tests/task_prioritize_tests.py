@@ -10,9 +10,9 @@ from tudor import generate_app
 class TaskPrioritizeTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
-        self.db.create_all()
-        self.Task = self.app.Task
+        self.pl = self.app.pl
+        self.pl.create_all()
+        self.Task = self.pl.Task
 
     def test_setting_task_as_before_sets_other_task_as_after(self):
         # given
@@ -123,11 +123,11 @@ class TaskPrioritizeTest(unittest.TestCase):
 class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
-        self.db.create_all()
+        self.pl = self.app.pl
+        self.pl.create_all()
         self.ll = self.app.ll
-        self.Task = self.app.Task
-        self.User = self.app.User
+        self.Task = self.pl.Task
+        self.User = self.pl.User
 
     def test_add_prioritize_before_adds_prioritize_before(self):
         # given
@@ -136,10 +136,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -168,10 +168,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -201,10 +201,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -237,10 +237,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -264,10 +264,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -291,10 +291,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -317,14 +317,14 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.pl.get_task(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_before_to_task,
@@ -333,21 +333,21 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.pl.get_task(t2.id+1))
 
     def test_prioritize_before_not_found_raises_exception(self):
         # given
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_before_to_task,
@@ -356,7 +356,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
     def test_remove_prioritize_before_removes_prioritize_before(self):
 
@@ -367,10 +367,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_before.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -400,10 +400,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -431,10 +431,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_before.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -475,10 +475,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_before.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
@@ -508,10 +508,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t2.users.append(user)
         t1.prioritize_before.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be prioritized before another task unless both share a common set of
         # one or more authorized users
@@ -544,10 +544,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t1.prioritize_before.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be prioritized before another task unless both share a common set of
         # one or more authorized users
@@ -578,14 +578,14 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.pl.get_task(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -595,21 +595,21 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_after))
         self.assertEqual(0, len(t2.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.pl.get_task(t2.id+1))
 
     def test_remove_prioritize_before_when_not_found_raises_exception(self):
         # given
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -619,18 +619,18 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_after))
         self.assertEqual(0, len(t1.prioritize_before))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
 
 class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
-        self.db = self.app.ds.db
-        self.db.create_all()
+        self.pl = self.app.pl
+        self.pl.create_all()
         self.ll = self.app.ll
-        self.Task = self.app.Task
-        self.User = self.app.User
+        self.Task = self.pl.Task
+        self.User = self.pl.User
 
     def test_add_prioritize_after_adds_prioritize_after(self):
         # given
@@ -639,10 +639,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -671,10 +671,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -704,10 +704,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -740,10 +740,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -767,10 +767,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -794,10 +794,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -820,14 +820,14 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.pl.get_task(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_after_to_task,
@@ -836,21 +836,21 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.pl.get_task(t2.id+1))
 
     def test_prioritize_after_not_found_raises_exception(self):
         # given
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound, self.ll.do_add_prioritize_after_to_task,
@@ -859,7 +859,7 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
     def test_remove_prioritize_after_removes_prioritize_after(self):
 
@@ -870,10 +870,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_after.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -903,10 +903,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -934,10 +934,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_after.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -978,10 +978,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_after.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -1011,10 +1011,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t2.users.append(user)
         t1.prioritize_after.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be prioritized before another task unless both share a common set of
         # one or more authorized users
@@ -1047,10 +1047,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         user = self.User('name@example.com')
         t1.users.append(user)
         t1.prioritize_after.append(t2)
-        self.db.session.add(t1)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
         # note that this situation shouldn't happen anyways. a task shouldn't
         # be prioritized before another task unless both share a common set of
         # one or more authorized users
@@ -1081,14 +1081,14 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         t2 = self.Task('t2')
         user = self.User('name@example.com')
         t2.users.append(user)
-        self.db.session.add(t2)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t2)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id + 1))
+        self.assertIsNone(self.pl.get_task(t2.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -1098,21 +1098,21 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t2.prioritize_before))
         self.assertEqual(0, len(t2.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t2.id+1))
+        self.assertIsNone(self.pl.get_task(t2.id+1))
 
     def test_remove_prioritize_after_when_not_found_raises_exception(self):
         # given
         t1 = self.Task('t1')
         user = self.User('name@example.com')
         t1.users.append(user)
-        self.db.session.add(t1)
-        self.db.session.add(user)
-        self.db.session.commit()
+        self.pl.add(t1)
+        self.pl.add(user)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))
 
         # expect
         self.assertRaises(NotFound,
@@ -1122,4 +1122,4 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         # then
         self.assertEqual(0, len(t1.prioritize_before))
         self.assertEqual(0, len(t1.prioritize_after))
-        self.assertIsNone(self.app.ds.Task.query.get(t1.id + 1))
+        self.assertIsNone(self.pl.get_task(t1.id + 1))

@@ -29,6 +29,18 @@ def generate_user_class(db, bcrypt):
                 'is_admin': self.is_admin
             }
 
+        @staticmethod
+        def from_dict(d):
+            user_id = d.get('id', None)
+            email = d.get('email')
+            hashed_password = d.get('hashed_password', None)
+            is_admin = d.get('is_admin', False)
+
+            user = User(email, hashed_password, is_admin)
+            if user_id is not None:
+                user.id = user_id
+            return user
+
         def is_active(self):
             return True
 
