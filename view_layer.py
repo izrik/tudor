@@ -425,7 +425,7 @@ class ViewLayer(object):
             return render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
-        user = self.pl.user_query.filter_by(email=email).first()
+        user = self.pl.get_user_by_email(email)
 
         if (user is None or
                 not self.app.bcrypt.check_password_hash(user.hashed_password,

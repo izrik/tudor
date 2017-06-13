@@ -551,8 +551,7 @@ class LogicLayer(object):
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        user_to_authorize = self.pl.user_query.filter_by(
-            email=user_email).first()
+        user_to_authorize = self.pl.get_user_by_email(user_email)
         if user_to_authorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the email '{}'".format(user_email))
@@ -613,7 +612,7 @@ class LogicLayer(object):
         return task
 
     def do_add_new_user(self, email, is_admin):
-        user = self.pl.user_query.filter_by(email=email).first()
+        user = self.pl.get_user_by_email(email)
         if user is not None:
             return werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(
