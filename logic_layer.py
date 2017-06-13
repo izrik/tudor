@@ -60,7 +60,7 @@ class LogicLayer(object):
             page_num=page_num, tasks_per_page=tasks_per_page)
         pager = _pager[0]
 
-        all_tags = self.pl.tag_query.all()
+        all_tags = list(self.pl.get_tags())
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
@@ -76,7 +76,7 @@ class LogicLayer(object):
                             include_deleted=show_deleted)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
-        all_tags = self.pl.tag_query.all()
+        all_tags = list(self.pl.get_tags())
         return {
             'show_deleted': show_deleted,
             'show_done': show_done,
@@ -672,7 +672,7 @@ class LogicLayer(object):
         if 'tasks' in types_to_export:
             results['tasks'] = [t.to_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
-            results['tags'] = [t.to_dict() for t in self.pl.tag_query.all()]
+            results['tags'] = [t.to_dict() for t in self.pl.get_tags()]
         if 'notes' in types_to_export:
             results['notes'] = [t.to_dict() for t in self.pl.note_query.all()]
         if 'attachments' in types_to_export:
@@ -889,7 +889,7 @@ class LogicLayer(object):
             self.pl.add(task)
 
     def get_tags(self):
-        return self.pl.tag_query.all()
+        return list(self.pl.get_tags())
 
     def get_tag_data(self, tag_id, current_user):
         tag = self.pl.get_tag(tag_id)
