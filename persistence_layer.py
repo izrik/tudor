@@ -341,6 +341,23 @@ class PersistenceLayer(object):
     def get_attachment(self, attachment_id):
         return self.attachment_query.get(attachment_id)
 
+    def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
+        query = self.attachment_query
+        if attachment_id_in is not self.UNSPECIFIED:
+            if attachment_id_in:
+                query = query.filter(self.Attachment.id.in_(attachment_id_in))
+            else:
+                query = query.filter(False)
+        return query
+
+    def get_attachments(self, attachment_id_in=UNSPECIFIED):
+        query = self._get_attachments_query(attachment_id_in=attachment_id_in)
+        return (_ for _ in query)
+
+    def count_attachments(self, attachment_id_in=UNSPECIFIED):
+        return self._get_attachments_query(
+            attachment_id_in=attachment_id_in).count()
+
     @property
     def user_query(self):
         return self.User.query
