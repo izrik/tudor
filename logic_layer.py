@@ -758,9 +758,7 @@ class LogicLayer(object):
                 for note in src['notes']:
                     ids.add(note['id'])
                 if ids:
-                    existing_notes = self.pl.note_query.filter(
-                        self.pl.Note.id.in_(ids)).count()
-                    if existing_notes > 0:
+                    if self.pl.count_notes(note_id_in=ids) > 0:
                         raise werkzeug.exceptions.Conflict(
                             'Some specified note id\'s already exist in the '
                             'database')
