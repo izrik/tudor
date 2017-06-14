@@ -150,7 +150,8 @@ class PersistenceLayer(object):
 
     def _update_domain_object_from_db_object(self, domobj):
         dbobj = self.bridge.get_db_object_from_domain_object(domobj)
-        pass
+        if not isinstance(domobj, self.Option):
+            domobj.id = dbobj.id
 
     def _update_db_object_from_domain_object(self, domobj):
         dbobj = self.bridge.get_db_object_from_domain_object(domobj)
