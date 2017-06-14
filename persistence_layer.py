@@ -76,6 +76,7 @@ class PersistenceLayer(object):
         self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
         self.db = SQLAlchemy(self.app)
 
+        self.bridge = Bridge(self)
         db = self.db
 
         self.Tag = generate_tag_class(db)
