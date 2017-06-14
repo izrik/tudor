@@ -47,6 +47,9 @@ class Note(NoteBase):
 
 def generate_note_class(db):
     class DbNote(db.Model, NoteBase):
+
+        __tablename__ = 'note'
+
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.String(4000))
         timestamp = db.Column(db.DateTime)

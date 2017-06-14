@@ -24,6 +24,9 @@ class Option(OptionBase):
 
 def generate_option_class(db):
     class DbOption(db.Model, OptionBase):
+
+        __tablename__ = 'option'
+
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)
 
