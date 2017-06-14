@@ -1600,24 +1600,26 @@ class BridgeTest(unittest.TestCase):
 
     def test_db_option_is_db_object(self):
         # given
-        option = self.pl.Option('key','value')
+        option = self.pl.Option('key', 'value')
         # expect
         self.assertTrue(self.bridge.is_db_object(option))
 
     def test_db_option_is_domain_object(self):
         # given
-        option = self.pl.Option('key','value')
+        option = self.pl.Option('key', 'value')
         # expect
         self.assertTrue(self.bridge.is_domain_object(option))
 
     def test_get_domain_object_option_returns_same(self):
         # given
-        option = self.pl.Option('key','value')
+        option = self.pl.Option('key', 'value')
         # expect
-        self.assertIs(option, self.bridge.get_domain_object_from_db_object(option))
+        self.assertIs(option,
+                      self.bridge.get_domain_object_from_db_object(option))
 
     def test_get_db_object_option_returns_same(self):
         # given
-        option = self.pl.Option('key','value')
+        option = self.pl.Option('key', 'value')
         # expect
-        self.assertIs(option, self.bridge.get_db_object_from_domain_object(option))
+        self.assertIs(option,
+                      self.bridge.get_db_object_from_domain_object(option))
