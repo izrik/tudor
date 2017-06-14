@@ -1322,3 +1322,115 @@ class PersistenceLayerGetOptionsTest(unittest.TestCase):
     def test_count_options_key_in_empty_yields_no_options(self):
         # expect
         self.assertEqual(0, self.pl.count_options(key_in=[]))
+
+
+class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_adding_task_does_not_create_id(self):
+        # given
+        task = self.pl.Task('summary')
+        # precondition
+        self.assertIsNone(task.id)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertIsNone(task.id)
+
+    def test_committing_task_creates_id(self):
+        # given
+        task = self.pl.Task('summary')
+        self.pl.add(task)
+        # precondition
+        self.assertIsNone(task.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(task.id)
+
+    def test_adding_tag_does_not_create_id(self):
+        # given
+        tag = self.pl.Tag('value')
+        # precondition
+        self.assertIsNone(tag.id)
+        # when
+        self.pl.add(tag)
+        # then
+        self.assertIsNone(tag.id)
+
+    def test_committing_tag_creates_id(self):
+        # given
+        tag = self.pl.Tag('value')
+        self.pl.add(tag)
+        # precondition
+        self.assertIsNone(tag.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(tag.id)
+
+    def test_adding_note_does_not_create_id(self):
+        # given
+        note = self.pl.Note('note')
+        # precondition
+        self.assertIsNone(note.id)
+        # when
+        self.pl.add(note)
+        # then
+        self.assertIsNone(note.id)
+
+    def test_committing_note_creates_id(self):
+        # given
+        note = self.pl.Note('note')
+        self.pl.add(note)
+        # precondition
+        self.assertIsNone(note.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(note.id)
+
+    def test_adding_attachment_does_not_create_id(self):
+        # given
+        attachment = self.pl.Attachment('attachment')
+        # precondition
+        self.assertIsNone(attachment.id)
+        # when
+        self.pl.add(attachment)
+        # then
+        self.assertIsNone(attachment.id)
+
+    def test_committing_attachment_creates_id(self):
+        # given
+        attachment = self.pl.Attachment('attachment')
+        self.pl.add(attachment)
+        # precondition
+        self.assertIsNone(attachment.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(attachment.id)
+
+    def test_adding_user_does_not_create_id(self):
+        # given
+        user = self.pl.User('name@example.com')
+        # precondition
+        self.assertIsNone(user.id)
+        # when
+        self.pl.add(user)
+        # then
+        self.assertIsNone(user.id)
+
+    def test_committing_user_creates_id(self):
+        # given
+        user = self.pl.User('name@example.com')
+        self.pl.add(user)
+        # precondition
+        self.assertIsNone(user.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(user.id)
