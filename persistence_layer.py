@@ -32,8 +32,8 @@ class Bridge(object):
 
     def is_domain_object(self, obj):
         return isinstance(obj,
-                          (self.pl.Attachment, self.pl.Task, self.pl.Tag, self.pl.Note,
-                           self.pl.User, self.pl.Option))
+                          (self.pl.Attachment, self.pl.Task, self.pl.Tag,
+                           self.pl.Note, self.pl.User, self.pl.Option))
 
     def get_db_object_from_domain_object(self, domobj):
         if not self.is_domain_object(domobj):
