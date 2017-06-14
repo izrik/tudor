@@ -4,7 +4,7 @@ import collections
 from flask_sqlalchemy import SQLAlchemy
 from models.task import generate_task_class
 from models.tag import generate_tag_class
-from models.note import generate_note_class
+from models.note import generate_note_class, Note
 from models.attachment import generate_attachment_class, Attachment
 from models.user import generate_user_class
 from models.option import generate_option_class
@@ -33,7 +33,7 @@ class Bridge(object):
     def is_domain_object(self, obj):
         return isinstance(obj,
                           (Attachment, self.pl.Task, self.pl.Tag,
-                           self.pl.Note, self.pl.User, self.pl.Option))
+                           Note, self.pl.User, self.pl.Option))
 
     def get_db_object_from_domain_object(self, domobj):
         if not self.is_domain_object(domobj):
@@ -47,6 +47,17 @@ class Bridge(object):
                     dbobj = self.pl.get_attachment(domobj.id)
                 if dbobj is None:
                     dbobj = self.pl.Attachment.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
+        if isinstance(domobj, Note):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.id is not None:
+                    dbobj = self.pl.get_note(domobj.id)
+                if dbobj is None:
+                    dbobj = self.pl.Note.from_dict(domobj.to_dict())
                 self._domain_by_db[dbobj] = domobj
                 self._db_by_domain[domobj] = dbobj
             return self._db_by_domain[domobj]
@@ -66,7 +77,7 @@ class Bridge(object):
             elif isinstance(dbobj, self.pl.Tag):
                 domobj = dbobj
             elif isinstance(dbobj, self.pl.Note):
-                domobj = dbobj
+                domobj = Note.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.User):
                 domobj = dbobj
             elif isinstance(dbobj, self.pl.Option):
@@ -389,7 +400,8 @@ class PersistenceLayer(object):
         return self.Note.query
 
     def get_note(self, note_id):
-        return self.note_query.get(note_id)
+        return self.bridge.get_domain_object_from_db_object(
+            self.note_query.get(note_id))
 
     def _get_notes_query(self, note_id_in=UNSPECIFIED):
         query = self.note_query
@@ -403,7 +415,7 @@ class PersistenceLayer(object):
 
     def get_notes(self, note_id_in=UNSPECIFIED):
         query = self._get_notes_query(note_id_in=note_id_in)
-        return (_ for _ in query)
+        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
 
     def count_notes(self, note_id_in=UNSPECIFIED):
         return self._get_notes_query(note_id_in=note_id_in).count()

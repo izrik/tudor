@@ -6,6 +6,7 @@ from datetime import datetime
 from tudor import generate_app
 from persistence_layer import PersistenceLayer
 from models.attachment import Attachment
+from models.note import Note
 
 
 class PersistenceLayerTest(unittest.TestCase):
@@ -1017,9 +1018,9 @@ class PersistenceLayerGetNotesTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.n1 = self.pl.Note('n1')
+        self.n1 = Note('n1')
         self.pl.add(self.n1)
-        self.n2 = self.pl.Note('n2')
+        self.n2 = Note('n2')
         self.pl.add(self.n2)
         self.pl.commit()
 
@@ -1375,7 +1376,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_adding_note_does_not_create_id(self):
         # given
-        note = self.pl.Note('note')
+        note = Note('note')
         # precondition
         self.assertIsNone(note.id)
         # when
@@ -1385,7 +1386,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_committing_note_creates_id(self):
         # given
-        note = self.pl.Note('note')
+        note = Note('note')
         self.pl.add(note)
         # precondition
         self.assertIsNone(note.id)
@@ -1498,23 +1499,57 @@ class BridgeTest(unittest.TestCase):
         # expect
         self.assertTrue(self.bridge.is_db_object(note))
 
-    def test_db_note_is_domain_object(self):
+    def test_domain_note_is_not_db_object(self):
         # given
-        note = self.pl.Note('note')
+        note = Note('note')
+        # expect
+        self.assertFalse(self.bridge.is_db_object(note))
+
+    def test_domain_note_is_domain_object(self):
+        # given
+        note = Note('note')
         # expect
         self.assertTrue(self.bridge.is_domain_object(note))
 
-    def test_get_domain_object_note_returns_same(self):
+    def test_db_note_is_not_domain_object(self):
         # given
         note = self.pl.Note('note')
         # expect
-        self.assertIs(note, self.bridge.get_domain_object_from_db_object(note))
+        self.assertFalse(self.bridge.is_domain_object(note))
 
-    def test_get_db_object_note_returns_same(self):
+    def test_get_domain_object_db_note_returns_domain_object(self):
+        # given
+        note = self.pl.Note('note')
+        # when
+        result = self.bridge.get_domain_object_from_db_object(note)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Note)
+
+    def test_get_db_object_db_note_raises(self):
         # given
         note = self.pl.Note('note')
         # expect
-        self.assertIs(note, self.bridge.get_db_object_from_domain_object(note))
+        self.assertRaises(Exception,
+                          self.bridge.get_db_object_from_domain_object,
+                          note)
+
+    def test_get_domain_object_domain_note_raises(self):
+        # given
+        note = Note('note')
+        # expect
+        self.assertRaises(Exception,
+                          self.bridge.get_domain_object_from_db_object,
+                          note)
+
+    def test_get_db_object_domain_note_returns_db_object(self):
+        # given
+        note = Note('note')
+        # when
+        result = self.bridge.get_db_object_from_domain_object(note)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, self.pl.Note)
 
     def test_db_attachment_is_db_object(self):
         # given
