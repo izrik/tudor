@@ -401,7 +401,8 @@ class PersistenceLayer(object):
         return self.Attachment.query
 
     def get_attachment(self, attachment_id):
-        return self.attachment_query.get(attachment_id)
+        return self.bridge.get_domain_object_from_db_object(
+            self.attachment_query.get(attachment_id))
 
     def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
         query = self.attachment_query
@@ -414,7 +415,7 @@ class PersistenceLayer(object):
 
     def get_attachments(self, attachment_id_in=UNSPECIFIED):
         query = self._get_attachments_query(attachment_id_in=attachment_id_in)
-        return (_ for _ in query)
+        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
 
     def count_attachments(self, attachment_id_in=UNSPECIFIED):
         return self._get_attachments_query(
