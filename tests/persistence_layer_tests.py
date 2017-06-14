@@ -1435,3 +1435,189 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.pl.commit()
         # then
         self.assertIsNotNone(user.id)
+
+
+class BridgeTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.bridge = self.pl.bridge
+        self.pl.create_all()
+
+    def test_db_task_is_db_object(self):
+        # given
+        task = self.pl.Task('task')
+        # expect
+        self.assertTrue(self.bridge.is_db_object(task))
+
+    def test_db_task_is_domain_object(self):
+        # given
+        task = self.pl.Task('task')
+        # expect
+        self.assertTrue(self.bridge.is_domain_object(task))
+
+    def test_get_domain_object_task_returns_same(self):
+        # given
+        task = self.pl.Task('task')
+        # expect
+        self.assertIs(task, self.bridge.get_domain_object_from_db_object(task))
+
+    def test_get_db_object_task_returns_same(self):
+        # given
+        task = self.pl.Task('task')
+        # expect
+        self.assertIs(task, self.bridge.get_db_object_from_domain_object(task))
+
+    def test_db_tag_is_db_object(self):
+        # given
+        tag = self.pl.Tag('tag')
+        # expect
+        self.assertTrue(self.bridge.is_db_object(tag))
+
+    def test_db_tag_is_domain_object(self):
+        # given
+        tag = self.pl.Tag('tag')
+        # expect
+        self.assertTrue(self.bridge.is_domain_object(tag))
+
+    def test_get_domain_object_tag_returns_same(self):
+        # given
+        tag = self.pl.Tag('tag')
+        # expect
+        self.assertIs(tag, self.bridge.get_domain_object_from_db_object(tag))
+
+    def test_get_db_object_tag_returns_same(self):
+        # given
+        tag = self.pl.Tag('tag')
+        # expect
+        self.assertIs(tag, self.bridge.get_db_object_from_domain_object(tag))
+
+    def test_db_note_is_db_object(self):
+        # given
+        note = self.pl.Note('note')
+        # expect
+        self.assertTrue(self.bridge.is_db_object(note))
+
+    def test_db_note_is_domain_object(self):
+        # given
+        note = self.pl.Note('note')
+        # expect
+        self.assertTrue(self.bridge.is_domain_object(note))
+
+    def test_get_domain_object_note_returns_same(self):
+        # given
+        note = self.pl.Note('note')
+        # expect
+        self.assertIs(note, self.bridge.get_domain_object_from_db_object(note))
+
+    def test_get_db_object_note_returns_same(self):
+        # given
+        note = self.pl.Note('note')
+        # expect
+        self.assertIs(note, self.bridge.get_db_object_from_domain_object(note))
+
+    def test_db_attachment_is_db_object(self):
+        # given
+        attachment = self.pl.Attachment('attachment')
+        # expect
+        self.assertTrue(self.bridge.is_db_object(attachment))
+
+    def test_domain_attachment_is_not_db_object(self):
+        # given
+        attachment = Attachment('attachment')
+        # expect
+        self.assertFalse(self.bridge.is_db_object(attachment))
+
+    def test_db_attachment_is_not_domain_object(self):
+        # given
+        attachment = self.pl.Attachment('attachment')
+        # expect
+        self.assertFalse(self.bridge.is_domain_object(attachment))
+
+    def test_domain_attachment_is_domain_object(self):
+        # given
+        attachment = Attachment('attachment')
+        # expect
+        self.assertTrue(self.bridge.is_domain_object(attachment))
+
+    def test_get_domain_object_domain_attachment_raises(self):
+        # given
+        attachment = Attachment('attachment')
+        # expect
+        self.assertRaises(Exception,
+                          self.bridge.get_domain_object_from_db_object,
+                          attachment)
+
+    def test_get_domain_object_db_attachment_returns_domain(self):
+        # given
+        attachment = self.pl.Attachment('attachment')
+        # when
+        result = self.bridge.get_domain_object_from_db_object(attachment)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Attachment)
+
+    def test_get_db_object_db_attachment_raises(self):
+        # given
+        attachment = self.pl.Attachment('attachment')
+        # expect
+        self.assertRaises(Exception,
+                          self.bridge.get_db_object_from_domain_object,
+                          attachment)
+
+    def test_get_db_object_domain_attachment_returns_db(self):
+        # given
+        attachment = Attachment('attachment')
+        # when
+        result = self.bridge.get_db_object_from_domain_object(attachment)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, self.pl.Attachment)
+
+    def test_db_user_is_db_object(self):
+        # given
+        user = self.pl.User('name@example.com')
+        # expect
+        self.assertTrue(self.bridge.is_db_object(user))
+
+    def test_db_user_is_domain_object(self):
+        # given
+        user = self.pl.User('name@example.com')
+        # expect
+        self.assertTrue(self.bridge.is_domain_object(user))
+
+    def test_get_domain_object_user_returns_same(self):
+        # given
+        user = self.pl.User('name@example.com')
+        # expect
+        self.assertIs(user, self.bridge.get_domain_object_from_db_object(user))
+
+    def test_get_db_object_user_returns_same(self):
+        # given
+        user = self.pl.User('name@example.com')
+        # expect
+        self.assertIs(user, self.bridge.get_db_object_from_domain_object(user))
+
+    def test_db_option_is_db_object(self):
+        # given
+        option = self.pl.Option('key','value')
+        # expect
+        self.assertTrue(self.bridge.is_db_object(option))
+
+    def test_db_option_is_domain_object(self):
+        # given
+        option = self.pl.Option('key','value')
+        # expect
+        self.assertTrue(self.bridge.is_domain_object(option))
+
+    def test_get_domain_object_option_returns_same(self):
+        # given
+        option = self.pl.Option('key','value')
+        # expect
+        self.assertIs(option, self.bridge.get_domain_object_from_db_object(option))
+
+    def test_get_db_object_option_returns_same(self):
+        # given
+        option = self.pl.Option('key','value')
+        # expect
+        self.assertIs(option, self.bridge.get_db_object_from_domain_object(option))
