@@ -5,6 +5,7 @@ from datetime import datetime
 
 from tudor import generate_app
 from persistence_layer import PersistenceLayer
+from models.attachment import Attachment
 
 
 class PersistenceLayerTest(unittest.TestCase):
@@ -1089,9 +1090,9 @@ class PersistenceLayerGetAttachmentsTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.a1 = self.pl.Attachment('a1.txt')
+        self.a1 = Attachment('a1.txt')
         self.pl.add(self.a1)
-        self.a2 = self.pl.Attachment('a2.txt')
+        self.a2 = Attachment('a2.txt')
         self.pl.add(self.a2)
         self.pl.commit()
 
@@ -1395,7 +1396,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_adding_attachment_does_not_create_id(self):
         # given
-        attachment = self.pl.Attachment('attachment')
+        attachment = Attachment('attachment')
         # precondition
         self.assertIsNone(attachment.id)
         # when
@@ -1405,7 +1406,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_committing_attachment_creates_id(self):
         # given
-        attachment = self.pl.Attachment('attachment')
+        attachment = Attachment('attachment')
         self.pl.add(attachment)
         # precondition
         self.assertIsNone(attachment.id)

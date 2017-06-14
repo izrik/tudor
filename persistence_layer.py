@@ -5,7 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from models.task import generate_task_class
 from models.tag import generate_tag_class
 from models.note import generate_note_class
-from models.attachment import generate_attachment_class
+from models.attachment import generate_attachment_class, Attachment
 from models.user import generate_user_class
 from models.option import generate_option_class
 
@@ -32,13 +32,24 @@ class Bridge(object):
 
     def is_domain_object(self, obj):
         return isinstance(obj,
-                          (self.pl.Attachment, self.pl.Task, self.pl.Tag,
+                          (Attachment, self.pl.Task, self.pl.Tag,
                            self.pl.Note, self.pl.User, self.pl.Option))
 
     def get_db_object_from_domain_object(self, domobj):
         if not self.is_domain_object(domobj):
             raise Exception(
                 'Not a domain object: {} ({})'.format(domobj, type(domobj)))
+
+        if isinstance(domobj, Attachment):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.id is not None:
+                    dbobj = self.pl.get_attachment(domobj.id)
+                if dbobj is None:
+                    dbobj = self.pl.Attachment.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
 
         return domobj
 
@@ -49,7 +60,7 @@ class Bridge(object):
         if dbobj not in self._domain_by_db:
             domobj = None
             if isinstance(dbobj, self.pl.Attachment):
-                domobj = dbobj
+                domobj = Attachment.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.Task):
                 domobj = dbobj
             elif isinstance(dbobj, self.pl.Tag):
