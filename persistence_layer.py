@@ -78,6 +78,7 @@ class PersistenceLayer(object):
 
         self.bridge = Bridge(self)
         db = self.db
+        self._changed_objects = set()
 
         self.Tag = generate_tag_class(db)
 
@@ -118,15 +119,31 @@ class PersistenceLayer(object):
         self.User = generate_user_class(db, bcrypt)
         self.Option = generate_option_class(db)
 
+    def add(self, domobj):
+        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        self._changed_objects.add(domobj)
+        self.db.session.add(dbobj)
 
-    def add(self, obj):
-        self.db.session.add(obj)
-
-    def delete(self, obj):
-        self.db.session.delete(obj)
+    def delete(self, domobj):
+        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        self._changed_objects.add(domobj)
+        self.db.session.delete(dbobj)
 
     def commit(self):
+        for domobj in self._changed_objects:
+            self._update_db_object_from_domain_object(domobj)
         self.db.session.commit()
+        for domobj in self._changed_objects:
+            self._update_domain_object_from_db_object(domobj)
+        self._changed_objects.clear()
+
+    def _update_domain_object_from_db_object(self, domobj):
+        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        pass
+
+    def _update_db_object_from_domain_object(self, domobj):
+        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        pass
 
     def create_all(self):
         self.db.create_all()
