@@ -7,6 +7,7 @@ from tudor import generate_app
 from persistence_layer import PersistenceLayer
 from models.attachment import Attachment
 from models.note import Note
+from models.option import Option
 
 
 class PersistenceLayerTest(unittest.TestCase):
@@ -1257,9 +1258,9 @@ class PersistenceLayerGetOptionsTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.option1 = self.pl.Option('option1', 'value1')
+        self.option1 = Option('option1', 'value1')
         self.pl.add(self.option1)
-        self.option2 = self.pl.Option('option2', 'value2')
+        self.option2 = Option('option2', 'value2')
         self.pl.add(self.option2)
         self.pl.commit()
 
@@ -1639,22 +1640,54 @@ class BridgeTest(unittest.TestCase):
         # expect
         self.assertTrue(self.bridge.is_db_object(option))
 
-    def test_db_option_is_domain_object(self):
+    def test_domain_option_is_not_db_object(self):
+        # given
+        option = Option('key', 'value')
+        # expect
+        self.assertFalse(self.bridge.is_db_object(option))
+
+    def test_db_option_is_not_domain_object(self):
         # given
         option = self.pl.Option('key', 'value')
+        # expect
+        self.assertFalse(self.bridge.is_domain_object(option))
+
+    def test_domain_option_is_domain_object(self):
+        # given
+        option = Option('key', 'value')
         # expect
         self.assertTrue(self.bridge.is_domain_object(option))
 
-    def test_get_domain_object_option_returns_same(self):
+    def test_get_domain_object_domain_option_raises(self):
         # given
-        option = self.pl.Option('key', 'value')
+        option = Option('key', 'value')
         # expect
-        self.assertIs(option,
-                      self.bridge.get_domain_object_from_db_object(option))
+        self.assertRaises(Exception,
+                          self.bridge.get_domain_object_from_db_object,
+                          option)
 
-    def test_get_db_object_option_returns_same(self):
+    def test_get_domain_object_db_option_returns_domain_object(self):
+        # given
+        option = self.pl.Option('key', 'value')
+        # when
+        result = self.bridge.get_domain_object_from_db_object(option)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Option)
+
+    def test_get_db_object_domain_option_returns_db_object(self):
+        # given
+        option = Option('key', 'value')
+        # when
+        result = self.bridge.get_db_object_from_domain_object(option)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, self.pl.Option)
+
+    def test_get_db_object_db_option_raises(self):
         # given
         option = self.pl.Option('key', 'value')
         # expect
-        self.assertIs(option,
-                      self.bridge.get_db_object_from_domain_object(option))
+        self.assertRaises(Exception,
+                          self.bridge.get_db_object_from_domain_object,
+                          option)

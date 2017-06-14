@@ -7,7 +7,7 @@ from models.tag import generate_tag_class
 from models.note import generate_note_class, Note
 from models.attachment import generate_attachment_class, Attachment
 from models.user import generate_user_class
-from models.option import generate_option_class
+from models.option import generate_option_class, Option
 
 
 def is_iterable(x):
@@ -33,9 +33,11 @@ class Bridge(object):
     def is_domain_object(self, obj):
         return isinstance(obj,
                           (Attachment, self.pl.Task, self.pl.Tag,
-                           Note, self.pl.User, self.pl.Option))
+                           Note, self.pl.User, Option))
 
     def get_db_object_from_domain_object(self, domobj):
+        if domobj is None:
+            return None
         if not self.is_domain_object(domobj):
             raise Exception(
                 'Not a domain object: {} ({})'.format(domobj, type(domobj)))
@@ -62,9 +64,22 @@ class Bridge(object):
                 self._db_by_domain[domobj] = dbobj
             return self._db_by_domain[domobj]
 
+        if isinstance(domobj, Option):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.key is not None:
+                    dbobj = self.pl.get_option(domobj.key)
+                if dbobj is None:
+                    dbobj = self.pl.Option.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
         return domobj
 
     def get_domain_object_from_db_object(self, dbobj):
+        if dbobj is None:
+            return None
         if not self.is_db_object(dbobj):
             raise Exception(
                 'Not a db object: {} ({})'.format(dbobj, type(dbobj)))
@@ -81,10 +96,11 @@ class Bridge(object):
             elif isinstance(dbobj, self.pl.User):
                 domobj = dbobj
             elif isinstance(dbobj, self.pl.Option):
-                domobj = dbobj
+                domobj = Option.from_dict(dbobj.to_dict())
             else:
                 raise Exception(
-                    'Unknown domain type: {}, {}'.format(dbobj, type(dbobj)))
+                    'Unknown db object type: {}, {}'.format(dbobj,
+                                                            type(dbobj)))
             self._domain_by_db[dbobj] = domobj
             self._db_by_domain[domobj] = dbobj
 
@@ -161,12 +177,42 @@ class PersistenceLayer(object):
 
     def _update_domain_object_from_db_object(self, domobj):
         dbobj = self.bridge.get_db_object_from_domain_object(domobj)
-        if not isinstance(domobj, self.Option):
+        if not isinstance(domobj, Option):
             domobj.id = dbobj.id
+
+        if isinstance(dbobj, self.Attachment):
+            pass
+        elif isinstance(dbobj, self.Task):
+            pass
+        elif isinstance(dbobj, self.Tag):
+            pass
+        elif isinstance(dbobj, self.Note):
+            pass
+        elif isinstance(dbobj, self.User):
+            pass
+        elif isinstance(dbobj, self.Option):
+            pass
+        else:
+            raise Exception(
+                'Unknown db type: {}, {}'.format(dbobj, type(dbobj)))
 
     def _update_db_object_from_domain_object(self, domobj):
         dbobj = self.bridge.get_db_object_from_domain_object(domobj)
-        pass
+        if isinstance(dbobj, self.Attachment):
+            pass
+        elif isinstance(dbobj, self.Task):
+            pass
+        elif isinstance(dbobj, self.Tag):
+            pass
+        elif isinstance(dbobj, self.Note):
+            pass
+        elif isinstance(dbobj, self.User):
+            pass
+        elif isinstance(dbobj, self.Option):
+            pass
+        else:
+            raise Exception(
+                'Unknown db type: {}, {}'.format(dbobj, type(dbobj)))
 
     def create_all(self):
         self.db.create_all()
@@ -477,7 +523,8 @@ class PersistenceLayer(object):
         return self.Option.query
 
     def get_option(self, key):
-        return self.option_query.get(key)
+        return self.bridge.get_domain_object_from_db_object(
+            self.option_query.get(key))
 
     def _get_options_query(self, key_in=UNSPECIFIED):
         query = self.option_query
@@ -491,7 +538,7 @@ class PersistenceLayer(object):
 
     def get_options(self, key_in=UNSPECIFIED):
         query = self._get_options_query(key_in=key_in)
-        return (_ for _ in query)
+        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
 
     def count_options(self, key_in=UNSPECIFIED):
         return self._get_options_query(key_in=key_in).count()
