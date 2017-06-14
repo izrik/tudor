@@ -20,6 +20,55 @@ def as_iterable(x):
     return (x,)
 
 
+class Bridge(object):
+    def __init__(self, pl):
+        self._db_by_domain = {}
+        self._domain_by_db = {}
+        self.pl = pl
+        self.db = pl.db
+
+    def is_db_object(self, obj):
+        return isinstance(obj, self.db.Model)
+
+    def is_domain_object(self, obj):
+        return isinstance(obj,
+                          (self.pl.Attachment, self.pl.Task, self.pl.Tag, self.pl.Note,
+                           self.pl.User, self.pl.Option))
+
+    def get_db_object_from_domain_object(self, domobj):
+        if not self.is_domain_object(domobj):
+            raise Exception(
+                'Not a domain object: {} ({})'.format(domobj, type(domobj)))
+
+        return domobj
+
+    def get_domain_object_from_db_object(self, dbobj):
+        if not self.is_db_object(dbobj):
+            raise Exception(
+                'Not a db object: {} ({})'.format(dbobj, type(dbobj)))
+        if dbobj not in self._domain_by_db:
+            domobj = None
+            if isinstance(dbobj, self.pl.Attachment):
+                domobj = dbobj
+            elif isinstance(dbobj, self.pl.Task):
+                domobj = dbobj
+            elif isinstance(dbobj, self.pl.Tag):
+                domobj = dbobj
+            elif isinstance(dbobj, self.pl.Note):
+                domobj = dbobj
+            elif isinstance(dbobj, self.pl.User):
+                domobj = dbobj
+            elif isinstance(dbobj, self.pl.Option):
+                domobj = dbobj
+            else:
+                raise Exception(
+                    'Unknown domain type: {}, {}'.format(dbobj, type(dbobj)))
+            self._domain_by_db[dbobj] = domobj
+            self._db_by_domain[domobj] = dbobj
+
+        return self._domain_by_db[dbobj]
+
+
 class PersistenceLayer(object):
     def __init__(self, app, db_uri, bcrypt):
 
