@@ -3,7 +3,7 @@ import collections
 
 from flask_sqlalchemy import SQLAlchemy
 from models.task import generate_task_class
-from models.tag import generate_tag_class
+from models.tag import generate_tag_class, Tag
 from models.note import generate_note_class, Note
 from models.attachment import generate_attachment_class, Attachment
 from models.user import generate_user_class
@@ -32,7 +32,7 @@ class Bridge(object):
 
     def is_domain_object(self, obj):
         return isinstance(obj,
-                          (Attachment, self.pl.Task, self.pl.Tag,
+                          (Attachment, self.pl.Task, Tag,
                            Note, self.pl.User, Option))
 
     def get_db_object_from_domain_object(self, domobj):
@@ -75,6 +75,17 @@ class Bridge(object):
                 self._db_by_domain[domobj] = dbobj
             return self._db_by_domain[domobj]
 
+        if isinstance(domobj, Tag):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.id is not None:
+                    dbobj = self.pl.get_tag(domobj.id)
+                if dbobj is None:
+                    dbobj = self.pl.Tag.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
         return domobj
 
     def get_domain_object_from_db_object(self, dbobj):
@@ -90,7 +101,7 @@ class Bridge(object):
             elif isinstance(dbobj, self.pl.Task):
                 domobj = dbobj
             elif isinstance(dbobj, self.pl.Tag):
-                domobj = dbobj
+                domobj = Tag.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.Note):
                 domobj = Note.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.User):
@@ -421,7 +432,8 @@ class PersistenceLayer(object):
         return self.Tag.query
 
     def get_tag(self, tag_id):
-        return self.tag_query.get(tag_id)
+        return self.bridge.get_domain_object_from_db_object(
+            self.tag_query.get(tag_id))
 
     def _get_tags_query(self, value=UNSPECIFIED, limit=None):
         query = self.Tag.query
@@ -433,13 +445,14 @@ class PersistenceLayer(object):
 
     def get_tags(self, value=UNSPECIFIED, limit=None):
         query = self._get_tags_query(value=value, limit=limit)
-        return (_ for _ in query)
+        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
 
     def count_tags(self, value=UNSPECIFIED, limit=None):
         return self._get_tags_query(value=value, limit=limit).count()
 
     def get_tag_by_value(self, value):
-        return self._get_tags_query(value=value).first()
+        return self.bridge.get_domain_object_from_db_object(
+            self._get_tags_query(value=value).first())
 
     @property
     def note_query(self):

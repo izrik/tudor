@@ -18,7 +18,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
         expected_cost = db.Column(db.Numeric)
-        tags = db.relationship('Tag', secondary=tags_tasks_table,
+        tags = db.relationship('DbTag', secondary=tags_tasks_table,
                                backref=db.backref('tasks', lazy='dynamic'))
         users = db.relationship('User', secondary=users_tasks_table,
                                 backref=db.backref('tasks', lazy='dynamic'))

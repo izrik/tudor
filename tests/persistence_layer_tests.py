@@ -8,6 +8,7 @@ from persistence_layer import PersistenceLayer
 from models.attachment import Attachment
 from models.note import Note
 from models.option import Option
+from models.tag import Tag
 
 
 class PersistenceLayerTest(unittest.TestCase):
@@ -595,8 +596,8 @@ class PersistenceLayerTagsTest(unittest.TestCase):
         self.t1 = self.pl.Task('t1')
         self.t2 = self.pl.Task('t2')
         self.t3 = self.pl.Task('t3')
-        self.tag1 = self.pl.Tag('tag1')
-        self.tag2 = self.pl.Tag('tag2')
+        self.tag1 = Tag('tag1')
+        self.tag2 = Tag('tag2')
         self.t2.tags.append(self.tag1)
         self.t3.tags.append(self.tag1)
         self.t3.tags.append(self.tag2)
@@ -641,8 +642,8 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.t4.order_num = 47
         self.t5 = self.pl.Task('t5')
         self.t5.order_num = 53
-        self.tag1 = self.pl.Tag('tag1')
-        self.tag2 = self.pl.Tag('tag2')
+        self.tag1 = Tag('tag1')
+        self.tag2 = Tag('tag2')
         self.t2.tags.append(self.tag1)
         self.t3.tags.append(self.tag1)
         self.t3.tags.append(self.tag2)
@@ -909,9 +910,9 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Tag('t1')
+        self.t1 = Tag('t1')
         self.pl.add(self.t1)
-        self.t2 = self.pl.Tag('t2')
+        self.t2 = Tag('t2')
         self.pl.add(self.t2)
         self.pl.commit()
 
@@ -973,7 +974,7 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
 
     def test_count_tags_specifying_limit_returns_that_limit(self):
         # given
-        t3 = self.pl.Tag('t3')
+        t3 = Tag('t3')
         self.pl.add(t3)
         self.pl.commit()
         # when
@@ -991,7 +992,7 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
 
     def test_count_tags_limit_greater_than_max_yields_max(self):
         # given
-        t3 = self.pl.Tag('t3')
+        t3 = Tag('t3')
         self.pl.add(t3)
         self.pl.commit()
         # when
@@ -1004,7 +1005,7 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
         results = self.pl.get_tag_by_value('t1')
         # then
         self.assertIsNotNone(results)
-        self.assertIsInstance(results, self.pl.Tag)
+        self.assertIsInstance(results, Tag)
         self.assertIs(self.t1, results)
 
     def test_get_tag_by_value_tag_missing_returns_none(self):
@@ -1356,7 +1357,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_adding_tag_does_not_create_id(self):
         # given
-        tag = self.pl.Tag('value')
+        tag = Tag('value')
         # precondition
         self.assertIsNone(tag.id)
         # when
@@ -1366,7 +1367,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_committing_tag_creates_id(self):
         # given
-        tag = self.pl.Tag('value')
+        tag = Tag('value')
         self.pl.add(tag)
         # precondition
         self.assertIsNone(tag.id)
@@ -1476,23 +1477,57 @@ class BridgeTest(unittest.TestCase):
         # expect
         self.assertTrue(self.bridge.is_db_object(tag))
 
-    def test_db_tag_is_domain_object(self):
+    def test_db_tag_is_not_domain_object(self):
         # given
         tag = self.pl.Tag('tag')
+        # expect
+        self.assertFalse(self.bridge.is_domain_object(tag))
+
+    def test_domain_tag_is_not_db_object(self):
+        # given
+        tag = Tag('tag')
+        # expect
+        self.assertFalse(self.bridge.is_db_object(tag))
+
+    def test_domain_tag_is_domain_object(self):
+        # given
+        tag = Tag('tag')
         # expect
         self.assertTrue(self.bridge.is_domain_object(tag))
 
-    def test_get_domain_object_tag_returns_same(self):
+    def test_get_domain_object_db_tag_returns_domain_tag(self):
         # given
         tag = self.pl.Tag('tag')
-        # expect
-        self.assertIs(tag, self.bridge.get_domain_object_from_db_object(tag))
+        # when
+        result = self.bridge.get_domain_object_from_db_object(tag)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Tag)
 
-    def test_get_db_object_tag_returns_same(self):
+    def test_get_domain_object_domain_tag_raises(self):
+        # given
+        tag = Tag('tag')
+        # expect
+        self.assertRaises(Exception,
+                          self.bridge.get_domain_object_from_db_object,
+                          tag)
+
+    def test_get_db_object_db_tag_raises(self):
         # given
         tag = self.pl.Tag('tag')
         # expect
-        self.assertIs(tag, self.bridge.get_db_object_from_domain_object(tag))
+        self.assertRaises(Exception,
+                          self.bridge.get_db_object_from_domain_object,
+                          tag)
+
+    def test_get_db_object_domain_tag_returns_dg_tag(self):
+        # given
+        tag = Tag('tag')
+        # when
+        result = self.bridge.get_db_object_from_domain_object(tag)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, self.pl.Tag)
 
     def test_db_note_is_db_object(self):
         # given
