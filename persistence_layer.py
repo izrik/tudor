@@ -118,6 +118,26 @@ class Bridge(object):
         return self._domain_by_db[dbobj]
 
 
+class Pager(object):
+    page = None
+    per_page = None
+    items = None
+    total = None
+
+    def __init__(self, page, per_page, items, total, _pager):
+        self.page = page
+        self.per_page = per_page
+        self.items = list(items)
+        self.total = total
+        self._pager = _pager
+
+    def iter_pages(self, left_edge=2, left_current=2, right_current=5,
+                   right_edge=2):
+        return self._pager.iter_pages(
+            left_current=left_current, right_current=right_current,
+            left_edge=left_edge, right_edge=right_edge)
+
+
 class PersistenceLayer(object):
     def __init__(self, app, db_uri, bcrypt):
 
@@ -405,7 +425,8 @@ class PersistenceLayer(object):
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
         pager = query.paginate(page=page_num, per_page=tasks_per_page)
-        return pager
+        return Pager(page=pager.page, per_page=pager.per_page,
+                     items=pager.items, total=pager.total, _pager=pager)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
