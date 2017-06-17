@@ -124,11 +124,12 @@ class Pager(object):
     items = None
     total = None
 
-    def __init__(self, page, per_page, items, total, _pager):
+    def __init__(self, page, per_page, items, total, num_pages, _pager):
         self.page = page
         self.per_page = per_page
         self.items = list(items)
         self.total = total
+        self.num_pages = num_pages
         self._pager = _pager
 
     def iter_pages(self, left_edge=2, left_current=2, right_current=5,
@@ -160,6 +161,10 @@ class Pager(object):
 
         for i in xrange(right_edge):
             yield total_pages - right_edge + i + 1
+
+    @property
+    def pages(self):
+        return self.num_pages
 
 
 class PersistenceLayer(object):
@@ -450,7 +455,8 @@ class PersistenceLayer(object):
             limit=limit)
         pager = query.paginate(page=page_num, per_page=tasks_per_page)
         return Pager(page=pager.page, per_page=pager.per_page,
-                     items=pager.items, total=pager.total, _pager=pager)
+                     items=pager.items, total=pager.total,
+                     num_pages=pager.pages, _pager=pager)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,

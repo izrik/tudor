@@ -855,6 +855,11 @@ class PersistenceLayerPagerTest(unittest.TestCase):
         self.pager = self.pl.get_paginated_tasks(page_num=4, tasks_per_page=2,
                                                  order_by=self.pl.ORDER_NUM)
 
+    def test_pager_num_pages(self):
+        # expect
+        self.assertEqual(8, self.pager.num_pages)
+        self.assertEqual(8, self.pager.pages)
+
     def test_pager_iter_items_1(self):
         # when
         pages = list(self.pager.iter_pages(1, 1, 1, 1))
