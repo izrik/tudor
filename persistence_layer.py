@@ -166,6 +166,22 @@ class Pager(object):
     def pages(self):
         return self.num_pages
 
+    @property
+    def has_prev(self):
+        return self.page > 1
+
+    @property
+    def prev_num(self):
+        return self.page - 1
+
+    @property
+    def has_next(self):
+        return self.page < self.num_pages
+
+    @property
+    def next_num(self):
+        return self.page + 1
+
 
 class PersistenceLayer(object):
     def __init__(self, app, db_uri, bcrypt):

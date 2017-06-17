@@ -860,6 +860,13 @@ class PersistenceLayerPagerTest(unittest.TestCase):
         self.assertEqual(8, self.pager.num_pages)
         self.assertEqual(8, self.pager.pages)
 
+    def test_pager_prev_next(self):
+        # expect
+        self.assertTrue(self.pager.has_prev)
+        self.assertEqual(3, self.pager.prev_num)
+        self.assertTrue(self.pager.has_next)
+        self.assertEqual(5, self.pager.next_num)
+
     def test_pager_iter_items_1(self):
         # when
         pages = list(self.pager.iter_pages(1, 1, 1, 1))
