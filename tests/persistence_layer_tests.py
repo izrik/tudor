@@ -922,6 +922,42 @@ class PersistenceLayerPagerTest(unittest.TestCase):
         # then
         self.assertEqual([1, 2, 3, 4, 5, 6, 7, 8], pages)
 
+    def test_pager_iter_items_zero_raises(self):
+        # when
+        generator = self.pager.iter_pages(0, 1, 1, 1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+        # when
+        generator = self.pager.iter_pages(1, 0, 1, 1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+        # when
+        generator = self.pager.iter_pages(1, 1, 0, 1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+        # when
+        generator = self.pager.iter_pages(1, 1, 1, 0)
+        # then
+        self.assertRaises(ValueError, generator.next)
+
+    def test_pager_iter_items_negative_raises(self):
+        # when
+        generator = self.pager.iter_pages(-1, 1, 1, 1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+        # when
+        generator = self.pager.iter_pages(1, -1, 1, 1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+        # when
+        generator = self.pager.iter_pages(1, 1, -1, 1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+        # when
+        generator = self.pager.iter_pages(1, 1, 1, -1)
+        # then
+        self.assertRaises(ValueError, generator.next)
+
 
 class PersistenceLayerSearchTermTest(unittest.TestCase):
     def setUp(self):

@@ -133,9 +133,33 @@ class Pager(object):
 
     def iter_pages(self, left_edge=2, left_current=2, right_current=5,
                    right_edge=2):
-        return self._pager.iter_pages(
-            left_current=left_current, right_current=right_current,
-            left_edge=left_edge, right_edge=right_edge)
+
+        if (left_edge < 1 or left_current < 1 or right_current < 1 or
+                right_edge < 1):
+            raise ValueError('Parameter must be positive')
+
+        total_pages = self.total / self.per_page
+        if self.total % self.per_page > 0:
+            total_pages += 1
+
+        left_of_current = max(self.page - left_current, left_edge + 1)
+        right_of_current = min(self.page + right_current,
+                               total_pages - right_edge + 1)
+
+        for i in xrange(left_edge):
+            yield i + 1
+
+        if left_of_current > left_edge + 1:
+            yield None
+
+        for i in xrange(left_of_current, right_of_current):
+            yield i
+
+        if right_of_current < total_pages - right_edge + 1:
+            yield None
+
+        for i in xrange(right_edge):
+            yield total_pages - right_edge + i + 1
 
 
 class PersistenceLayer(object):
