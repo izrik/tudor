@@ -44,105 +44,105 @@ class TaskBase(object):
 
 
 class Task(TaskBase):
-        id = None
-        summary = None
-        description = None
-        is_done = None
-        is_deleted = None
-        order_num = None
-        deadline = None
-        expected_duration_minutes = None
-        expected_cost = None
-        tags = list()
-        users = list()
-        parent_id = None
-        parent = None
+    id = None
+    summary = None
+    description = None
+    is_done = None
+    is_deleted = None
+    order_num = None
+    deadline = None
+    expected_duration_minutes = None
+    expected_cost = None
+    tags = list()
+    users = list()
+    parent_id = None
+    parent = None
 
-        @staticmethod
-        def from_dict(d):
-            task_id = d.get('id', None)
-            summary = d.get('summary')
-            description = d.get('description', '')
-            is_done = d.get('is_done', False)
-            is_deleted = d.get('is_deleted', False)
-            order_num = d.get('order_num', 0)
-            deadline = d.get('deadline', None)
-            parent_id = d.get('parent_id', None)
-            expected_duration_minutes = d.get('expected_duration_minutes',
-                                              None)
-            expected_cost = d.get('expected_cost', None)
-            # 'tag_ids': [tag.id for tag in self.tags],
-            # 'user_ids': [user.id for user in self.users]
+    @staticmethod
+    def from_dict(d):
+        task_id = d.get('id', None)
+        summary = d.get('summary')
+        description = d.get('description', '')
+        is_done = d.get('is_done', False)
+        is_deleted = d.get('is_deleted', False)
+        order_num = d.get('order_num', 0)
+        deadline = d.get('deadline', None)
+        parent_id = d.get('parent_id', None)
+        expected_duration_minutes = d.get('expected_duration_minutes',
+                                          None)
+        expected_cost = d.get('expected_cost', None)
+        # 'tag_ids': [tag.id for tag in self.tags],
+        # 'user_ids': [user.id for user in self.users]
 
-            task = Task(summary=summary, description=description,
-                        is_done=is_done, is_deleted=is_deleted,
-                        deadline=deadline,
-                        expected_duration_minutes=expected_duration_minutes,
-                        expected_cost=expected_cost)
-            if task_id is not None:
-                task.id = task_id
-            task.order_num = order_num
-            task.parent_id = parent_id
-            return task
+        task = Task(summary=summary, description=description,
+                    is_done=is_done, is_deleted=is_deleted,
+                    deadline=deadline,
+                    expected_duration_minutes=expected_duration_minutes,
+                    expected_cost=expected_cost)
+        if task_id is not None:
+            task.id = task_id
+        task.order_num = order_num
+        task.parent_id = parent_id
+        return task
 
-        def get_css_class(self):
-            if self.is_deleted and self.is_done:
-                return 'done-deleted'
-            if self.is_deleted:
-                return 'not-done-deleted'
-            if self.is_done:
-                return 'done-not-deleted'
+    def get_css_class(self):
+        if self.is_deleted and self.is_done:
+            return 'done-deleted'
+        if self.is_deleted:
+            return 'not-done-deleted'
+        if self.is_done:
+            return 'done-not-deleted'
+        return ''
+
+    def get_css_class_attr(self):
+        cls = self.get_css_class()
+        if cls:
+            return ' class="{}" '.format(cls)
+        return ''
+
+    def get_tag_values(self):
+        for tag in self.tags:
+            yield tag.value
+
+    def get_expected_duration_for_viewing(self):
+        if self.expected_duration_minutes is None:
             return ''
+        if self.expected_duration_minutes == 1:
+            return '1 minute'
+        return '{} minutes'.format(self.expected_duration_minutes)
 
-        def get_css_class_attr(self):
-            cls = self.get_css_class()
-            if cls:
-                return ' class="{}" '.format(cls)
+    def get_expected_cost_for_viewing(self):
+        if self.expected_cost is None:
             return ''
+        return '{:.2f}'.format(self.expected_cost)
 
-        def get_tag_values(self):
-            for tag in self.tags:
-                yield tag.value
+    def is_user_authorized(self, user):
+        return user in self.users
 
-        def get_expected_duration_for_viewing(self):
-            if self.expected_duration_minutes is None:
-                return ''
-            if self.expected_duration_minutes == 1:
-                return '1 minute'
-            return '{} minutes'.format(self.expected_duration_minutes)
-
-        def get_expected_cost_for_viewing(self):
-            if self.expected_cost is None:
-                return ''
-            return '{:.2f}'.format(self.expected_cost)
-
-        def is_user_authorized(self, user):
-            return user in self.users
-
-        def contains_dependency_cycle(self, visited=None):
-            if visited is None:
-                visited = set()
-            if self in visited:
+    def contains_dependency_cycle(self, visited=None):
+        if visited is None:
+            visited = set()
+        if self in visited:
+            return True
+        visited = set(visited)
+        visited.add(self)
+        for dependee in self.dependees:
+            if dependee.contains_dependency_cycle(visited):
                 return True
-            visited = set(visited)
-            visited.add(self)
-            for dependee in self.dependees:
-                if dependee.contains_dependency_cycle(visited):
-                    return True
 
-            return False
+        return False
 
-        def contains_priority_cycle(self, visited=None):
-            if visited is None:
-                visited = set()
-            if self in visited:
+    def contains_priority_cycle(self, visited=None):
+        if visited is None:
+            visited = set()
+        if self in visited:
+            return True
+        visited = set(visited)
+        visited.add(self)
+        for before in self.prioritize_before:
+            if before.contains_priority_cycle(visited):
                 return True
-            visited = set(visited)
-            visited.add(self)
-            for before in self.prioritize_before:
-                if before.contains_priority_cycle(visited):
-                    return True
-            return False
+        return False
 
 
 def generate_task_class(pl, tags_tasks_table, users_tasks_table,
