@@ -55,7 +55,7 @@ def generate_note_class(db):
         timestamp = db.Column(db.DateTime)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-        task = db.relationship('Task',
+        task = db.relationship('DbTask',
                                backref=db.backref('notes', lazy='dynamic',
                                                   order_by=timestamp))
 

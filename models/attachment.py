@@ -73,7 +73,7 @@ def generate_attachment_class(db):
         description = db.Column(db.String(100), nullable=False, default='')
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-        task = db.relationship('Task',
+        task = db.relationship('DbTask',
                                backref=db.backref('attachments',
                                                   lazy='dynamic',
                                                   order_by=timestamp))

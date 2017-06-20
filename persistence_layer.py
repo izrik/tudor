@@ -2,7 +2,7 @@
 import collections
 
 from flask_sqlalchemy import SQLAlchemy
-from models.task import generate_task_class
+from models.task import generate_task_class, Task
 from models.tag import generate_tag_class, Tag
 from models.note import generate_note_class, Note
 from models.attachment import generate_attachment_class, Attachment
@@ -32,7 +32,7 @@ class Bridge(object):
 
     def is_domain_object(self, obj):
         return isinstance(obj,
-                          (Attachment, self.pl.Task, Tag,
+                          (Attachment, Task, Tag,
                            Note, self.pl.User, Option))
 
     def get_db_object_from_domain_object(self, domobj):
@@ -86,6 +86,17 @@ class Bridge(object):
                 self._db_by_domain[domobj] = dbobj
             return self._db_by_domain[domobj]
 
+        if isinstance(domobj, Task):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.id is not None:
+                    dbobj = self.pl.get_task(domobj.id)
+                if dbobj is None:
+                    dbobj = self.pl.Task.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
         return domobj
 
     def get_domain_object_from_db_object(self, dbobj):
@@ -99,7 +110,7 @@ class Bridge(object):
             if isinstance(dbobj, self.pl.Attachment):
                 domobj = Attachment.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.Task):
-                domobj = dbobj
+                domobj = Task.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.Tag):
                 domobj = Tag.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.Note):
@@ -316,7 +327,8 @@ class PersistenceLayer(object):
         return self.Task.query
 
     def get_task(self, task_id):
-        return self.task_query.get(task_id)
+        return self.bridge.get_domain_object_from_db_object(
+            self.task_query.get(task_id))
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                          parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -441,7 +453,7 @@ class PersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
-        return (_ for _ in query)
+        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,

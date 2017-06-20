@@ -4,80 +4,59 @@ from dateutil.parser import parse as dparse
 from conversions import str_from_datetime
 
 
-def generate_task_class(pl, tags_tasks_table, users_tasks_table,
-                        task_dependencies_table, task_prioritize_table):
-    db = pl.db
+class TaskBase(object):
+    depth = 0
 
-    class Task(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        summary = db.Column(db.String(100))
-        description = db.Column(db.String(4000))
-        is_done = db.Column(db.Boolean)
-        is_deleted = db.Column(db.Boolean)
-        order_num = db.Column(db.Integer, nullable=False, default=0)
-        deadline = db.Column(db.DateTime)
-        expected_duration_minutes = db.Column(db.Integer)
-        expected_cost = db.Column(db.Numeric)
-        tags = db.relationship('DbTag', secondary=tags_tasks_table,
-                               backref=db.backref('tasks', lazy='dynamic'))
-        users = db.relationship('User', secondary=users_tasks_table,
-                                backref=db.backref('tasks', lazy='dynamic'))
+    def __init__(self, summary, description='', is_done=False,
+                 is_deleted=False, deadline=None,
+                 expected_duration_minutes=None, expected_cost=None):
+        self.summary = summary
+        self.description = description
+        self.is_done = not not is_done
+        self.is_deleted = not not is_deleted
+        if isinstance(deadline, basestring):
+            deadline = dparse(deadline)
+        self.deadline = deadline
+        self.expected_duration_minutes = expected_duration_minutes
+        self.expected_cost = expected_cost
 
-        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
-                              nullable=True)
-        parent = db.relationship('Task', remote_side=[id],
-                                 backref=db.backref('children',
-                                                    lazy='dynamic'))
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'summary': self.summary,
+            'description': self.description,
+            'is_done': self.is_done,
+            'is_deleted': self.is_deleted,
+            'order_num': self.order_num,
+            'deadline': str_from_datetime(self.deadline),
+            'parent_id': self.parent_id,
+            'expected_duration_minutes':
+                self.expected_duration_minutes,
+            'expected_cost': self.get_expected_cost_for_export(),
+            'tag_ids': [tag.id for tag in self.tags],
+            'user_ids': [user.id for user in self.users]
+        }
 
-        # self depends on self.dependees
-        # self.dependants depend on self
-        dependees = db.relationship(
-            'Task', secondary=task_dependencies_table,
-            primaryjoin=task_dependencies_table.c.dependant_id == id,
-            secondaryjoin=task_dependencies_table.c.dependee_id == id,
-            backref='dependants')
+    def get_expected_cost_for_export(self):
+        if self.expected_cost is None:
+            return None
+        return '{:.2f}'.format(self.expected_cost)
 
-        # self is after self.prioritze_before's
-        # self has lower priority that self.prioritze_before's
-        # self is before self.prioritze_after's
-        # self has higher priority that self.prioritze_after's
-        prioritize_before = db.relationship(
-            'Task', secondary=task_prioritize_table,
-            primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
-            secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
-            backref='prioritize_after')
 
-        depth = 0
-
-        def __init__(self, summary, description='', is_done=False,
-                     is_deleted=False, deadline=None,
-                     expected_duration_minutes=None, expected_cost=None):
-            self.summary = summary
-            self.description = description
-            self.is_done = not not is_done
-            self.is_deleted = not not is_deleted
-            if isinstance(deadline, basestring):
-                deadline = dparse(deadline)
-            self.deadline = deadline
-            self.expected_duration_minutes = expected_duration_minutes
-            self.expected_cost = expected_cost
-
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'summary': self.summary,
-                'description': self.description,
-                'is_done': self.is_done,
-                'is_deleted': self.is_deleted,
-                'order_num': self.order_num,
-                'deadline': str_from_datetime(self.deadline),
-                'parent_id': self.parent_id,
-                'expected_duration_minutes':
-                    self.expected_duration_minutes,
-                'expected_cost': self.get_expected_cost_for_export(),
-                'tag_ids': [tag.id for tag in self.tags],
-                'user_ids': [user.id for user in self.users]
-            }
+class Task(TaskBase):
+        id = None
+        summary = None
+        description = None
+        is_done = None
+        is_deleted = None
+        order_num = None
+        deadline = None
+        expected_duration_minutes = None
+        expected_cost = None
+        tags = list()
+        users = list()
+        parent_id = None
+        parent = None
 
         @staticmethod
         def from_dict(d):
@@ -137,11 +116,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 return ''
             return '{:.2f}'.format(self.expected_cost)
 
-        def get_expected_cost_for_export(self):
-            if self.expected_cost is None:
-                return None
-            return '{:.2f}'.format(self.expected_cost)
-
         def is_user_authorized(self, user):
             return user in self.users
 
@@ -170,4 +144,88 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                     return True
             return False
 
-    return Task
+
+def generate_task_class(pl, tags_tasks_table, users_tasks_table,
+                        task_dependencies_table, task_prioritize_table):
+    db = pl.db
+
+    class DbTask(db.Model, TaskBase):
+
+        __tablename__ = 'task'
+
+        id = db.Column(db.Integer, primary_key=True)
+        summary = db.Column(db.String(100))
+        description = db.Column(db.String(4000))
+        is_done = db.Column(db.Boolean)
+        is_deleted = db.Column(db.Boolean)
+        order_num = db.Column(db.Integer, nullable=False, default=0)
+        deadline = db.Column(db.DateTime)
+        expected_duration_minutes = db.Column(db.Integer)
+        expected_cost = db.Column(db.Numeric)
+        tags = db.relationship('DbTag', secondary=tags_tasks_table,
+                               backref=db.backref('tasks', lazy='dynamic'))
+        users = db.relationship('User', secondary=users_tasks_table,
+                                backref=db.backref('tasks', lazy='dynamic'))
+
+        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                              nullable=True)
+        parent = db.relationship('DbTask', remote_side=[id],
+                                 backref=db.backref('children',
+                                                    lazy='dynamic'))
+
+        # self depends on self.dependees
+        # self.dependants depend on self
+        dependees = db.relationship(
+            'DbTask', secondary=task_dependencies_table,
+            primaryjoin=task_dependencies_table.c.dependant_id == id,
+            secondaryjoin=task_dependencies_table.c.dependee_id == id,
+            backref='dependants')
+
+        # self is after self.prioritze_before's
+        # self has lower priority that self.prioritze_before's
+        # self is before self.prioritze_after's
+        # self has higher priority that self.prioritze_after's
+        prioritize_before = db.relationship(
+            'DbTask', secondary=task_prioritize_table,
+            primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
+            secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
+            backref='prioritize_after')
+
+        def __init__(self, summary, description='', is_done=False,
+                     is_deleted=False, deadline=None,
+                     expected_duration_minutes=None, expected_cost=None):
+            db.Model.__init__(self)
+            TaskBase.__init__(
+                self, summary=summary, description=description,
+                is_done=is_done, is_deleted=is_deleted, deadline=deadline,
+                expected_duration_minutes=expected_duration_minutes,
+                expected_cost=expected_cost)
+
+        @staticmethod
+        def from_dict(d):
+            task_id = d.get('id', None)
+            summary = d.get('summary')
+            description = d.get('description', '')
+            is_done = d.get('is_done', False)
+            is_deleted = d.get('is_deleted', False)
+            order_num = d.get('order_num', 0)
+            deadline = d.get('deadline', None)
+            parent_id = d.get('parent_id', None)
+            expected_duration_minutes = d.get('expected_duration_minutes',
+                                              None)
+            expected_cost = d.get('expected_cost', None)
+            # 'tag_ids': [tag.id for tag in self.tags],
+            # 'user_ids': [user.id for user in self.users]
+
+            task = DbTask(summary=summary, description=description,
+                          is_done=is_done, is_deleted=is_deleted,
+                          deadline=deadline,
+                          expected_duration_minutes=expected_duration_minutes,
+                          expected_cost=expected_cost)
+            if task_id is not None:
+                task.id = task_id
+            task.order_num = order_num
+            task.parent_id = parent_id
+            return task
+
+    return DbTask

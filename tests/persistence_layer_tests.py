@@ -9,6 +9,7 @@ from models.attachment import Attachment
 from models.note import Note
 from models.option import Option
 from models.tag import Tag
+from models.task import Task
 
 
 class PersistenceLayerTest(unittest.TestCase):
@@ -16,14 +17,14 @@ class PersistenceLayerTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.pl.add(self.t1)
-        self.t2 = self.pl.Task('t2', is_done=True)
+        self.t2 = Task('t2', is_done=True)
         self.pl.add(self.t2)
-        self.t3 = self.pl.Task('t3', is_deleted=True)
+        self.t3 = Task('t3', is_deleted=True)
         self.t3.parent = self.t2
         self.pl.add(self.t3)
-        self.t4 = self.pl.Task('t4', is_done=True, is_deleted=True)
+        self.t4 = Task('t4', is_done=True, is_deleted=True)
         self.pl.add(self.t4)
         self.pl.commit()
 
@@ -137,17 +138,17 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.t1.id = 5
         self.pl.add(self.t1)
-        self.t2 = self.pl.Task('t2', is_done=True)
+        self.t2 = Task('t2', is_done=True)
         self.t2.id = 7
         self.pl.add(self.t2)
-        self.t3 = self.pl.Task('t3', is_deleted=True)
+        self.t3 = Task('t3', is_deleted=True)
         self.t3.parent = self.t2
         self.t3.id = 11
         self.pl.add(self.t3)
-        self.t4 = self.pl.Task('t4', is_done=True, is_deleted=True)
+        self.t4 = Task('t4', is_done=True, is_deleted=True)
         self.t4.id = 13
         self.pl.add(self.t4)
 
@@ -242,10 +243,10 @@ class PersistenceLayerOrderByDeadlineTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1', deadline='2017-01-01')
-        self.t2 = self.pl.Task('t2', deadline='2017-01-02')
-        self.t3 = self.pl.Task('t3', deadline='2017-01-03')
-        self.t4 = self.pl.Task('t4', deadline='2017-01-04')
+        self.t1 = Task('t1', deadline='2017-01-01')
+        self.t2 = Task('t2', deadline='2017-01-02')
+        self.t3 = Task('t3', deadline='2017-01-03')
+        self.t4 = Task('t4', deadline='2017-01-04')
 
         self.pl.add(self.t1)
         self.pl.add(self.t2)
@@ -282,11 +283,11 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.pl.add(self.t1)
-        self.t2 = self.pl.Task('t2')
+        self.t2 = Task('t2')
         self.pl.add(self.t2)
-        self.t3 = self.pl.Task('t3')
+        self.t3 = Task('t3')
         self.pl.add(self.t3)
 
         self.pl.commit()
@@ -431,13 +432,13 @@ class PersistenceLayerLimitTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.t1.order_num = 1
         self.pl.add(self.t1)
-        self.t2 = self.pl.Task('t2')
+        self.t2 = Task('t2')
         self.t2.order_num = 2
         self.pl.add(self.t2)
-        self.t3 = self.pl.Task('t3')
+        self.t3 = Task('t3')
         self.t3.order_num = 3
         self.pl.add(self.t3)
 
@@ -479,11 +480,11 @@ class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1', deadline=datetime(2017, 1, 1))
+        self.t1 = Task('t1', deadline=datetime(2017, 1, 1))
         self.pl.add(self.t1)
-        self.t2 = self.pl.Task('t2')
+        self.t2 = Task('t2')
         self.pl.add(self.t2)
-        self.t3 = self.pl.Task('t3', deadline=datetime(2017, 1, 2))
+        self.t3 = Task('t3', deadline=datetime(2017, 1, 2))
         self.pl.add(self.t3)
 
         self.pl.commit()
@@ -512,22 +513,22 @@ class PersistenceLayerParentIdInTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.pl.add(self.t1)
-        self.t2 = self.pl.Task('t2')
+        self.t2 = Task('t2')
         self.pl.add(self.t2)
-        self.t3 = self.pl.Task('t3')
+        self.t3 = Task('t3')
         self.t3.parent = self.t2
         self.pl.add(self.t3)
-        self.t4 = self.pl.Task('t4')
+        self.t4 = Task('t4')
         self.t4.parent = self.t3
         self.pl.add(self.t4)
-        self.t5 = self.pl.Task('t5')
+        self.t5 = Task('t5')
         self.t5.parent = self.t2
         self.pl.add(self.t5)
-        self.t6 = self.pl.Task('t6')
+        self.t6 = Task('t6')
         self.pl.add(self.t6)
-        self.t7 = self.pl.Task('t7')
+        self.t7 = Task('t7')
         self.t7.parent = self.t6
         self.pl.add(self.t7)
 
@@ -593,9 +594,9 @@ class PersistenceLayerTagsTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
-        self.t2 = self.pl.Task('t2')
-        self.t3 = self.pl.Task('t3')
+        self.t1 = Task('t1')
+        self.t2 = Task('t2')
+        self.t3 = Task('t3')
         self.tag1 = Tag('tag1')
         self.tag2 = Tag('tag2')
         self.t2.tags.append(self.tag1)
@@ -632,15 +633,15 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.t1.order_num = 11
-        self.t2 = self.pl.Task('t2')
+        self.t2 = Task('t2')
         self.t2.order_num = 23
-        self.t3 = self.pl.Task('t3')
+        self.t3 = Task('t3')
         self.t3.order_num = 37
-        self.t4 = self.pl.Task('t4')
+        self.t4 = Task('t4')
         self.t4.order_num = 47
-        self.t5 = self.pl.Task('t5')
+        self.t5 = Task('t5')
         self.t5.order_num = 53
         self.tag1 = Tag('tag1')
         self.tag2 = Tag('tag2')
@@ -977,10 +978,10 @@ class PersistenceLayerSearchTermTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
 
-        self.t1 = self.pl.Task('t1', description='qwerty')
-        self.t2 = self.pl.Task('t2', description='abc')
-        self.t3 = self.pl.Task('t3 abc', description='qwerty')
-        self.t4 = self.pl.Task('t4 abc', description='abc')
+        self.t1 = Task('t1', description='qwerty')
+        self.t2 = Task('t2', description='abc')
+        self.t3 = Task('t3 abc', description='qwerty')
+        self.t4 = Task('t4 abc', description='abc')
 
         self.pl.add(self.t1)
         self.pl.add(self.t2)
@@ -1008,13 +1009,13 @@ class PersistenceLayerOrderNumberGreaterLessEqualTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
 
-        self.t1 = self.pl.Task('t1')
+        self.t1 = Task('t1')
         self.t1.order_num = 2
-        self.t2 = self.pl.Task('t2')
+        self.t2 = Task('t2')
         self.t2.order_num = 3
-        self.t3 = self.pl.Task('t3')
+        self.t3 = Task('t3')
         self.t3.order_num = 5
-        self.t4 = self.pl.Task('t4')
+        self.t4 = Task('t4')
         self.t4.order_num = 7
 
         self.pl.add(self.t1)
@@ -1505,7 +1506,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_adding_task_does_not_create_id(self):
         # given
-        task = self.pl.Task('summary')
+        task = Task('summary')
         # precondition
         self.assertIsNone(task.id)
         # when
@@ -1515,7 +1516,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_committing_task_creates_id(self):
         # given
-        task = self.pl.Task('summary')
+        task = Task('summary')
         self.pl.add(task)
         # precondition
         self.assertIsNone(task.id)
@@ -1622,23 +1623,57 @@ class BridgeTest(unittest.TestCase):
         # expect
         self.assertTrue(self.bridge.is_db_object(task))
 
-    def test_db_task_is_domain_object(self):
+    def test_db_task_is_not_domain_object(self):
         # given
         task = self.pl.Task('task')
+        # expect
+        self.assertFalse(self.bridge.is_domain_object(task))
+
+    def test_domain_task_is_not_db_object(self):
+        # given
+        task = Task('task')
+        # expect
+        self.assertFalse(self.bridge.is_db_object(task))
+
+    def test_domain_task_is_domain_object(self):
+        # given
+        task = Task('task')
         # expect
         self.assertTrue(self.bridge.is_domain_object(task))
 
-    def test_get_domain_object_task_returns_same(self):
+    def test_get_domain_object_db_task_returns_domain_task(self):
         # given
         task = self.pl.Task('task')
-        # expect
-        self.assertIs(task, self.bridge.get_domain_object_from_db_object(task))
+        # when
+        result = self.bridge.get_domain_object_from_db_object(task)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Task)
 
-    def test_get_db_object_task_returns_same(self):
+    def test_get_db_object_db_task_raises(self):
         # given
         task = self.pl.Task('task')
         # expect
-        self.assertIs(task, self.bridge.get_db_object_from_domain_object(task))
+        self.assertRaises(Exception,
+                          self.bridge.get_db_object_from_domain_object,
+                          task)
+
+    def test_get_domain_object_domain_task_raises(self):
+        # given
+        task = Task('task')
+        # expect
+        self.assertRaises(Exception,
+                          self.bridge.get_domain_object_from_db_object,
+                          task)
+
+    def test_get_db_object_domain_task_returns_db_task(self):
+        # given
+        task = Task('task')
+        # when
+        result = self.bridge.get_db_object_from_domain_object(task)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, self.pl.Task)
 
     def test_db_tag_is_db_object(self):
         # given
