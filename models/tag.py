@@ -1,6 +1,7 @@
 
 from changeable import Changeable
 
+
 class TagBase(object):
     def __init__(self, value, description=None):
         self.value = value

@@ -1,6 +1,7 @@
 
 from changeable import Changeable
 
+
 class OptionBase(object):
     def __init__(self, key, value):
         self.key = key

@@ -123,7 +123,6 @@ class Attachment(Changeable, AttachmentBase):
         self._task = value
         self._on_attr_changed()
 
-
     @staticmethod
     def from_dict(d):
         attachment_id = d.get('id', None)
