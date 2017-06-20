@@ -1609,6 +1609,247 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertIsNotNone(user.id)
 
+    def test_rollback_reverts_changes(self):
+        task = Task('task')
+        tag = Tag('tag', description='a')
+        self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+        tag.description = 'b'
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        tag2 = self.pl.get_tag_by_value('tag')
+        self.assertIsNotNone(tag2)
+        self.assertEqual('a', tag2.description)
+        self.assertEqual('a', tag.description)
+
+    def test_rollback_does_not_reverts_changes_on_unadded_new_objects(self):
+        tag = Tag('tag', description='a')
+        tag.description = 'b'
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertEqual('b', tag.description)
+
+    def test_changes_to_objects_are_tracked_automatically(self):
+        tag = Tag('tag', description='a')
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEqual('a', tag.description)
+        # when
+        tag.description = 'b'
+        # then
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.commit()
+        # then
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertEqual('b', tag.description)
+
+    def test_adding_tag_to_task_also_adds_task_to_tag(self):
+        # given
+        task = Task('task')
+        tag = Tag('tag', description='a')
+        self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(tag, task.tags)
+        self.assertNotIn(task, tag.tasks)
+        # when
+        task.tags.append(tag)
+        # then
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+    def test_adding_child_also_sets_parent_id(self):
+        # given
+        parent = Task('parent')
+        child = Task('child')
+        self.pl.add(parent)
+        self.pl.add(child)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        parent.children.append(child)
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+
+    def test_adding_task_dependee_also_adds_other_task_dependant(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(t1, t2.dependees)
+        self.assertNotIn(t1, t2.dependants)
+        self.assertNotIn(t2, t1.dependees)
+        self.assertNotIn(t2, t1.dependants)
+        # when
+        t1.dependees.append(t2)
+        # then
+        self.assertNotIn(t1, t2.dependees)
+        self.assertIn(t1, t2.dependants)
+        self.assertIn(t2, t1.dependees)
+        self.assertNotIn(t2, t1.dependants)
+        # when
+        self.pl.commit()
+        # then
+        self.assertNotIn(t1, t2.dependees)
+        self.assertIn(t1, t2.dependants)
+        self.assertIn(t2, t1.dependees)
+        self.assertNotIn(t2, t1.dependants)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertNotIn(t1, t2.dependees)
+        self.assertIn(t1, t2.dependants)
+        self.assertIn(t2, t1.dependees)
+        self.assertNotIn(t2, t1.dependants)
+
+    def test_adding_task_after_also_adds_other_task_before(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(t1, t2.dependees)
+        self.assertNotIn(t1, t2.dependants)
+        self.assertNotIn(t2, t1.dependees)
+        self.assertNotIn(t2, t1.dependants)
+        # when
+        t1.prioritize_after.append(t2)
+        # then
+        self.assertNotIn(t1, t2.prioritize_after)
+        self.assertIn(t1, t2.prioritize_before)
+        self.assertIn(t2, t1.prioritize_after)
+        self.assertNotIn(t2, t1.prioritize_before)
+        # when
+        self.pl.commit()
+        # then
+        self.assertNotIn(t1, t2.prioritize_after)
+        self.assertIn(t1, t2.prioritize_before)
+        self.assertIn(t2, t1.prioritize_after)
+        self.assertNotIn(t2, t1.prioritize_before)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertNotIn(t1, t2.prioritize_after)
+        self.assertIn(t1, t2.prioritize_before)
+        self.assertIn(t2, t1.prioritize_after)
+        self.assertNotIn(t2, t1.prioritize_before)
+
+    def test_adding_user_to_task_also_adds_task_to_user(self):
+        # given
+        task = Task('task')
+        user = self.pl.User('name@example.com')
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(user, task.users)
+        self.assertNotIn(task, user.tasks)
+        # when
+        task.users.append(user)
+        # then
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+
+    def test_setting_id_before_adding_succeeds(self):
+        # given
+        task = Task('task')
+        task.id = 1
+        # precondition
+        self.assertEqual(1, task.id)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertEqual(1, task.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertEqual(1, task.id)
+        # when
+        self.pl.commit()
+        # then
+        self.assertEqual(1, task.id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertEqual(1, task.id)
+
+    def test_conflicting_id_when_committing_raises_exception(self):
+        # given
+        t1 = Task('t1')
+        t1.id = 1
+        self.pl.add(t1)
+        t2 = Task('t1')
+        t2.id = 1
+        self.pl.add(t2)
+        # precondition
+        self.assertEqual(1, t1.id)
+        self.assertEqual(1, t2.id)
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
 
 class BridgeTest(unittest.TestCase):
     def setUp(self):
