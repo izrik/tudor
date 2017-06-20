@@ -2,6 +2,7 @@
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
+from changeable import Changeable
 
 
 class TaskBase(object):
@@ -65,7 +66,7 @@ class TaskBase(object):
         return '{:.2f}'.format(self.expected_cost)
 
 
-class Task(TaskBase):
+class Task(Changeable, TaskBase):
 
     _id = None
     _summary = None
@@ -78,8 +79,6 @@ class Task(TaskBase):
     _expected_cost = None
     _parent_id = None
     _parent = None
-
-    attr_changed = None
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
@@ -100,13 +99,6 @@ class Task(TaskBase):
         self.parent = None
         self.parent_id = None
 
-        self.attr_changed = list()
-
-    def _on_attr_changed(self):
-        if self.attr_changed:
-            for callable in self.attr_changed:
-                callable(self)
-
     @property
     def id(self):
         return self._id
@@ -114,6 +106,7 @@ class Task(TaskBase):
     @id.setter
     def id(self, value):
         self._id = value
+        self._on_attr_changed()
 
     @property
     def summary(self):
