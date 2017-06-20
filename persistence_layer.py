@@ -42,27 +42,23 @@ class Bridge(object):
             raise Exception(
                 'Not a domain object: {} ({})'.format(domobj, type(domobj)))
 
-        if isinstance(domobj, Attachment):
+        def get_db_object(domobj, getter, db_class):
             if domobj not in self._db_by_domain:
                 dbobj = None
                 if domobj.id is not None:
-                    dbobj = self.pl.get_attachment(domobj.id)
+                    dbobj = getter(domobj.id)
                 if dbobj is None:
-                    dbobj = self.pl.Attachment.from_dict(domobj.to_dict())
+                    dbobj = db_class.from_dict(domobj.to_dict())
                 self._domain_by_db[dbobj] = domobj
                 self._db_by_domain[domobj] = dbobj
             return self._db_by_domain[domobj]
 
+        if isinstance(domobj, Attachment):
+            return get_db_object(domobj, self.pl.get_attachment,
+                                 self.pl.Attachment)
+
         if isinstance(domobj, Note):
-            if domobj not in self._db_by_domain:
-                dbobj = None
-                if domobj.id is not None:
-                    dbobj = self.pl.get_note(domobj.id)
-                if dbobj is None:
-                    dbobj = self.pl.Note.from_dict(domobj.to_dict())
-                self._domain_by_db[dbobj] = domobj
-                self._db_by_domain[domobj] = dbobj
-            return self._db_by_domain[domobj]
+            return get_db_object(domobj, self.pl.get_note, self.pl.Note)
 
         if isinstance(domobj, Option):
             if domobj not in self._db_by_domain:
@@ -76,37 +72,13 @@ class Bridge(object):
             return self._db_by_domain[domobj]
 
         if isinstance(domobj, Tag):
-            if domobj not in self._db_by_domain:
-                dbobj = None
-                if domobj.id is not None:
-                    dbobj = self.pl.get_tag(domobj.id)
-                if dbobj is None:
-                    dbobj = self.pl.Tag.from_dict(domobj.to_dict())
-                self._domain_by_db[dbobj] = domobj
-                self._db_by_domain[domobj] = dbobj
-            return self._db_by_domain[domobj]
+            return get_db_object(domobj, self.pl.get_tag, self.pl.Tag)
 
         if isinstance(domobj, Task):
-            if domobj not in self._db_by_domain:
-                dbobj = None
-                if domobj.id is not None:
-                    dbobj = self.pl.get_task(domobj.id)
-                if dbobj is None:
-                    dbobj = self.pl.Task.from_dict(domobj.to_dict())
-                self._domain_by_db[dbobj] = domobj
-                self._db_by_domain[domobj] = dbobj
-            return self._db_by_domain[domobj]
+            return get_db_object(domobj, self.pl.get_task, self.pl.Task)
 
         if isinstance(domobj, User):
-            if domobj not in self._db_by_domain:
-                dbobj = None
-                if domobj.id is not None:
-                    dbobj = self.pl.get_user(domobj.id)
-                if dbobj is None:
-                    dbobj = self.pl.User.from_dict(domobj.to_dict())
-                self._domain_by_db[dbobj] = domobj
-                self._db_by_domain[domobj] = dbobj
-            return self._db_by_domain[domobj]
+            return get_db_object(domobj, self.pl.get_user, self.pl.User)
 
         return domobj
 
