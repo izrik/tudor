@@ -1,4 +1,6 @@
 
+from changeable import Changeable
+
 class OptionBase(object):
     def __init__(self, key, value):
         self.key = key
@@ -17,9 +19,27 @@ class OptionBase(object):
             self.value = d['value']
 
 
-class Option(OptionBase):
-    key = None
-    value = None
+class Option(Changeable, OptionBase):
+    _key = None
+    _value = None
+
+    @property
+    def key(self):
+        return self._key
+
+    @key.setter
+    def key(self, value):
+        self._key = value
+        self._on_attr_changed()
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+        self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):

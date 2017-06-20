@@ -1,4 +1,6 @@
 
+from changeable import Changeable
+
 class TagBase(object):
     def __init__(self, value, description=None):
         self.value = value
@@ -20,11 +22,38 @@ class TagBase(object):
             self.description = d['description']
 
 
-class Tag(TagBase):
+class Tag(Changeable, TagBase):
 
-    id = None
-    value = None
-    description = None
+    _id = None
+    _value = None
+    _description = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+        self._on_attr_changed()
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+        self._on_attr_changed()
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, value):
+        self._description = value
+        self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):

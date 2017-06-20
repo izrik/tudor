@@ -1,6 +1,8 @@
 
 import random
 
+from changeable import Changeable
+
 
 class UserBase(object):
     authenticated = True
@@ -42,12 +44,12 @@ class UserBase(object):
         return False
 
 
-class User(UserBase):
-    id = None
-    email = None
-    hashed_password = None
-    is_admin = None
-    authenticated = None
+class User(Changeable, UserBase):
+    _id = None
+    _email = None
+    _hashed_password = None
+    _is_admin = None
+    _authenticated = None
 
     def __init__(self, email, hashed_password=None, is_admin=False):
         if hashed_password is None:
@@ -55,6 +57,51 @@ class User(UserBase):
         super(User, self).__init__(email=email,
                                    hashed_password=hashed_password,
                                    is_admin=is_admin)
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+        self._on_attr_changed()
+
+    @property
+    def email(self):
+        return self._email
+
+    @email.setter
+    def email(self, value):
+        self._email = value
+        self._on_attr_changed()
+
+    @property
+    def hashed_password(self):
+        return self._hashed_password
+
+    @hashed_password.setter
+    def hashed_password(self, value):
+        self._hashed_password = value
+        self._on_attr_changed()
+
+    @property
+    def is_admin(self):
+        return self._is_admin
+
+    @is_admin.setter
+    def is_admin(self, value):
+        self._is_admin = value
+        self._on_attr_changed()
+
+    @property
+    def authenticated(self):
+        return self._authenticated
+
+    @authenticated.setter
+    def authenticated(self, value):
+        self._authenticated = value
+        self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):

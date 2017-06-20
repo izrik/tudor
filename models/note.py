@@ -3,6 +3,7 @@ import datetime
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
+from changeable import Changeable
 
 
 class NoteBase(object):
@@ -33,13 +34,58 @@ class NoteBase(object):
             self.task_id = d['task_id']
 
 
-class Note(NoteBase):
-    id = None
-    content = ''
-    timestamp = None
+class Note(Changeable, NoteBase):
+    _id = None
+    _content = ''
+    _timestamp = None
 
-    task_id = None
-    task = None
+    _task_id = None
+    _task = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+        self._on_attr_changed()
+
+    @property
+    def content(self):
+        return self._content
+
+    @content.setter
+    def content(self, value):
+        self._content = value
+        self._on_attr_changed()
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = value
+        self._on_attr_changed()
+
+    @property
+    def task_id(self):
+        return self._task_id
+
+    @task_id.setter
+    def task_id(self, value):
+        self._task_id = value
+        self._on_attr_changed()
+
+    @property
+    def task(self):
+        return self._task
+
+    @task.setter
+    def task(self, value):
+        self._task = value
+        self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):
