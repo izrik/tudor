@@ -29,6 +29,16 @@ def generate_user_class(db, bcrypt):
                 'is_admin': self.is_admin
             }
 
+        def update_from_dict(self, d):
+            if 'id' in d:
+                self.id = d['id']
+            if 'email' in d:
+                self.email = d['email']
+            if 'hashed_password' in d:
+                self.hashed_password = d['hashed_password']
+            if 'is_admin' in d:
+                self.is_admin = d['is_admin']
+
         @staticmethod
         def from_dict(d):
             user_id = d.get('id', None)

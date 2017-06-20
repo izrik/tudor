@@ -10,6 +10,12 @@ class OptionBase(object):
             'value': self.value
         }
 
+    def update_from_dict(self, d):
+        if 'key' in d:
+            self.key = d['key']
+        if 'value' in d:
+            self.value = d['value']
+
 
 class Option(OptionBase):
     key = None

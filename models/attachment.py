@@ -33,6 +33,20 @@ class AttachmentBase(object):
             'task_id': self.task_id
         }
 
+    def update_from_dict(self, d):
+        if 'id' in d:
+            self.id = d['id']
+        if 'timestamp' in d:
+            self.timestamp = d['timestamp']
+        if 'path' in d:
+            self.path = d['path']
+        if 'filename' in d:
+            self.filename = d['filename']
+        if 'description' in d:
+            self.description = d['description']
+        if 'task_id' in d:
+            self.task_id = d['task_id']
+
 
 class Attachment(AttachmentBase):
 

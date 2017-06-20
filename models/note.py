@@ -22,6 +22,16 @@ class NoteBase(object):
             'task_id': self.task_id
         }
 
+    def update_from_dict(self, d):
+        if 'id' in d:
+            self.id = d['id']
+        if 'content' in d:
+            self.content = d['content']
+        if 'timestamp' in d:
+            self.timestamp = d['timestamp']
+        if 'task_id' in d:
+            self.task_id = d['task_id']
+
 
 class Note(NoteBase):
     id = None

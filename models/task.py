@@ -37,6 +37,28 @@ class TaskBase(object):
             'user_ids': [user.id for user in self.users]
         }
 
+    def update_from_dict(self, d):
+        if 'id' in d:
+            self.id = d['id']
+        if 'summary' in d:
+            self.summary = d['summary']
+        if 'description' in d:
+            self.description = d['description']
+        if 'is_done' in d:
+            self.is_done = d['is_done']
+        if 'is_deleted' in d:
+            self.is_deleted = d['is_deleted']
+        if 'order_num' in d:
+            self.order_num = d['order_num']
+        if 'deadline' in d:
+            self.deadline = d['deadline']
+        if 'expected_duration_minutes' in d:
+            self.expected_duration_minutes = d['expected_duration_minutes']
+        if 'expected_cost' in d:
+            self.expected_cost = d['expected_cost']
+        if 'parent_id' in d:
+            self.parent_id = d['parent_id']
+
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
             return None

@@ -11,6 +11,14 @@ class TagBase(object):
             'description': self.description,
         }
 
+    def update_from_dict(self, d):
+        if 'id' in d:
+            self.id = d['id']
+        if 'value' in d:
+            self.value = d['value']
+        if 'description' in d:
+            self.description = d['description']
+
 
 class Tag(TagBase):
 
