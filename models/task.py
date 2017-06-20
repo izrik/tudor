@@ -306,10 +306,10 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             secondaryjoin=task_dependencies_table.c.dependee_id == id,
             backref='dependants')
 
-        # self is after self.prioritze_before's
-        # self has lower priority that self.prioritze_before's
-        # self is before self.prioritze_after's
-        # self has higher priority that self.prioritze_after's
+        # self is after self.prioritize_before's
+        # self has lower priority that self.prioritize_before's
+        # self is before self.prioritize_after's
+        # self has higher priority that self.prioritize_after's
         prioritize_before = db.relationship(
             'DbTask', secondary=task_prioritize_table,
             primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
