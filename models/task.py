@@ -53,10 +53,23 @@ class Task(TaskBase):
     deadline = None
     expected_duration_minutes = None
     expected_cost = None
-    tags = list()
-    users = list()
     parent_id = None
     parent = None
+
+    def __init__(self, summary, description='', is_done=False, is_deleted=False,
+                 deadline=None, expected_duration_minutes=None,
+                 expected_cost=None):
+        super(Task, self).__init__(
+            summary, description, is_done, is_deleted, deadline,
+            expected_duration_minutes, expected_cost)
+
+        self.dependees = list()
+        self.dependants = list()
+        self.prioritize_before = list()
+        self.prioritize_after = list()
+        self.tags = list()
+        self.users = list()
+        self.children = list()
 
     @staticmethod
     def from_dict(d):
