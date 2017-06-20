@@ -13,16 +13,21 @@ class AttachmentBase(object):
                  filename=None):
         if description is None:
             description = ''
-        if timestamp is None:
-            timestamp = datetime.datetime.utcnow()
-        if isinstance(timestamp, basestring):
-            timestamp = dparse(timestamp)
+        timestamp = self._clean_timestamp(timestamp)
         if filename is None:
             filename = os.path.basename(path)
         self.timestamp = timestamp
         self.path = path
         self.filename = filename
         self.description = description
+
+    @staticmethod
+    def _clean_timestamp(timestamp):
+        if timestamp is None:
+            return datetime.datetime.utcnow()
+        if isinstance(timestamp, basestring):
+            return dparse(timestamp)
+        return timestamp
 
     def to_dict(self):
         return {
@@ -38,7 +43,7 @@ class AttachmentBase(object):
         if 'id' in d:
             self.id = d['id']
         if 'timestamp' in d:
-            self.timestamp = d['timestamp']
+            self.timestamp = self._clean_timestamp(d['timestamp'])
         if 'path' in d:
             self.path = d['path']
         if 'filename' in d:

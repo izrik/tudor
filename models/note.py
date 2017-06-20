@@ -9,11 +9,15 @@ from changeable import Changeable
 class NoteBase(object):
     def __init__(self, content, timestamp=None):
         self.content = content
+        self.timestamp = self._clean_timestamp(timestamp)
+
+    @staticmethod
+    def _clean_timestamp(timestamp):
         if timestamp is None:
-            timestamp = datetime.datetime.utcnow()
+            return datetime.datetime.utcnow()
         if isinstance(timestamp, basestring):
-            timestamp = dparse(timestamp)
-        self.timestamp = timestamp
+            return dparse(timestamp)
+        return timestamp
 
     def to_dict(self):
         return {
@@ -29,7 +33,7 @@ class NoteBase(object):
         if 'content' in d:
             self.content = d['content']
         if 'timestamp' in d:
-            self.timestamp = d['timestamp']
+            self.timestamp = self._clean_timestamp(d['timestamp'])
         if 'task_id' in d:
             self.task_id = d['task_id']
 

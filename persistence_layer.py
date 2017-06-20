@@ -139,11 +139,13 @@ class PersistenceLayer(object):
 
     def add(self, domobj):
         dbobj = self._get_db_object_from_domain_object(domobj)
+        self._register_domain_object(domobj)
         self._changed_objects.add(domobj)
         self.db.session.add(dbobj)
 
     def delete(self, domobj):
         dbobj = self._get_db_object_from_domain_object(domobj)
+        self._register_domain_object(domobj)
         self._changed_objects.add(domobj)
         self.db.session.delete(dbobj)
 
@@ -241,42 +243,18 @@ class PersistenceLayer(object):
 
     def _update_domain_object_from_db_object(self, domobj):
         dbobj = self._get_db_object_from_domain_object(domobj)
-        if not isinstance(domobj, Option):
-            domobj.id = dbobj.id
-
-        if isinstance(dbobj, self.Attachment):
-            pass
-        elif isinstance(dbobj, self.Task):
-            pass
-        elif isinstance(dbobj, self.Tag):
-            pass
-        elif isinstance(dbobj, self.Note):
-            pass
-        elif isinstance(dbobj, self.User):
-            pass
-        elif isinstance(dbobj, self.Option):
-            pass
-        else:
-            raise Exception(
-                'Unknown db type: {}, {}'.format(dbobj, type(dbobj)))
+        domobj.update_from_dict(dbobj.to_dict())
 
     def _update_db_object_from_domain_object(self, domobj):
         dbobj = self._get_db_object_from_domain_object(domobj)
-        if isinstance(dbobj, self.Attachment):
-            pass
-        elif isinstance(dbobj, self.Task):
-            pass
-        elif isinstance(dbobj, self.Tag):
-            pass
-        elif isinstance(dbobj, self.Note):
-            pass
-        elif isinstance(dbobj, self.User):
-            pass
-        elif isinstance(dbobj, self.Option):
-            pass
-        else:
-            raise Exception(
-                'Unknown db type: {}, {}'.format(dbobj, type(dbobj)))
+        dbobj.update_from_dict(domobj.to_dict())
+
+    def _on_domain_object_attr_changed(self, domobj):
+        self._changed_objects.add(domobj)
+
+    def _register_domain_object(self, domobj):
+        self._changed_objects.add(domobj)
+        domobj.register_change_listener(self._on_domain_object_attr_changed)
 
     def create_all(self):
         self.db.create_all()

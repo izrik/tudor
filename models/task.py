@@ -15,11 +15,15 @@ class TaskBase(object):
         self.description = description
         self.is_done = not not is_done
         self.is_deleted = not not is_deleted
-        if isinstance(deadline, basestring):
-            deadline = dparse(deadline)
-        self.deadline = deadline
+        self.deadline = self._clean_deadline(deadline)
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = expected_cost
+
+    @staticmethod
+    def _clean_deadline(deadline):
+        if isinstance(deadline, basestring):
+            return dparse(deadline)
+        return deadline
 
     def to_dict(self):
         return {
@@ -52,7 +56,7 @@ class TaskBase(object):
         if 'order_num' in d:
             self.order_num = d['order_num']
         if 'deadline' in d:
-            self.deadline = d['deadline']
+            self.deadline = self._clean_deadline(d['deadline'])
         if 'expected_duration_minutes' in d:
             self.expected_duration_minutes = d['expected_duration_minutes']
         if 'expected_cost' in d:
