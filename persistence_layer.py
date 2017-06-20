@@ -6,7 +6,7 @@ from models.task import generate_task_class, Task
 from models.tag import generate_tag_class, Tag
 from models.note import generate_note_class, Note
 from models.attachment import generate_attachment_class, Attachment
-from models.user import generate_user_class
+from models.user import generate_user_class, User
 from models.option import generate_option_class, Option
 
 
@@ -33,7 +33,7 @@ class Bridge(object):
     def is_domain_object(self, obj):
         return isinstance(obj,
                           (Attachment, Task, Tag,
-                           Note, self.pl.User, Option))
+                           Note, User, Option))
 
     def get_db_object_from_domain_object(self, domobj):
         if domobj is None:
@@ -97,6 +97,17 @@ class Bridge(object):
                 self._db_by_domain[domobj] = dbobj
             return self._db_by_domain[domobj]
 
+        if isinstance(domobj, User):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.id is not None:
+                    dbobj = self.pl.get_user(domobj.id)
+                if dbobj is None:
+                    dbobj = self.pl.User.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
         return domobj
 
     def get_domain_object_from_db_object(self, dbobj):
@@ -116,7 +127,7 @@ class Bridge(object):
             elif isinstance(dbobj, self.pl.Note):
                 domobj = Note.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.User):
-                domobj = dbobj
+                domobj = User.from_dict(dbobj.to_dict())
             elif isinstance(dbobj, self.pl.Option):
                 domobj = Option.from_dict(dbobj.to_dict())
             else:
@@ -588,10 +599,12 @@ class PersistenceLayer(object):
         return self.User.query
 
     def get_user(self, user_id):
-        return self.user_query.get(user_id)
+        return self.bridge.get_domain_object_from_db_object(
+            self.user_query.get(user_id))
 
     def get_user_by_email(self, email):
-        return self.user_query.filter_by(email=email).first()
+        return self.bridge.get_domain_object_from_db_object(
+            self.user_query.filter_by(email=email).first())
 
     def _get_users_query(self, email_in=UNSPECIFIED):
         query = self.user_query
@@ -605,7 +618,7 @@ class PersistenceLayer(object):
 
     def get_users(self, email_in=UNSPECIFIED):
         query = self._get_users_query(email_in=email_in)
-        return (_ for _ in query)
+        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
 
     def count_users(self, email_in=UNSPECIFIED):
         return self._get_users_query(email_in=email_in).count()

@@ -311,7 +311,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         expected_cost = db.Column(db.Numeric)
         tags = db.relationship('DbTag', secondary=tags_tasks_table,
                                backref=db.backref('tasks', lazy='dynamic'))
-        users = db.relationship('User', secondary=users_tasks_table,
+        users = db.relationship('DbUser', secondary=users_tasks_table,
                                 backref=db.backref('tasks', lazy='dynamic'))
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
