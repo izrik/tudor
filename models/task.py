@@ -44,21 +44,24 @@ class TaskBase(object):
 
 
 class Task(TaskBase):
-    id = None
-    summary = None
-    description = None
-    is_done = None
-    is_deleted = None
-    order_num = None
-    deadline = None
-    expected_duration_minutes = None
-    expected_cost = None
-    parent_id = None
-    parent = None
 
-    def __init__(self, summary, description='', is_done=False, is_deleted=False,
-                 deadline=None, expected_duration_minutes=None,
-                 expected_cost=None):
+    _id = None
+    _summary = None
+    _description = None
+    _is_done = None
+    _is_deleted = None
+    _order_num = None
+    _deadline = None
+    _expected_duration_minutes = None
+    _expected_cost = None
+    _parent_id = None
+    _parent = None
+
+    attr_changed = None
+
+    def __init__(self, summary, description='', is_done=False,
+                 is_deleted=False, deadline=None,
+                 expected_duration_minutes=None, expected_cost=None):
         super(Task, self).__init__(
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost)
@@ -70,6 +73,115 @@ class Task(TaskBase):
         self.tags = list()
         self.users = list()
         self.children = list()
+
+        self.id = None
+        self.parent = None
+        self.parent_id = None
+
+        self.attr_changed = list()
+
+    def _on_attr_changed(self):
+        if self.attr_changed:
+            for callable in self.attr_changed:
+                callable(self)
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        self._id = value
+
+    @property
+    def summary(self):
+        return self._summary
+
+    @summary.setter
+    def summary(self, value):
+        self._summary = value
+        self._on_attr_changed()
+
+    @property
+    def description(self):
+        return self._description
+
+    @description.setter
+    def description(self, value):
+        self._description = value
+        self._on_attr_changed()
+
+    @property
+    def is_done(self):
+        return self._is_done
+
+    @is_done.setter
+    def is_done(self, value):
+        self._is_done = value
+        self._on_attr_changed()
+
+    @property
+    def is_deleted(self):
+        return self._is_deleted
+
+    @is_deleted.setter
+    def is_deleted(self, value):
+        self._is_deleted = value
+        self._on_attr_changed()
+
+    @property
+    def order_num(self):
+        return self._order_num
+
+    @order_num.setter
+    def order_num(self, value):
+        self._order_num = value
+        self._on_attr_changed()
+
+    @property
+    def deadline(self):
+        return self._deadline
+
+    @deadline.setter
+    def deadline(self, value):
+        self._deadline = value
+        self._on_attr_changed()
+
+    @property
+    def expected_duration_minutes(self):
+        return self._expected_duration_minutes
+
+    @expected_duration_minutes.setter
+    def expected_duration_minutes(self, value):
+        self._expected_duration_minutes = value
+        self._on_attr_changed()
+
+    @property
+    def expected_cost(self):
+        return self._expected_cost
+
+    @expected_cost.setter
+    def expected_cost(self, value):
+        self._expected_cost = value
+        self._on_attr_changed()
+
+    @property
+    def parent_id(self):
+        return self._parent_id
+
+    @parent_id.setter
+    def parent_id(self, value):
+        self._parent_id = value
+        self._on_attr_changed()
+
+    @property
+    def parent(self):
+        return self._parent
+
+    @parent.setter
+    def parent(self, value):
+        self._parent = value
+        self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):
