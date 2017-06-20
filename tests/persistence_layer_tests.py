@@ -1852,42 +1852,41 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertRaises(Exception, self.pl.commit)
 
 
-class BridgeTest(unittest.TestCase):
+class PersistenceLayerBridgeTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
-        self.bridge = self.pl.bridge
         self.pl.create_all()
 
     def test_db_task_is_db_object(self):
         # given
         task = self.pl.Task('task')
         # expect
-        self.assertTrue(self.bridge.is_db_object(task))
+        self.assertTrue(self.pl._is_db_object(task))
 
     def test_db_task_is_not_domain_object(self):
         # given
         task = self.pl.Task('task')
         # expect
-        self.assertFalse(self.bridge.is_domain_object(task))
+        self.assertFalse(self.pl._is_domain_object(task))
 
     def test_domain_task_is_not_db_object(self):
         # given
         task = Task('task')
         # expect
-        self.assertFalse(self.bridge.is_db_object(task))
+        self.assertFalse(self.pl._is_db_object(task))
 
     def test_domain_task_is_domain_object(self):
         # given
         task = Task('task')
         # expect
-        self.assertTrue(self.bridge.is_domain_object(task))
+        self.assertTrue(self.pl._is_domain_object(task))
 
     def test_get_domain_object_db_task_returns_domain_task(self):
         # given
         task = self.pl.Task('task')
         # when
-        result = self.bridge.get_domain_object_from_db_object(task)
+        result = self.pl._get_domain_object_from_db_object(task)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Task)
@@ -1897,7 +1896,7 @@ class BridgeTest(unittest.TestCase):
         task = self.pl.Task('task')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_db_object_from_domain_object,
+                          self.pl._get_db_object_from_domain_object,
                           task)
 
     def test_get_domain_object_domain_task_raises(self):
@@ -1905,14 +1904,14 @@ class BridgeTest(unittest.TestCase):
         task = Task('task')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_domain_object_from_db_object,
+                          self.pl._get_domain_object_from_db_object,
                           task)
 
     def test_get_db_object_domain_task_returns_db_task(self):
         # given
         task = Task('task')
         # when
-        result = self.bridge.get_db_object_from_domain_object(task)
+        result = self.pl._get_db_object_from_domain_object(task)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, self.pl.Task)
@@ -1921,31 +1920,31 @@ class BridgeTest(unittest.TestCase):
         # given
         tag = self.pl.Tag('tag')
         # expect
-        self.assertTrue(self.bridge.is_db_object(tag))
+        self.assertTrue(self.pl._is_db_object(tag))
 
     def test_db_tag_is_not_domain_object(self):
         # given
         tag = self.pl.Tag('tag')
         # expect
-        self.assertFalse(self.bridge.is_domain_object(tag))
+        self.assertFalse(self.pl._is_domain_object(tag))
 
     def test_domain_tag_is_not_db_object(self):
         # given
         tag = Tag('tag')
         # expect
-        self.assertFalse(self.bridge.is_db_object(tag))
+        self.assertFalse(self.pl._is_db_object(tag))
 
     def test_domain_tag_is_domain_object(self):
         # given
         tag = Tag('tag')
         # expect
-        self.assertTrue(self.bridge.is_domain_object(tag))
+        self.assertTrue(self.pl._is_domain_object(tag))
 
     def test_get_domain_object_db_tag_returns_domain_tag(self):
         # given
         tag = self.pl.Tag('tag')
         # when
-        result = self.bridge.get_domain_object_from_db_object(tag)
+        result = self.pl._get_domain_object_from_db_object(tag)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Tag)
@@ -1955,7 +1954,7 @@ class BridgeTest(unittest.TestCase):
         tag = Tag('tag')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_domain_object_from_db_object,
+                          self.pl._get_domain_object_from_db_object,
                           tag)
 
     def test_get_db_object_db_tag_raises(self):
@@ -1963,14 +1962,14 @@ class BridgeTest(unittest.TestCase):
         tag = self.pl.Tag('tag')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_db_object_from_domain_object,
+                          self.pl._get_db_object_from_domain_object,
                           tag)
 
     def test_get_db_object_domain_tag_returns_dg_tag(self):
         # given
         tag = Tag('tag')
         # when
-        result = self.bridge.get_db_object_from_domain_object(tag)
+        result = self.pl._get_db_object_from_domain_object(tag)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, self.pl.Tag)
@@ -1979,31 +1978,31 @@ class BridgeTest(unittest.TestCase):
         # given
         note = self.pl.Note('note')
         # expect
-        self.assertTrue(self.bridge.is_db_object(note))
+        self.assertTrue(self.pl._is_db_object(note))
 
     def test_domain_note_is_not_db_object(self):
         # given
         note = Note('note')
         # expect
-        self.assertFalse(self.bridge.is_db_object(note))
+        self.assertFalse(self.pl._is_db_object(note))
 
     def test_domain_note_is_domain_object(self):
         # given
         note = Note('note')
         # expect
-        self.assertTrue(self.bridge.is_domain_object(note))
+        self.assertTrue(self.pl._is_domain_object(note))
 
     def test_db_note_is_not_domain_object(self):
         # given
         note = self.pl.Note('note')
         # expect
-        self.assertFalse(self.bridge.is_domain_object(note))
+        self.assertFalse(self.pl._is_domain_object(note))
 
     def test_get_domain_object_db_note_returns_domain_object(self):
         # given
         note = self.pl.Note('note')
         # when
-        result = self.bridge.get_domain_object_from_db_object(note)
+        result = self.pl._get_domain_object_from_db_object(note)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Note)
@@ -2013,7 +2012,7 @@ class BridgeTest(unittest.TestCase):
         note = self.pl.Note('note')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_db_object_from_domain_object,
+                          self.pl._get_db_object_from_domain_object,
                           note)
 
     def test_get_domain_object_domain_note_raises(self):
@@ -2021,14 +2020,14 @@ class BridgeTest(unittest.TestCase):
         note = Note('note')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_domain_object_from_db_object,
+                          self.pl._get_domain_object_from_db_object,
                           note)
 
     def test_get_db_object_domain_note_returns_db_object(self):
         # given
         note = Note('note')
         # when
-        result = self.bridge.get_db_object_from_domain_object(note)
+        result = self.pl._get_db_object_from_domain_object(note)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, self.pl.Note)
@@ -2037,39 +2036,39 @@ class BridgeTest(unittest.TestCase):
         # given
         attachment = self.pl.Attachment('attachment')
         # expect
-        self.assertTrue(self.bridge.is_db_object(attachment))
+        self.assertTrue(self.pl._is_db_object(attachment))
 
     def test_domain_attachment_is_not_db_object(self):
         # given
         attachment = Attachment('attachment')
         # expect
-        self.assertFalse(self.bridge.is_db_object(attachment))
+        self.assertFalse(self.pl._is_db_object(attachment))
 
     def test_db_attachment_is_not_domain_object(self):
         # given
         attachment = self.pl.Attachment('attachment')
         # expect
-        self.assertFalse(self.bridge.is_domain_object(attachment))
+        self.assertFalse(self.pl._is_domain_object(attachment))
 
     def test_domain_attachment_is_domain_object(self):
         # given
         attachment = Attachment('attachment')
         # expect
-        self.assertTrue(self.bridge.is_domain_object(attachment))
+        self.assertTrue(self.pl._is_domain_object(attachment))
 
     def test_get_domain_object_domain_attachment_raises(self):
         # given
         attachment = Attachment('attachment')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_domain_object_from_db_object,
+                          self.pl._get_domain_object_from_db_object,
                           attachment)
 
     def test_get_domain_object_db_attachment_returns_domain(self):
         # given
         attachment = self.pl.Attachment('attachment')
         # when
-        result = self.bridge.get_domain_object_from_db_object(attachment)
+        result = self.pl._get_domain_object_from_db_object(attachment)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Attachment)
@@ -2079,14 +2078,14 @@ class BridgeTest(unittest.TestCase):
         attachment = self.pl.Attachment('attachment')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_db_object_from_domain_object,
+                          self.pl._get_db_object_from_domain_object,
                           attachment)
 
     def test_get_db_object_domain_attachment_returns_db(self):
         # given
         attachment = Attachment('attachment')
         # when
-        result = self.bridge.get_db_object_from_domain_object(attachment)
+        result = self.pl._get_db_object_from_domain_object(attachment)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, self.pl.Attachment)
@@ -2095,31 +2094,31 @@ class BridgeTest(unittest.TestCase):
         # given
         user = self.pl.User('name@example.com')
         # expect
-        self.assertTrue(self.bridge.is_db_object(user))
+        self.assertTrue(self.pl._is_db_object(user))
 
     def test_db_user_is_not_domain_object(self):
         # given
         user = self.pl.User('name@example.com')
         # expect
-        self.assertFalse(self.bridge.is_domain_object(user))
+        self.assertFalse(self.pl._is_domain_object(user))
 
     def test_domain_user_is_not_db_object(self):
         # given
         user = User('name@example.com')
         # expect
-        self.assertFalse(self.bridge.is_db_object(user))
+        self.assertFalse(self.pl._is_db_object(user))
 
     def test_domain_user_is_domain_object(self):
         # given
         user = User('name@example.com')
         # expect
-        self.assertTrue(self.bridge.is_domain_object(user))
+        self.assertTrue(self.pl._is_domain_object(user))
 
     def test_get_domain_object_db_user_returns_domain_user(self):
         # given
         user = self.pl.User('name@example.com')
         # when
-        result = self.bridge.get_domain_object_from_db_object(user)
+        result = self.pl._get_domain_object_from_db_object(user)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, User)
@@ -2129,7 +2128,7 @@ class BridgeTest(unittest.TestCase):
         user = User('name@example.com')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_domain_object_from_db_object,
+                          self.pl._get_domain_object_from_db_object,
                           user)
 
     def test_get_db_object_db_user_raises(self):
@@ -2137,14 +2136,14 @@ class BridgeTest(unittest.TestCase):
         user = self.pl.User('name@example.com')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_db_object_from_domain_object,
+                          self.pl._get_db_object_from_domain_object,
                           user)
 
     def test_get_db_object_domain_user_returns_db_user(self):
         # given
         user = User('name@example.com')
         # when
-        result = self.bridge.get_db_object_from_domain_object(user)
+        result = self.pl._get_db_object_from_domain_object(user)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, self.pl.User)
@@ -2153,39 +2152,39 @@ class BridgeTest(unittest.TestCase):
         # given
         option = self.pl.Option('key', 'value')
         # expect
-        self.assertTrue(self.bridge.is_db_object(option))
+        self.assertTrue(self.pl._is_db_object(option))
 
     def test_domain_option_is_not_db_object(self):
         # given
         option = Option('key', 'value')
         # expect
-        self.assertFalse(self.bridge.is_db_object(option))
+        self.assertFalse(self.pl._is_db_object(option))
 
     def test_db_option_is_not_domain_object(self):
         # given
         option = self.pl.Option('key', 'value')
         # expect
-        self.assertFalse(self.bridge.is_domain_object(option))
+        self.assertFalse(self.pl._is_domain_object(option))
 
     def test_domain_option_is_domain_object(self):
         # given
         option = Option('key', 'value')
         # expect
-        self.assertTrue(self.bridge.is_domain_object(option))
+        self.assertTrue(self.pl._is_domain_object(option))
 
     def test_get_domain_object_domain_option_raises(self):
         # given
         option = Option('key', 'value')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_domain_object_from_db_object,
+                          self.pl._get_domain_object_from_db_object,
                           option)
 
     def test_get_domain_object_db_option_returns_domain_object(self):
         # given
         option = self.pl.Option('key', 'value')
         # when
-        result = self.bridge.get_domain_object_from_db_object(option)
+        result = self.pl._get_domain_object_from_db_object(option)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Option)
@@ -2194,7 +2193,7 @@ class BridgeTest(unittest.TestCase):
         # given
         option = Option('key', 'value')
         # when
-        result = self.bridge.get_db_object_from_domain_object(option)
+        result = self.pl._get_db_object_from_domain_object(option)
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, self.pl.Option)
@@ -2204,5 +2203,5 @@ class BridgeTest(unittest.TestCase):
         option = self.pl.Option('key', 'value')
         # expect
         self.assertRaises(Exception,
-                          self.bridge.get_db_object_from_domain_object,
+                          self.pl._get_db_object_from_domain_object,
                           option)

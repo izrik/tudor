@@ -20,98 +20,6 @@ def as_iterable(x):
     return (x,)
 
 
-class Bridge(object):
-    def __init__(self, pl):
-        self._db_by_domain = {}
-        self._domain_by_db = {}
-        self.pl = pl
-        self.db = pl.db
-
-    def is_db_object(self, obj):
-        return isinstance(obj, self.db.Model)
-
-    def is_domain_object(self, obj):
-        return isinstance(obj,
-                          (Attachment, Task, Tag,
-                           Note, User, Option))
-
-    def get_db_object_from_domain_object(self, domobj):
-        if domobj is None:
-            return None
-        if not self.is_domain_object(domobj):
-            raise Exception(
-                'Not a domain object: {} ({})'.format(domobj, type(domobj)))
-
-        def get_db_object(domobj, getter, db_class):
-            if domobj not in self._db_by_domain:
-                dbobj = None
-                if domobj.id is not None:
-                    dbobj = getter(domobj.id)
-                if dbobj is None:
-                    dbobj = db_class.from_dict(domobj.to_dict())
-                self._domain_by_db[dbobj] = domobj
-                self._db_by_domain[domobj] = dbobj
-            return self._db_by_domain[domobj]
-
-        if isinstance(domobj, Attachment):
-            return get_db_object(domobj, self.pl.get_attachment,
-                                 self.pl.Attachment)
-
-        if isinstance(domobj, Note):
-            return get_db_object(domobj, self.pl.get_note, self.pl.Note)
-
-        if isinstance(domobj, Option):
-            if domobj not in self._db_by_domain:
-                dbobj = None
-                if domobj.key is not None:
-                    dbobj = self.pl.get_option(domobj.key)
-                if dbobj is None:
-                    dbobj = self.pl.Option.from_dict(domobj.to_dict())
-                self._domain_by_db[dbobj] = domobj
-                self._db_by_domain[domobj] = dbobj
-            return self._db_by_domain[domobj]
-
-        if isinstance(domobj, Tag):
-            return get_db_object(domobj, self.pl.get_tag, self.pl.Tag)
-
-        if isinstance(domobj, Task):
-            return get_db_object(domobj, self.pl.get_task, self.pl.Task)
-
-        if isinstance(domobj, User):
-            return get_db_object(domobj, self.pl.get_user, self.pl.User)
-
-        return domobj
-
-    def get_domain_object_from_db_object(self, dbobj):
-        if dbobj is None:
-            return None
-        if not self.is_db_object(dbobj):
-            raise Exception(
-                'Not a db object: {} ({})'.format(dbobj, type(dbobj)))
-        if dbobj not in self._domain_by_db:
-            domobj = None
-            if isinstance(dbobj, self.pl.Attachment):
-                domobj = Attachment.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.pl.Task):
-                domobj = Task.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.pl.Tag):
-                domobj = Tag.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.pl.Note):
-                domobj = Note.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.pl.User):
-                domobj = User.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.pl.Option):
-                domobj = Option.from_dict(dbobj.to_dict())
-            else:
-                raise Exception(
-                    'Unknown db object type: {}, {}'.format(dbobj,
-                                                            type(dbobj)))
-            self._domain_by_db[dbobj] = domobj
-            self._db_by_domain[domobj] = dbobj
-
-        return self._domain_by_db[dbobj]
-
-
 class Pager(object):
     page = None
     per_page = None
@@ -184,7 +92,6 @@ class PersistenceLayer(object):
         self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
         self.db = SQLAlchemy(self.app)
 
-        self.bridge = Bridge(self)
         db = self.db
         self._changed_objects = set()
 
@@ -227,13 +134,16 @@ class PersistenceLayer(object):
         self.User = generate_user_class(db, bcrypt)
         self.Option = generate_option_class(db)
 
+        self._db_by_domain = {}
+        self._domain_by_db = {}
+
     def add(self, domobj):
-        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        dbobj = self._get_db_object_from_domain_object(domobj)
         self._changed_objects.add(domobj)
         self.db.session.add(dbobj)
 
     def delete(self, domobj):
-        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        dbobj = self._get_db_object_from_domain_object(domobj)
         self._changed_objects.add(domobj)
         self.db.session.delete(dbobj)
 
@@ -245,8 +155,92 @@ class PersistenceLayer(object):
             self._update_domain_object_from_db_object(domobj)
         self._changed_objects.clear()
 
+    def _is_db_object(self, obj):
+        return isinstance(obj, self.db.Model)
+
+    def _is_domain_object(self, obj):
+        return isinstance(obj,
+                          (Attachment, Task, Tag,
+                           Note, User, Option))
+
+    def _get_db_object_from_domain_object(self, domobj):
+        if domobj is None:
+            return None
+        if not self._is_domain_object(domobj):
+            raise Exception(
+                'Not a domain object: {} ({})'.format(domobj, type(domobj)))
+
+        def get_db_object(domobj, getter, db_class):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.id is not None:
+                    dbobj = getter(domobj.id)
+                if dbobj is None:
+                    dbobj = db_class.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
+        if isinstance(domobj, Attachment):
+            return get_db_object(domobj, self.get_attachment,
+                                 self.Attachment)
+
+        if isinstance(domobj, Note):
+            return get_db_object(domobj, self.get_note, self.Note)
+
+        if isinstance(domobj, Option):
+            if domobj not in self._db_by_domain:
+                dbobj = None
+                if domobj.key is not None:
+                    dbobj = self.get_option(domobj.key)
+                if dbobj is None:
+                    dbobj = self.Option.from_dict(domobj.to_dict())
+                self._domain_by_db[dbobj] = domobj
+                self._db_by_domain[domobj] = dbobj
+            return self._db_by_domain[domobj]
+
+        if isinstance(domobj, Tag):
+            return get_db_object(domobj, self.get_tag, self.Tag)
+
+        if isinstance(domobj, Task):
+            return get_db_object(domobj, self.get_task, self.Task)
+
+        if isinstance(domobj, User):
+            return get_db_object(domobj, self.get_user, self.User)
+
+        return domobj
+
+    def _get_domain_object_from_db_object(self, dbobj):
+        if dbobj is None:
+            return None
+        if not self._is_db_object(dbobj):
+            raise Exception(
+                'Not a db object: {} ({})'.format(dbobj, type(dbobj)))
+        if dbobj not in self._domain_by_db:
+            domobj = None
+            if isinstance(dbobj, self.Attachment):
+                domobj = Attachment.from_dict(dbobj.to_dict())
+            elif isinstance(dbobj, self.Task):
+                domobj = Task.from_dict(dbobj.to_dict())
+            elif isinstance(dbobj, self.Tag):
+                domobj = Tag.from_dict(dbobj.to_dict())
+            elif isinstance(dbobj, self.Note):
+                domobj = Note.from_dict(dbobj.to_dict())
+            elif isinstance(dbobj, self.User):
+                domobj = User.from_dict(dbobj.to_dict())
+            elif isinstance(dbobj, self.Option):
+                domobj = Option.from_dict(dbobj.to_dict())
+            else:
+                raise Exception(
+                    'Unknown db object type: {}, {}'.format(dbobj,
+                                                            type(dbobj)))
+            self._domain_by_db[dbobj] = domobj
+            self._db_by_domain[domobj] = dbobj
+
+        return self._domain_by_db[dbobj]
+
     def _update_domain_object_from_db_object(self, domobj):
-        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        dbobj = self._get_db_object_from_domain_object(domobj)
         if not isinstance(domobj, Option):
             domobj.id = dbobj.id
 
@@ -267,7 +261,7 @@ class PersistenceLayer(object):
                 'Unknown db type: {}, {}'.format(dbobj, type(dbobj)))
 
     def _update_db_object_from_domain_object(self, domobj):
-        dbobj = self.bridge.get_db_object_from_domain_object(domobj)
+        dbobj = self._get_db_object_from_domain_object(domobj)
         if isinstance(dbobj, self.Attachment):
             pass
         elif isinstance(dbobj, self.Task):
@@ -310,7 +304,7 @@ class PersistenceLayer(object):
         return self.Task.query
 
     def get_task(self, task_id):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.task_query.get(task_id))
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
@@ -436,7 +430,7 @@ class PersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
-        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
+        return (self._get_domain_object_from_db_object(_) for _ in query)
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -494,7 +488,7 @@ class PersistenceLayer(object):
         return self.Tag.query
 
     def get_tag(self, tag_id):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.tag_query.get(tag_id))
 
     def _get_tags_query(self, value=UNSPECIFIED, limit=None):
@@ -507,13 +501,13 @@ class PersistenceLayer(object):
 
     def get_tags(self, value=UNSPECIFIED, limit=None):
         query = self._get_tags_query(value=value, limit=limit)
-        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
+        return (self._get_domain_object_from_db_object(_) for _ in query)
 
     def count_tags(self, value=UNSPECIFIED, limit=None):
         return self._get_tags_query(value=value, limit=limit).count()
 
     def get_tag_by_value(self, value):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self._get_tags_query(value=value).first())
 
     @property
@@ -521,7 +515,7 @@ class PersistenceLayer(object):
         return self.Note.query
 
     def get_note(self, note_id):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.note_query.get(note_id))
 
     def _get_notes_query(self, note_id_in=UNSPECIFIED):
@@ -536,7 +530,7 @@ class PersistenceLayer(object):
 
     def get_notes(self, note_id_in=UNSPECIFIED):
         query = self._get_notes_query(note_id_in=note_id_in)
-        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
+        return (self._get_domain_object_from_db_object(_) for _ in query)
 
     def count_notes(self, note_id_in=UNSPECIFIED):
         return self._get_notes_query(note_id_in=note_id_in).count()
@@ -546,7 +540,7 @@ class PersistenceLayer(object):
         return self.Attachment.query
 
     def get_attachment(self, attachment_id):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.attachment_query.get(attachment_id))
 
     def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
@@ -560,7 +554,7 @@ class PersistenceLayer(object):
 
     def get_attachments(self, attachment_id_in=UNSPECIFIED):
         query = self._get_attachments_query(attachment_id_in=attachment_id_in)
-        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
+        return (self._get_domain_object_from_db_object(_) for _ in query)
 
     def count_attachments(self, attachment_id_in=UNSPECIFIED):
         return self._get_attachments_query(
@@ -571,11 +565,11 @@ class PersistenceLayer(object):
         return self.User.query
 
     def get_user(self, user_id):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.user_query.get(user_id))
 
     def get_user_by_email(self, email):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.user_query.filter_by(email=email).first())
 
     def _get_users_query(self, email_in=UNSPECIFIED):
@@ -590,7 +584,7 @@ class PersistenceLayer(object):
 
     def get_users(self, email_in=UNSPECIFIED):
         query = self._get_users_query(email_in=email_in)
-        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
+        return (self._get_domain_object_from_db_object(_) for _ in query)
 
     def count_users(self, email_in=UNSPECIFIED):
         return self._get_users_query(email_in=email_in).count()
@@ -600,7 +594,7 @@ class PersistenceLayer(object):
         return self.Option.query
 
     def get_option(self, key):
-        return self.bridge.get_domain_object_from_db_object(
+        return self._get_domain_object_from_db_object(
             self.option_query.get(key))
 
     def _get_options_query(self, key_in=UNSPECIFIED):
@@ -615,7 +609,7 @@ class PersistenceLayer(object):
 
     def get_options(self, key_in=UNSPECIFIED):
         query = self._get_options_query(key_in=key_in)
-        return (self.bridge.get_domain_object_from_db_object(_) for _ in query)
+        return (self._get_domain_object_from_db_object(_) for _ in query)
 
     def count_options(self, key_in=UNSPECIFIED):
         return self._get_options_query(key_in=key_in).count()
