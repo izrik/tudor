@@ -1,13 +1,14 @@
 
 import collections
+import random
 
 from flask_sqlalchemy import SQLAlchemy
-from models.task import generate_task_class, Task
-from models.tag import generate_tag_class, Tag
-from models.note import generate_note_class, Note
-from models.attachment import generate_attachment_class, Attachment
-from models.user import generate_user_class, User
-from models.option import generate_option_class, Option
+from models.task import Task, TaskBase
+from models.tag import Tag, TagBase
+from models.note import Note, NoteBase
+from models.attachment import Attachment, AttachmentBase
+from models.user import User, UserBase
+from models.option import Option, OptionBase
 
 
 def is_iterable(x):
@@ -591,3 +592,254 @@ class PersistenceLayer(object):
 
     def count_options(self, key_in=UNSPECIFIED):
         return self._get_options_query(key_in=key_in).count()
+
+
+def generate_task_class(pl, tags_tasks_table, users_tasks_table,
+                        task_dependencies_table, task_prioritize_table):
+    db = pl.db
+
+    class DbTask(db.Model, TaskBase):
+
+        __tablename__ = 'task'
+
+        id = db.Column(db.Integer, primary_key=True)
+        summary = db.Column(db.String(100))
+        description = db.Column(db.String(4000))
+        is_done = db.Column(db.Boolean)
+        is_deleted = db.Column(db.Boolean)
+        order_num = db.Column(db.Integer, nullable=False, default=0)
+        deadline = db.Column(db.DateTime)
+        expected_duration_minutes = db.Column(db.Integer)
+        expected_cost = db.Column(db.Numeric)
+        tags = db.relationship('DbTag', secondary=tags_tasks_table,
+                               backref=db.backref('tasks', lazy='dynamic'))
+        users = db.relationship('DbUser', secondary=users_tasks_table,
+                                backref=db.backref('tasks', lazy='dynamic'))
+
+        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                              nullable=True)
+        parent = db.relationship('DbTask', remote_side=[id],
+                                 backref=db.backref('children',
+                                                    lazy='dynamic'))
+
+        # self depends on self.dependees
+        # self.dependants depend on self
+        dependees = db.relationship(
+            'DbTask', secondary=task_dependencies_table,
+            primaryjoin=task_dependencies_table.c.dependant_id == id,
+            secondaryjoin=task_dependencies_table.c.dependee_id == id,
+            backref='dependants')
+
+        # self is after self.prioritize_before's
+        # self has lower priority that self.prioritize_before's
+        # self is before self.prioritize_after's
+        # self has higher priority that self.prioritize_after's
+        prioritize_before = db.relationship(
+            'DbTask', secondary=task_prioritize_table,
+            primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
+            secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
+            backref='prioritize_after')
+
+        def __init__(self, summary, description='', is_done=False,
+                     is_deleted=False, deadline=None,
+                     expected_duration_minutes=None, expected_cost=None):
+            db.Model.__init__(self)
+            TaskBase.__init__(
+                self, summary=summary, description=description,
+                is_done=is_done, is_deleted=is_deleted, deadline=deadline,
+                expected_duration_minutes=expected_duration_minutes,
+                expected_cost=expected_cost)
+
+        @staticmethod
+        def from_dict(d):
+            task_id = d.get('id', None)
+            summary = d.get('summary')
+            description = d.get('description', '')
+            is_done = d.get('is_done', False)
+            is_deleted = d.get('is_deleted', False)
+            order_num = d.get('order_num', 0)
+            deadline = d.get('deadline', None)
+            parent_id = d.get('parent_id', None)
+            expected_duration_minutes = d.get('expected_duration_minutes',
+                                              None)
+            expected_cost = d.get('expected_cost', None)
+            # 'tag_ids': [tag.id for tag in self.tags],
+            # 'user_ids': [user.id for user in self.users]
+
+            task = DbTask(summary=summary, description=description,
+                          is_done=is_done, is_deleted=is_deleted,
+                          deadline=deadline,
+                          expected_duration_minutes=expected_duration_minutes,
+                          expected_cost=expected_cost)
+            if task_id is not None:
+                task.id = task_id
+            task.order_num = order_num
+            task.parent_id = parent_id
+            return task
+
+    return DbTask
+
+
+def generate_tag_class(db):
+    class DbTag(db.Model, TagBase):
+
+        __tablename__ = 'tag'
+
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
+
+        def __init__(self, value, description=None):
+            db.Model.__init__(self)
+            TagBase.__init__(self, value, description)
+
+        def to_dict(self):
+            return {
+                'id': self.id,
+                'value': self.value,
+                'description': self.description,
+            }
+
+        @staticmethod
+        def from_dict(d):
+            tag_id = d.get('id', None)
+            value = d.get('value')
+            description = d.get('description', None)
+
+            tag = DbTag(value, description)
+            if tag_id is not None:
+                tag.id = tag_id
+            return tag
+
+    return DbTag
+
+
+def generate_note_class(db):
+    class DbNote(db.Model, NoteBase):
+
+        __tablename__ = 'note'
+
+        id = db.Column(db.Integer, primary_key=True)
+        content = db.Column(db.String(4000))
+        timestamp = db.Column(db.DateTime)
+
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+        task = db.relationship('DbTask',
+                               backref=db.backref('notes', lazy='dynamic',
+                                                  order_by=timestamp))
+
+        def __init__(self, content, timestamp=None):
+            db.Model.__init__(self)
+            NoteBase.__init__(self, content, timestamp)
+
+        @staticmethod
+        def from_dict(d):
+            note_id = d.get('id', None)
+            content = d.get('content')
+            timestamp = d.get('timestamp', None)
+            task_id = d.get('task_id')
+
+            note = DbNote(content, timestamp)
+            if note_id is not None:
+                note.id = note_id
+            note.task_id = task_id
+            return note
+
+    return DbNote
+
+
+def generate_attachment_class(db):
+    class DbAttachment(db.Model, AttachmentBase):
+
+        __tablename__ = 'attachment'
+
+        id = db.Column(db.Integer, primary_key=True)
+        timestamp = db.Column(db.DateTime, nullable=False)
+        path = db.Column(db.String(1000), nullable=False)
+        filename = db.Column(db.String(100), nullable=False)
+        description = db.Column(db.String(100), nullable=False, default='')
+
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+        task = db.relationship('DbTask',
+                               backref=db.backref('attachments',
+                                                  lazy='dynamic',
+                                                  order_by=timestamp))
+
+        def __init__(self, path, description=None, timestamp=None,
+                     filename=None):
+            db.Model.__init__(self)
+            AttachmentBase.__init__(self, path, description, timestamp,
+                                    filename)
+
+        @staticmethod
+        def from_dict(d):
+            attachment_id = d.get('id', None)
+            timestamp = d.get('timestamp', None)
+            path = d.get('path')
+            filename = d.get('filename', None)
+            description = d.get('description', None)
+            task_id = d.get('task_id')
+
+            attachment = DbAttachment(path, description, timestamp, filename)
+            if attachment_id is not None:
+                attachment.id = attachment_id
+            attachment.task_id = task_id
+            return attachment
+
+    return DbAttachment
+
+
+def generate_user_class(db, bcrypt):
+    class DbUser(db.Model, UserBase):
+
+        __tablename__ = 'user'
+
+        id = db.Column(db.Integer, primary_key=True)
+        email = db.Column(db.String(100), nullable=False, unique=True)
+        hashed_password = db.Column(db.String(100), nullable=False)
+        is_admin = db.Column(db.Boolean, nullable=False, default=False)
+
+        def __init__(self, email, hashed_password=None, is_admin=False):
+            if hashed_password is None:
+                digits = '0123456789abcdef'
+                key = ''.join((random.choice(digits) for x in xrange(48)))
+                hashed_password = bcrypt.generate_password_hash(key)
+            db.Model.__init__(self)
+            UserBase.__init__(self, email=email,
+                              hashed_password=hashed_password,
+                              is_admin=is_admin)
+
+        @staticmethod
+        def from_dict(d):
+            user_id = d.get('id', None)
+            email = d.get('email')
+            hashed_password = d.get('hashed_password', None)
+            is_admin = d.get('is_admin', False)
+
+            user = DbUser(email, hashed_password, is_admin)
+            if user_id is not None:
+                user.id = user_id
+            return user
+
+    return DbUser
+
+
+def generate_option_class(db):
+    class DbOption(db.Model, OptionBase):
+
+        __tablename__ = 'option'
+
+        key = db.Column(db.String(100), primary_key=True)
+        value = db.Column(db.String(100), nullable=True)
+
+        def __init__(self, key, value):
+            db.Model.__init__(self)
+            OptionBase.__init__(self, key, value)
+
+        @staticmethod
+        def from_dict(d):
+            key = d.get('key')
+            value = d.get('value', None)
+            return DbOption(key, value)
+
+    return DbOption

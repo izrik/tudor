@@ -47,24 +47,3 @@ class Option(Changeable, OptionBase):
         key = d.get('key')
         value = d.get('value', None)
         return Option(key, value)
-
-
-def generate_option_class(db):
-    class DbOption(db.Model, OptionBase):
-
-        __tablename__ = 'option'
-
-        key = db.Column(db.String(100), primary_key=True)
-        value = db.Column(db.String(100), nullable=True)
-
-        def __init__(self, key, value):
-            db.Model.__init__(self)
-            OptionBase.__init__(self, key, value)
-
-        @staticmethod
-        def from_dict(d):
-            key = d.get('key')
-            value = d.get('value', None)
-            return DbOption(key, value)
-
-    return DbOption

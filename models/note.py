@@ -103,37 +103,3 @@ class Note(Changeable, NoteBase):
             note.id = note_id
         note.task_id = task_id
         return note
-
-
-def generate_note_class(db):
-    class DbNote(db.Model, NoteBase):
-
-        __tablename__ = 'note'
-
-        id = db.Column(db.Integer, primary_key=True)
-        content = db.Column(db.String(4000))
-        timestamp = db.Column(db.DateTime)
-
-        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
-        task = db.relationship('DbTask',
-                               backref=db.backref('notes', lazy='dynamic',
-                                                  order_by=timestamp))
-
-        def __init__(self, content, timestamp=None):
-            db.Model.__init__(self)
-            NoteBase.__init__(self, content, timestamp)
-
-        @staticmethod
-        def from_dict(d):
-            note_id = d.get('id', None)
-            content = d.get('content')
-            timestamp = d.get('timestamp', None)
-            task_id = d.get('task_id')
-
-            note = DbNote(content, timestamp)
-            if note_id is not None:
-                note.id = note_id
-            note.task_id = task_id
-            return note
-
-    return DbNote
