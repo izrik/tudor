@@ -1620,7 +1620,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # precondition
         self.assertEqual('b', tag.description)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         tag2 = self.pl.get_tag_by_value('tag')
         self.assertIsNotNone(tag2)
@@ -1633,7 +1633,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # precondition
         self.assertEqual('b', tag.description)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertEqual('b', tag.description)
 
@@ -1652,7 +1652,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertEqual('b', tag.description)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertEqual('b', tag.description)
 
@@ -1677,7 +1677,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIn(tag, task.tags)
         self.assertIn(task, tag.tasks)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(tag, task.tags)
         self.assertIn(task, tag.tasks)
@@ -1705,7 +1705,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(parent, child.parent)
         self.assertEqual(parent.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, parent.children)
         self.assertIsNotNone(child.parent)
@@ -1736,7 +1736,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(parent, child.parent)
         self.assertEqual(parent.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, parent.children)
         self.assertIsNotNone(child.parent)
@@ -1767,7 +1767,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(parent, child.parent)
         self.assertEqual(parent.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, parent.children)
         self.assertIsNotNone(child.parent)
@@ -1807,7 +1807,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(p2, child.parent)
         self.assertEqual(p2.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, p2.children)
         self.assertIsNotNone(child.parent)
@@ -1847,7 +1847,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(p3, child.parent)
         self.assertEqual(p3.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, p3.children)
         self.assertIsNotNone(child.parent)
@@ -1887,7 +1887,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(p2, child.parent)
         self.assertEqual(p2.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, p2.children)
         self.assertIsNotNone(child.parent)
@@ -1927,7 +1927,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(p3, child.parent)
         self.assertEqual(p3.id, child.parent_id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(child, p3.children)
         self.assertIsNotNone(child.parent)
@@ -1962,7 +1962,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIn(t2, t1.dependees)
         self.assertNotIn(t2, t1.dependants)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertNotIn(t1, t2.dependees)
         self.assertIn(t1, t2.dependants)
@@ -1996,7 +1996,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIn(t2, t1.prioritize_after)
         self.assertNotIn(t2, t1.prioritize_before)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertNotIn(t1, t2.prioritize_after)
         self.assertIn(t1, t2.prioritize_before)
@@ -2024,7 +2024,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIn(user, task.users)
         self.assertIn(task, user.tasks)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertIn(user, task.users)
         self.assertIn(task, user.tasks)
@@ -2048,7 +2048,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertEqual(1, task.id)
         # when
-        self.pl.db.session.rollback()
+        self.pl.rollback()
         # then
         self.assertEqual(1, task.id)
 

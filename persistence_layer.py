@@ -158,6 +158,12 @@ class PersistenceLayer(object):
             self._update_domain_object_from_db_object(domobj)
         self._changed_objects.clear()
 
+    def rollback(self):
+        self.db.session.rollback()
+        for domobj in self._changed_objects:
+            self._update_domain_object_from_db_object(domobj)
+        self._changed_objects.clear()
+
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
 
