@@ -1682,7 +1682,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIn(tag, task.tags)
         self.assertIn(task, tag.tasks)
 
-    def test_adding_child_also_sets_parent_id(self):
+    def test_adding_child_also_sets_parent_and_parent_id(self):
         # given
         parent = Task('parent')
         child = Task('child')
@@ -1697,6 +1697,38 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIsNotNone(child.id)
         # when
         parent.children.append(child)
+        self.pl.commit()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+
+    def test_setting_parent_also_sets_parent_id_and_adds_child(self):
+        # given
+        parent = Task('parent')
+        child = Task('child')
+        self.pl.add(parent)
+        self.pl.add(child)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent = parent
+        self.pl.commit()
         # then
         self.assertIn(child, parent.children)
         self.assertIsNotNone(child.parent)
@@ -1704,6 +1736,29 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(parent, child.parent)
         self.assertEqual(parent.id, child.parent_id)
         # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+
+    def test_setting_parent_id_also_sets_parent_and_adds_child(self):
+        # given
+        parent = Task('parent')
+        child = Task('child')
+        self.pl.add(parent)
+        self.pl.add(child)
+        self.pl.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent_id = parent.id
         self.pl.commit()
         # then
         self.assertIn(child, parent.children)
