@@ -1,4 +1,6 @@
 
+import collections
+
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
@@ -97,7 +99,7 @@ class Task(Changeable, TaskBase):
         self.prioritize_after = list()
         self.tags = list()
         self.users = list()
-        self.children = list()
+        self.children = InterlinkedChildren(self)
 
         self.id = None
         self.parent = None
@@ -199,8 +201,13 @@ class Task(Changeable, TaskBase):
 
     @parent.setter
     def parent(self, value):
-        self._parent = value
-        self._on_attr_changed()
+        if value is not self._parent:
+            if self._parent is not None:
+                self._parent.children.remove(self)
+            self._parent = value
+            if self._parent is not None:
+                self._parent.children.append(self)
+            self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):
@@ -287,3 +294,52 @@ class Task(Changeable, TaskBase):
             if before.contains_priority_cycle(visited):
                 return True
         return False
+
+
+class InterlinkedChildren(collections.MutableSequence):
+    def __init__(self, container, *args):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.list = list()
+        self.extend(list(args))
+
+    def __len__(self):
+        return len(self.list)
+
+    def __getitem__(self, i):
+        return self.list[i]
+
+    def __delitem__(self, i):
+        self.remove(self[i])
+
+    def __setitem__(self, i, v):
+        del self[i]
+        self.insert(i, v)
+
+    def __contains__(self, value):
+        return self.list.__contains__(value)
+
+    def append(self, value):
+        if value not in self:
+            self.list.append(value)
+            value.parent = self.container
+
+    def remove(self, value):
+        if value in self:
+            self.list.remove(value)
+            value.parent = None
+
+    def insert(self, i, v):
+        if v in self:
+            if self.index(v) < i:
+                i -= 1
+            self.remove(v)
+
+        v.parent = None
+        self.list.insert(i, v)
+        v.parent = self.container
+
+    def __str__(self):
+        return str(self.list)
