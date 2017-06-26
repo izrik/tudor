@@ -99,7 +99,7 @@ class Task(Changeable, TaskBase):
         self.prioritize_after = list()
         self.tags = list()
         self.users = list()
-        self.children = InterlinkedChildren(self)
+        self._children = InterlinkedChildren(self)
 
         self.id = None
         self.parent = None
@@ -208,6 +208,10 @@ class Task(Changeable, TaskBase):
             if self._parent is not None:
                 self._parent.children.append(self)
             self._on_attr_changed()
+
+    @property
+    def children(self):
+        return self._children
 
     @staticmethod
     def from_dict(d):
