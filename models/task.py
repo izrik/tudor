@@ -20,6 +20,7 @@ class TaskBase(object):
         self.deadline = self._clean_deadline(deadline)
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = expected_cost
+        self.order_num = 0
 
     @staticmethod
     def _clean_deadline(deadline):
