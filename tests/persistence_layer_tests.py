@@ -657,6 +657,7 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.pl.add(self.t5)
         self.pl.add(self.tag1)
         self.pl.add(self.tag2)
+        self.pl.commit()
 
     def test_get_paginated_tasks_tasks_per_page_returns_that_number_1(self):
         # when
@@ -854,6 +855,7 @@ class PersistenceLayerPagerTest(unittest.TestCase):
         self.pl.add(self.t13)
         self.pl.add(self.t14)
         self.pl.add(self.t15)
+        self.pl.commit()
         self.pager = self.pl.get_paginated_tasks(page_num=4, tasks_per_page=2,
                                                  order_by=self.pl.ORDER_NUM)
 
