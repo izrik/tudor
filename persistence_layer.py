@@ -615,8 +615,10 @@ class PersistenceLayer(object):
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
         pager = query.paginate(page=page_num, per_page=tasks_per_page)
+        items = list(self._get_domain_object_from_db_object(item) for item in
+                     pager.items)
         return Pager(page=pager.page, per_page=pager.per_page,
-                     items=pager.items, total=pager.total,
+                     items=items, total=pager.total,
                      num_pages=pager.pages, _pager=pager)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
