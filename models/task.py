@@ -337,11 +337,13 @@ class InterlinkedChildren(collections.MutableSequence):
         if value not in self:
             self.list.append(value)
             value.parent = self.container
+            self.container._on_attr_changed()
 
     def remove(self, value):
         if value in self:
             self.list.remove(value)
             value.parent = None
+            self.container._on_attr_changed()
 
     def insert(self, i, v):
         if v in self:
@@ -352,6 +354,7 @@ class InterlinkedChildren(collections.MutableSequence):
         v.parent = None
         self.list.insert(i, v)
         v.parent = self.container
+        self.container._on_attr_changed()
 
     def __str__(self):
         return str(self.list)
