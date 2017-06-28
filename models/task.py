@@ -48,7 +48,7 @@ class TaskBase(object):
         }
 
     def update_from_dict(self, d):
-        if 'id' in d:
+        if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'summary' in d:
             self.summary = d['summary']
