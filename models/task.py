@@ -106,7 +106,7 @@ class Task(Changeable, TaskBase):
         self.prioritize_before = list()
         self.prioritize_after = list()
         self._tags = InterlinkedTags(self)
-        self.users = list()
+        self._users = InterlinkedUsers(self)
         self._children = InterlinkedChildren(self)
 
         self.id = None
@@ -224,6 +224,10 @@ class Task(Changeable, TaskBase):
     @property
     def tags(self):
         return self._tags
+
+    @property
+    def users(self):
+        return self._users
 
     @staticmethod
     def from_dict(d):
@@ -391,3 +395,32 @@ class InterlinkedTags(collections.MutableSet):
         if tag in self.set:
             self.set.discard(tag)
             tag.tasks.discard(self.container)
+
+
+class InterlinkedUsers(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, user):
+        return self.set.__contains__(user)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, user):
+        if user not in self.set:
+            self.set.add(user)
+            user.tasks.add(self.container)
+
+    def discard(self, user):
+        if user in self.set:
+            self.set.discard(user)
+            user.tasks.discard(self.container)

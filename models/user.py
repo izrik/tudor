@@ -1,4 +1,6 @@
 
+import collections
+
 from changeable import Changeable
 
 
@@ -55,6 +57,7 @@ class User(Changeable, UserBase):
         super(User, self).__init__(email=email,
                                    hashed_password=hashed_password,
                                    is_admin=is_admin)
+        self._tasks = InterlinkedTasks(self)
 
     @property
     def id(self):
@@ -101,6 +104,10 @@ class User(Changeable, UserBase):
         self._authenticated = value
         self._on_attr_changed()
 
+    @property
+    def tasks(self):
+        return self._tasks
+
     @staticmethod
     def from_dict(d):
         user_id = d.get('id', None)
@@ -112,3 +119,32 @@ class User(Changeable, UserBase):
         if user_id is not None:
             user.id = user_id
         return user
+
+
+class InterlinkedTasks(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, task):
+        return self.set.__contains__(task)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, task):
+        if task not in self.set:
+            self.set.add(task)
+            task.users.add(self.container)
+
+    def discard(self, task):
+        if task in self.set:
+            self.set.discard(task)
+            task.users.discard(self.container)

@@ -4,6 +4,7 @@ import unittest
 
 from models.task import Task
 from models.tag import Tag
+from models.user import User
 
 
 class ChildrenInterlinkingTest(unittest.TestCase):
@@ -293,3 +294,194 @@ class TaskTagsInterlinkingTest(unittest.TestCase):
         self.assertEqual(0, len(self.tag.tasks))
         self.assertNotIn(self.tag, self.task.tags)
         self.assertNotIn(self.task, self.tag.tasks)
+
+
+class TaskUsersInterlinkingTest(unittest.TestCase):
+    def setUp(self):
+        self.task = Task('task')
+        self.user = User('user')
+
+    def test_in(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # when
+        self.task.users.set.add(self.user)
+        self.user.tasks.set.add(self.task)
+        # then
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+
+    def test_add_user(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # when
+        self.task.users.add(self.user)
+        # then
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+
+    def test_add_user_already_in_silently_ignored(self):
+        # given
+        self.task.users.add(self.user)
+        # precondition
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+        # when
+        self.task.users.add(self.user)
+        # then
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+
+    def test_remove_user(self):
+        # given
+        self.task.users.add(self.user)
+        # precondition
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+        # when
+        self.task.users.remove(self.user)
+        # then
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+
+    def test_remove_user_not_already_in_raises(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # expect
+        self.assertRaises(KeyError, self.task.users.remove, self.user)
+
+    def test_discard_user(self):
+        # given
+        self.task.users.add(self.user)
+        # precondition
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+        # when
+        self.task.users.discard(self.user)
+        # then
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+
+    def test_discard_user_not_already_in_silently_ignored(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # when
+        self.task.users.discard(self.user)
+        # then
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+
+    def test_add_task(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # when
+        self.user.tasks.add(self.task)
+        # then
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+
+    def test_add_task_already_in_silently_ignored(self):
+        # given
+        self.user.tasks.add(self.task)
+        # precondition
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+        # when
+        self.user.tasks.add(self.task)
+        # then
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+
+    def test_remove_task(self):
+        # given
+        self.user.tasks.add(self.task)
+        # precondition
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+        # when
+        self.user.tasks.remove(self.task)
+        # then
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+
+    def test_remove_task_not_already_in_raises(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # expect
+        self.assertRaises(KeyError, self.user.tasks.remove, self.task)
+
+    def test_discard_task(self):
+        # given
+        self.user.tasks.add(self.task)
+        # precondition
+        self.assertEqual(1, len(self.task.users))
+        self.assertEqual(1, len(self.user.tasks))
+        self.assertIn(self.user, self.task.users)
+        self.assertIn(self.task, self.user.tasks)
+        # when
+        self.user.tasks.discard(self.task)
+        # then
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+
+    def test_discard_task_not_already_in_silently_ignored(self):
+        # precondition
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
+        # when
+        self.user.tasks.discard(self.task)
+        # then
+        self.assertEqual(0, len(self.task.users))
+        self.assertEqual(0, len(self.user.tasks))
+        self.assertNotIn(self.user, self.task.users)
+        self.assertNotIn(self.task, self.user.tasks)
