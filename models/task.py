@@ -407,6 +407,9 @@ class InterlinkedChildren(collections.MutableSequence):
             value.parent = self.container
             self.container._on_attr_changed()
 
+    def add(self, value):
+        self.append(value)
+
     def remove(self, value):
         if value in self:
             self.list.remove(value)
@@ -452,6 +455,9 @@ class InterlinkedTags(collections.MutableSet):
             tag.tasks.add(self.container)
             self.container._on_attr_changed()
 
+    def append(self, tag):
+        self.add(tag)
+
     def discard(self, tag):
         if tag in self.set:
             self.set.discard(tag)
@@ -482,6 +488,9 @@ class InterlinkedUsers(collections.MutableSet):
             self.set.add(user)
             user.tasks.add(self.container)
             self.container._on_attr_changed()
+
+    def append(self, user):
+        self.add(user)
 
     def discard(self, user):
         if user in self.set:
@@ -514,6 +523,9 @@ class InterlinkedDependees(collections.MutableSet):
             dependee.dependants.add(self.container)
             self.container._on_attr_changed()
 
+    def append(self, dependee):
+        self.add(dependee)
+
     def discard(self, dependee):
         if dependee in self.set:
             self.set.discard(dependee)
@@ -544,6 +556,9 @@ class InterlinkedDependants(collections.MutableSet):
             self.set.add(dependant)
             dependant.dependees.add(self.container)
             self.container._on_attr_changed()
+
+    def append(self, dependant):
+        self.add(dependant)
 
     def discard(self, dependant):
         if dependant in self.set:
@@ -576,6 +591,9 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
             before.prioritize_after.add(self.container)
             self.container._on_attr_changed()
 
+    def append(self, before):
+        self.add(before)
+
     def discard(self, before):
         if before in self.set:
             self.set.discard(before)
@@ -606,6 +624,9 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
             self.set.add(after)
             after.prioritize_before.add(self.container)
             self.container._on_attr_changed()
+
+    def append(self, after):
+        self.add(after)
 
     def discard(self, after):
         if after in self.set:

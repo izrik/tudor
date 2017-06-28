@@ -104,6 +104,9 @@ class InterlinkedTasks(collections.MutableSet):
             task.tags.add(self.container)
             self.container._on_attr_changed()
 
+    def append(self, task):
+        self.add(task)
+
     def discard(self, task):
         if task in self.set:
             self.set.discard(task)
