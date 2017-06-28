@@ -103,8 +103,8 @@ class Task(Changeable, TaskBase):
 
         self._dependees = InterlinkedDependees(self)
         self._dependants = InterlinkedDependants(self)
-        self.prioritize_before = list()
-        self.prioritize_after = list()
+        self._prioritize_before = InterlinkedPrioritizeBefore(self)
+        self._prioritize_after = InterlinkedPrioritizeAfter(self)
         self._tags = InterlinkedTags(self)
         self._users = InterlinkedUsers(self)
         self._children = InterlinkedChildren(self)
@@ -236,6 +236,14 @@ class Task(Changeable, TaskBase):
     @property
     def dependants(self):
         return self._dependants
+
+    @property
+    def prioritize_before(self):
+        return self._prioritize_before
+
+    @property
+    def prioritize_after(self):
+        return self._prioritize_after
 
     @staticmethod
     def from_dict(d):
@@ -490,3 +498,61 @@ class InterlinkedDependants(collections.MutableSet):
         if dependant in self.set:
             self.set.discard(dependant)
             dependant.dependees.discard(self.container)
+
+
+class InterlinkedPrioritizeBefore(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, before):
+        return self.set.__contains__(before)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, before):
+        if before not in self.set:
+            self.set.add(before)
+            before.prioritize_after.add(self.container)
+
+    def discard(self, before):
+        if before in self.set:
+            self.set.discard(before)
+            before.prioritize_after.discard(self.container)
+
+
+class InterlinkedPrioritizeAfter(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, after):
+        return self.set.__contains__(after)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, after):
+        if after not in self.set:
+            self.set.add(after)
+            after.prioritize_before.add(self.container)
+
+    def discard(self, after):
+        if after in self.set:
+            self.set.discard(after)
+            after.prioritize_before.discard(self.container)

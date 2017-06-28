@@ -676,3 +676,194 @@ class DependeesDependantsInterlinkingTest(unittest.TestCase):
         self.assertEqual(0, len(self.t2.dependees))
         self.assertNotIn(self.t2, self.t1.dependants)
         self.assertNotIn(self.t1, self.t2.dependees)
+
+
+class PrioritizeBeforeAfterInterlinkingTest(unittest.TestCase):
+    def setUp(self):
+        self.t1 = Task('t1')
+        self.t2 = Task('t2')
+
+    def test_in(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t1.prioritize_after.set.add(self.t2)
+        self.t2.prioritize_before.set.add(self.t1)
+        # then
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+
+    def test_add_user(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t1.prioritize_after.add(self.t2)
+        # then
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+
+    def test_add_user_already_in_silently_ignored(self):
+        # given
+        self.t1.prioritize_after.add(self.t2)
+        # precondition
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t1.prioritize_after.add(self.t2)
+        # then
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+
+    def test_remove_user(self):
+        # given
+        self.t1.prioritize_after.add(self.t2)
+        # precondition
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t1.prioritize_after.remove(self.t2)
+        # then
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+
+    def test_remove_user_not_already_in_raises(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # expect
+        self.assertRaises(KeyError, self.t1.prioritize_after.remove, self.t2)
+
+    def test_discard_user(self):
+        # given
+        self.t1.prioritize_after.add(self.t2)
+        # precondition
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t1.prioritize_after.discard(self.t2)
+        # then
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+
+    def test_discard_user_not_already_in_silently_ignored(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t1.prioritize_after.discard(self.t2)
+        # then
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+
+    def test_add_task(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t2.prioritize_before.add(self.t1)
+        # then
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+
+    def test_add_task_already_in_silently_ignored(self):
+        # given
+        self.t2.prioritize_before.add(self.t1)
+        # precondition
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t2.prioritize_before.add(self.t1)
+        # then
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+
+    def test_remove_task(self):
+        # given
+        self.t2.prioritize_before.add(self.t1)
+        # precondition
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t2.prioritize_before.remove(self.t1)
+        # then
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+
+    def test_remove_task_not_already_in_raises(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # expect
+        self.assertRaises(KeyError, self.t2.prioritize_before.remove, self.t1)
+
+    def test_discard_task(self):
+        # given
+        self.t2.prioritize_before.add(self.t1)
+        # precondition
+        self.assertEqual(1, len(self.t1.prioritize_after))
+        self.assertEqual(1, len(self.t2.prioritize_before))
+        self.assertIn(self.t2, self.t1.prioritize_after)
+        self.assertIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t2.prioritize_before.discard(self.t1)
+        # then
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+
+    def test_discard_task_not_already_in_silently_ignored(self):
+        # precondition
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
+        # when
+        self.t2.prioritize_before.discard(self.t1)
+        # then
+        self.assertEqual(0, len(self.t1.prioritize_after))
+        self.assertEqual(0, len(self.t2.prioritize_before))
+        self.assertNotIn(self.t2, self.t1.prioritize_after)
+        self.assertNotIn(self.t1, self.t2.prioritize_before)
