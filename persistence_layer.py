@@ -446,7 +446,9 @@ class PersistenceLayer(object):
                 query = query.filter(False)
 
         if users_contains is not self.UNSPECIFIED:
-            query = query.filter(self.Task.users.contains(users_contains))
+            users_contains2 = self._get_db_object_from_domain_object(
+                users_contains)
+            query = query.filter(self.Task.users.contains(users_contains2))
 
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
