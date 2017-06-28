@@ -7,6 +7,10 @@ class OptionBase(object):
         self.key = key
         self.value = value
 
+    @property
+    def id(self):
+        return self.key
+
     def to_dict(self):
         return {
             'key': self.key,
