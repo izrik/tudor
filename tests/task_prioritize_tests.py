@@ -10,11 +10,6 @@ from models.user import User
 
 
 class TaskPrioritizeTest(unittest.TestCase):
-    def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
-        self.pl.create_all()
-
     def test_setting_task_as_before_sets_other_task_as_after(self):
         # given
         t1 = Task('t1')

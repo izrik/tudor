@@ -2,14 +2,10 @@
 
 import unittest
 
-from tudor import generate_app
 from models.task import Task
 
 
 class TaskCssTest(unittest.TestCase):
-
-    def setUp(self):
-        app = generate_app(db_uri='sqlite://')
 
     def test_normal_gives_correct_css_class(self):
         # given

@@ -3,14 +3,10 @@
 import unittest
 from datetime import datetime
 
-from tudor import generate_app
 from models.task import Task
 
 
 class TaskTest(unittest.TestCase):
-    def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
 
     def test_constructor_sets_summary(self):
         # when

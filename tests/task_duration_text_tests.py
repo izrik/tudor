@@ -2,14 +2,10 @@
 
 import unittest
 
-from tudor import generate_app
 from models.task import Task
 
 
 class TaskDurationTextTest(unittest.TestCase):
-
-    def setUp(self):
-        app = generate_app(db_uri='sqlite://')
 
     def test_no_duration_yields_empty(self):
         # given

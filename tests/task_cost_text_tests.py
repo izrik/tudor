@@ -3,14 +3,10 @@
 import unittest
 from decimal import Decimal
 
-from tudor import generate_app
 from models.task import Task
 
 
 class TaskCostTextTest(unittest.TestCase):
-
-    def setUp(self):
-        app = generate_app(db_uri='sqlite://')
 
     def test_no_duration_yields_empty(self):
         # given

@@ -2,15 +2,10 @@
 
 import unittest
 
-from tudor import generate_app
 from models.tag import Tag
 
 
 class TagTest(unittest.TestCase):
-    def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
-
     def test_constructor_default_id_is_none(self):
         # when
         tag = Tag('name', 'description')

@@ -2,15 +2,10 @@
 
 import unittest
 
-from tudor import generate_app
 from models.user import User
 
 
 class UserTest(unittest.TestCase):
-    def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
-
     def test_constructor_default_id_is_none(self):
         # when
         user = User('name@example.org', 'hashed_password')
