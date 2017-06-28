@@ -1667,7 +1667,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertNotIn(tag, task.tags)
         self.assertNotIn(task, tag.tasks)
         # when
-        task.tags.append(tag)
+        task.tags.add(tag)
         # then
         self.assertIn(tag, task.tags)
         self.assertIn(task, tag.tasks)

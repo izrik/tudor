@@ -1,4 +1,6 @@
 
+import collections
+
 from changeable import Changeable
 
 
@@ -29,6 +31,12 @@ class Tag(Changeable, TagBase):
     _value = None
     _description = None
 
+    _tasks = None
+
+    def __init__(self, value, description=None):
+        super(Tag, self).__init__(value=value, description=description)
+        self._tasks = InterlinkedTasks(self)
+
     @property
     def id(self):
         return self._id
@@ -56,6 +64,10 @@ class Tag(Changeable, TagBase):
         self._description = value
         self._on_attr_changed()
 
+    @property
+    def tasks(self):
+        return self._tasks
+
     @staticmethod
     def from_dict(d):
         tag_id = d.get('id', None)
@@ -66,3 +78,32 @@ class Tag(Changeable, TagBase):
         if tag_id is not None:
             tag.id = tag_id
         return tag
+
+
+class InterlinkedTasks(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, task):
+        return self.set.__contains__(task)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, task):
+        if task not in self.set:
+            self.set.add(task)
+            task.tags.add(self.container)
+
+    def discard(self, task):
+        if task in self.set:
+            self.set.discard(task)
+            task.tags.discard(self.container)
