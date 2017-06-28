@@ -37,10 +37,12 @@ class TaskBase(object):
             'is_deleted': self.is_deleted,
             'order_num': self.order_num,
             'deadline': str_from_datetime(self.deadline),
+            'parent': self.parent,
             'parent_id': self.parent_id,
             'expected_duration_minutes':
                 self.expected_duration_minutes,
             'expected_cost': self.get_expected_cost_for_export(),
+            'children': list(self.children),
             'tag_ids': [tag.id for tag in self.tags],
             'user_ids': [user.id for user in self.users]
         }
