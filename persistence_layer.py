@@ -9,6 +9,7 @@ from models.note import Note, NoteBase
 from models.attachment import Attachment, AttachmentBase
 from models.user import User, UserBase
 from models.option import Option, OptionBase
+from collections_util import clear, extend
 
 
 def is_iterable(x):
@@ -347,6 +348,32 @@ class PersistenceLayer(object):
         d2 = d.copy()
         if 'parent' in d2 and d2['parent'] is not None:
             d2['parent'] = self._get_domain_object_from_db_object(d2['parent'])
+        if 'children' in d2 and d2['children'] is not None:
+            d2['children'] = [self._get_domain_object_from_db_object(dbobj) for
+                              dbobj in d2['children']]
+        if 'tags' in d2 and d2['tags'] is not None:
+            d2['tags'] = [self._get_domain_object_from_db_object(dbobj) for
+                          dbobj in d2['tags']]
+        if 'tasks' in d2 and d2['tasks'] is not None:
+            d2['tasks'] = [self._get_domain_object_from_db_object(dbobj) for
+                           dbobj in d2['tasks']]
+        if 'users' in d2 and d2['users'] is not None:
+            d2['users'] = [self._get_domain_object_from_db_object(dbobj) for
+                           dbobj in d2['users']]
+        if 'dependees' in d2 and d2['dependees'] is not None:
+            d2['dependees'] = [self._get_domain_object_from_db_object(dbobj)
+                               for dbobj in d2['dependees']]
+        if 'dependants' in d2 and d2['dependants'] is not None:
+            d2['dependants'] = [self._get_domain_object_from_db_object(dbobj)
+                                for dbobj in d2['dependants']]
+        if 'prioritize_before' in d2 and d2['prioritize_before'] is not None:
+            d2['prioritize_before'] = [
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d2['prioritize_before']]
+        if 'prioritize_after' in d2 and d2['prioritize_after'] is not None:
+            d2['prioritize_after'] = [
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d2['prioritize_after']]
         return d2
 
     def _update_domain_object_from_db_object(self, domobj):
@@ -360,8 +387,31 @@ class PersistenceLayer(object):
         if 'parent' in d2 and d2['parent'] is not None:
             d2['parent'] = self._get_db_object_from_domain_object(d2['parent'])
         if 'children' in d2:
-            d2['children'] = [self._get_db_object_from_domain_object(child)
-                              for child in d2['children']]
+            d2['children'] = [self._get_db_object_from_domain_object(domobj)
+                              for domobj in d2['children']]
+        if 'tags' in d2:
+            d2['tags'] = [self._get_db_object_from_domain_object(domobj) for
+                          domobj in d2['tags']]
+        if 'tasks' in d2:
+            d2['tasks'] = [self._get_db_object_from_domain_object(domobj) for
+                           domobj in d2['tasks']]
+        if 'users' in d2:
+            d2['users'] = [self._get_db_object_from_domain_object(domobj) for
+                           domobj in d2['users']]
+        if 'dependees' in d2:
+            d2['dependees'] = [self._get_db_object_from_domain_object(domobj)
+                               for domobj in d2['dependees']]
+        if 'dependants' in d2:
+            d2['dependants'] = [self._get_db_object_from_domain_object(domobj)
+                                for domobj in d2['dependants']]
+        if 'prioritize_before' in d2:
+            d2['prioritize_before'] = [
+                self._get_db_object_from_domain_object(domobj) for domobj in
+                d2['prioritize_before']]
+        if 'prioritize_after' in d2:
+            d2['prioritize_after'] = [
+                self._get_db_object_from_domain_object(domobj) for domobj in
+                d2['prioritize_after']]
         return d2
 
     def _update_db_object_from_domain_object(self, domobj):
@@ -815,6 +865,27 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 task.id = task_id
             task.order_num = order_num
             task.parent_id = parent_id
+            if 'children' in d:
+                clear(task.users)
+                task.children.extend(d['children'])
+            if 'tags' in d:
+                clear(task.users)
+                extend(task.tags, d['tags'])
+            if 'users' in d:
+                clear(task.users)
+                extend(task.users, d['users'])
+            if 'dependees' in d:
+                clear(task.dependees)
+                extend(task.dependees, d['dependees'])
+            if 'dependants' in d:
+                clear(task.dependants)
+                extend(task.dependants, d['dependants'])
+            if 'prioritize_before' in d:
+                clear(task.prioritize_before)
+                extend(task.prioritize_before, d['prioritize_before'])
+            if 'prioritize_after' in d:
+                clear(task.prioritize_after)
+                extend(task.prioritize_after, d['prioritize_after'])
             return task
 
     return DbTask

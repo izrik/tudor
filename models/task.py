@@ -5,6 +5,7 @@ from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
 from changeable import Changeable
+from collections_util import clear, extend
 
 
 class TaskBase(object):
@@ -43,8 +44,12 @@ class TaskBase(object):
                 self.expected_duration_minutes,
             'expected_cost': self.get_expected_cost_for_export(),
             'children': list(self.children),
-            'tag_ids': [tag.id for tag in self.tags],
-            'user_ids': [user.id for user in self.users]
+            'tags': list(self.tags),
+            'users': list(self.users),
+            'dependees': list(self.dependees),
+            'dependants': list(self.dependants),
+            'prioritize_before': list(self.prioritize_before),
+            'prioritize_after': list(self.prioritize_after),
         }
 
     def update_from_dict(self, d):
@@ -70,9 +75,27 @@ class TaskBase(object):
             self.parent = d['parent']
         if 'parent_id' in d:
             self.parent_id = d['parent_id']
-        # if 'children' in d:
-        #     self.children.clear()
-        #     self.children.extend(d['children'])
+        if 'children' in d:
+            clear(self.users)
+            self.children.extend(d['children'])
+        if 'tags' in d:
+            clear(self.users)
+            extend(self.tags, d['tags'])
+        if 'users' in d:
+            clear(self.users)
+            extend(self.users, d['users'])
+        if 'dependees' in d:
+            clear(self.dependees)
+            extend(self.dependees, d['dependees'])
+        if 'dependants' in d:
+            clear(self.dependants)
+            extend(self.dependants, d['dependants'])
+        if 'prioritize_before' in d:
+            clear(self.prioritize_before)
+            extend(self.prioritize_before, d['prioritize_before'])
+        if 'prioritize_after' in d:
+            clear(self.prioritize_after)
+            extend(self.prioritize_after, d['prioritize_after'])
 
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
@@ -270,6 +293,27 @@ class Task(Changeable, TaskBase):
             task.id = task_id
         task.order_num = order_num
         task.parent_id = parent_id
+        if 'children' in d:
+            clear(task.users)
+            task.children.extend(d['children'])
+        if 'tags' in d:
+            clear(task.users)
+            extend(task.tags, d['tags'])
+        if 'users' in d:
+            clear(task.users)
+            extend(task.users, d['users'])
+        if 'dependees' in d:
+            clear(task.dependees)
+            extend(task.dependees, d['dependees'])
+        if 'dependants' in d:
+            clear(task.dependants)
+            extend(task.dependants, d['dependants'])
+        if 'prioritize_before' in d:
+            clear(task.prioritize_before)
+            extend(task.prioritize_before, d['prioritize_before'])
+        if 'prioritize_after' in d:
+            clear(task.prioritize_after)
+            extend(task.prioritize_after, d['prioritize_after'])
         return task
 
     def get_css_class(self):
