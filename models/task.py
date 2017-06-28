@@ -406,11 +406,13 @@ class InterlinkedTags(collections.MutableSet):
         if tag not in self.set:
             self.set.add(tag)
             tag.tasks.add(self.container)
+            self.container._on_attr_changed()
 
     def discard(self, tag):
         if tag in self.set:
             self.set.discard(tag)
             tag.tasks.discard(self.container)
+            self.container._on_attr_changed()
 
 
 class InterlinkedUsers(collections.MutableSet):
@@ -435,11 +437,13 @@ class InterlinkedUsers(collections.MutableSet):
         if user not in self.set:
             self.set.add(user)
             user.tasks.add(self.container)
+            self.container._on_attr_changed()
 
     def discard(self, user):
         if user in self.set:
             self.set.discard(user)
             user.tasks.discard(self.container)
+            self.container._on_attr_changed()
 
 
 class InterlinkedDependees(collections.MutableSet):
@@ -464,11 +468,13 @@ class InterlinkedDependees(collections.MutableSet):
         if dependee not in self.set:
             self.set.add(dependee)
             dependee.dependants.add(self.container)
+            self.container._on_attr_changed()
 
     def discard(self, dependee):
         if dependee in self.set:
             self.set.discard(dependee)
             dependee.dependants.discard(self.container)
+            self.container._on_attr_changed()
 
 
 class InterlinkedDependants(collections.MutableSet):
@@ -493,11 +499,13 @@ class InterlinkedDependants(collections.MutableSet):
         if dependant not in self.set:
             self.set.add(dependant)
             dependant.dependees.add(self.container)
+            self.container._on_attr_changed()
 
     def discard(self, dependant):
         if dependant in self.set:
             self.set.discard(dependant)
             dependant.dependees.discard(self.container)
+            self.container._on_attr_changed()
 
 
 class InterlinkedPrioritizeBefore(collections.MutableSet):
@@ -522,11 +530,13 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
         if before not in self.set:
             self.set.add(before)
             before.prioritize_after.add(self.container)
+            self.container._on_attr_changed()
 
     def discard(self, before):
         if before in self.set:
             self.set.discard(before)
             before.prioritize_after.discard(self.container)
+            self.container._on_attr_changed()
 
 
 class InterlinkedPrioritizeAfter(collections.MutableSet):
@@ -551,8 +561,10 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
         if after not in self.set:
             self.set.add(after)
             after.prioritize_before.add(self.container)
+            self.container._on_attr_changed()
 
     def discard(self, after):
         if after in self.set:
             self.set.discard(after)
             after.prioritize_before.discard(self.container)
+            self.container._on_attr_changed()
