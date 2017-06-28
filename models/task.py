@@ -101,8 +101,8 @@ class Task(Changeable, TaskBase):
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost)
 
-        self.dependees = list()
-        self.dependants = list()
+        self._dependees = InterlinkedDependees(self)
+        self._dependants = InterlinkedDependants(self)
         self.prioritize_before = list()
         self.prioritize_after = list()
         self._tags = InterlinkedTags(self)
@@ -228,6 +228,14 @@ class Task(Changeable, TaskBase):
     @property
     def users(self):
         return self._users
+
+    @property
+    def dependees(self):
+        return self._dependees
+
+    @property
+    def dependants(self):
+        return self._dependants
 
     @staticmethod
     def from_dict(d):
@@ -424,3 +432,61 @@ class InterlinkedUsers(collections.MutableSet):
         if user in self.set:
             self.set.discard(user)
             user.tasks.discard(self.container)
+
+
+class InterlinkedDependees(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, dependee):
+        return self.set.__contains__(dependee)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, dependee):
+        if dependee not in self.set:
+            self.set.add(dependee)
+            dependee.dependants.add(self.container)
+
+    def discard(self, dependee):
+        if dependee in self.set:
+            self.set.discard(dependee)
+            dependee.dependants.discard(self.container)
+
+
+class InterlinkedDependants(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self.container = container
+        self.set = set()
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, dependant):
+        return self.set.__contains__(dependant)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, dependant):
+        if dependant not in self.set:
+            self.set.add(dependant)
+            dependant.dependees.add(self.container)
+
+    def discard(self, dependant):
+        if dependant in self.set:
+            self.set.discard(dependant)
+            dependant.dependees.discard(self.container)
