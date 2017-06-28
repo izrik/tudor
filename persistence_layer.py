@@ -472,7 +472,9 @@ class PersistenceLayer(object):
             query = query.filter(self.Task.deadline.isnot(None))
 
         if tags_contains is not self.UNSPECIFIED:
-            query = query.filter(self.Task.tags.contains(tags_contains))
+            tags_contains2 = self._get_db_object_from_domain_object(
+                tags_contains)
+            query = query.filter(self.Task.tags.contains(tags_contains2))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
