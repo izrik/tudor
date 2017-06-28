@@ -3,6 +3,9 @@
 import unittest
 
 from tudor import generate_app
+from models.task import Task
+from models.tag import Tag
+from models.user import User
 
 
 class ConvertTaskToTagTest(unittest.TestCase):
@@ -11,13 +14,11 @@ class ConvertTaskToTagTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.Task = self.pl.Task
-        self.Tag = self.pl.Tag
-        self.user = self.pl.User('name@example.org', None, True)
+        self.user = User('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):
         # given
-        task = self.Task('some_task')
+        task = Task('some_task')
         self.pl.add(task)
         self.pl.commit()
 
@@ -33,7 +34,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def test_old_task_gets_deleted(self):
         # given
-        task = self.Task('some_task')
+        task = Task('some_task')
         self.pl.add(task)
         self.pl.commit()
 
@@ -47,16 +48,16 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def test_child_tasks_get_the_new_tag(self):
         # given
-        task = self.Task('some_task')
+        task = Task('some_task')
         self.pl.add(task)
 
-        child1 = self.Task('child1')
+        child1 = Task('child1')
         child1.parent = task
         self.pl.add(child1)
-        child2 = self.Task('child2')
+        child2 = Task('child2')
         child2.parent = task
         self.pl.add(child2)
-        child3 = self.Task('child3')
+        child3 = Task('child3')
         child3.parent = task
         self.pl.add(child3)
 
@@ -87,22 +88,22 @@ class ConvertTaskToTagTest(unittest.TestCase):
     def test_child_tasks_get_the_old_tasks_tags(self):
         # given
 
-        tag1 = self.Tag('tag1')
+        tag1 = Tag('tag1')
         self.pl.add(tag1)
 
-        task = self.Task('some_task')
+        task = Task('some_task')
         self.pl.add(task)
         task.tags.append(tag1)
 
         self.pl.commit()
 
-        child1 = self.Task('child1')
+        child1 = Task('child1')
         child1.parent = task
         self.pl.add(child1)
-        child2 = self.Task('child2')
+        child2 = Task('child2')
         child2.parent = task
         self.pl.add(child2)
-        child3 = self.Task('child3')
+        child3 = Task('child3')
         child3.parent = task
         self.pl.add(child3)
 
@@ -128,20 +129,20 @@ class ConvertTaskToTagTest(unittest.TestCase):
     def test_children_of_old_task_become_children_of_old_tasks_parent(self):
         # given
 
-        grand_parent = self.Task('grand_parent')
+        grand_parent = Task('grand_parent')
         self.pl.add(grand_parent)
 
-        task = self.Task('some_task')
+        task = Task('some_task')
         task.parent = grand_parent
         self.pl.add(task)
 
-        child1 = self.Task('child1')
+        child1 = Task('child1')
         child1.parent = task
         self.pl.add(child1)
-        child2 = self.Task('child2')
+        child2 = Task('child2')
         child2.parent = task
         self.pl.add(child2)
-        child3 = self.Task('child3')
+        child3 = Task('child3')
         child3.parent = task
         self.pl.add(child3)
 
