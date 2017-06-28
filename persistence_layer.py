@@ -151,10 +151,12 @@ class PersistenceLayer(object):
         self.db.session.delete(dbobj)
 
     def commit(self):
-        for domobj in self._changed_objects:
+        changed = list(self._changed_objects)
+        self._changed_objects.clear()
+        for domobj in changed:
             self._update_db_object_from_domain_object(domobj)
         self.db.session.commit()
-        for domobj in self._changed_objects:
+        for domobj in changed:
             self._update_domain_object_from_db_object(domobj)
         self._changed_objects.clear()
 
