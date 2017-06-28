@@ -345,7 +345,7 @@ class PersistenceLayer(object):
 
     def _domain_attrs_from_db(self, d):
         d2 = d.copy()
-        if 'parent' in d2:
+        if 'parent' in d2 and d2['parent'] is not None:
             d2['parent'] = self._get_domain_object_from_db_object(d2['parent'])
         return d2
 
@@ -357,7 +357,7 @@ class PersistenceLayer(object):
 
     def _db_attrs_from_domain(self, d):
         d2 = d.copy()
-        if 'parent' in d2:
+        if 'parent' in d2 and d2['parent'] is not None:
             d2['parent'] = self._get_db_object_from_domain_object(d2['parent'])
         if 'children' in d2:
             d2['children'] = [self._get_db_object_from_domain_object(child)
