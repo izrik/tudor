@@ -66,8 +66,13 @@ class TaskBase(object):
             self.expected_duration_minutes = d['expected_duration_minutes']
         if 'expected_cost' in d:
             self.expected_cost = d['expected_cost']
+        if 'parent' in d:
+            self.parent = d['parent']
         if 'parent_id' in d:
             self.parent_id = d['parent_id']
+        # if 'children' in d:
+        #     self.children.clear()
+        #     self.children.extend(d['children'])
 
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
