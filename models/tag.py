@@ -1,15 +1,19 @@
 
 import collections
+import logging
 
 from changeable import Changeable
 
 
 class TagBase(object):
     def __init__(self, value, description=None):
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
         self.value = value
         self.description = description
 
     def to_dict(self):
+        self._logger.debug('{} ({})'.format(self.value, self.id))
         return {
             'id': self.id,
             'value': self.value,
@@ -17,12 +21,17 @@ class TagBase(object):
         }
 
     def update_from_dict(self, d):
+        self._logger.debug('{} ({})'.format(self.value, self.id))
         if 'id' in d:
             self.id = d['id']
         if 'value' in d:
             self.value = d['value']
         if 'description' in d:
             self.description = d['description']
+
+    @property
+    def id2(self):
+        return '[{}] {} ({})'.format(id(self), self.value, self.id)
 
 
 class Tag(Changeable, TagBase):
@@ -43,6 +52,7 @@ class Tag(Changeable, TagBase):
 
     @id.setter
     def id(self, value):
+        self._logger.debug('{} ({}) [{}]'.format(self.value, self.id, id(self)))
         self._id = value
         self._on_attr_changed()
 
@@ -52,6 +62,7 @@ class Tag(Changeable, TagBase):
 
     @value.setter
     def value(self, value):
+        self._logger.debug('{} ({}) [{}]'.format(self.value, self.id, id(self)))
         self._value = value
         self._on_attr_changed()
 
@@ -61,6 +72,7 @@ class Tag(Changeable, TagBase):
 
     @description.setter
     def description(self, value):
+        self._logger.debug('{} ({}) [{}]'.format(self.value, self.id, id(self)))
         self._description = value
         self._on_attr_changed()
 
@@ -75,6 +87,8 @@ class Tag(Changeable, TagBase):
         description = d.get('description', None)
 
         tag = Tag(value, description)
+        _logger = logging.getLogger('{}.{}'.format(__name__, Tag.__name__))
+        _logger.debug('{} ({}) [{}]'.format(tag.value, tag.id, id(tag)))
         if tag_id is not None:
             tag.id = tag_id
         return tag
@@ -86,8 +100,15 @@ class InterlinkedTasks(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -99,15 +120,18 @@ class InterlinkedTasks(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, task):
+        self._logger.debug('{} -> {}'.format(self.c.id2, task.id2))
         if task not in self.set:
             self.set.add(task)
             task.tags.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, task):
+        self._logger.debug('{} -> {}'.format(self.c.id2, task.id2))
         self.add(task)
 
     def discard(self, task):
+        self._logger.debug('{} -> {}'.format(self.c.id2, task.id2))
         if task in self.set:
             self.set.discard(task)
             task.tags.discard(self.container)

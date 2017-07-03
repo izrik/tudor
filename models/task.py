@@ -1,11 +1,13 @@
 
 import collections
+import logging
 
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
 from changeable import Changeable
 from collections_util import clear, extend
+import logging_util
 
 
 class TaskBase(object):
@@ -14,6 +16,10 @@ class TaskBase(object):
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None):
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger.debug('[{}] {}'.format(id(self), summary))
+
         self.summary = summary
         self.description = description
         self.is_done = not not is_done
@@ -30,6 +36,8 @@ class TaskBase(object):
         return deadline
 
     def to_dict(self):
+        self._logger.debug('[{}] {} ({})'.format(id(self), self.summary,
+                                                 self.id))
         return {
             'id': self.id,
             'summary': self.summary,
@@ -53,6 +61,8 @@ class TaskBase(object):
         }
 
     def update_from_dict(self, d):
+        self._logger.debug('[{}] {} ({})'.format(id(self), self.summary,
+                                                 self.id))
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'summary' in d:
@@ -102,6 +112,10 @@ class TaskBase(object):
             return None
         return '{:.2f}'.format(self.expected_cost)
 
+    @property
+    def id2(self):
+        return '[{}] {} ({})'.format(id(self), self.summary, self.id)
+
 
 class Task(Changeable, TaskBase):
 
@@ -124,6 +138,8 @@ class Task(Changeable, TaskBase):
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost)
 
+        self._logger.debug(self.id2)
+
         self._dependees = InterlinkedDependees(self)
         self._dependants = InterlinkedDependants(self)
         self._prioritize_before = InterlinkedPrioritizeBefore(self)
@@ -142,6 +158,7 @@ class Task(Changeable, TaskBase):
 
     @id.setter
     def id(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._id = value
         self._on_attr_changed()
 
@@ -151,6 +168,7 @@ class Task(Changeable, TaskBase):
 
     @summary.setter
     def summary(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._summary = value
         self._on_attr_changed()
 
@@ -160,6 +178,7 @@ class Task(Changeable, TaskBase):
 
     @description.setter
     def description(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._description = value
         self._on_attr_changed()
 
@@ -169,6 +188,7 @@ class Task(Changeable, TaskBase):
 
     @is_done.setter
     def is_done(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._is_done = value
         self._on_attr_changed()
 
@@ -178,6 +198,7 @@ class Task(Changeable, TaskBase):
 
     @is_deleted.setter
     def is_deleted(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._is_deleted = value
         self._on_attr_changed()
 
@@ -187,6 +208,7 @@ class Task(Changeable, TaskBase):
 
     @order_num.setter
     def order_num(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._order_num = value
         self._on_attr_changed()
 
@@ -196,6 +218,7 @@ class Task(Changeable, TaskBase):
 
     @deadline.setter
     def deadline(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._deadline = value
         self._on_attr_changed()
 
@@ -205,6 +228,7 @@ class Task(Changeable, TaskBase):
 
     @expected_duration_minutes.setter
     def expected_duration_minutes(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._expected_duration_minutes = value
         self._on_attr_changed()
 
@@ -214,6 +238,7 @@ class Task(Changeable, TaskBase):
 
     @expected_cost.setter
     def expected_cost(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._expected_cost = value
         self._on_attr_changed()
 
@@ -223,6 +248,7 @@ class Task(Changeable, TaskBase):
 
     @parent_id.setter
     def parent_id(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         self._parent_id = value
         self._on_attr_changed()
 
@@ -232,6 +258,7 @@ class Task(Changeable, TaskBase):
 
     @parent.setter
     def parent(self, value):
+        self._logger.debug('{} -> {}'.format(self.id2, value))
         if value is not self._parent:
             if self._parent is not None:
                 self._parent.children.remove(self)
@@ -378,12 +405,18 @@ class Task(Changeable, TaskBase):
 
 class InterlinkedChildren(collections.MutableSequence):
     def __init__(self, container, *args):
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
         if container is None:
             raise ValueError('container cannot be None')
 
         self.container = container
         self.list = list()
         self.extend(list(args))
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.list)
@@ -392,9 +425,11 @@ class InterlinkedChildren(collections.MutableSequence):
         return self.list[i]
 
     def __delitem__(self, i):
+        self._logger.debug('{} -> {}'.format(self.c.id2, i))
         self.remove(self[i])
 
     def __setitem__(self, i, v):
+        self._logger.debug('{} -> {}, {}'.format(self.c.id2, i, v.id2))
         del self[i]
         self.insert(i, v)
 
@@ -402,21 +437,25 @@ class InterlinkedChildren(collections.MutableSequence):
         return self.list.__contains__(value)
 
     def append(self, value):
+        self._logger.debug('{} -> {}'.format(self.c.id2, value.id2))
         if value not in self:
             self.list.append(value)
             value.parent = self.container
             self.container._on_attr_changed()
 
     def add(self, value):
+        self._logger.debug('{} -> {}'.format(self.c.id2, value.id2))
         self.append(value)
 
     def remove(self, value):
+        self._logger.debug('{} -> {}'.format(self.c.id2, value.id2))
         if value in self:
             self.list.remove(value)
             value.parent = None
             self.container._on_attr_changed()
 
     def insert(self, i, v):
+        self._logger.debug('{} -> {}, {}'.format(self.c.id2, i, v.id2))
         if v in self:
             if self.index(v) < i:
                 i -= 1
@@ -437,8 +476,15 @@ class InterlinkedTags(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -450,15 +496,18 @@ class InterlinkedTags(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, tag):
+        self._logger.debug('{} -> {}'.format(self.c.id2, tag.id2))
         if tag not in self.set:
             self.set.add(tag)
             tag.tasks.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, tag):
+        self._logger.debug('{} -> {}'.format(self.c.id2, tag.id2))
         self.add(tag)
 
     def discard(self, tag):
+        self._logger.debug('{} -> {}'.format(self.c.id2, tag.id2))
         if tag in self.set:
             self.set.discard(tag)
             tag.tasks.discard(self.container)
@@ -471,8 +520,15 @@ class InterlinkedUsers(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -484,15 +540,18 @@ class InterlinkedUsers(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, user):
+        self._logger.debug('{} -> {}'.format(self.c.id2, user.id2))
         if user not in self.set:
             self.set.add(user)
             user.tasks.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, user):
+        self._logger.debug('{} -> {}'.format(self.c.id2, user.id2))
         self.add(user)
 
     def discard(self, user):
+        self._logger.debug('{} -> {}'.format(self.c.id2, user.id2))
         if user in self.set:
             self.set.discard(user)
             user.tasks.discard(self.container)
@@ -505,8 +564,15 @@ class InterlinkedDependees(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -518,15 +584,18 @@ class InterlinkedDependees(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, dependee):
+        self._logger.debug('{} -> {}'.format(self.c.id2, dependee.id2))
         if dependee not in self.set:
             self.set.add(dependee)
             dependee.dependants.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, dependee):
+        self._logger.debug('{} -> {}'.format(self.c.id2, dependee.id2))
         self.add(dependee)
 
     def discard(self, dependee):
+        self._logger.debug('{} -> {}'.format(self.c.id2, dependee.id2))
         if dependee in self.set:
             self.set.discard(dependee)
             dependee.dependants.discard(self.container)
@@ -539,8 +608,15 @@ class InterlinkedDependants(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -552,15 +628,18 @@ class InterlinkedDependants(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, dependant):
+        self._logger.debug('{} -> {}'.format(self.c.id2, dependant.id2))
         if dependant not in self.set:
             self.set.add(dependant)
             dependant.dependees.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, dependant):
+        self._logger.debug('{} -> {}'.format(self.c.id2, dependant.id2))
         self.add(dependant)
 
     def discard(self, dependant):
+        self._logger.debug('{} -> {}'.format(self.c.id2, dependant.id2))
         if dependant in self.set:
             self.set.discard(dependant)
             dependant.dependees.discard(self.container)
@@ -573,8 +652,15 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -586,15 +672,18 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, before):
+        self._logger.debug('{} -> {}'.format(self.c.id2, before.id2))
         if before not in self.set:
             self.set.add(before)
             before.prioritize_after.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, before):
+        self._logger.debug('{} -> {}'.format(self.c.id2, before.id2))
         self.add(before)
 
     def discard(self, before):
+        self._logger.debug('{} -> {}'.format(self.c.id2, before.id2))
         if before in self.set:
             self.set.discard(before)
             before.prioritize_after.discard(self.container)
@@ -607,8 +696,15 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
+        self._logger = logging.getLogger(
+            '{}.{}'.format(__name__, type(self).__name__))
+
         self.container = container
         self.set = set()
+
+    @property
+    def c(self):
+        return self.container
 
     def __len__(self):
         return len(self.set)
@@ -620,15 +716,18 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, after):
+        self._logger.debug('{} -> {}'.format(self.c.id2, after.id2))
         if after not in self.set:
             self.set.add(after)
             after.prioritize_before.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, after):
+        self._logger.debug('{} -> {}'.format(self.c.id2, after.id2))
         self.add(after)
 
     def discard(self, after):
+        self._logger.debug('{} -> {}'.format(self.c.id2, after.id2))
         if after in self.set:
             self.set.discard(after)
             after.prioritize_before.discard(self.container)

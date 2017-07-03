@@ -43,6 +43,10 @@ class UserBase(object):
     def is_anonymous(self):
         return False
 
+    @property
+    def id2(self):
+        return '[{}] {} ({})'.format(id(self), self.email, self.id)
+
 
 class User(Changeable, UserBase):
     _id = None
