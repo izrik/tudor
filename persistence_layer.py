@@ -1,6 +1,7 @@
 
 import collections
 import random
+import logging
 
 from flask_sqlalchemy import SQLAlchemy
 from models.task import Task, TaskBase
@@ -10,6 +11,7 @@ from models.attachment import Attachment, AttachmentBase
 from models.user import User, UserBase
 from models.option import Option, OptionBase
 from collections_util import clear, extend
+import logging_util
 
 
 def is_iterable(x):
@@ -89,6 +91,7 @@ class Pager(object):
 
 class PersistenceLayer(object):
     def __init__(self, app, db_uri, bcrypt):
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.app = app
         self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri

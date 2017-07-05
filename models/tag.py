@@ -3,12 +3,13 @@ import collections
 import logging
 
 from changeable import Changeable
+import logging_util
 
 
 class TagBase(object):
+
     def __init__(self, value, description=None):
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
         self.value = value
         self.description = description
 
@@ -100,8 +101,7 @@ class InterlinkedTasks(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()

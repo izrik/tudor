@@ -16,8 +16,7 @@ class TaskBase(object):
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None):
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
         self._logger.debug('[{}] {}'.format(id(self), summary))
 
         self.summary = summary
@@ -405,8 +404,7 @@ class Task(Changeable, TaskBase):
 
 class InterlinkedChildren(collections.MutableSequence):
     def __init__(self, container, *args):
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
         if container is None:
             raise ValueError('container cannot be None')
 
@@ -476,8 +474,7 @@ class InterlinkedTags(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()
@@ -520,8 +517,7 @@ class InterlinkedUsers(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()
@@ -564,8 +560,7 @@ class InterlinkedDependees(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()
@@ -608,8 +603,7 @@ class InterlinkedDependants(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()
@@ -652,8 +646,7 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()
@@ -696,8 +689,7 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
         if container is None:
             raise ValueError('container cannot be None')
 
-        self._logger = logging.getLogger(
-            '{}.{}'.format(__name__, type(self).__name__))
+        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()
