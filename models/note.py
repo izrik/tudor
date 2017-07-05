@@ -37,6 +37,13 @@ class NoteBase(object):
         if 'task_id' in d:
             self.task_id = d['task_id']
 
+    @property
+    def id2(self):
+        if len(self.content) > 20:
+            return '[{}] {}... ({})'.format(id(self), self.content[:20],
+                                            self.id)
+        return '[{}] {} ({})'.format(id(self), self.content, self.id)
+
 
 class Note(Changeable, NoteBase):
     _id = None

@@ -53,6 +53,10 @@ class AttachmentBase(object):
         if 'task_id' in d:
             self.task_id = d['task_id']
 
+    @property
+    def id2(self):
+        return '[{}] {} ({})'.format(id(self), self.filename, self.id)
+
 
 class Attachment(Changeable, AttachmentBase):
 

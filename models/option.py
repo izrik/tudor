@@ -23,6 +23,10 @@ class OptionBase(object):
         if 'value' in d:
             self.value = d['value']
 
+    @property
+    def id2(self):
+        return '[{}] {}={}'.format(id(self), self.key, self.value)
+
 
 class Option(Changeable, OptionBase):
     _key = None
