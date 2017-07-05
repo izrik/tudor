@@ -88,8 +88,8 @@ class Tag(Changeable, TagBase):
         description = d.get('description', None)
 
         tag = Tag(value, description)
-        _logger = logging.getLogger('{}.{}'.format(__name__, Tag.__name__))
-        _logger.debug('{} ({}) [{}]'.format(tag.value, tag.id, id(tag)))
+        logger = logging_util.get_logger(__name__, tag)
+        logger.debug('{} ({}) [{}]'.format(tag.value, tag.id, id(tag)))
         if tag_id is not None:
             tag.id = tag_id
         return tag
