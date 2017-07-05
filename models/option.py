@@ -38,8 +38,9 @@ class Option(Changeable, OptionBase):
 
     @key.setter
     def key(self, value):
-        self._key = value
-        self._on_attr_changed()
+        if value != self._key:
+            self._key = value
+            self._on_attr_changed()
 
     @property
     def value(self):
@@ -47,8 +48,9 @@ class Option(Changeable, OptionBase):
 
     @value.setter
     def value(self, value):
-        self._value = value
-        self._on_attr_changed()
+        if value != self._value:
+            self._value = value
+            self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):

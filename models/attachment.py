@@ -75,8 +75,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @id.setter
     def id(self, value):
-        self._id = value
-        self._on_attr_changed()
+        if value != self._id:
+            self._id = value
+            self._on_attr_changed()
 
     @property
     def timestamp(self):
@@ -84,8 +85,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @timestamp.setter
     def timestamp(self, value):
-        self._timestamp = value
-        self._on_attr_changed()
+        if value != self._timestamp:
+            self._timestamp = value
+            self._on_attr_changed()
 
     @property
     def path(self):
@@ -93,8 +95,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @path.setter
     def path(self, value):
-        self._path = value
-        self._on_attr_changed()
+        if value != self._path:
+            self._path = value
+            self._on_attr_changed()
 
     @property
     def filename(self):
@@ -102,8 +105,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @filename.setter
     def filename(self, value):
-        self._filename = value
-        self._on_attr_changed()
+        if value != self._filename:
+            self._filename = value
+            self._on_attr_changed()
 
     @property
     def description(self):
@@ -111,8 +115,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @description.setter
     def description(self, value):
-        self._description = value
-        self._on_attr_changed()
+        if value != self._description:
+            self._description = value
+            self._on_attr_changed()
 
     @property
     def task_id(self):
@@ -120,8 +125,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @task_id.setter
     def task_id(self, value):
-        self._task_id = value
-        self._on_attr_changed()
+        if value != self._task_id:
+            self._task_id = value
+            self._on_attr_changed()
 
     @property
     def task(self):
@@ -129,8 +135,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @task.setter
     def task(self, value):
-        self._task = value
-        self._on_attr_changed()
+        if value != self._task:
+            self._task = value
+            self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):

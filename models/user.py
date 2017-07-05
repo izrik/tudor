@@ -69,8 +69,9 @@ class User(Changeable, UserBase):
 
     @id.setter
     def id(self, value):
-        self._id = value
-        self._on_attr_changed()
+        if value != self._id:
+            self._id = value
+            self._on_attr_changed()
 
     @property
     def email(self):
@@ -78,8 +79,9 @@ class User(Changeable, UserBase):
 
     @email.setter
     def email(self, value):
-        self._email = value
-        self._on_attr_changed()
+        if value != self._email:
+            self._email = value
+            self._on_attr_changed()
 
     @property
     def hashed_password(self):
@@ -87,8 +89,9 @@ class User(Changeable, UserBase):
 
     @hashed_password.setter
     def hashed_password(self, value):
-        self._hashed_password = value
-        self._on_attr_changed()
+        if value != self._hashed_password:
+            self._hashed_password = value
+            self._on_attr_changed()
 
     @property
     def is_admin(self):
@@ -96,8 +99,9 @@ class User(Changeable, UserBase):
 
     @is_admin.setter
     def is_admin(self, value):
-        self._is_admin = value
-        self._on_attr_changed()
+        if value != self._is_admin:
+            self._is_admin = value
+            self._on_attr_changed()
 
     @property
     def authenticated(self):
@@ -105,8 +109,9 @@ class User(Changeable, UserBase):
 
     @authenticated.setter
     def authenticated(self, value):
-        self._authenticated = value
-        self._on_attr_changed()
+        if value != self._authenticated:
+            self._authenticated = value
+            self._on_attr_changed()
 
     @property
     def tasks(self):

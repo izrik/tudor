@@ -157,9 +157,10 @@ class Task(Changeable, TaskBase):
 
     @id.setter
     def id(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._id = value
-        self._on_attr_changed()
+        if value != self._id:
+            self._logger.debug('{}: {} -> {}'.format(self.id2, self.id, value))
+            self._id = value
+            self._on_attr_changed()
 
     @property
     def summary(self):
@@ -167,9 +168,11 @@ class Task(Changeable, TaskBase):
 
     @summary.setter
     def summary(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._summary = value
-        self._on_attr_changed()
+        if value != self._summary:
+            self._logger.debug('{}: {} -> {}'.format(self.id2, self.summary,
+                                                     value))
+            self._summary = value
+            self._on_attr_changed()
 
     @property
     def description(self):
@@ -177,9 +180,11 @@ class Task(Changeable, TaskBase):
 
     @description.setter
     def description(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._description = value
-        self._on_attr_changed()
+        if value != self._description:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.description, value))
+            self._description = value
+            self._on_attr_changed()
 
     @property
     def is_done(self):
@@ -187,9 +192,11 @@ class Task(Changeable, TaskBase):
 
     @is_done.setter
     def is_done(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._is_done = value
-        self._on_attr_changed()
+        if value != self._is_done:
+            self._logger.debug('{}: {} -> {}'.format(self.id2, self.is_done,
+                                                     value))
+            self._is_done = value
+            self._on_attr_changed()
 
     @property
     def is_deleted(self):
@@ -197,9 +204,11 @@ class Task(Changeable, TaskBase):
 
     @is_deleted.setter
     def is_deleted(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._is_deleted = value
-        self._on_attr_changed()
+        if value != self._is_deleted:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.is_deleted, value))
+            self._is_deleted = value
+            self._on_attr_changed()
 
     @property
     def order_num(self):
@@ -207,9 +216,11 @@ class Task(Changeable, TaskBase):
 
     @order_num.setter
     def order_num(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._order_num = value
-        self._on_attr_changed()
+        if value != self._order_num:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.order_num, value))
+            self._order_num = value
+            self._on_attr_changed()
 
     @property
     def deadline(self):
@@ -217,9 +228,11 @@ class Task(Changeable, TaskBase):
 
     @deadline.setter
     def deadline(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._deadline = value
-        self._on_attr_changed()
+        if value != self._deadline:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.deadline, value))
+            self._deadline = value
+            self._on_attr_changed()
 
     @property
     def expected_duration_minutes(self):
@@ -227,9 +240,12 @@ class Task(Changeable, TaskBase):
 
     @expected_duration_minutes.setter
     def expected_duration_minutes(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._expected_duration_minutes = value
-        self._on_attr_changed()
+        if value != self._expected_duration_minutes:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.expected_duration_minutes,
+                                      value))
+            self._expected_duration_minutes = value
+            self._on_attr_changed()
 
     @property
     def expected_cost(self):
@@ -237,9 +253,11 @@ class Task(Changeable, TaskBase):
 
     @expected_cost.setter
     def expected_cost(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._expected_cost = value
-        self._on_attr_changed()
+        if value != self._expected_cost:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.expected_cost, value))
+            self._expected_cost = value
+            self._on_attr_changed()
 
     @property
     def parent_id(self):
@@ -247,9 +265,11 @@ class Task(Changeable, TaskBase):
 
     @parent_id.setter
     def parent_id(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        self._parent_id = value
-        self._on_attr_changed()
+        if value != self._parent_id:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.parent_id, value))
+            self._parent_id = value
+            self._on_attr_changed()
 
     @property
     def parent(self):
@@ -257,8 +277,10 @@ class Task(Changeable, TaskBase):
 
     @parent.setter
     def parent(self, value):
-        self._logger.debug('{} -> {}'.format(self.id2, value))
-        if value is not self._parent:
+        self._logger.debug('{}'.format(self.id2))
+        if value != self._parent:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self.parent, value))
             if self._parent is not None:
                 self._parent.children.remove(self)
             self._parent = value

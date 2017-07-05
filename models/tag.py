@@ -53,9 +53,11 @@ class Tag(Changeable, TagBase):
 
     @id.setter
     def id(self, value):
-        self._logger.debug('{} ({}) [{}]'.format(self.value, self.id, id(self)))
-        self._id = value
-        self._on_attr_changed()
+        if value != self._id:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self._id, value))
+            self._id = value
+            self._on_attr_changed()
 
     @property
     def value(self):
@@ -63,9 +65,11 @@ class Tag(Changeable, TagBase):
 
     @value.setter
     def value(self, value):
-        self._logger.debug('{} ({}) [{}]'.format(self.value, self.id, id(self)))
-        self._value = value
-        self._on_attr_changed()
+        if value != self._value:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self._value, value))
+            self._value = value
+            self._on_attr_changed()
 
     @property
     def description(self):
@@ -73,9 +77,11 @@ class Tag(Changeable, TagBase):
 
     @description.setter
     def description(self, value):
-        self._logger.debug('{} ({}) [{}]'.format(self.value, self.id, id(self)))
-        self._description = value
-        self._on_attr_changed()
+        if value != self._description:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self.id2, self._description, value))
+            self._description = value
+            self._on_attr_changed()
 
     @property
     def tasks(self):

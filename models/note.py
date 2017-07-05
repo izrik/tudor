@@ -59,8 +59,9 @@ class Note(Changeable, NoteBase):
 
     @id.setter
     def id(self, value):
-        self._id = value
-        self._on_attr_changed()
+        if value != self._id:
+            self._id = value
+            self._on_attr_changed()
 
     @property
     def content(self):
@@ -68,8 +69,9 @@ class Note(Changeable, NoteBase):
 
     @content.setter
     def content(self, value):
-        self._content = value
-        self._on_attr_changed()
+        if value != self._content:
+            self._content = value
+            self._on_attr_changed()
 
     @property
     def timestamp(self):
@@ -77,8 +79,9 @@ class Note(Changeable, NoteBase):
 
     @timestamp.setter
     def timestamp(self, value):
-        self._timestamp = value
-        self._on_attr_changed()
+        if value != self._timestamp:
+            self._timestamp = value
+            self._on_attr_changed()
 
     @property
     def task_id(self):
@@ -86,8 +89,9 @@ class Note(Changeable, NoteBase):
 
     @task_id.setter
     def task_id(self, value):
-        self._task_id = value
-        self._on_attr_changed()
+        if value != self._task_id:
+            self._task_id = value
+            self._on_attr_changed()
 
     @property
     def task(self):
@@ -95,8 +99,9 @@ class Note(Changeable, NoteBase):
 
     @task.setter
     def task(self, value):
-        self._task = value
-        self._on_attr_changed()
+        if value != self._task:
+            self._task = value
+            self._on_attr_changed()
 
     @staticmethod
     def from_dict(d):
