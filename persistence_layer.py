@@ -284,28 +284,12 @@ class PersistenceLayer(object):
         if not self._is_db_object(dbobj):
             raise Exception(
                 'Not a db object: {} ({})'.format(dbobj, type(dbobj)))
-        if dbobj not in self._domain_by_db:
-            domobj = None
-            if isinstance(dbobj, self.Attachment):
-                domobj = Attachment.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.Task):
-                domobj = Task.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.Tag):
-                domobj = Tag.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.Note):
-                domobj = Note.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.User):
-                domobj = User.from_dict(dbobj.to_dict())
-            elif isinstance(dbobj, self.Option):
-                domobj = Option.from_dict(dbobj.to_dict())
-            else:
-                raise Exception(
-                    'Unknown db object type: {}, {}'.format(dbobj,
-                                                            type(dbobj)))
-            self._domain_by_db[dbobj] = domobj
-            self._db_by_domain[domobj] = dbobj
 
-        return self._domain_by_db[dbobj]
+        domobj = self._get_domain_object_from_db_object_in_cache(dbobj)
+        if domobj is None:
+            domobj = self._create_domain_object_from_db_object(dbobj)
+
+        return domobj
 
     def _get_domain_object_from_db_object_in_cache(self, dbobj):
         if dbobj is None:
