@@ -254,20 +254,24 @@ class PersistenceLayer(object):
                 'in the cache: {} ({})'.format(domobj, type(domobj)))
 
         if isinstance(domobj, Attachment):
-            dbobj = self.Attachment.from_dict(domobj.to_dict())
+            dbclass = self.Attachment
         elif isinstance(domobj, Note):
-            dbobj = self.Note.from_dict(domobj.to_dict())
+            dbclass = self.Note
         elif isinstance(domobj, Option):
-            dbobj = self.Option.from_dict(domobj.to_dict())
+            dbclass = self.Option
         elif isinstance(domobj, Tag):
-            dbobj = self.Tag.from_dict(domobj.to_dict())
+            dbclass = self.Tag
         elif isinstance(domobj, Task):
-            dbobj = self.Task.from_dict(domobj.to_dict())
+            dbclass = self.Task
         elif isinstance(domobj, User):
-            dbobj = self.User.from_dict(domobj.to_dict())
+            dbclass = self.User
         else:
             raise Exception('Unknown domain object: {} ({})'.format(
                 domobj, type(domobj)))
+
+        domattrs = domobj.to_dict()
+        dbattrs = self._db_attrs_from_domain(domattrs)
+        dbobj = dbclass.from_dict(dbattrs)
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
@@ -325,23 +329,26 @@ class PersistenceLayer(object):
                 'Cannot create a new domain object; the DB object is already '
                 'in the cache: {} ({})'.format(dbobj, type(dbobj)))
 
-        domobj = None
         if isinstance(dbobj, self.Attachment):
-            domobj = Attachment.from_dict(dbobj.to_dict())
+            domclass = Attachment
         elif isinstance(dbobj, self.Task):
-            domobj = Task.from_dict(dbobj.to_dict())
+            domclass = Task
         elif isinstance(dbobj, self.Tag):
-            domobj = Tag.from_dict(dbobj.to_dict())
+            domclass = Tag
         elif isinstance(dbobj, self.Note):
-            domobj = Note.from_dict(dbobj.to_dict())
+            domclass = Note
         elif isinstance(dbobj, self.User):
-            domobj = User.from_dict(dbobj.to_dict())
+            domclass = User
         elif isinstance(dbobj, self.Option):
-            domobj = Option.from_dict(dbobj.to_dict())
+            domclass = Option
         else:
             raise Exception(
-                'Unknown db object type: {}, {}'.format(dbobj,
-                                                        type(dbobj)))
+                'Unknown db object type: {}, {}'.format(dbobj, type(dbobj)))
+
+        attrs = dbobj.to_dict()
+        attrs = self._domain_attrs_from_db(attrs)
+        domobj = domclass.from_dict(attrs)
+
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
 
