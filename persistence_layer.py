@@ -100,14 +100,14 @@ class PersistenceLayer(object):
         db = self.db
         self._changed_objects = set()
 
-        self.Tag = generate_tag_class(db)
-
         tags_tasks_table = db.Table(
             'tags_tasks',
             db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'),
-                      index=True),
+                      primary_key=True),
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
-                      index=True))
+                      primary_key=True))
+
+        self.Tag = generate_tag_class(db, tags_tasks_table)
 
         users_tasks_table = db.Table(
             'users_tasks',
@@ -809,7 +809,10 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         expected_duration_minutes = db.Column(db.Integer)
         expected_cost = db.Column(db.Numeric)
         tags = db.relationship('DbTag', secondary=tags_tasks_table,
-                               backref=db.backref('tasks', lazy='dynamic'))
+                               back_populates="tasks")
+        @property
+        def tags2(self):
+            return list(self.tags)
         users = db.relationship('DbUser', secondary=users_tasks_table,
                                 backref=db.backref('tasks', lazy='dynamic'))
 
@@ -898,7 +901,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
     return DbTask
 
 
-def generate_tag_class(db):
+def generate_tag_class(db, tags_tasks_table):
     class DbTag(db.Model, TagBase):
 
         __tablename__ = 'tag'
@@ -908,6 +911,12 @@ def generate_tag_class(db):
         id = db.Column(db.Integer, primary_key=True)
         value = db.Column(db.String(100), nullable=False, unique=True)
         description = db.Column(db.String(4000), nullable=True)
+
+        tasks = db.relationship('DbTask', secondary=tags_tasks_table,
+                                back_populates='tags')
+        @property
+        def tasks2(self):
+            return list(self.tasks)
 
         def __init__(self, value, description=None):
             db.Model.__init__(self)
