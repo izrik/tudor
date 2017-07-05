@@ -69,6 +69,8 @@ class Attachment(Changeable, AttachmentBase):
     _task = None
     _task_id = None
 
+    _dbobj = None
+
     @property
     def id(self):
         return self._id

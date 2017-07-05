@@ -53,6 +53,8 @@ class Note(Changeable, NoteBase):
     _task_id = None
     _task = None
 
+    _dbobj = None
+
     @property
     def id(self):
         return self._id

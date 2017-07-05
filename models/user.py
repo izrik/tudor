@@ -55,6 +55,8 @@ class User(Changeable, UserBase):
     _is_admin = None
     _authenticated = None
 
+    _dbobj = None
+
     def __init__(self, email, hashed_password=None, is_admin=False):
         if hashed_password is None:
             hashed_password = ''

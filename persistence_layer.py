@@ -239,6 +239,9 @@ class PersistenceLayer(object):
         if dbobj is not None:
             self._domain_by_db[dbobj] = domobj
             self._db_by_domain[domobj] = dbobj
+            if hasattr(domobj, '_dbobj'):
+                domobj._dbobj = dbobj
+                dbobj._domobj = domobj
 
         return dbobj
 
@@ -275,6 +278,9 @@ class PersistenceLayer(object):
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
+        if hasattr(domobj, '_dbobj'):
+            domobj._dbobj = dbobj
+            dbobj._domobj = domobj
 
         return dbobj
 
@@ -335,6 +341,9 @@ class PersistenceLayer(object):
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
+        if hasattr(domobj, '_dbobj'):
+            domobj._dbobj = dbobj
+            dbobj._domobj = domobj
 
         return domobj
 
@@ -788,6 +797,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
 
         __tablename__ = 'task'
 
+        _domobj = None
+
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
         description = db.Column(db.String(4000))
@@ -892,6 +903,8 @@ def generate_tag_class(db):
 
         __tablename__ = 'tag'
 
+        _domobj = None
+
         id = db.Column(db.Integer, primary_key=True)
         value = db.Column(db.String(100), nullable=False, unique=True)
         description = db.Column(db.String(4000), nullable=True)
@@ -926,6 +939,8 @@ def generate_note_class(db):
 
         __tablename__ = 'note'
 
+        _domobj = None
+
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.String(4000))
         timestamp = db.Column(db.DateTime)
@@ -959,6 +974,8 @@ def generate_attachment_class(db):
     class DbAttachment(db.Model, AttachmentBase):
 
         __tablename__ = 'attachment'
+
+        _domobj = None
 
         id = db.Column(db.Integer, primary_key=True)
         timestamp = db.Column(db.DateTime, nullable=False)
@@ -1001,6 +1018,8 @@ def generate_user_class(db, bcrypt):
 
         __tablename__ = 'user'
 
+        _domobj = None
+
         id = db.Column(db.Integer, primary_key=True)
         email = db.Column(db.String(100), nullable=False, unique=True)
         hashed_password = db.Column(db.String(100), nullable=False)
@@ -1035,6 +1054,8 @@ def generate_option_class(db):
     class DbOption(db.Model, OptionBase):
 
         __tablename__ = 'option'
+
+        _domobj = None
 
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)
