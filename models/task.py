@@ -85,10 +85,10 @@ class TaskBase(object):
         if 'parent_id' in d:
             self.parent_id = d['parent_id']
         if 'children' in d:
-            clear(self.users)
+            clear(self.children)
             self.children.extend(d['children'])
         if 'tags' in d:
-            clear(self.users)
+            clear(self.tags)
             extend(self.tags, d['tags'])
         if 'users' in d:
             clear(self.users)
