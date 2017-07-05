@@ -126,18 +126,18 @@ class InterlinkedTasks(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, task):
-        self._logger.debug('{} -> {}'.format(self.c.id2, task.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
         if task not in self.set:
             self.set.add(task)
             task.tags.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, task):
-        self._logger.debug('{} -> {}'.format(self.c.id2, task.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
         self.add(task)
 
     def discard(self, task):
-        self._logger.debug('{} -> {}'.format(self.c.id2, task.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
         if task in self.set:
             self.set.discard(task)
             task.tags.discard(self.container)

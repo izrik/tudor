@@ -445,11 +445,11 @@ class InterlinkedChildren(collections.MutableSequence):
         return self.list[i]
 
     def __delitem__(self, i):
-        self._logger.debug('{} -> {}'.format(self.c.id2, i))
+        self._logger.debug('{}: {}'.format(self.c.id2, i))
         self.remove(self[i])
 
     def __setitem__(self, i, v):
-        self._logger.debug('{} -> {}, {}'.format(self.c.id2, i, v.id2))
+        self._logger.debug('{}: {}, {}'.format(self.c.id2, i, v.id2))
         del self[i]
         self.insert(i, v)
 
@@ -457,25 +457,25 @@ class InterlinkedChildren(collections.MutableSequence):
         return self.list.__contains__(value)
 
     def append(self, value):
-        self._logger.debug('{} -> {}'.format(self.c.id2, value.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, value.id2))
         if value not in self:
             self.list.append(value)
             value.parent = self.container
             self.container._on_attr_changed()
 
     def add(self, value):
-        self._logger.debug('{} -> {}'.format(self.c.id2, value.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, value.id2))
         self.append(value)
 
     def remove(self, value):
-        self._logger.debug('{} -> {}'.format(self.c.id2, value.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, value.id2))
         if value in self:
             self.list.remove(value)
             value.parent = None
             self.container._on_attr_changed()
 
     def insert(self, i, v):
-        self._logger.debug('{} -> {}, {}'.format(self.c.id2, i, v.id2))
+        self._logger.debug('{}: {}, {}'.format(self.c.id2, i, v.id2))
         if v in self:
             if self.index(v) < i:
                 i -= 1
@@ -515,18 +515,18 @@ class InterlinkedTags(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, tag):
-        self._logger.debug('{} -> {}'.format(self.c.id2, tag.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
         if tag not in self.set:
             self.set.add(tag)
             tag.tasks.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, tag):
-        self._logger.debug('{} -> {}'.format(self.c.id2, tag.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
         self.add(tag)
 
     def discard(self, tag):
-        self._logger.debug('{} -> {}'.format(self.c.id2, tag.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
         if tag in self.set:
             self.set.discard(tag)
             tag.tasks.discard(self.container)
@@ -558,18 +558,18 @@ class InterlinkedUsers(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, user):
-        self._logger.debug('{} -> {}'.format(self.c.id2, user.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
         if user not in self.set:
             self.set.add(user)
             user.tasks.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, user):
-        self._logger.debug('{} -> {}'.format(self.c.id2, user.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
         self.add(user)
 
     def discard(self, user):
-        self._logger.debug('{} -> {}'.format(self.c.id2, user.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
         if user in self.set:
             self.set.discard(user)
             user.tasks.discard(self.container)
@@ -601,18 +601,18 @@ class InterlinkedDependees(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, dependee):
-        self._logger.debug('{} -> {}'.format(self.c.id2, dependee.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
         if dependee not in self.set:
             self.set.add(dependee)
             dependee.dependants.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, dependee):
-        self._logger.debug('{} -> {}'.format(self.c.id2, dependee.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
         self.add(dependee)
 
     def discard(self, dependee):
-        self._logger.debug('{} -> {}'.format(self.c.id2, dependee.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
         if dependee in self.set:
             self.set.discard(dependee)
             dependee.dependants.discard(self.container)
@@ -644,18 +644,18 @@ class InterlinkedDependants(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, dependant):
-        self._logger.debug('{} -> {}'.format(self.c.id2, dependant.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
         if dependant not in self.set:
             self.set.add(dependant)
             dependant.dependees.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, dependant):
-        self._logger.debug('{} -> {}'.format(self.c.id2, dependant.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
         self.add(dependant)
 
     def discard(self, dependant):
-        self._logger.debug('{} -> {}'.format(self.c.id2, dependant.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
         if dependant in self.set:
             self.set.discard(dependant)
             dependant.dependees.discard(self.container)
@@ -687,18 +687,18 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, before):
-        self._logger.debug('{} -> {}'.format(self.c.id2, before.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
         if before not in self.set:
             self.set.add(before)
             before.prioritize_after.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, before):
-        self._logger.debug('{} -> {}'.format(self.c.id2, before.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
         self.add(before)
 
     def discard(self, before):
-        self._logger.debug('{} -> {}'.format(self.c.id2, before.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
         if before in self.set:
             self.set.discard(before)
             before.prioritize_after.discard(self.container)
@@ -730,18 +730,18 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
         return self.set.__iter__()
 
     def add(self, after):
-        self._logger.debug('{} -> {}'.format(self.c.id2, after.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
         if after not in self.set:
             self.set.add(after)
             after.prioritize_before.add(self.container)
             self.container._on_attr_changed()
 
     def append(self, after):
-        self._logger.debug('{} -> {}'.format(self.c.id2, after.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
         self.add(after)
 
     def discard(self, after):
-        self._logger.debug('{} -> {}'.format(self.c.id2, after.id2))
+        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
         if after in self.set:
             self.set.discard(after)
             after.prioritize_before.discard(self.container)
