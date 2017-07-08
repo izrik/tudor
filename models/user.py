@@ -53,7 +53,6 @@ class User(Changeable, UserBase):
     _email = None
     _hashed_password = None
     _is_admin = None
-    _authenticated = None
 
     _dbobj = None
 
@@ -103,16 +102,6 @@ class User(Changeable, UserBase):
     def is_admin(self, value):
         if value != self._is_admin:
             self._is_admin = value
-            self._on_attr_changed()
-
-    @property
-    def authenticated(self):
-        return self._authenticated
-
-    @authenticated.setter
-    def authenticated(self, value):
-        if value != self._authenticated:
-            self._authenticated = value
             self._on_attr_changed()
 
     @property
