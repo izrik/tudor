@@ -99,8 +99,9 @@ class PersistenceLayer(object):
         self.db = SQLAlchemy(self.app)
 
         db = self.db
-        self._changed_objects = set()
         self._changed_objects_fields = {}
+        self._added_objects = set()
+        self._deleted_objects = set()
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -150,7 +151,7 @@ class PersistenceLayer(object):
         if dbobj is None:
             dbobj = self._create_db_object_from_domain_object(domobj)
         self._register_domain_object(domobj)
-        self._changed_objects.add(domobj)
+        self._added_objects.add(domobj)
         self.db.session.add(dbobj)
 
     def delete(self, domobj):
@@ -162,7 +163,6 @@ class PersistenceLayer(object):
                     'Untracked domain object: {} ({})'.format(domobj,
                                                               type(domobj)))
         self._register_domain_object(domobj)
-        self._changed_objects.add(domobj)
         self.db.session.delete(dbobj)
 
     def commit(self):
@@ -210,42 +210,81 @@ class PersistenceLayer(object):
                         list(id2(task) for task in obj.tasks)))
 
         self._logger.debug('')
-        changed = list(self._changed_objects)
+        all_changed = list(
+            self._added_objects) + list(self._deleted_objects) + list(
+            self._changed_objects_fields.keys())
+        # changed = set(list(self._changed_objects_fields.keys()) + list(
+        #     self._changed_objects))
+        added = list(self._added_objects)
+        deleted = list(self._deleted_objects)
+        changed = list(self._changed_objects_fields.keys())
+        changed_fields = self._changed_objects_fields.copy()
         self._logger.debug('get list of changed objects')
-        for domobj in changed:
+        for domobj in all_changed:
             log_object(domobj)
-        self._changed_objects.clear()
+        self._changed_objects_fields.clear()
+        self._added_objects.clear()
+        self._deleted_objects.clear()
         self._logger.debug('cleared list of changed objects')
-        for domobj in changed:
-            self._logger.debug('updating db object -> {}'.format(id2(domobj)))
+        for domobj in added:
+            self._logger.debug('adding db object -> {}'.format(id2(domobj)))
             self._update_db_object_from_domain_object(domobj)
-            self._logger.debug('updated db object -> {}'.format(id2(domobj)))
+            self._logger.debug('added db object -> {}'.format(id2(domobj)))
+        for domobj in changed:
+            self._logger.debug('changing db object -> {}'.format(id2(domobj)))
+            fields = changed_fields[domobj]
+            self._update_db_object_from_domain_object(domobj, fields)
+            self._logger.debug('changed db object -> {}'.format(id2(domobj)))
+        for domobj in deleted:
+            self._logger.debug('deleting db object -> {}'.format(id2(domobj)))
+            # self._update_db_object_from_domain_object(domobj)
+            self._logger.debug('deleted db object -> {}'.format(id2(domobj)))
         self._logger.debug('updated all db objects')
 
-        for domobj in changed:
+        for domobj in all_changed:
             log_object(domobj)
-        for domobj in changed:
+        for domobj in all_changed:
             log_object(domobj._dbobj, extra=False)
         self._logger.debug('committing the db session/transaction')
         self.db.session.commit()
         self._logger.debug('committed the db session/transaction')
-        for domobj in changed:
+        for domobj in all_changed:
             log_object(domobj)
-        for domobj in changed:
+        for domobj in all_changed:
             log_object(domobj._dbobj)
-        for domobj in changed:
-            self._logger.debug('updating dom object -> {}'.format(id2(domobj)))
+        # for domobj in changed:
+        #     self._logger.debug('updating dom object -> {}'.format(id2(domobj)))
+        #     self._update_domain_object_from_db_object(domobj)
+        #     self._logger.debug('updated dom object -> {}'.format(id2(domobj)))
+        for domobj in added:
+            self._logger.debug('updating added dom object -> {}'.format(id2(domobj)))
             self._update_domain_object_from_db_object(domobj)
-            self._logger.debug('updated dom object -> {}'.format(id2(domobj)))
+            self._logger.debug('updated added dom object -> {}'.format(id2(domobj)))
+        for domobj in changed:
+            self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
+            # get fields that changed
+            # pass to update_dict
+            fields = changed_fields[domobj]
+            self._update_domain_object_from_db_object(domobj, fields)
+            self._logger.debug('changed dom object -> {}'.format(id2(domobj)))
+
         self._logger.debug('updated all dom objects')
-        self._changed_objects.clear()
+        self._changed_objects_fields.clear()
+        self._added_objects.clear()
+        self._deleted_objects.clear()
         self._logger.debug('cleared list of changed objects')
 
     def rollback(self):
         self.db.session.rollback()
-        for domobj in self._changed_objects:
+        changed = list(self._changed_objects_fields.keys())
+        for domobj in changed:
             self._update_domain_object_from_db_object(domobj)
-        self._changed_objects.clear()
+        deleted = list(self._deleted_objects)
+        for domobj in deleted:
+            self._update_domain_object_from_db_object(domobj)
+        self._changed_objects_fields.clear()
+        self._added_objects.clear()
+        self._deleted_objects.clear()
 
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
@@ -447,11 +486,11 @@ class PersistenceLayer(object):
                 d2['prioritize_after']]
         return d2
 
-    def _update_domain_object_from_db_object(self, domobj):
+    def _update_domain_object_from_db_object(self, domobj, fields=None):
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
-        d = dbobj.to_dict()
+        d = dbobj.to_dict(fields)
         self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
         d = self._domain_attrs_from_db(d)
         self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
@@ -491,11 +530,11 @@ class PersistenceLayer(object):
                 d2['prioritize_after']]
         return d2
 
-    def _update_db_object_from_domain_object(self, domobj):
+    def _update_db_object_from_domain_object(self, domobj, fields=None):
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
-        d = domobj.to_dict()
+        d = domobj.to_dict(fields)
         self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
         d = self._db_attrs_from_domain(d)
         self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
@@ -504,13 +543,12 @@ class PersistenceLayer(object):
             'updated db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
 
     def _on_domain_object_attr_changed(self, domobj, field):
-        self._changed_objects.add(domobj)
         if domobj not in self._changed_objects_fields:
             self._changed_objects_fields[domobj] = set()
         self._changed_objects_fields[domobj].add(field)
 
     def _register_domain_object(self, domobj):
-        self._changed_objects.add(domobj)
+        self._added_objects.add(domobj)
         domobj.register_change_listener(self._on_domain_object_attr_changed)
 
     def create_all(self):
