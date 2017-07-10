@@ -1007,13 +1007,6 @@ def generate_tag_class(db, tags_tasks_table):
             db.Model.__init__(self)
             TagBase.__init__(self, value, description)
 
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'value': self.value,
-                'description': self.description,
-            }
-
         @staticmethod
         def from_dict(d):
             tag_id = d.get('id', None)
