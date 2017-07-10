@@ -5,6 +5,13 @@ from changeable import Changeable
 
 
 class UserBase(object):
+
+    FIELD_ID = 'ID'
+    FIELD_EMAIL = 'EMAIL'
+    FIELD_HASHED_PASSWORD = 'HASHED_PASSWORD'
+    FIELD_IS_ADMIN = 'IS_ADMIN'
+    FIELD_TASKS = 'TASKS'
+
     authenticated = True
 
     def __init__(self, email, hashed_password, is_admin=False):
@@ -72,7 +79,7 @@ class User(Changeable, UserBase):
     def id(self, value):
         if value != self._id:
             self._id = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_ID)
 
     @property
     def email(self):
@@ -82,7 +89,7 @@ class User(Changeable, UserBase):
     def email(self, value):
         if value != self._email:
             self._email = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_EMAIL)
 
     @property
     def hashed_password(self):
@@ -92,7 +99,7 @@ class User(Changeable, UserBase):
     def hashed_password(self, value):
         if value != self._hashed_password:
             self._hashed_password = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_HASHED_PASSWORD)
 
     @property
     def is_admin(self):
@@ -102,7 +109,7 @@ class User(Changeable, UserBase):
     def is_admin(self, value):
         if value != self._is_admin:
             self._is_admin = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_IS_ADMIN)
 
     @property
     def tasks(self):
@@ -143,7 +150,7 @@ class InterlinkedTasks(collections.MutableSet):
         if task not in self.set:
             self.set.add(task)
             task.users.add(self.container)
-            self.container._on_attr_changed()
+            self.container._on_attr_changed(User.FIELD_TASKS)
 
     def append(self, task):
         self.add(task)
@@ -152,4 +159,4 @@ class InterlinkedTasks(collections.MutableSet):
         if task in self.set:
             self.set.discard(task)
             task.users.discard(self.container)
-            self.container._on_attr_changed()
+            self.container._on_attr_changed(User.FIELD_TASKS)

@@ -3,6 +3,10 @@ from changeable import Changeable
 
 
 class OptionBase(object):
+
+    FIELD_KEY = 'KEY'
+    FIELD_VALUE = 'VALUE'
+
     def __init__(self, key, value):
         self.key = key
         self.value = value
@@ -42,7 +46,7 @@ class Option(Changeable, OptionBase):
     def key(self, value):
         if value != self._key:
             self._key = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_KEY)
 
     @property
     def value(self):
@@ -52,7 +56,7 @@ class Option(Changeable, OptionBase):
     def value(self, value):
         if value != self._value:
             self._value = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_VALUE)
 
     @staticmethod
     def from_dict(d):

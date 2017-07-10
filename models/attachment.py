@@ -9,6 +9,14 @@ from changeable import Changeable
 
 class AttachmentBase(object):
 
+    FIELD_ID = 'ID'
+    FIELD_PATH = 'PATH'
+    FIELD_DESCRIPTION = 'DESCRIPTION'
+    FIELD_TIMESTAMP = 'TIMESTAMP'
+    FIELD_FILENAME = 'FILENAME'
+    FIELD_TASK_ID = 'TASK_ID'
+    FIELD_TASK = 'TASK'
+
     def __init__(self, path, description=None, timestamp=None,
                  filename=None):
         if description is None:
@@ -79,7 +87,7 @@ class Attachment(Changeable, AttachmentBase):
     def id(self, value):
         if value != self._id:
             self._id = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_ID)
 
     @property
     def timestamp(self):
@@ -89,7 +97,7 @@ class Attachment(Changeable, AttachmentBase):
     def timestamp(self, value):
         if value != self._timestamp:
             self._timestamp = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_TIMESTAMP)
 
     @property
     def path(self):
@@ -99,7 +107,7 @@ class Attachment(Changeable, AttachmentBase):
     def path(self, value):
         if value != self._path:
             self._path = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_PATH)
 
     @property
     def filename(self):
@@ -109,7 +117,7 @@ class Attachment(Changeable, AttachmentBase):
     def filename(self, value):
         if value != self._filename:
             self._filename = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_FILENAME)
 
     @property
     def description(self):
@@ -119,7 +127,7 @@ class Attachment(Changeable, AttachmentBase):
     def description(self, value):
         if value != self._description:
             self._description = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_DESCRIPTION)
 
     @property
     def task_id(self):
@@ -129,7 +137,7 @@ class Attachment(Changeable, AttachmentBase):
     def task_id(self, value):
         if value != self._task_id:
             self._task_id = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_TASK_ID)
 
     @property
     def task(self):
@@ -139,7 +147,7 @@ class Attachment(Changeable, AttachmentBase):
     def task(self, value):
         if value != self._task:
             self._task = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_TASK)
 
     @staticmethod
     def from_dict(d):

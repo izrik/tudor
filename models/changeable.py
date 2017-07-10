@@ -4,10 +4,10 @@ class Changeable(object):
         self.attr_changed = list()
         super(Changeable, self).__init__(*args, **kwargs)
 
-    def _on_attr_changed(self):
+    def _on_attr_changed(self, field):
         if self.attr_changed:
             for callable in self.attr_changed:
-                callable(self)
+                callable(self, field)
 
     def register_change_listener(self, callable):
         if callable not in self.attr_changed:

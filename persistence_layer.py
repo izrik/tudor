@@ -100,6 +100,7 @@ class PersistenceLayer(object):
 
         db = self.db
         self._changed_objects = set()
+        self._changed_objects_fields = {}
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -502,8 +503,11 @@ class PersistenceLayer(object):
         self._logger.debug(
             'updated db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
 
-    def _on_domain_object_attr_changed(self, domobj):
+    def _on_domain_object_attr_changed(self, domobj, field):
         self._changed_objects.add(domobj)
+        if domobj not in self._changed_objects_fields:
+            self._changed_objects_fields[domobj] = set()
+        self._changed_objects_fields[domobj].add(field)
 
     def _register_domain_object(self, domobj):
         self._changed_objects.add(domobj)

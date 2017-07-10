@@ -7,6 +7,13 @@ from changeable import Changeable
 
 
 class NoteBase(object):
+
+    FIELD_ID = 'ID'
+    FIELD_CONTENT = 'CONTENT'
+    FIELD_TIMESTAMP = 'TIMESTAMP'
+    FIELD_TASK_ID = 'TASK_ID'
+    FIELD_TASK = 'TASK'
+
     def __init__(self, content, timestamp=None):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
@@ -63,7 +70,7 @@ class Note(Changeable, NoteBase):
     def id(self, value):
         if value != self._id:
             self._id = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_ID)
 
     @property
     def content(self):
@@ -73,7 +80,7 @@ class Note(Changeable, NoteBase):
     def content(self, value):
         if value != self._content:
             self._content = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_CONTENT)
 
     @property
     def timestamp(self):
@@ -83,7 +90,7 @@ class Note(Changeable, NoteBase):
     def timestamp(self, value):
         if value != self._timestamp:
             self._timestamp = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_TIMESTAMP)
 
     @property
     def task_id(self):
@@ -93,7 +100,7 @@ class Note(Changeable, NoteBase):
     def task_id(self, value):
         if value != self._task_id:
             self._task_id = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_TASK_ID)
 
     @property
     def task(self):
@@ -103,7 +110,7 @@ class Note(Changeable, NoteBase):
     def task(self, value):
         if value != self._task:
             self._task = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_TASK)
 
     @staticmethod
     def from_dict(d):

@@ -8,6 +8,11 @@ import logging_util
 
 class TagBase(object):
 
+    FIELD_ID = 'ID'
+    FIELD_VALUE = 'VALUE'
+    FIELD_DESCRIPTION = 'DESCRIPTION'
+    FIELD_TASKS = 'TASKS'
+
     def __init__(self, value, description=None):
         self._logger = logging_util.get_logger(__name__, self)
         self._logger.debug('TagBase.__init__ {}'.format(self.id2))
@@ -61,7 +66,7 @@ class Tag(Changeable, TagBase):
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self._id, value))
             self._id = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_ID)
 
     @property
     def value(self):
@@ -73,7 +78,7 @@ class Tag(Changeable, TagBase):
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self._value, value))
             self._value = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_VALUE)
 
     @property
     def description(self):
@@ -85,7 +90,7 @@ class Tag(Changeable, TagBase):
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self._description, value))
             self._description = value
-            self._on_attr_changed()
+            self._on_attr_changed(self.FIELD_DESCRIPTION)
 
     @property
     def tasks(self):
@@ -134,7 +139,7 @@ class InterlinkedTasks(collections.MutableSet):
         if task not in self.set:
             self.set.add(task)
             task.tags.add(self.container)
-            self.container._on_attr_changed()
+            self.container._on_attr_changed(Tag.FIELD_TASKS)
 
     def append(self, task):
         self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
@@ -145,4 +150,4 @@ class InterlinkedTasks(collections.MutableSet):
         if task in self.set:
             self.set.discard(task)
             task.tags.discard(self.container)
-            self.container._on_attr_changed()
+            self.container._on_attr_changed(Tag.FIELD_TASKS)
