@@ -638,8 +638,10 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self._logger.debug('setUp create_all')
+        self.pl.db.drop_all()
         self.pl.create_all()
         self._logger.debug('setUp create objects')
+
         self.t1 = Task('t1')
         self.t1.order_num = 11
         self.t2 = Task('t2')
@@ -667,6 +669,35 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.pl.add(self.tag2)
         self._logger.debug('setUp commit')
         self.pl.commit()
+
+        # self.t1 = self.pl.Task('t1')
+        # self.t1.order_num = 11
+        # self.t2 = self.pl.Task('t2')
+        # self.t2.order_num = 23
+        # self.t3 = self.pl.Task('t3')
+        # self.t3.order_num = 37
+        # self.t4 = self.pl.Task('t4')
+        # self.t4.order_num = 47
+        # self.t5 = self.pl.Task('t5')
+        # self.t5.order_num = 53
+        # self.tag1 = self.pl.Tag('tag1')
+        # self.tag2 = self.pl.Tag('tag2')
+        # self._logger.debug('setUp connect objects')
+        # self.t2.tags.append(self.tag1)
+        # self.t3.tags.append(self.tag1)
+        # self.t3.tags.append(self.tag2)
+        # self.t4.tags.append(self.tag1)
+        # self._logger.debug('setUp add objects')
+        # self.pl.db.session.add(self.t1)
+        # self.pl.db.session.add(self.t2)
+        # self.pl.db.session.add(self.t3)
+        # self.pl.db.session.add(self.t4)
+        # self.pl.db.session.add(self.t5)
+        # self.pl.db.session.add(self.tag1)
+        # self.pl.db.session.add(self.tag2)
+        # self._logger.debug('setUp commit')
+        # self.pl.db.session.commit()
+
         self._logger.debug('setUp finished')
 
     def test_get_paginated_tasks_tasks_per_page_returns_that_number_1(self):
@@ -773,28 +804,51 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
     def test_get_paginated_tasks_filtered_by_tag_tag1_page_1(self):
         # when
         self._logger.debug('when')
+        tasks = self.pl.get_tasks(tags_contains=self.tag1)
+        # then
+        self._logger.debug('then')
+        tasks2 = set(tasks)
+        self.assertEqual({self.t2, self.t3, self.t4}, tasks2)
+        # when
+        self._logger.debug('when')
+        count = self.pl.count_tasks(tags_contains=self.tag1)
+        # then
+        self._logger.debug('then')
+        self.assertEqual(3, count)
+        # expect
+        self._logger.debug('expect')
+        self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
+        # expect
+        self._logger.debug('expect')
+        self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
+        # expect
+        self._logger.debug('expect')
+        self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
+
+        # when
+        self._logger.debug('when')
         pager = self.pl.get_paginated_tasks(page_num=1, tasks_per_page=2,
                                             tags_contains=self.tag1)
         # then
-        self._logger.debug('when 1')
+        self._logger.debug('then 1')
         self.assertIsNotNone(pager)
-        self._logger.debug('when 2')
+        self._logger.debug('then 2')
         self.assertEqual(1, pager.page)
-        self._logger.debug('when 3')
+        self._logger.debug('then 3')
         self.assertEqual(2, pager.per_page)
-        self._logger.debug('when 4')
+        self._logger.debug('then 4')
         self.assertEqual(3, pager.total)
-        self._logger.debug('when 5')
+        self._logger.debug('then 5')
         items = list(pager.items)
-        self._logger.debug('when 6')
+        self._logger.debug('then 6')
         self.assertEqual(2, len(items))
-        self._logger.debug('when 7')
+        self._logger.debug('then 7')
         self.assertIn(self.tag1, items[0].tags)
-        self._logger.debug('when 8')
+        self._logger.debug('then 8')
         self.assertIn(items[0], {self.t2, self.t3, self.t4})
-        self._logger.debug('when 9')
+        self._logger.debug('then 9')
         self.assertIn(self.tag1, items[1].tags)
-        self._logger.debug('when 10')
+        self._logger.debug('then 10')
         self.assertIn(items[1], {self.t2, self.t3, self.t4})
         self._logger.debug('when 11')
 
@@ -1634,10 +1688,16 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertIsNotNone(user.id)
 
-    def test_rollback_reverts_changes(self):
+    def test_this_raises_an_error_for_some_reason(self):
+        # but not when SQLALCHEMY_ECHO is set to true !?
         task = Task('task')
         tag = Tag('tag', description='a')
         self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+
+    def test_rollback_reverts_changes(self):
+        tag = Tag('tag', description='a')
         self.pl.add(tag)
         self.pl.commit()
         tag.description = 'b'
@@ -1681,6 +1741,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertEqual('b', tag.description)
 
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
+        # TODO: this test fails intermittently
         # given
         task = Task('task')
         tag = Tag('tag', description='a')
