@@ -15,11 +15,15 @@ class OptionBase(object):
     def id(self):
         return self.key
 
-    def to_dict(self):
-        return {
-            'key': self.key,
-            'value': self.value
-        }
+    def to_dict(self, fields=None):
+
+        d = {}
+        if fields is None or self.FIELD_KEY in fields:
+            d['key'] = self.key
+        if fields is None or self.FIELD_VALUE in fields:
+            d['value'] = self.value
+
+        return d
 
     def update_from_dict(self, d):
         if 'key' in d:

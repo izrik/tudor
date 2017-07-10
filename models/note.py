@@ -26,13 +26,21 @@ class NoteBase(object):
             return dparse(timestamp)
         return timestamp
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'content': self.content,
-            'timestamp': str_from_datetime(self.timestamp),
-            'task_id': self.task_id
-        }
+    def to_dict(self, fields=None):
+
+        d = {}
+        if fields is None or self.FIELD_ID in fields:
+            d['id'] = self.id
+        if fields is None or self.FIELD_TIMESTAMP in fields:
+            d['timestamp'] = str_from_datetime(self.timestamp)
+        if fields is None or self.FIELD_CONTENT in fields:
+            d['content'] = self.content
+        if fields is None or self.FIELD_TASK_ID in fields:
+            d['task_id'] = self.task_id
+        if fields is None or self.FIELD_TASK in fields:
+            d['task'] = self.task
+
+        return d
 
     def update_from_dict(self, d):
         if 'id' in d:

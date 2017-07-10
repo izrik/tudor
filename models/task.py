@@ -53,29 +53,50 @@ class TaskBase(object):
             return dparse(deadline)
         return deadline
 
-    def to_dict(self):
-        self._logger.debug('{}'.format(id2(self)))
-        return {
-            'id': self.id,
-            'summary': self.summary,
-            'description': self.description,
-            'is_done': self.is_done,
-            'is_deleted': self.is_deleted,
-            'order_num': self.order_num,
-            'deadline': str_from_datetime(self.deadline),
-            'parent': self.parent,
-            'parent_id': self.parent_id,
-            'expected_duration_minutes':
-                self.expected_duration_minutes,
-            'expected_cost': self.get_expected_cost_for_export(),
-            'children': list(self.children),
-            'tags': list(self.tags),
-            'users': list(self.users),
-            'dependees': list(self.dependees),
-            'dependants': list(self.dependants),
-            'prioritize_before': list(self.prioritize_before),
-            'prioritize_after': list(self.prioritize_after),
-        }
+    def to_dict(self, fields=None):
+
+        self._logger.debug('{}'.format(self.id2))
+
+        d = {}
+        if fields is None or self.FIELD_ID in fields:
+            d['id'] = self.id
+        if fields is None or self.FIELD_SUMMARY in fields:
+            d['value'] = self.summary
+        if fields is None or self.FIELD_DESCRIPTION in fields:
+            d['description'] = self.description
+        if fields is None or self.FIELD_IS_DONE in fields:
+            d['is_done'] = self.is_done
+        if fields is None or self.FIELD_IS_DELETED in fields:
+            d['is_deleted'] = self.is_deleted
+        if fields is None or self.FIELD_DEADLINE in fields:
+            d['deadline'] = str_from_datetime(self.deadline)
+        if fields is None or self.FIELD_EXPECTED_DURATION_MINUTES in fields:
+            d['expected_duration_minutes'] = self.expected_duration_minutes
+        if fields is None or self.FIELD_EXPECTED_COST in fields:
+            d['expected_cost'] = self.get_expected_cost_for_export()
+        if fields is None or self.FIELD_ORDER_NUM in fields:
+            d['order_num'] = self.order_num
+        if fields is None or self.FIELD_PARENT in fields:
+            d['parent'] = self.parent
+        if fields is None or self.FIELD_PARENT_ID in fields:
+            d['parent_id'] = self.parent_id
+
+        if fields is None or self.FIELD_CHILDREN is fields:
+            d['tasks'] = list(self.children)
+        if fields is None or self.FIELD_DEPENDEES is fields:
+            d['tasks'] = list(self.dependees)
+        if fields is None or self.FIELD_DEPENDANTS is fields:
+            d['tasks'] = list(self.dependants)
+        if fields is None or self.FIELD_PRIORITIZE_BEFORE is fields:
+            d['tasks'] = list(self.prioritize_before)
+        if fields is None or self.FIELD_PRIORITIZE_AFTER is fields:
+            d['tasks'] = list(self.prioritize_after)
+        if fields is None or self.FIELD_TAGS is fields:
+            d['tasks'] = list(self.tags)
+        if fields is None or self.FIELD_USERS is fields:
+            d['tasks'] = list(self.users)
+
+        return d
 
     def update_from_dict(self, d):
         self._logger.debug('{}: {}'.format(id2(self), d))

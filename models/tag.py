@@ -19,13 +19,22 @@ class TagBase(object):
         self.value = value
         self.description = description
 
-    def to_dict(self):
+    def to_dict(self, fields=None):
+
         self._logger.debug('{}'.format(self.id2))
-        return {
-            'id': self.id,
-            'value': self.value,
-            'description': self.description,
-        }
+
+        d = {}
+        if fields is None or self.FIELD_ID in fields:
+            d['id'] = self.id
+        if fields is None or self.FIELD_VALUE in fields:
+            d['value'] = self.value
+        if fields is None or self.FIELD_DESCRIPTION in fields:
+            d['description'] = self.description
+
+        if fields is None or self.FIELD_TASKS is fields:
+            d['tasks'] = list(self.tasks)
+
+        return d
 
     def update_from_dict(self, d):
         self._logger.debug('{}: {}'.format(self.id2, d))

@@ -20,13 +20,22 @@ class UserBase(object):
         self.hashed_password = hashed_password
         self.is_admin = is_admin
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'email': self.email,
-            'hashed_password': self.hashed_password,
-            'is_admin': self.is_admin
-        }
+    def to_dict(self, fields=None):
+
+        d = {}
+        if fields is None or self.FIELD_ID in fields:
+            d['id'] = self.id
+        if fields is None or self.FIELD_EMAIL in fields:
+            d['email'] = self.email
+        if fields is None or self.FIELD_HASHED_PASSWORD in fields:
+            d['hashed_password'] = self.hashed_password
+        if fields is None or self.FIELD_IS_ADMIN in fields:
+            d['is_admin'] = self.is_admin
+
+        if fields is None or self.FIELD_TASKS is fields:
+            d['tasks'] = list(self.tasks)
+
+        return d
 
     def update_from_dict(self, d):
         if 'id' in d:

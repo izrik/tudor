@@ -37,15 +37,25 @@ class AttachmentBase(object):
             return dparse(timestamp)
         return timestamp
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'timestamp': str_from_datetime(self.timestamp),
-            'path': self.path,
-            'filename': self.filename,
-            'description': self.description,
-            'task_id': self.task_id
-        }
+    def to_dict(self, fields=None):
+
+        d = {}
+        if fields is None or self.FIELD_ID in fields:
+            d['id'] = self.id
+        if fields is None or self.FIELD_TIMESTAMP in fields:
+            d['timestamp'] = str_from_datetime(self.timestamp)
+        if fields is None or self.FIELD_PATH in fields:
+            d['path'] = self.path
+        if fields is None or self.FIELD_FILENAME in fields:
+            d['filename'] = self.filename
+        if fields is None or self.FIELD_DESCRIPTION in fields:
+            d['description'] = self.description
+        if fields is None or self.FIELD_TASK_ID in fields:
+            d['task_id'] = self.task_id
+        if fields is None or self.FIELD_TASK in fields:
+            d['task'] = self.task
+
+        return d
 
     def update_from_dict(self, d):
         if 'id' in d:
