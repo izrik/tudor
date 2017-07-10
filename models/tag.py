@@ -10,11 +10,12 @@ class TagBase(object):
 
     def __init__(self, value, description=None):
         self._logger = logging_util.get_logger(__name__, self)
+        self._logger.debug('TagBase.__init__ {}'.format(self.id2))
         self.value = value
         self.description = description
 
     def to_dict(self):
-        self._logger.debug('{} ({})'.format(self.value, self.id))
+        self._logger.debug('{}'.format(self.id2))
         return {
             'id': self.id,
             'value': self.value,
@@ -22,7 +23,7 @@ class TagBase(object):
         }
 
     def update_from_dict(self, d):
-        self._logger.debug('{} ({})'.format(self.value, self.id))
+        self._logger.debug('{}: {}'.format(self.id2, d))
         if 'id' in d:
             self.id = d['id']
         if 'value' in d:
@@ -47,6 +48,7 @@ class Tag(Changeable, TagBase):
 
     def __init__(self, value, description=None):
         super(Tag, self).__init__(value=value, description=description)
+        self._logger.debug('Tag.__init__ {}'.format(self.id2))
         self._tasks = InterlinkedTasks(self)
 
     @property
@@ -97,7 +99,7 @@ class Tag(Changeable, TagBase):
 
         tag = Tag(value, description)
         logger = logging_util.get_logger(__name__, tag)
-        logger.debug('{} ({}) [{}]'.format(tag.value, tag.id, id(tag)))
+        logger.debug('{}'.format(tag.id2))
         if tag_id is not None:
             tag.id = tag_id
         return tag

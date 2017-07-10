@@ -16,3 +16,9 @@ class Changeable(object):
     def unregister_change_listener(self, callable):
         if callable in self.attr_changed:
             self.attr_changed.remove(callable)
+
+
+def id2(obj):
+    if obj is None:
+        return 'None'
+    return obj.id2

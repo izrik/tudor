@@ -5,7 +5,7 @@ import logging
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
-from changeable import Changeable
+from changeable import Changeable, id2
 from collections_util import clear, extend
 import logging_util
 
@@ -17,7 +17,7 @@ class TaskBase(object):
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None):
         self._logger = logging_util.get_logger(__name__, self)
-        self._logger.debug('[{}] {}'.format(id(self), summary))
+        self._logger.debug('TaskBase.__init__ {}'.format(self.id2))
 
         self.summary = summary
         self.description = description
@@ -35,8 +35,7 @@ class TaskBase(object):
         return deadline
 
     def to_dict(self):
-        self._logger.debug('[{}] {} ({})'.format(id(self), self.summary,
-                                                 self.id))
+        self._logger.debug('{}'.format(id2(self)))
         return {
             'id': self.id,
             'summary': self.summary,
@@ -60,8 +59,7 @@ class TaskBase(object):
         }
 
     def update_from_dict(self, d):
-        self._logger.debug('[{}] {} ({})'.format(id(self), self.summary,
-                                                 self.id))
+        self._logger.debug('{}: {}'.format(id2(self), d))
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'summary' in d:
@@ -139,7 +137,7 @@ class Task(Changeable, TaskBase):
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost)
 
-        self._logger.debug(self.id2)
+        self._logger.debug('Task.__init__ {}'.format(self.id2))
 
         self._dependees = InterlinkedDependees(self)
         self._dependants = InterlinkedDependants(self)

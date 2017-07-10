@@ -12,6 +12,7 @@ from models.user import User, UserBase
 from models.option import Option, OptionBase
 from collections_util import clear, extend
 import logging_util
+from models.changeable import id2
 
 
 def is_iterable(x):
@@ -164,14 +165,80 @@ class PersistenceLayer(object):
         self.db.session.delete(dbobj)
 
     def commit(self):
+
+        self.db.session.echo_uow = True
+
+        def log_object(obj, extra=True):
+            if isinstance(obj, TaskBase):
+                self._logger.debug('{} {}'.format(type(obj).__name__,
+                                                  id2(obj)))
+                if self._is_domain_object(obj):
+                    self._logger.debug('  db obj: {}'.format(id2(obj._dbobj)))
+                else:
+                    self._logger.debug(
+                        '  domain obj: {}'.format(id2(obj._domobj)))
+
+                if extra:
+                    # self._logger.debug('  parent: {}'.format(
+                    #     id2(obj.parent) if obj.parent else 'None'))
+                    # self._logger.debug(
+                    #     '  children: {}'.format(list(obj.children)))
+                    self._logger.debug(
+                        '  tags: {}'.format(list(id2(tag) for tag in
+                                                 obj.tags)))
+                    # self._logger.debug('  users: {}'.format(list(obj.users)))
+                    # self._logger.debug(
+                    #     '  dependees: {}'.format(list(obj.dependees)))
+                    # self._logger.debug(
+                    #     '  dependants: {}'.format(list(obj.dependants)))
+                    # self._logger.debug('  prioritize_before: {}'.format(
+                    #     list(obj.prioritize_before)))
+                    # self._logger.debug('  prioritize_after: {}'.format(
+                    #     list(obj.prioritize_after)))
+            if isinstance(obj, TagBase):
+                self._logger.debug('{} {}'.format(type(obj).__name__,
+                                                  id2(obj)))
+                if self._is_domain_object(obj):
+                    self._logger.debug('  db obj: {}'.format(id2(obj._dbobj)))
+                else:
+                    self._logger.debug(
+                        '  domain obj: {}'.format(id2(obj._domobj)))
+
+                if extra:
+                    self._logger.debug('  tasks: {}'.format(
+                        list(id2(task) for task in obj.tasks)))
+
+        self._logger.debug('')
         changed = list(self._changed_objects)
-        self._changed_objects.clear()
+        self._logger.debug('get list of changed objects')
         for domobj in changed:
+            log_object(domobj)
+        self._changed_objects.clear()
+        self._logger.debug('cleared list of changed objects')
+        for domobj in changed:
+            self._logger.debug('updating db object -> {}'.format(id2(domobj)))
             self._update_db_object_from_domain_object(domobj)
-        self.db.session.commit()
+            self._logger.debug('updated db object -> {}'.format(id2(domobj)))
+        self._logger.debug('updated all db objects')
+
         for domobj in changed:
+            log_object(domobj)
+        for domobj in changed:
+            log_object(domobj._dbobj, extra=False)
+        self._logger.debug('committing the db session/transaction')
+        self.db.session.commit()
+        self._logger.debug('committed the db session/transaction')
+        for domobj in changed:
+            log_object(domobj)
+        for domobj in changed:
+            log_object(domobj._dbobj)
+        for domobj in changed:
+            self._logger.debug('updating dom object -> {}'.format(id2(domobj)))
             self._update_domain_object_from_db_object(domobj)
+            self._logger.debug('updated dom object -> {}'.format(id2(domobj)))
+        self._logger.debug('updated all dom objects')
         self._changed_objects.clear()
+        self._logger.debug('cleared list of changed objects')
 
     def rollback(self):
         self.db.session.rollback()
@@ -381,9 +448,15 @@ class PersistenceLayer(object):
 
     def _update_domain_object_from_db_object(self, domobj):
         dbobj = self._get_db_object_from_domain_object(domobj)
+        self._logger.debug(
+            'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
         d = dbobj.to_dict()
+        self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
         d = self._domain_attrs_from_db(d)
+        self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
         domobj.update_from_dict(d)
+        self._logger.debug(
+            'updated dom obj {} -> {}'.format(id2(domobj), id2(dbobj)))
 
     def _db_attrs_from_domain(self, d):
         d2 = d.copy()
@@ -419,9 +492,15 @@ class PersistenceLayer(object):
 
     def _update_db_object_from_domain_object(self, domobj):
         dbobj = self._get_db_object_from_domain_object(domobj)
+        self._logger.debug(
+            'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
         d = domobj.to_dict()
+        self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
         d = self._db_attrs_from_domain(d)
+        self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
         dbobj.update_from_dict(d)
+        self._logger.debug(
+            'updated db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
 
     def _on_domain_object_attr_changed(self, domobj):
         self._changed_objects.add(domobj)
@@ -810,6 +889,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         expected_cost = db.Column(db.Numeric)
         tags = db.relationship('DbTag', secondary=tags_tasks_table,
                                back_populates="tasks")
+
         @property
         def tags2(self):
             return list(self.tags)
@@ -914,6 +994,7 @@ def generate_tag_class(db, tags_tasks_table):
 
         tasks = db.relationship('DbTask', secondary=tags_tasks_table,
                                 back_populates='tags')
+
         @property
         def tasks2(self):
             return list(self.tasks)

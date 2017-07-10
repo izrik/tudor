@@ -14,6 +14,7 @@ from models.task import Task
 from models.user import User
 import logging_util
 
+
 class PersistenceLayerTest(unittest.TestCase):
     def setUp(self):
         self.app = generate_app(db_uri='sqlite://')
