@@ -2444,3 +2444,96 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
                           option)
+
+
+class PersistenceLayerInternalsTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_create_db_object_from_domain_object(self):
+        # given
+        task = Task('task1')
+        # when
+        result = self.pl._create_db_object_from_domain_object(task)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, self.pl.Task)
+        self.assertEqual('task1', result.summary)
+
+    def test_get_db_object_from_cache_when_none_exist_returns_none(self):
+        # given
+        task = Task('task1')
+        # when
+        result = self.pl._get_db_object_from_domain_object_in_cache(task)
+        # then
+        self.assertIsNone(result)
+
+    def test_get_db_object_from_cache_when_some_exist_returns_none(self):
+        # given
+        task = Task('task1')
+        dbtask = self.pl._create_db_object_from_domain_object(task)
+        self.pl._db_by_domain[task] = dbtask
+        # when
+        result = self.pl._get_db_object_from_domain_object_in_cache(task)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(dbtask, result)
+
+    def test_get_db_object_from_domain_object_by_id(self):
+        # given
+        task = Task('task1')
+        dbtask = self.pl._create_db_object_from_domain_object(task)
+        self.pl.db.session.add(dbtask)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertIsNotNone(dbtask.id)
+        task.id = dbtask.id
+        # when
+        result = self.pl._get_db_object_from_domain_object_by_id(task)
+        # then
+        self.assertIs(dbtask, result)
+
+    def test_added_domain_objects_are_added_to_list_of_changed_objects(self):
+        # given
+        task = Task('task1')
+        # precondition
+        self.assertEquals(0, len(self.pl._changed_objects))
+        # when
+        self.pl.add(task)
+        # then
+        self.assertEqual(1, len(self.pl._changed_objects))
+        self.assertIn(task, self.pl._changed_objects)
+
+    def test_deleted_domain_objects_are_added_to_list_of_changed_objects(self):
+        # given
+        task = Task('task1')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEquals(0, len(self.pl._changed_objects))
+        # when
+        self.pl.delete(task)
+        # then
+        self.assertEqual(1, len(self.pl._changed_objects))
+        self.assertIn(task, self.pl._changed_objects)
+
+    def test_adding_tag_to_task_also_adds_task_to_tag(self):
+        # given
+        logger = logging_util.get_logger(__name__, self)
+        logger.debug('before create task')
+        task = Task('task')
+        logger.debug('after create task')
+        logger.debug('before create tag')
+        tag = Tag('tag', description='a')
+        logger.debug('after create tag')
+        logger.debug('before add task')
+        self.pl.add(task)
+        logger.debug('after add task')
+        logger.debug('before add tag')
+        self.pl.add(tag)
+        logger.debug('after add tag')
+        logger.debug('before commit')
+        self.pl.commit()
+        logger.debug('after commit')
