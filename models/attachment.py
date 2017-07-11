@@ -30,6 +30,14 @@ class AttachmentBase(object):
         self.description = description
 
     @staticmethod
+    def get_related_fields(field):
+        if field == AttachmentBase.FIELD_TASK:
+            return (AttachmentBase.FIELD_TASK_ID,)
+        if field == AttachmentBase.FIELD_TASK_ID:
+            return (AttachmentBase.FIELD_TASK,)
+        return ()
+
+    @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
             return datetime.datetime.utcnow()

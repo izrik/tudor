@@ -264,7 +264,15 @@ class PersistenceLayer(object):
             self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
             # get fields that changed
             # pass to update_dict
-            fields = changed_fields[domobj]
+            fields = set(changed_fields[domobj])
+            others = set()
+            for field in fields:
+                try:
+                    relateds = set(domobj.get_related_fields(field))
+                except AttributeError:
+                    continue
+                others.update(relateds)
+            fields.update(others)
             self._update_domain_object_from_db_object(domobj, fields)
             self._logger.debug('changed dom object -> {}'.format(id2(domobj)))
 

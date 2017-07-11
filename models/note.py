@@ -19,6 +19,14 @@ class NoteBase(object):
         self.timestamp = self._clean_timestamp(timestamp)
 
     @staticmethod
+    def get_related_fields(field):
+        if field == NoteBase.FIELD_TASK:
+            return (NoteBase.FIELD_TASK_ID,)
+        if field == NoteBase.FIELD_TASK_ID:
+            return (NoteBase.FIELD_TASK,)
+        return ()
+
+    @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
             return datetime.datetime.utcnow()
