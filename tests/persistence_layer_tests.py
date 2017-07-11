@@ -578,6 +578,7 @@ class PersistenceLayerParentIdInTest(unittest.TestCase):
         self.pl.add(self.t3)
         self.pl.add(self.t4)
         self.pl.add(self.t5)
+        self.pl.commit()
 
         # when
         results = self.pl.get_tasks(
@@ -1688,14 +1689,6 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertIsNotNone(user.id)
 
-    def test_this_raises_an_error_for_some_reason(self):
-        # but not when SQLALCHEMY_ECHO is set to true !?
-        task = Task('task')
-        tag = Tag('tag', description='a')
-        self.pl.add(task)
-        self.pl.add(tag)
-        self.pl.commit()
-
     def test_rollback_reverts_changes(self):
         tag = Tag('tag', description='a')
         self.pl.add(tag)
@@ -2630,29 +2623,16 @@ class PersistenceLayerInternalsTest(unittest.TestCase):
         # then
         self.assertIs(dbtask, result)
 
-    def test_added_domain_objects_are_added_to_list_of_changed_objects(self):
+    def test_added_domain_objects_are_added_to_list_of_added_objects(self):
         # given
         task = Task('task1')
         # precondition
-        self.assertEquals(0, len(self.pl._changed_objects))
+        self.assertEquals(0, len(self.pl._added_objects))
         # when
         self.pl.add(task)
         # then
-        self.assertEqual(1, len(self.pl._changed_objects))
-        self.assertIn(task, self.pl._changed_objects)
-
-    def test_deleted_domain_objects_are_added_to_list_of_changed_objects(self):
-        # given
-        task = Task('task1')
-        self.pl.add(task)
-        self.pl.commit()
-        # precondition
-        self.assertEquals(0, len(self.pl._changed_objects))
-        # when
-        self.pl.delete(task)
-        # then
-        self.assertEqual(1, len(self.pl._changed_objects))
-        self.assertIn(task, self.pl._changed_objects)
+        self.assertEqual(1, len(self.pl._added_objects))
+        self.assertIn(task, self.pl._added_objects)
 
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
