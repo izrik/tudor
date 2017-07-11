@@ -38,7 +38,7 @@ class TagBase(object):
 
     def update_from_dict(self, d):
         self._logger.debug('{}: {}'.format(self.id2, d))
-        if 'id' in d:
+        if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'value' in d:
             self.value = d['value']

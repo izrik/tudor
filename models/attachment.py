@@ -58,7 +58,7 @@ class AttachmentBase(object):
         return d
 
     def update_from_dict(self, d):
-        if 'id' in d:
+        if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'timestamp' in d:
             self.timestamp = self._clean_timestamp(d['timestamp'])

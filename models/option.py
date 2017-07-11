@@ -26,7 +26,7 @@ class OptionBase(object):
         return d
 
     def update_from_dict(self, d):
-        if 'key' in d:
+        if 'key' in d and d['key'] is not None:
             self.key = d['key']
         if 'value' in d:
             self.value = d['value']

@@ -43,7 +43,7 @@ class NoteBase(object):
         return d
 
     def update_from_dict(self, d):
-        if 'id' in d:
+        if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'content' in d:
             self.content = d['content']
