@@ -260,14 +260,12 @@ class PersistenceLayer(object):
             log_object(domobj)
         for domobj in all_affected_objects:
             log_object(domobj._dbobj)
-        # for domobj in changed:
-        #     self._logger.debug('updating dom object -> {}'.format(id2(domobj)))
-        #     self._update_domain_object_from_db_object(domobj)
-        #     self._logger.debug('updated dom object -> {}'.format(id2(domobj)))
         for domobj in added:
-            self._logger.debug('updating added dom object -> {}'.format(id2(domobj)))
+            self._logger.debug(
+                'updating added dom object -> {}'.format(id2(domobj)))
             self._update_domain_object_from_db_object(domobj)
-            self._logger.debug('updated added dom object -> {}'.format(id2(domobj)))
+            self._logger.debug(
+                'updated added dom object -> {}'.format(id2(domobj)))
         for domobj in changed:
             self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
             # get fields that changed
@@ -534,7 +532,8 @@ class PersistenceLayer(object):
         return d2
 
     def _update_domain_object_from_db_object(self, domobj, fields=None):
-        self._logger.debug('begin, domobj: {}, fields: {}'.format(domobj, fields))
+        self._logger.debug(
+            'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
@@ -608,7 +607,8 @@ class PersistenceLayer(object):
         return d2
 
     def _update_db_object_from_domain_object(self, domobj, fields=None):
-        self._logger.debug('begin, domobj: {}, fields: {}'.format(domobj, fields))
+        self._logger.debug(
+            'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
