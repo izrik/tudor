@@ -81,20 +81,20 @@ class TaskBase(object):
         if fields is None or self.FIELD_PARENT_ID in fields:
             d['parent_id'] = self.parent_id
 
-        if fields is None or self.FIELD_CHILDREN is fields:
-            d['tasks'] = list(self.children)
-        if fields is None or self.FIELD_DEPENDEES is fields:
-            d['tasks'] = list(self.dependees)
-        if fields is None or self.FIELD_DEPENDANTS is fields:
-            d['tasks'] = list(self.dependants)
-        if fields is None or self.FIELD_PRIORITIZE_BEFORE is fields:
-            d['tasks'] = list(self.prioritize_before)
-        if fields is None or self.FIELD_PRIORITIZE_AFTER is fields:
-            d['tasks'] = list(self.prioritize_after)
-        if fields is None or self.FIELD_TAGS is fields:
-            d['tasks'] = list(self.tags)
-        if fields is None or self.FIELD_USERS is fields:
-            d['tasks'] = list(self.users)
+        if fields is None or self.FIELD_CHILDREN in fields:
+            d['children'] = list(self.children)
+        if fields is None or self.FIELD_DEPENDEES in fields:
+            d['dependees'] = list(self.dependees)
+        if fields is None or self.FIELD_DEPENDANTS in fields:
+            d['dependants'] = list(self.dependants)
+        if fields is None or self.FIELD_PRIORITIZE_BEFORE in fields:
+            d['prioritize_before'] = list(self.prioritize_before)
+        if fields is None or self.FIELD_PRIORITIZE_AFTER in fields:
+            d['prioritize_after'] = list(self.prioritize_after)
+        if fields is None or self.FIELD_TAGS in fields:
+            d['tags'] = list(self.tags)
+        if fields is None or self.FIELD_USERS in fields:
+            d['users'] = list(self.users)
 
         return d
 

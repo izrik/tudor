@@ -31,7 +31,7 @@ class TagBase(object):
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
 
-        if fields is None or self.FIELD_TASKS is fields:
+        if fields is None or self.FIELD_TASKS in fields:
             d['tasks'] = list(self.tasks)
 
         return d

@@ -32,7 +32,7 @@ class UserBase(object):
         if fields is None or self.FIELD_IS_ADMIN in fields:
             d['is_admin'] = self.is_admin
 
-        if fields is None or self.FIELD_TASKS is fields:
+        if fields is None or self.FIELD_TASKS in fields:
             d['tasks'] = list(self.tasks)
 
         return d
