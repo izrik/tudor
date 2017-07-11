@@ -55,6 +55,10 @@ class TaskBase(object):
             return (TaskBase.FIELD_PARENT,)
         return ()
 
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({}, id={})'.format(cls, self.summary, self.id)
+
     @staticmethod
     def _clean_deadline(deadline):
         if isinstance(deadline, basestring):
@@ -481,6 +485,10 @@ class InterlinkedChildren(collections.MutableSequence):
         self.container = container
         self.list = list()
         self.extend(list(args))
+
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({})'.format(cls, self.list)
 
     @property
     def c(self):
