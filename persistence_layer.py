@@ -410,14 +410,20 @@ class PersistenceLayer(object):
                 domobj, type(domobj)))
 
         domattrs = domobj.to_dict()
-        dbattrs = self._db_attrs_from_domain(domattrs)
-        dbobj = dbclass.from_dict(dbattrs)
+        dbattrs_nonrel = self._db_attrs_from_domain_no_links(domattrs)
+        dbobj = dbclass.from_dict(dbattrs_nonrel)
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
         if hasattr(domobj, '_dbobj'):
             domobj._dbobj = dbobj
             dbobj._domobj = domobj
+
+        # translate the relational attributes after storing the dbobj in the
+        # cache. otherwise, graph cycles lead to infinite recursion trying to
+        # continually create new db objects.
+        dbattrs_rel = self._db_attrs_from_domain_links(domattrs)
+        dbobj.update_from_dict(dbattrs_rel)
 
         self._logger.debug('end')
         return dbobj
@@ -541,36 +547,64 @@ class PersistenceLayer(object):
             'updated dom obj {} -> {}'.format(id2(domobj), id2(dbobj)))
         self._logger.debug('end')
 
-    def _db_attrs_from_domain(self, d):
-        d2 = d.copy()
-        if 'parent' in d2 and d2['parent'] is not None:
-            d2['parent'] = self._get_db_object_from_domain_object(d2['parent'])
-        if 'children' in d2:
+    _relational_attrs = {'parent', 'children', 'tags', 'tasks', 'users',
+                         'dependees', 'dependants', 'prioritize_before',
+                         'prioritize_after'}
+
+    def _db_attrs_from_domain_all(self, d):
+        self._logger.debug('d: {}'.format(d))
+        d2 = {}
+        self._db_attrs_from_domain_no_links(d, d2)
+        self._db_attrs_from_domain_links(d, d2)
+        self._logger.debug('d2: {}'.format(d2))
+        return d2
+
+    def _db_attrs_from_domain_no_links(self, d, d2=None):
+        self._logger.debug('d: {}'.format(d))
+
+        if d2 is None:
+            d2 = {}
+
+        for attrname in d.iterkeys():
+            if attrname not in self._relational_attrs:
+                d2[attrname] = d[attrname]
+
+        self._logger.debug('d2: {}'.format(d2))
+        return d2
+
+    def _db_attrs_from_domain_links(self, d, d2=None):
+        self._logger.debug('d: {}'.format(d))
+        if d2 is None:
+            d2 = {}
+        if 'parent' in d and d['parent'] is not None:
+            d2['parent'] = self._get_db_object_from_domain_object(d['parent'])
+        if 'children' in d:
             d2['children'] = [self._get_db_object_from_domain_object(domobj)
-                              for domobj in d2['children']]
-        if 'tags' in d2:
+                              for domobj in d['children']]
+        if 'tags' in d:
             d2['tags'] = [self._get_db_object_from_domain_object(domobj) for
-                          domobj in d2['tags']]
-        if 'tasks' in d2:
+                          domobj in d['tags']]
+        if 'tasks' in d:
             d2['tasks'] = [self._get_db_object_from_domain_object(domobj) for
-                           domobj in d2['tasks']]
-        if 'users' in d2:
+                           domobj in d['tasks']]
+        if 'users' in d:
             d2['users'] = [self._get_db_object_from_domain_object(domobj) for
-                           domobj in d2['users']]
-        if 'dependees' in d2:
+                           domobj in d['users']]
+        if 'dependees' in d:
             d2['dependees'] = [self._get_db_object_from_domain_object(domobj)
-                               for domobj in d2['dependees']]
-        if 'dependants' in d2:
+                               for domobj in d['dependees']]
+        if 'dependants' in d:
             d2['dependants'] = [self._get_db_object_from_domain_object(domobj)
-                                for domobj in d2['dependants']]
-        if 'prioritize_before' in d2:
+                                for domobj in d['dependants']]
+        if 'prioritize_before' in d:
             d2['prioritize_before'] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
-                d2['prioritize_before']]
-        if 'prioritize_after' in d2:
+                d['prioritize_before']]
+        if 'prioritize_after' in d:
             d2['prioritize_after'] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
-                d2['prioritize_after']]
+                d['prioritize_after']]
+        self._logger.debug('d2: {}'.format(d2))
         return d2
 
     def _update_db_object_from_domain_object(self, domobj, fields=None):
@@ -580,7 +614,7 @@ class PersistenceLayer(object):
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
         d = domobj.to_dict(fields)
         self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
-        d = self._db_attrs_from_domain(d)
+        d = self._db_attrs_from_domain_all(d)
         self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
         dbobj.update_from_dict(d)
         self._logger.debug(
