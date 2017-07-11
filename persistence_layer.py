@@ -146,15 +146,19 @@ class PersistenceLayer(object):
         self._domain_by_db = {}
 
     def add(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         # dbobj = self._get_db_object_from_domain_object(domobj)
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:
             dbobj = self._create_db_object_from_domain_object(domobj)
+        self._logger.debug('begin, dbobj: {}'.format(dbobj))
         self._register_domain_object(domobj)
         self._added_objects.add(domobj)
         self.db.session.add(dbobj)
+        self._logger.debug('end')
 
     def delete(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:
             dbobj = self._get_db_object_from_domain_object_by_id(domobj)
@@ -162,12 +166,13 @@ class PersistenceLayer(object):
                 raise Exception(
                     'Untracked domain object: {} ({})'.format(domobj,
                                                               type(domobj)))
+        self._logger.debug('begin, dbobj: {}'.format(dbobj))
         self._register_domain_object(domobj)
         self.db.session.delete(dbobj)
+        self._logger.debug('end')
 
     def commit(self):
-
-        self.db.session.echo_uow = True
+        self._logger.debug('begin')
 
         def log_object(obj, extra=True):
             if isinstance(obj, TaskBase):
@@ -210,17 +215,16 @@ class PersistenceLayer(object):
                         list(id2(task) for task in obj.tasks)))
 
         self._logger.debug('')
-        all_changed = list(
-            self._added_objects) + list(self._deleted_objects) + list(
-            self._changed_objects_fields.keys())
-        # changed = set(list(self._changed_objects_fields.keys()) + list(
-        #     self._changed_objects))
         added = list(self._added_objects)
         deleted = list(self._deleted_objects)
         changed = list(self._changed_objects_fields.keys())
         changed_fields = self._changed_objects_fields.copy()
-        self._logger.debug('get list of changed objects')
-        for domobj in all_changed:
+        all_affected_objects = list(
+            self._added_objects
+                .union(self._deleted_objects)
+                .union(self._changed_objects_fields.keys()))
+        self._logger.debug('get list of affected objects')
+        for domobj in all_affected_objects:
             log_object(domobj)
         self._changed_objects_fields.clear()
         self._added_objects.clear()
@@ -241,16 +245,20 @@ class PersistenceLayer(object):
             self._logger.debug('deleted db object -> {}'.format(id2(domobj)))
         self._logger.debug('updated all db objects')
 
-        for domobj in all_changed:
+        for domobj in all_affected_objects:
             log_object(domobj)
-        for domobj in all_changed:
+        for domobj in all_affected_objects:
             log_object(domobj._dbobj, extra=False)
+
+        ###############
         self._logger.debug('committing the db session/transaction')
         self.db.session.commit()
         self._logger.debug('committed the db session/transaction')
-        for domobj in all_changed:
+        ###############
+
+        for domobj in all_affected_objects:
             log_object(domobj)
-        for domobj in all_changed:
+        for domobj in all_affected_objects:
             log_object(domobj._dbobj)
         # for domobj in changed:
         #     self._logger.debug('updating dom object -> {}'.format(id2(domobj)))
@@ -282,7 +290,10 @@ class PersistenceLayer(object):
         self._deleted_objects.clear()
         self._logger.debug('cleared list of changed objects')
 
+        self._logger.debug('end')
+
     def rollback(self):
+        self._logger.debug('begin')
         self.db.session.rollback()
         changed = list(self._changed_objects_fields.keys())
         for domobj in changed:
@@ -293,6 +304,7 @@ class PersistenceLayer(object):
         self._changed_objects_fields.clear()
         self._added_objects.clear()
         self._deleted_objects.clear()
+        self._logger.debug('end')
 
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
@@ -303,6 +315,7 @@ class PersistenceLayer(object):
                            Note, User, Option))
 
     def _get_db_object_from_domain_object(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         if not self._is_domain_object(domobj):
             raise Exception(
                 'Not a domain object: {} ({})'.format(domobj, type(domobj)))
@@ -311,9 +324,11 @@ class PersistenceLayer(object):
             dbobj = self._get_db_object_from_domain_object_by_id(domobj)
         if dbobj is None:
             dbobj = self._create_db_object_from_domain_object(domobj)
+        self._logger.debug('end')
         return dbobj
 
     def _get_db_object_from_domain_object_in_cache(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         if domobj is None:
             raise ValueError('domobj cannot be None')
         if not self._is_domain_object(domobj):
@@ -321,11 +336,14 @@ class PersistenceLayer(object):
                 'Not a domain object: {} ({})'.format(domobj, type(domobj)))
 
         if domobj not in self._db_by_domain:
+            self._logger.debug('end (domobj not in cache)')
             return None
 
+        self._logger.debug('end')
         return self._db_by_domain[domobj]
 
     def _get_db_object_from_domain_object_by_id(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         if domobj is None:
             raise ValueError('domobj cannot be None')
         if not self._is_domain_object(domobj):
@@ -333,6 +351,7 @@ class PersistenceLayer(object):
                 'Not a domain object: {} ({})'.format(domobj, type(domobj)))
 
         if domobj.id is None:
+            self._logger.debug('end (domobj.id is None)')
             return None
 
         if isinstance(domobj, Attachment):
@@ -352,15 +371,18 @@ class PersistenceLayer(object):
                 'Unknown domain object: {} ({})'.format(domobj, type(domobj)))
 
         if dbobj is not None:
+            self._logger.debug('dbobj is not None')
             self._domain_by_db[dbobj] = domobj
             self._db_by_domain[domobj] = dbobj
             if hasattr(domobj, '_dbobj'):
                 domobj._dbobj = dbobj
                 dbobj._domobj = domobj
 
+        self._logger.debug('end')
         return dbobj
 
     def _create_db_object_from_domain_object(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         if domobj is None:
             raise ValueError('domobj cannot be None')
         if not self._is_domain_object(domobj):
@@ -397,9 +419,11 @@ class PersistenceLayer(object):
             domobj._dbobj = dbobj
             dbobj._domobj = domobj
 
+        self._logger.debug('end')
         return dbobj
 
     def _get_domain_object_from_db_object(self, dbobj):
+        self._logger.debug('begin, dbobj: {}'.format(dbobj))
         if dbobj is None:
             return None
         if not self._is_db_object(dbobj):
@@ -410,20 +434,26 @@ class PersistenceLayer(object):
         if domobj is None:
             domobj = self._create_domain_object_from_db_object(dbobj)
 
+        self._logger.debug('end')
         return domobj
 
     def _get_domain_object_from_db_object_in_cache(self, dbobj):
+        self._logger.debug('begin, dbobj: {}'.format(dbobj))
         if dbobj is None:
             raise ValueError('dbobj cannot be None')
         if not self._is_db_object(dbobj):
             raise Exception(
                 'Not a db object: {} ({})'.format(dbobj, type(dbobj)))
+
         if dbobj not in self._domain_by_db:
+            self._logger.debug('end (dbobj not in cache)')
             return None
 
+        self._logger.debug('end')
         return self._domain_by_db[dbobj]
 
     def _create_domain_object_from_db_object(self, dbobj):
+        self._logger.debug('begin, dbobj: {}'.format(dbobj))
         if dbobj is None:
             raise ValueError('dbobj cannot be None')
         if not self._is_db_object(dbobj):
@@ -460,9 +490,11 @@ class PersistenceLayer(object):
             domobj._dbobj = dbobj
             dbobj._domobj = domobj
 
+        self._logger.debug('end')
         return domobj
 
     def _domain_attrs_from_db(self, d):
+        self._logger.debug('d: {}'.format(d))
         d2 = d.copy()
         if 'parent' in d2 and d2['parent'] is not None:
             d2['parent'] = self._get_domain_object_from_db_object(d2['parent'])
@@ -492,9 +524,11 @@ class PersistenceLayer(object):
             d2['prioritize_after'] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
                 d2['prioritize_after']]
+        self._logger.debug('d2: {}'.format(d2))
         return d2
 
     def _update_domain_object_from_db_object(self, domobj, fields=None):
+        self._logger.debug('begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
@@ -505,6 +539,7 @@ class PersistenceLayer(object):
         domobj.update_from_dict(d)
         self._logger.debug(
             'updated dom obj {} -> {}'.format(id2(domobj), id2(dbobj)))
+        self._logger.debug('end')
 
     def _db_attrs_from_domain(self, d):
         d2 = d.copy()
@@ -539,6 +574,7 @@ class PersistenceLayer(object):
         return d2
 
     def _update_db_object_from_domain_object(self, domobj, fields=None):
+        self._logger.debug('begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
             'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
@@ -549,15 +585,21 @@ class PersistenceLayer(object):
         dbobj.update_from_dict(d)
         self._logger.debug(
             'updated db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
+        self._logger.debug('end')
 
     def _on_domain_object_attr_changed(self, domobj, field):
+        self._logger.debug('begin, domobj: {}, field: {}'.format(domobj,
+                                                                 field))
         if domobj not in self._changed_objects_fields:
             self._changed_objects_fields[domobj] = set()
         self._changed_objects_fields[domobj].add(field)
+        self._logger.debug('end')
 
     def _register_domain_object(self, domobj):
+        self._logger.debug('begin, domobj: {}'.format(domobj))
         self._added_objects.add(domobj)
         domobj.register_change_listener(self._on_domain_object_attr_changed)
+        self._logger.debug('end')
 
     def create_all(self):
         self.db.create_all()
