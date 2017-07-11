@@ -61,7 +61,7 @@ class TaskBase(object):
         if fields is None or self.FIELD_ID in fields:
             d['id'] = self.id
         if fields is None or self.FIELD_SUMMARY in fields:
-            d['value'] = self.summary
+            d['summary'] = self.summary
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
         if fields is None or self.FIELD_IS_DONE in fields:
