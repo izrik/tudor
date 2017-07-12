@@ -339,6 +339,7 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)
+        self.pl.commit()
 
         # when
         results = self.pl.get_tasks(
@@ -406,6 +407,7 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)
+        self.pl.commit()
 
         # when
         results = self.pl.get_tasks(
