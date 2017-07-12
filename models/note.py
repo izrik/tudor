@@ -144,3 +144,7 @@ class Note(Changeable, NoteBase):
             note.id = note_id
         note.task_id = task_id
         return note
+
+    def clear_relationships(self):
+        self.task = None
+        self.task_id = None

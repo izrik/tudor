@@ -171,6 +171,7 @@ class PersistenceLayer(object):
         self._added_objects.discard(domobj)
         if domobj in self._changed_objects_fields:
             self._changed_objects_fields[domobj].clear()
+        domobj.clear_relationships()
         self.db.session.delete(dbobj)
         self._logger.debug('end')
 

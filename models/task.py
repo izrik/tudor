@@ -503,6 +503,19 @@ class Task(Changeable, TaskBase):
                 return True
         return False
 
+    def clear_relationships(self):
+        self.parent = None
+        self.parent_id = None
+        self.children.clear()
+        self.tags.clear()
+        self.users.clear()
+        self.notes.clear()
+        self.attachments.clear()
+        self.dependees.clear()
+        self.dependants.clear()
+        self.prioritize_before.clear()
+        self.prioritize_after.clear()
+
 
 class InterlinkedChildren(collections.MutableSequence):
     def __init__(self, container, *args):
@@ -572,6 +585,10 @@ class InterlinkedChildren(collections.MutableSequence):
 
     def __str__(self):
         return str(self.list)
+
+    def clear(self):
+        while len(self.list) > 0:
+            self.pop()
 
 
 class InterlinkedTags(collections.MutableSet):

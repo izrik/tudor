@@ -185,3 +185,7 @@ class Attachment(Changeable, AttachmentBase):
             attachment.id = attachment_id
         attachment.task_id = task_id
         return attachment
+
+    def clear_relationships(self):
+        self.task = None
+        self.task_id = None

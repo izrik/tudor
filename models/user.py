@@ -136,6 +136,9 @@ class User(Changeable, UserBase):
             user.id = user_id
         return user
 
+    def clear_relationships(self):
+        self.tasks.clear()
+
 
 class InterlinkedTasks(collections.MutableSet):
 

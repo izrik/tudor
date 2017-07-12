@@ -126,6 +126,9 @@ class Tag(Changeable, TagBase):
         logger.debug('tag: {}'.format(tag))
         return tag
 
+    def clear_relationships(self):
+        self.tasks.clear()
+
 
 class InterlinkedTasks(collections.MutableSet):
 

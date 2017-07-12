@@ -67,3 +67,6 @@ class Option(Changeable, OptionBase):
         key = d.get('key')
         value = d.get('value', None)
         return Option(key, value)
+
+    def clear_relationships(self):
+        pass
