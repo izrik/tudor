@@ -19,6 +19,10 @@ class TagBase(object):
         self.value = value
         self.description = description
 
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({}, id={})'.format(cls, self.value, self.id)
+
     def to_dict(self, fields=None):
 
         self._logger.debug('{}'.format(self.id2))
