@@ -142,7 +142,7 @@ class TaskBase(object):
             self.parent_id = d['parent_id']
         if 'children' in d:
             clear(self.children)
-            self.children.extend(d['children'])
+            extend(self.children, d['children'])
         if 'tags' in d:
             clear(self.tags)
             extend(self.tags, d['tags'])
@@ -348,7 +348,7 @@ class Task(Changeable, TaskBase):
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.parent, value))
             if self._parent is not None:
-                self._parent.children.remove(self)
+                self._parent.children.discard(self)
             self._parent = value
             if self._parent is not None:
                 self._parent.children.append(self)
@@ -417,7 +417,7 @@ class Task(Changeable, TaskBase):
         task.parent_id = parent_id
         if 'children' in d:
             clear(task.users)
-            task.children.extend(d['children'])
+            extend(task.children, d['children'])
         if 'tags' in d:
             clear(task.users)
             extend(task.tags, d['tags'])
@@ -517,78 +517,52 @@ class Task(Changeable, TaskBase):
         self.prioritize_after.clear()
 
 
-class InterlinkedChildren(collections.MutableSequence):
-    def __init__(self, container, *args):
+class InterlinkedChildren(collections.MutableSet):
+    def __init__(self, container):
         self._logger = logging_util.get_logger(__name__, self)
         if container is None:
             raise ValueError('container cannot be None')
 
         self.container = container
-        self.list = list()
-        self.extend(list(args))
+        self.set = set()
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}({})'.format(cls, self.list)
+        return '{}({})'.format(cls, self.set)
 
     @property
     def c(self):
         return self.container
 
     def __len__(self):
-        return len(self.list)
-
-    def __getitem__(self, i):
-        return self.list[i]
-
-    def __delitem__(self, i):
-        self._logger.debug('{}: {}'.format(self.c.id2, i))
-        self.remove(self[i])
-
-    def __setitem__(self, i, v):
-        self._logger.debug('{}: {}, {}'.format(self.c.id2, i, v.id2))
-        del self[i]
-        self.insert(i, v)
+        return len(self.set)
 
     def __contains__(self, value):
-        return self.list.__contains__(value)
+        return self.set.__contains__(value)
 
-    def append(self, value):
-        self._logger.debug('{}: {}'.format(self.c.id2, value.id2))
-        if value not in self:
-            self.list.append(value)
-            value.parent = self.container
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item not in self.set:
+            self.set.add(item)
+            item.parent = self.container
             self.container._on_attr_changed(Task.FIELD_CHILDREN)
 
-    def add(self, value):
-        self._logger.debug('{}: {}'.format(self.c.id2, value.id2))
-        self.append(value)
+    def append(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        self.add(item)
 
-    def remove(self, value):
-        self._logger.debug('{}: {}'.format(self.c.id2, value.id2))
-        if value in self:
-            self.list.remove(value)
-            value.parent = None
+    def discard(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item in self.set:
+            self.set.discard(item)
+            item.parent = None
             self.container._on_attr_changed(Task.FIELD_CHILDREN)
-
-    def insert(self, i, v):
-        self._logger.debug('{}: {}, {}'.format(self.c.id2, i, v.id2))
-        if v in self:
-            if self.index(v) < i:
-                i -= 1
-            self.remove(v)
-
-        v.parent = None
-        self.list.insert(i, v)
-        v.parent = self.container
-        self.container._on_attr_changed(Task.FIELD_CHILDREN)
 
     def __str__(self):
-        return str(self.list)
-
-    def clear(self):
-        while len(self.list) > 0:
-            self.pop()
+        return str(self.set)
 
 
 class InterlinkedTags(collections.MutableSet):

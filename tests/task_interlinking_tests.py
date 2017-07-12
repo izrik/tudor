@@ -23,7 +23,7 @@ class ChildrenInterlinkingTest(unittest.TestCase):
         self.assertNotIn(self.c1, self.parent.children)
         self.assertNotIn(self.c2, self.parent.children)
         # when
-        self.parent.children.list.append(self.c1)
+        self.parent.children.set.add(self.c1)
         self.c1._parent = self.parent
         # then
         self.assertIn(self.c1, self.parent.children)
@@ -61,7 +61,7 @@ class ChildrenInterlinkingTest(unittest.TestCase):
         self.assertIs(self.parent, self.c1.parent)
         self.assertIsNone(self.c2.parent)
 
-    def test_remove(self):
+    def test_discard(self):
         # given
         self.parent.children.append(self.c1)
         # precondition
@@ -70,41 +70,23 @@ class ChildrenInterlinkingTest(unittest.TestCase):
         self.assertIs(self.parent, self.c1.parent)
         self.assertIsNone(self.c2.parent)
         # when
-        self.parent.children.remove(self.c1)
+        self.parent.children.discard(self.c1)
         # then
         self.assertEqual(0, len(self.parent.children))
         self.assertIsNone(self.c1.parent)
         self.assertIsNone(self.c2.parent)
 
-    def test_remove_non_child_silently_ignored(self):
+    def test_discard_non_child_silently_ignored(self):
         # precondition
         self.assertEqual(0, len(self.parent.children))
         self.assertIsNone(self.c1.parent)
         self.assertIsNone(self.c2.parent)
         # when
-        self.parent.children.remove(self.c1)
+        self.parent.children.discard(self.c1)
         # then
         self.assertEqual(0, len(self.parent.children))
         self.assertIsNone(self.c1.parent)
         self.assertIsNone(self.c2.parent)
-
-    def test_insert(self):
-        # given
-        self.parent.children.append(self.c1)
-        # precondition
-        self.assertIn(self.c1, self.parent.children)
-        self.assertEqual(1, len(self.parent.children))
-        self.assertEqual([self.c1], list(self.parent.children))
-        self.assertIs(self.parent, self.c1.parent)
-        self.assertIsNone(self.c2.parent)
-        # when
-        self.parent.children.insert(0, self.c2)
-        self.assertIn(self.c1, self.parent.children)
-        self.assertIn(self.c2, self.parent.children)
-        self.assertEqual(2, len(self.parent.children))
-        self.assertEqual([self.c2, self.c1], list(self.parent.children))
-        self.assertIs(self.parent, self.c1.parent)
-        self.assertIs(self.parent, self.c2.parent)
 
 
 class TaskTagsInterlinkingTest(unittest.TestCase):
