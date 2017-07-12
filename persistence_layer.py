@@ -151,7 +151,7 @@ class PersistenceLayer(object):
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:
             dbobj = self._create_db_object_from_domain_object(domobj)
-        self._logger.debug('begin, dbobj: {}'.format(dbobj))
+        self._logger.debug('dbobj: {}'.format(dbobj))
         self._register_domain_object(domobj)
         self._added_objects.add(domobj)
         self.db.session.add(dbobj)
@@ -1131,6 +1131,9 @@ def generate_tag_class(db, tags_tasks_table):
 
         @staticmethod
         def from_dict(d):
+            logger = logging_util.get_logger_by_class(__name__, Tag)
+            logger.debug('d: {}'.format(d))
+
             tag_id = d.get('id', None)
             value = d.get('value')
             description = d.get('description', None)
@@ -1138,6 +1141,7 @@ def generate_tag_class(db, tags_tasks_table):
             tag = DbTag(value, description)
             if tag_id is not None:
                 tag.id = tag_id
+            logger.debug('tag: {}'.format(tag))
             return tag
 
     return DbTag

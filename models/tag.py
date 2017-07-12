@@ -111,6 +111,9 @@ class Tag(Changeable, TagBase):
 
     @staticmethod
     def from_dict(d):
+        logger = logging_util.get_logger_by_class(__name__, Tag)
+        logger.debug('d: {}'.format(d))
+
         tag_id = d.get('id', None)
         value = d.get('value')
         description = d.get('description', None)
@@ -120,6 +123,7 @@ class Tag(Changeable, TagBase):
         logger.debug('{}'.format(tag.id2))
         if tag_id is not None:
             tag.id = tag_id
+        logger.debug('tag: {}'.format(tag))
         return tag
 
 
