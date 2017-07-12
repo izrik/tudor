@@ -845,8 +845,8 @@ class InterlinkedNotes(collections.MutableSet):
     def __len__(self):
         return len(self.set)
 
-    def __contains__(self, after):
-        return self.set.__contains__(after)
+    def __contains__(self, item):
+        return self.set.__contains__(item)
 
     def __iter__(self):
         return self.set.__iter__()
@@ -858,9 +858,9 @@ class InterlinkedNotes(collections.MutableSet):
             item.task = self.container
             self.container._on_attr_changed(Task.FIELD_NOTES)
 
-    def append(self, after):
-        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
-        self.add(after)
+    def append(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        self.add(item)
 
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
@@ -895,8 +895,8 @@ class InterlinkedAttachments(collections.MutableSet):
     def __len__(self):
         return len(self.set)
 
-    def __contains__(self, after):
-        return self.set.__contains__(after)
+    def __contains__(self, item):
+        return self.set.__contains__(item)
 
     def __iter__(self):
         return self.set.__iter__()
@@ -908,9 +908,9 @@ class InterlinkedAttachments(collections.MutableSet):
             item.task = self.container
             self.container._on_attr_changed(Task.FIELD_ATTACHMENTS)
 
-    def append(self, after):
-        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
-        self.add(after)
+    def append(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        self.add(item)
 
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
