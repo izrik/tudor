@@ -239,7 +239,7 @@ class PersistenceLayer(object):
             # it shouldn't have already been added, because add() and delete()
             # will remove the object from the respective sets. Nevertheless,
             # just to be thorough, consider the possiblity.
-            if domobj in self._deleted_objects:
+            if domobj in deleted:
                 # delete trumps add
                 self._logger.debug('{} already deleted'.format(id2(domobj)))
                 continue
@@ -247,10 +247,10 @@ class PersistenceLayer(object):
             self._logger.debug('added db object -> {}'.format(id2(domobj)))
         for domobj in changed:
             self._logger.debug('changing db object -> {}'.format(id2(domobj)))
-            if domobj in self._added_objects:
+            if domobj in added:
                 self._logger.debug('{} already added'.format(id2(domobj)))
                 continue
-            if domobj in self._deleted_objects:
+            if domobj in deleted:
                 self._logger.debug('{} already deleted'.format(id2(domobj)))
                 continue
             fields = changed_fields[domobj]
@@ -285,10 +285,10 @@ class PersistenceLayer(object):
                 'updated added dom object -> {}'.format(id2(domobj)))
         for domobj in changed:
             self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
-            if domobj in self._added_objects:
+            if domobj in added:
                 self._logger.debug('{} already added'.format(id2(domobj)))
                 continue
-            if domobj in self._deleted_objects:
+            if domobj in deleted:
                 self._logger.debug('{} already deleted'.format(id2(domobj)))
                 continue
             # get fields that changed
