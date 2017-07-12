@@ -167,7 +167,7 @@ class PersistenceLayer(object):
                     'Untracked domain object: {} ({})'.format(domobj,
                                                               type(domobj)))
         self._logger.debug('begin, dbobj: {}'.format(dbobj))
-        self._register_domain_object(domobj)
+        self._deleted_objects.add(domobj)
         self.db.session.delete(dbobj)
         self._logger.debug('end')
 

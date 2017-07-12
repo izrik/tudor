@@ -2634,6 +2634,19 @@ class PersistenceLayerInternalsTest(unittest.TestCase):
         self.assertEqual(1, len(self.pl._added_objects))
         self.assertIn(task, self.pl._added_objects)
 
+    def test_deleted_domain_objects_are_added_to_list_of_deleted_objects(self):
+        # given
+        task = Task('task1')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEquals(0, len(self.pl._deleted_objects))
+        # when
+        self.pl.delete(task)
+        # then
+        self.assertEqual(1, len(self.pl._deleted_objects))
+        self.assertIn(task, self.pl._deleted_objects)
+
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
         logger = logging_util.get_logger(__name__, self)
