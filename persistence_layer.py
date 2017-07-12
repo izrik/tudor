@@ -236,7 +236,6 @@ class PersistenceLayer(object):
         self._logger.debug('cleared list of changed objects')
         for domobj in added:
             self._logger.debug('adding db object -> {}'.format(id2(domobj)))
-            self._update_db_object_from_domain_object(domobj)
             # it shouldn't have already been added, because add() and delete()
             # will remove the object from the respective sets. Nevertheless,
             # just to be thorough, consider the possiblity.
@@ -244,6 +243,7 @@ class PersistenceLayer(object):
                 # delete trumps add
                 self._logger.debug('{} already deleted'.format(id2(domobj)))
                 continue
+            self._update_db_object_from_domain_object(domobj)
             self._logger.debug('added db object -> {}'.format(id2(domobj)))
         for domobj in changed:
             self._logger.debug('changing db object -> {}'.format(id2(domobj)))
