@@ -31,6 +31,8 @@ class TaskBase(object):
     FIELD_PRIORITIZE_AFTER = 'PRIORITIZE_AFTER'
     FIELD_TAGS = 'TAGS'
     FIELD_USERS = 'USERS'
+    FIELD_NOTES = 'NOTES'
+    FIELD_ATTACHMENTS = 'ATTACHMENTS'
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
@@ -107,6 +109,10 @@ class TaskBase(object):
             d['tags'] = list(self.tags)
         if fields is None or self.FIELD_USERS in fields:
             d['users'] = list(self.users)
+        if fields is None or self.FIELD_NOTES in fields:
+            d['notes'] = list(self.notes)
+        if fields is None or self.FIELD_ATTACHMENTS in fields:
+            d['attachments'] = list(self.attachments)
 
         return d
 
@@ -155,8 +161,12 @@ class TaskBase(object):
         if 'prioritize_after' in d:
             clear(self.prioritize_after)
             extend(self.prioritize_after, d['prioritize_after'])
-        # TODO: notes
-        # TODO: attachments
+        if 'notes' in d:
+            clear(self.notes)
+            extend(self.notes, d['notes'])
+        if 'attachments' in d:
+            clear(self.attachments)
+            extend(self.attachments, d['attachments'])
 
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
@@ -200,6 +210,8 @@ class Task(Changeable, TaskBase):
         self._tags = InterlinkedTags(self)
         self._users = InterlinkedUsers(self)
         self._children = InterlinkedChildren(self)
+        self._notes = InterlinkedNotes(self)
+        self._attachments = InterlinkedAttachments(self)
 
         self.id = None
         self.parent = None
@@ -370,6 +382,14 @@ class Task(Changeable, TaskBase):
     def prioritize_after(self):
         return self._prioritize_after
 
+    @property
+    def notes(self):
+        return self._notes
+
+    @property
+    def attachments(self):
+        return self._attachments
+
     @staticmethod
     def from_dict(d):
         task_id = d.get('id', None)
@@ -416,6 +436,12 @@ class Task(Changeable, TaskBase):
         if 'prioritize_after' in d:
             clear(task.prioritize_after)
             extend(task.prioritize_after, d['prioritize_after'])
+        if 'notes' in d:
+            clear(task.notes)
+            extend(task.notes, d['notes'])
+        if 'attachments' in d:
+            clear(task.attachments)
+            extend(task.attachments, d['attachments'])
         return task
 
     def get_css_class(self):
@@ -804,3 +830,103 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
             self.set.discard(after)
             after.prioritize_before.discard(self.container)
             self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER)
+
+
+class InterlinkedNotes(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self._logger = logging_util.get_logger(__name__, self)
+
+        self.container = container
+        self.set = set()
+
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({})'.format(cls, self.set)
+
+    @property
+    def c(self):
+        return self.container
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, after):
+        return self.set.__contains__(after)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item not in self.set:
+            self.set.add(item)
+            item.task = self.container
+            self.container._on_attr_changed(Task.FIELD_NOTES)
+
+    def append(self, after):
+        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
+        self.add(after)
+
+    def discard(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item in self.set:
+            self.set.discard(item)
+            item.task = None
+            self.container._on_attr_changed(Task.FIELD_NOTES)
+
+    def __str__(self):
+        return str(self.set)
+
+
+class InterlinkedAttachments(collections.MutableSet):
+
+    def __init__(self, container):
+        if container is None:
+            raise ValueError('container cannot be None')
+
+        self._logger = logging_util.get_logger(__name__, self)
+
+        self.container = container
+        self.set = set()
+
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({})'.format(cls, self.set)
+
+    @property
+    def c(self):
+        return self.container
+
+    def __len__(self):
+        return len(self.set)
+
+    def __contains__(self, after):
+        return self.set.__contains__(after)
+
+    def __iter__(self):
+        return self.set.__iter__()
+
+    def add(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item not in self.set:
+            self.set.add(item)
+            item.task = self.container
+            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS)
+
+    def append(self, after):
+        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
+        self.add(after)
+
+    def discard(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item in self.set:
+            self.set.discard(item)
+            item.task = None
+            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS)
+
+    def __str__(self):
+        return str(self.set)

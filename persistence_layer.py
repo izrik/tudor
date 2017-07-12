@@ -1102,6 +1102,12 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if 'prioritize_after' in d:
                 clear(task.prioritize_after)
                 extend(task.prioritize_after, d['prioritize_after'])
+            if 'notes' in d:
+                clear(task.notes)
+                extend(task.notes, d['notes'])
+            if 'attachments' in d:
+                clear(task.attachments)
+                extend(task.attachments, d['attachments'])
             return task
 
     return DbTask

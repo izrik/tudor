@@ -164,7 +164,11 @@ class Attachment(Changeable, AttachmentBase):
     @task.setter
     def task(self, value):
         if value != self._task:
+            if self._task is not None:
+                self._task.attachments.discard(self)
             self._task = value
+            if self._task is not None:
+                self._task.attachments.add(self)
             self._on_attr_changed(self.FIELD_TASK)
 
     @staticmethod

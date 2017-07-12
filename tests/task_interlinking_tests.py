@@ -5,6 +5,8 @@ import unittest
 from models.task import Task
 from models.tag import Tag
 from models.user import User
+from models.note import Note
+from models.attachment import Attachment
 
 
 class ChildrenInterlinkingTest(unittest.TestCase):
@@ -867,3 +869,163 @@ class PrioritizeBeforeAfterInterlinkingTest(unittest.TestCase):
         self.assertEqual(0, len(self.t2.prioritize_before))
         self.assertNotIn(self.t2, self.t1.prioritize_after)
         self.assertNotIn(self.t1, self.t2.prioritize_before)
+
+
+class NotesInterlinkingTest(unittest.TestCase):
+    def setUp(self):
+        self.task = Task('parent')
+        self.n1 = Note('n1')
+        self.n2 = Note('n2')
+
+    def test_in(self):
+        # precondition
+        self.assertEqual(0, len(self.task.notes))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+        self.assertNotIn(self.n1, self.task.notes)
+        self.assertNotIn(self.n2, self.task.notes)
+        # when
+        self.task.notes.set.add(self.n1)
+        self.n1._parent = self.task
+        # then
+        self.assertIn(self.n1, self.task.notes)
+        self.assertNotIn(self.n2, self.task.notes)
+
+    def test_append(self):
+        # precondition
+        self.assertEqual(0, len(self.task.notes))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.notes.append(self.n1)
+        # then
+        self.assertIn(self.n1, self.task.notes)
+        self.assertEqual(1, len(self.task.notes))
+        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+    def test_add_already_in_silently_ignored(self):
+        # given
+        self.task.notes.add(self.n1)
+        # precondition
+        self.assertIn(self.n1, self.task.notes)
+        self.assertEqual(1, len(self.task.notes))
+        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.notes.append(self.n1)
+        # then
+        self.assertIn(self.n1, self.task.notes)
+        self.assertEqual(1, len(self.task.notes))
+        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+    def test_discard(self):
+        # given
+        self.task.notes.append(self.n1)
+        # precondition
+        self.assertIn(self.n1, self.task.notes)
+        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.notes.remove(self.n1)
+        # then
+        self.assertEqual(0, len(self.task.notes))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+    def test_discard_not_already_in_silently_ignored(self):
+        # precondition
+        self.assertEqual(0, len(self.task.notes))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.notes.discard(self.n1)
+        # then
+        self.assertEqual(0, len(self.task.notes))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+
+class AttachmentsInterlinkingTest(unittest.TestCase):
+    def setUp(self):
+        self.task = Task('parent')
+        self.n1 = Attachment('n1')
+        self.n2 = Attachment('n2')
+
+    def test_in(self):
+        # precondition
+        self.assertEqual(0, len(self.task.attachments))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+        self.assertNotIn(self.n1, self.task.attachments)
+        self.assertNotIn(self.n2, self.task.attachments)
+        # when
+        self.task.attachments.set.add(self.n1)
+        self.n1._parent = self.task
+        # then
+        self.assertIn(self.n1, self.task.attachments)
+        self.assertNotIn(self.n2, self.task.attachments)
+
+    def test_append(self):
+        # precondition
+        self.assertEqual(0, len(self.task.attachments))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.attachments.append(self.n1)
+        # then
+        self.assertIn(self.n1, self.task.attachments)
+        self.assertEqual(1, len(self.task.attachments))
+        self.assertEqual([self.n1], list(self.task.attachments))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+    def test_add_already_in_silently_ignored(self):
+        # given
+        self.task.attachments.add(self.n1)
+        # precondition
+        self.assertIn(self.n1, self.task.attachments)
+        self.assertEqual(1, len(self.task.attachments))
+        self.assertEqual([self.n1], list(self.task.attachments))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.attachments.append(self.n1)
+        # then
+        self.assertIn(self.n1, self.task.attachments)
+        self.assertEqual(1, len(self.task.attachments))
+        self.assertEqual([self.n1], list(self.task.attachments))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+    def test_discard(self):
+        # given
+        self.task.attachments.append(self.n1)
+        # precondition
+        self.assertIn(self.n1, self.task.attachments)
+        self.assertEqual([self.n1], list(self.task.attachments))
+        self.assertIs(self.task, self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.attachments.remove(self.n1)
+        # then
+        self.assertEqual(0, len(self.task.attachments))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+
+    def test_discard_not_already_in_silently_ignored(self):
+        # precondition
+        self.assertEqual(0, len(self.task.attachments))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
+        # when
+        self.task.attachments.discard(self.n1)
+        # then
+        self.assertEqual(0, len(self.task.attachments))
+        self.assertIsNone(self.n1.task)
+        self.assertIsNone(self.n2.task)
