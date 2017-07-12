@@ -1734,7 +1734,6 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertEqual('b', tag.description)
 
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
-        # TODO: this test fails intermittently
         # given
         task = Task('task')
         tag = Tag('tag', description='a')
