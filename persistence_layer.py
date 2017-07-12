@@ -168,6 +168,9 @@ class PersistenceLayer(object):
                                                               type(domobj)))
         self._logger.debug('begin, dbobj: {}'.format(dbobj))
         self._deleted_objects.add(domobj)
+        self._added_objects.discard(domobj)
+        if domobj in self._changed_objects_fields:
+            self._changed_objects_fields[domobj].clear()
         self.db.session.delete(dbobj)
         self._logger.debug('end')
 
@@ -233,9 +236,22 @@ class PersistenceLayer(object):
         for domobj in added:
             self._logger.debug('adding db object -> {}'.format(id2(domobj)))
             self._update_db_object_from_domain_object(domobj)
+            # it shouldn't have already been added, because add() and delete()
+            # will remove the object from the respective sets. Nevertheless,
+            # just to be thorough, consider the possiblity.
+            if domobj in self._deleted_objects:
+                # delete trumps add
+                self._logger.debug('{} already deleted'.format(id2(domobj)))
+                continue
             self._logger.debug('added db object -> {}'.format(id2(domobj)))
         for domobj in changed:
             self._logger.debug('changing db object -> {}'.format(id2(domobj)))
+            if domobj in self._added_objects:
+                self._logger.debug('{} already added'.format(id2(domobj)))
+                continue
+            if domobj in self._deleted_objects:
+                self._logger.debug('{} already deleted'.format(id2(domobj)))
+                continue
             fields = changed_fields[domobj]
             self._update_db_object_from_domain_object(domobj, fields)
             self._logger.debug('changed db object -> {}'.format(id2(domobj)))
@@ -268,6 +284,12 @@ class PersistenceLayer(object):
                 'updated added dom object -> {}'.format(id2(domobj)))
         for domobj in changed:
             self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
+            if domobj in self._added_objects:
+                self._logger.debug('{} already added'.format(id2(domobj)))
+                continue
+            if domobj in self._deleted_objects:
+                self._logger.debug('{} already deleted'.format(id2(domobj)))
+                continue
             # get fields that changed
             fields = set(changed_fields[domobj])
             others = set()
