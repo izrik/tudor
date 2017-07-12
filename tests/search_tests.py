@@ -14,7 +14,7 @@ class SearchTest(unittest.TestCase):
         self.admin = User('name@example.org', None, True)
         self.pl.create_all()
         self.pl.add(self.admin)
-        # self.pl.commit()
+        self.pl.commit()
         self.ll = self.app.ll
 
     def test_empty_db_yields_no_results(self):
