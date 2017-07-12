@@ -3165,3 +3165,516 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
         self.assertIsNone(n1.task_id)
         self.assertIsNone(n2.task_id)
         self.assertIsNone(n3.task_id)
+
+
+class PersistenceLayerDeletionTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_deleting_task_removes_all_children(self):
+        # given
+        parent = Task('parent')
+        c1 = Task('c1')
+        c2 = Task('c2')
+        c3 = Task('c3')
+        parent.children.append(c1)
+        parent.children.append(c2)
+        parent.children.append(c3)
+        self.pl.add(parent)
+        self.pl.add(c1)
+        self.pl.add(c2)
+        self.pl.add(c3)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(c1, parent.children)
+        self.assertIn(c2, parent.children)
+        self.assertIn(c3, parent.children)
+
+        # when
+        self.pl.delete(parent)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(c1, parent.children)
+        self.assertNotIn(c2, parent.children)
+        self.assertNotIn(c3, parent.children)
+        self.assertEqual(0, len(parent.children.all()))
+
+    def test_deleting_parent_task_nullifies_parent_and_parent_id(self):
+        # given
+        parent = Task('parent')
+        c1 = Task('c1')
+        c2 = Task('c2')
+        c3 = Task('c3')
+        parent.children.append(c1)
+        parent.children.append(c2)
+        parent.children.append(c3)
+        self.pl.add(parent)
+        self.pl.add(c1)
+        self.pl.add(c2)
+        self.pl.add(c3)
+        self.pl.commit()
+
+        # precondition
+        self.assertIs(parent, c1.parent)
+        self.assertIs(parent, c2.parent)
+        self.assertIs(parent, c3.parent)
+
+        # when
+        self.pl.delete(parent)
+        self.pl.commit()
+
+        # then
+        self.assertIsNone(c1.parent)
+        self.assertIsNone(c2.parent)
+        self.assertIsNone(c3.parent)
+        self.assertIsNone(c1.parent_id)
+        self.assertIsNone(c2.parent_id)
+        self.assertIsNone(c3.parent_id)
+
+    def test_deleting_task_removes_task_from_tag(self):
+        # given
+        task = Task('task')
+        tag = Tag('tag')
+        task.tags.append(tag)
+        self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(task, tag.tasks)
+
+    def test_deleting_task_removes_tag_from_task(self):
+        # given
+        task = Task('task')
+        tag = Tag('tag')
+        task.tags.append(tag)
+        self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(tag, task.tags)
+
+    def test_deleting_tag_removes_tag_from_task(self):
+        # given
+        task = Task('task')
+        tag = Tag('tag')
+        task.tags.append(tag)
+        self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+        # when
+        self.pl.delete(tag)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(tag, task.tags)
+
+    def test_deleting_tag_removes_task_from_tag(self):
+        # given
+        task = Task('task')
+        tag = Tag('tag')
+        task.tags.append(tag)
+        self.pl.add(task)
+        self.pl.add(tag)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+        # when
+        self.pl.delete(tag)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(task, tag.tasks)
+
+    def test_deleting_task_removes_task_from_user(self):
+        # given
+        task = Task('task')
+        user = User('user')
+        task.users.append(user)
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(task, user.tasks)
+
+    def test_deleting_task_removes_user_from_task(self):
+        # given
+        task = Task('task')
+        user = User('user')
+        task.users.append(user)
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(user, task.users)
+
+    def test_deleting_user_removes_user_from_task(self):
+        # given
+        task = Task('task')
+        user = User('user')
+        task.users.append(user)
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+
+        # when
+        self.pl.delete(user)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(user, task.users)
+
+    def test_deleting_user_removes_task_from_user(self):
+        # given
+        task = Task('task')
+        user = User('user')
+        task.users.append(user)
+        self.pl.add(task)
+        self.pl.add(user)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(user, task.users)
+        self.assertIn(task, user.tasks)
+
+        # when
+        self.pl.delete(user)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(task, user.tasks)
+
+    def test_deleting_dependee_removes_dependee_from_dependant(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.dependees.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.dependees)
+        self.assertIn(t1, t2.dependants)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t2, t1.dependees)
+
+    def test_deleting_dependee_removes_dependant(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.dependees.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.dependees)
+        self.assertIn(t1, t2.dependants)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t1, t2.dependants)
+
+    def test_deleting_dependant_removes_dependant_from_dependee(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.dependants.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.dependants)
+        self.assertIn(t1, t2.dependees)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t2, t1.dependants)
+
+    def test_deleting_dependant_removes_dependee(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.dependants.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.dependants)
+        self.assertIn(t1, t2.dependees)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t1, t2.dependees)
+
+    def test_deleting_pbefore_removes_pbefore_from_pafter(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.prioritize_before.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.prioritize_before)
+        self.assertIn(t1, t2.prioritize_after)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t2, t1.prioritize_before)
+
+    def test_deleting_pbefore_removes_pafter(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.prioritize_before.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.prioritize_before)
+        self.assertIn(t1, t2.prioritize_after)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t1, t2.prioritize_after)
+
+    def test_deleting_pafter_removes_pafter_from_pbefore(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.prioritize_after.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.prioritize_after)
+        self.assertIn(t1, t2.prioritize_before)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t2, t1.prioritize_after)
+
+    def test_deleting_pafter_removes_pbefore(self):
+        # given
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t1.prioritize_after.append(t2)
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(t2, t1.prioritize_after)
+        self.assertIn(t1, t2.prioritize_before)
+
+        # when
+        self.pl.delete(t2)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(t1, t2.prioritize_before)
+
+    def test_deleting_task_removes_all_notes(self):
+        # given
+        task = Task('task')
+        n1 = Note('n1')
+        n2 = Note('n2')
+        n3 = Note('n3')
+        task.notes.append(n1)
+        task.notes.append(n2)
+        task.notes.append(n3)
+        self.pl.add(task)
+        self.pl.add(n1)
+        self.pl.add(n2)
+        self.pl.add(n3)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(n1, task.notes)
+        self.assertIn(n2, task.notes)
+        self.assertIn(n3, task.notes)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(n1, task.notes)
+        self.assertNotIn(n2, task.notes)
+        self.assertNotIn(n3, task.notes)
+        self.assertEqual(0, len(task.notes.all()))
+
+    def test_deleting_task_of_notes_nullifies_task_and_task_id(self):
+        # given
+        task = Task('task')
+        n1 = Note('n1')
+        n2 = Note('n2')
+        n3 = Note('n3')
+        task.notes.append(n1)
+        task.notes.append(n2)
+        task.notes.append(n3)
+        self.pl.add(task)
+        self.pl.add(n1)
+        self.pl.add(n2)
+        self.pl.add(n3)
+        self.pl.commit()
+
+        # precondition
+        self.assertIs(task, n1.task)
+        self.assertIs(task, n2.task)
+        self.assertIs(task, n3.task)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertIsNone(n1.task)
+        self.assertIsNone(n2.task)
+        self.assertIsNone(n3.task)
+        self.assertIsNone(n1.task_id)
+        self.assertIsNone(n2.task_id)
+        self.assertIsNone(n3.task_id)
+
+    def test_deleting_task_removes_all_attachments(self):
+        # given
+        task = Task('task')
+        n1 = Attachment('n1')
+        n2 = Attachment('n2')
+        n3 = Attachment('n3')
+        task.attachments.append(n1)
+        task.attachments.append(n2)
+        task.attachments.append(n3)
+        self.pl.add(task)
+        self.pl.add(n1)
+        self.pl.add(n2)
+        self.pl.add(n3)
+        self.pl.commit()
+
+        # precondition
+        self.assertIn(n1, task.attachments)
+        self.assertIn(n2, task.attachments)
+        self.assertIn(n3, task.attachments)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertNotIn(n1, task.attachments)
+        self.assertNotIn(n2, task.attachments)
+        self.assertNotIn(n3, task.attachments)
+        self.assertEqual(0, len(task.attachments.all()))
+
+    def test_deleting_task_of_atts_nullifies_task_and_task_id(self):
+        # given
+        task = Task('task')
+        n1 = Attachment('n1')
+        n2 = Attachment('n2')
+        n3 = Attachment('n3')
+        task.attachments.append(n1)
+        task.attachments.append(n2)
+        task.attachments.append(n3)
+        self.pl.add(task)
+        self.pl.add(n1)
+        self.pl.add(n2)
+        self.pl.add(n3)
+        self.pl.commit()
+
+        # precondition
+        self.assertIs(task, n1.task)
+        self.assertIs(task, n2.task)
+        self.assertIs(task, n3.task)
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then
+        self.assertIsNone(n1.task)
+        self.assertIsNone(n2.task)
+        self.assertIsNone(n3.task)
+        self.assertIsNone(n1.task_id)
+        self.assertIsNone(n2.task_id)
+        self.assertIsNone(n3.task_id)
