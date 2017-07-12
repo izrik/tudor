@@ -571,7 +571,7 @@ class PersistenceLayer(object):
 
     _relational_attrs = {'parent', 'children', 'tags', 'tasks', 'users',
                          'dependees', 'dependants', 'prioritize_before',
-                         'prioritize_after'}
+                         'prioritize_after', 'notes', 'attachments'}
 
     def _db_attrs_from_domain_all(self, d):
         self._logger.debug('d: {}'.format(d))
@@ -626,6 +626,14 @@ class PersistenceLayer(object):
             d2['prioritize_after'] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
                 d['prioritize_after']]
+        if 'notes' in d:
+            d2['notes'] = [
+                self._get_db_object_from_domain_object(domobj) for domobj in
+                d['notes']]
+        if 'attachments' in d:
+            d2['attachments'] = [
+                self._get_db_object_from_domain_object(domobj) for domobj in
+                d['attachments']]
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
