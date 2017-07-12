@@ -1,21 +1,20 @@
 
 class Changeable(object):
     def __init__(self, *args, **kwargs):
-        self.attr_changed = list()
+        self.change_listener = None
         super(Changeable, self).__init__(*args, **kwargs)
 
     def _on_attr_changed(self, field):
-        if self.attr_changed:
-            for callable in self.attr_changed:
-                callable(self, field)
+        if self.change_listener:
+            self.change_listener(self, field)
 
     def register_change_listener(self, callable):
-        if callable not in self.attr_changed:
-            self.attr_changed.append(callable)
+        if self.change_listener:
+            raise Exception('The change listener has already been set.')
+        self.change_listener = callable
 
     def unregister_change_listener(self, callable):
-        if callable in self.attr_changed:
-            self.attr_changed.remove(callable)
+        self.change_listener = None
 
 
 def id2(obj):
