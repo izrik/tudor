@@ -155,6 +155,8 @@ class TaskBase(object):
         if 'prioritize_after' in d:
             clear(self.prioritize_after)
             extend(self.prioritize_after, d['prioritize_after'])
+        # TODO: notes
+        # TODO: attachments
 
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
