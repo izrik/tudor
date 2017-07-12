@@ -269,7 +269,6 @@ class PersistenceLayer(object):
         for domobj in changed:
             self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
             # get fields that changed
-            # pass to update_dict
             fields = set(changed_fields[domobj])
             others = set()
             for field in fields:
@@ -279,6 +278,7 @@ class PersistenceLayer(object):
                     continue
                 others.update(relateds)
             fields.update(others)
+            # update those fields
             self._update_domain_object_from_db_object(domobj, fields)
             self._logger.debug('changed dom object -> {}'.format(id2(domobj)))
 
