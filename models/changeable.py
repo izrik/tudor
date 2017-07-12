@@ -9,7 +9,7 @@ class Changeable(object):
             self.change_listener(self, field)
 
     def register_change_listener(self, callable):
-        if self.change_listener:
+        if self.change_listener and self.change_listener != callable:
             raise Exception('The change listener has already been set.')
         self.change_listener = callable
 
