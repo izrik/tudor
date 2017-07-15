@@ -2132,6 +2132,447 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertIs(p3, child.parent)
         self.assertEqual(p3.id, child.parent_id)
 
+    def test_db_only_rollback_reverts_changes(self):
+        tag = self.pl.Tag('tag', description='a')
+        self.pl.db.session.add(tag)
+        self.pl.db.session.commit()
+        tag.description = 'b'
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        tag2 = self.pl.Tag.query.filter_by(value='tag').first()
+        self.assertIsNotNone(tag2)
+        self.assertEqual('a', tag2.description)
+        self.assertEqual('a', tag.description)
+
+    def test_db_only_rollback_reverts_changes_to_collections(self):
+        # given:
+        task = self.pl.Task('task')
+        tag1 = self.pl.Tag('tag1')
+        tag2 = self.pl.Tag('tag2')
+        tag3 = self.pl.Tag('tag3')
+        task.tags.append(tag1)
+        task.tags.append(tag2)
+        self.pl.db.session.add(task)
+        self.pl.db.session.add(tag1)
+        self.pl.db.session.add(tag2)
+        self.pl.db.session.add(tag3)
+        self.pl.db.session.commit()
+
+        # precondition:
+        self.assertIn(tag1, task.tags)
+        self.assertIn(tag2, task.tags)
+        self.assertNotIn(tag3, task.tags)
+        self.assertIn(task, tag1.tasks)
+        self.assertIn(task, tag2.tasks)
+        self.assertNotIn(task, tag3.tasks)
+
+        task.tags.remove(tag1)
+        task.tags.append(tag3)
+
+        # precondition:
+        self.assertNotIn(tag1, task.tags)
+        self.assertIn(tag2, task.tags)
+        self.assertIn(tag3, task.tags)
+        self.assertNotIn(task, tag1.tasks)
+        self.assertIn(task, tag2.tasks)
+        self.assertIn(task, tag3.tasks)
+
+        # when:
+        self.pl.db.session.rollback()
+
+        # then:
+        self.assertIn(tag1, task.tags)
+        self.assertIn(tag2, task.tags)
+        self.assertNotIn(tag3, task.tags)
+        self.assertIn(task, tag1.tasks)
+        self.assertIn(task, tag2.tasks)
+        self.assertNotIn(task, tag3.tasks)
+
+    def test_db_only_rollback_does_not_reverts_changes_on_unadded_objs(self):
+        tag = self.pl.Tag('tag', description='a')
+        tag.description = 'b'
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertEqual('b', tag.description)
+
+    def test_db_only_changes_to_objects_are_tracked_automatically(self):
+        tag = self.pl.Tag('tag', description='a')
+        self.pl.db.session.add(tag)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertEqual('a', tag.description)
+        # when
+        tag.description = 'b'
+        # then
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.commit()
+        # then
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertEqual('b', tag.description)
+
+    def test_db_only_adding_tag_to_task_also_adds_task_to_tag(self):
+        # given
+        task = self.pl.Task('task')
+        tag = self.pl.Tag('tag', description='a')
+        self.pl.db.session.add(task)
+        self.pl.db.session.add(tag)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(tag, task.tags)
+        self.assertNotIn(task, tag.tasks)
+        # when
+        task.tags.append(tag)
+        # then
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+        # when
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+    def test_db_only_adding_child_also_sets_parent(self):
+        # given
+        parent = self.pl.Task('parent')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(parent)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        parent.children.append(child)
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+
+    def test_db_only_adding_child_also_sets_parent_id(self):
+        # given
+        parent = self.pl.Task('parent')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(parent)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        parent.children.append(child)
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+
+    def test_db_only_setting_parent_also_sets_parent_id(self):
+        # given
+        parent = self.pl.Task('parent')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(parent)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent = parent
+        self.pl.db.session.commit()
+        # then
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+
+    def test_db_only_setting_parent_also_adds_child(self):
+        # given
+        parent = self.pl.Task('parent')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(parent)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent = parent
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+
+    def test_db_only_setting_parent_id_also_sets_parent(self):
+        # given
+        parent = self.pl.Task('parent')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(parent)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent_id = parent.id
+        self.pl.db.session.commit()
+        # then
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(parent, child.parent)
+        self.assertEqual(parent.id, child.parent_id)
+
+    def test_db_only_setting_parent_id_also_adds_child(self):
+        # given
+        parent = self.pl.Task('parent')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(parent)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, parent.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(parent.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent_id = parent.id
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, parent.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIs(parent, child.parent)
+
+    def test_db_only_inconsistent_parent_always_overrides_parent_id(self):
+        # given
+        p1 = self.pl.Task('p1')
+        p2 = self.pl.Task('p2')
+        p3 = self.pl.Task('p3')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(p1)
+        self.pl.db.session.add(p2)
+        self.pl.db.session.add(p3)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, p1.children)
+        self.assertNotIn(child, p2.children)
+        self.assertNotIn(child, p3.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(p1.id)
+        self.assertIsNotNone(p2.id)
+        self.assertIsNotNone(p3.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent = p2
+        child.parent_id = p1.id
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, p2.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p2, child.parent)
+        self.assertEqual(p2.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, p2.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p2, child.parent)
+        self.assertEqual(p2.id, child.parent_id)
+
+    def test_db_only_inconsistent_parent_children_overrides_parent_id(self):
+        # given
+        p1 = self.pl.Task('p1')
+        p2 = self.pl.Task('p2')
+        p3 = self.pl.Task('p3')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(p1)
+        self.pl.db.session.add(p2)
+        self.pl.db.session.add(p3)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, p1.children)
+        self.assertNotIn(child, p2.children)
+        self.assertNotIn(child, p3.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(p1.id)
+        self.assertIsNotNone(p2.id)
+        self.assertIsNotNone(p3.id)
+        self.assertIsNotNone(child.id)
+        # when
+        p3.children.append(child)
+        child.parent_id = p1.id
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, p3.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p3, child.parent)
+        self.assertEqual(p3.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, p3.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p3, child.parent)
+        self.assertEqual(p3.id, child.parent_id)
+
+    def test_db_only_incon_parent_parent_and_children_last_one_wins_1(self):
+        # given
+        p1 = self.pl.Task('p1')
+        p2 = self.pl.Task('p2')
+        p3 = self.pl.Task('p3')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(p1)
+        self.pl.db.session.add(p2)
+        self.pl.db.session.add(p3)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, p1.children)
+        self.assertNotIn(child, p2.children)
+        self.assertNotIn(child, p3.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(p1.id)
+        self.assertIsNotNone(p2.id)
+        self.assertIsNotNone(p3.id)
+        self.assertIsNotNone(child.id)
+        # when
+        p3.children.append(child)
+        child.parent = p2
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, p2.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p2, child.parent)
+        self.assertEqual(p2.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, p2.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p2, child.parent)
+        self.assertEqual(p2.id, child.parent_id)
+
+    def test_db_only_incon_parent_parent_and_children_last_one_wins_2(self):
+        # given
+        p1 = self.pl.Task('p1')
+        p2 = self.pl.Task('p2')
+        p3 = self.pl.Task('p3')
+        child = self.pl.Task('child')
+        self.pl.db.session.add(p1)
+        self.pl.db.session.add(p2)
+        self.pl.db.session.add(p3)
+        self.pl.db.session.add(child)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertNotIn(child, p1.children)
+        self.assertNotIn(child, p2.children)
+        self.assertNotIn(child, p3.children)
+        self.assertIsNone(child.parent)
+        self.assertIsNone(child.parent_id)
+        self.assertIsNotNone(p1.id)
+        self.assertIsNotNone(p2.id)
+        self.assertIsNotNone(p3.id)
+        self.assertIsNotNone(child.id)
+        # when
+        child.parent = p2
+        p3.children.append(child)
+        self.pl.db.session.commit()
+        # then
+        self.assertIn(child, p3.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p3, child.parent)
+        self.assertEqual(p3.id, child.parent_id)
+        # when
+        self.pl.db.session.rollback()
+        # then
+        self.assertIn(child, p3.children)
+        self.assertIsNotNone(child.parent)
+        self.assertIsNotNone(child.parent_id)
+        self.assertIs(p3, child.parent)
+        self.assertEqual(p3.id, child.parent_id)
+
     def test_adding_task_dependee_also_adds_other_task_dependant(self):
         # given
         t1 = Task('t1')
