@@ -1706,6 +1706,50 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertEqual('a', tag2.description)
         self.assertEqual('a', tag.description)
 
+    def test_rollback_reverts_changes_to_collections(self):
+        # given:
+        task = Task('task')
+        tag1 = Tag('tag1')
+        tag2 = Tag('tag2')
+        tag3 = Tag('tag3')
+        task.tags.add(tag1)
+        task.tags.add(tag2)
+        self.pl.add(task)
+        self.pl.add(tag1)
+        self.pl.add(tag2)
+        self.pl.add(tag3)
+        self.pl.commit()
+
+        # precondition:
+        self.assertIn(tag1, task.tags)
+        self.assertIn(tag2, task.tags)
+        self.assertNotIn(tag3, task.tags)
+        self.assertIn(task, tag1.tasks)
+        self.assertIn(task, tag2.tasks)
+        self.assertNotIn(task, tag3.tasks)
+
+        task.tags.discard(tag1)
+        task.tags.add(tag3)
+
+        # precondition:
+        self.assertNotIn(tag1, task.tags)
+        self.assertIn(tag2, task.tags)
+        self.assertIn(tag3, task.tags)
+        self.assertNotIn(task, tag1.tasks)
+        self.assertIn(task, tag2.tasks)
+        self.assertIn(task, tag3.tasks)
+
+        # when:
+        self.pl.rollback()
+
+        # then:
+        self.assertIn(tag1, task.tags)
+        self.assertIn(tag2, task.tags)
+        self.assertNotIn(tag3, task.tags)
+        self.assertIn(task, tag1.tasks)
+        self.assertIn(task, tag2.tasks)
+        self.assertNotIn(task, tag3.tasks)
+
     def test_rollback_does_not_reverts_changes_on_unadded_new_objects(self):
         tag = Tag('tag', description='a')
         tag.description = 'b'
