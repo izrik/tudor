@@ -469,6 +469,14 @@ class PersistenceLayer(object):
             d2['prioritize_after'] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
                 d2['prioritize_after']]
+        if 'notes' in d2 and d2['notes'] is not None:
+            d2['notes'] = [
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d2['notes']]
+        if 'attachments' in d2 and d2['attachments'] is not None:
+            d2['attachments'] = [
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d2['attachments']]
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
