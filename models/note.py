@@ -27,6 +27,10 @@ class NoteBase(object):
         return ()
 
     @staticmethod
+    def get_autochange_fields():
+        return (NoteBase.FIELD_ID, NoteBase.FIELD_TASK_ID, NoteBase.FIELD_TASK)
+
+    @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
             return datetime.datetime.utcnow()
@@ -85,8 +89,9 @@ class Note(Changeable, NoteBase):
     @id.setter
     def id(self, value):
         if value != self._id:
+            self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
-            self._on_attr_changed(self.FIELD_ID)
+            self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
 
     @property
     def content(self):
@@ -95,8 +100,10 @@ class Note(Changeable, NoteBase):
     @content.setter
     def content(self, value):
         if value != self._content:
+            self._on_attr_changing(self.FIELD_CONTENT, self._content)
             self._content = value
-            self._on_attr_changed(self.FIELD_CONTENT)
+            self._on_attr_changed(self.FIELD_CONTENT, self.OP_SET,
+                                  self._content)
 
     @property
     def timestamp(self):
@@ -105,8 +112,10 @@ class Note(Changeable, NoteBase):
     @timestamp.setter
     def timestamp(self, value):
         if value != self._timestamp:
+            self._on_attr_changing(self.FIELD_TIMESTAMP, self._timestamp)
             self._timestamp = value
-            self._on_attr_changed(self.FIELD_TIMESTAMP)
+            self._on_attr_changed(self.FIELD_TIMESTAMP, self.OP_SET,
+                                  self._timestamp)
 
     @property
     def task_id(self):
@@ -115,8 +124,10 @@ class Note(Changeable, NoteBase):
     @task_id.setter
     def task_id(self, value):
         if value != self._task_id:
+            self._on_attr_changing(self.FIELD_TASK_ID, self._task_id)
             self._task_id = value
-            self._on_attr_changed(self.FIELD_TASK_ID)
+            self._on_attr_changed(self.FIELD_TASK_ID, self.OP_SET,
+                                  self._task_id)
 
     @property
     def task(self):
@@ -125,12 +136,13 @@ class Note(Changeable, NoteBase):
     @task.setter
     def task(self, value):
         if value != self._task:
+            self._on_attr_changing(self.FIELD_TASK, self._task)
             if self._task is not None:
                 self._task.notes.discard(self)
             self._task = value
             if self._task is not None:
                 self._task.notes.add(self)
-            self._on_attr_changed(self.FIELD_TASK)
+            self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
 
     @staticmethod
     def from_dict(d):

@@ -20,6 +20,14 @@ class UserBase(object):
         self.hashed_password = hashed_password
         self.is_admin = is_admin
 
+    @staticmethod
+    def get_related_fields(field):
+        return ()
+
+    @staticmethod
+    def get_autochange_fields():
+        return (UserBase.FIELD_ID,)
+
     def to_dict(self, fields=None):
 
         d = {}
@@ -87,8 +95,9 @@ class User(Changeable, UserBase):
     @id.setter
     def id(self, value):
         if value != self._id:
+            self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
-            self._on_attr_changed(self.FIELD_ID)
+            self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
 
     @property
     def email(self):
@@ -97,8 +106,9 @@ class User(Changeable, UserBase):
     @email.setter
     def email(self, value):
         if value != self._email:
+            self._on_attr_changing(self.FIELD_EMAIL, self._email)
             self._email = value
-            self._on_attr_changed(self.FIELD_EMAIL)
+            self._on_attr_changed(self.FIELD_EMAIL, self.OP_SET, self._email)
 
     @property
     def hashed_password(self):
@@ -107,8 +117,10 @@ class User(Changeable, UserBase):
     @hashed_password.setter
     def hashed_password(self, value):
         if value != self._hashed_password:
+            self._on_attr_changing(self.FIELD_HASHED_PASSWORD, self._hashed_password)
             self._hashed_password = value
-            self._on_attr_changed(self.FIELD_HASHED_PASSWORD)
+            self._on_attr_changed(self.FIELD_HASHED_PASSWORD, self.OP_SET,
+                                  self._hashed_password)
 
     @property
     def is_admin(self):
@@ -117,8 +129,10 @@ class User(Changeable, UserBase):
     @is_admin.setter
     def is_admin(self, value):
         if value != self._is_admin:
+            self._on_attr_changing(self.FIELD_IS_ADMIN, self._is_admin)
             self._is_admin = value
-            self._on_attr_changed(self.FIELD_IS_ADMIN)
+            self._on_attr_changed(self.FIELD_IS_ADMIN, self.OP_SET,
+                                  self._is_admin)
 
     @property
     def tasks(self):
@@ -160,15 +174,19 @@ class InterlinkedTasks(collections.MutableSet):
 
     def add(self, task):
         if task not in self.set:
+            self.container._on_attr_changing(User.FIELD_TASKS, None)
             self.set.add(task)
             task.users.add(self.container)
-            self.container._on_attr_changed(User.FIELD_TASKS)
+            self.container._on_attr_changed(User.FIELD_TASKS, User.OP_ADD,
+                                            task)
 
     def append(self, task):
         self.add(task)
 
     def discard(self, task):
         if task in self.set:
+            self.container._on_attr_changing(User.FIELD_TASKS, None)
             self.set.discard(task)
             task.users.discard(self.container)
-            self.container._on_attr_changed(User.FIELD_TASKS)
+            self.container._on_attr_changed(User.FIELD_TASKS, User.OP_REMOVE,
+                                            task)

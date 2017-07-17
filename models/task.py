@@ -57,6 +57,11 @@ class TaskBase(object):
             return (TaskBase.FIELD_PARENT,)
         return ()
 
+    @staticmethod
+    def get_autochange_fields():
+        return (TaskBase.FIELD_ID, TaskBase.FIELD_PARENT_ID,
+                TaskBase.FIELD_PARENT)
+
     def __repr__(self):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, self.summary, self.id)
@@ -138,7 +143,7 @@ class TaskBase(object):
             self.expected_cost = d['expected_cost']
         if 'parent' in d:
             self.parent = d['parent']
-        if 'parent_id' in d:
+        elif 'parent_id' in d:
             self.parent_id = d['parent_id']
         if 'children' in d:
             clear(self.children)
@@ -225,8 +230,9 @@ class Task(Changeable, TaskBase):
     def id(self, value):
         if value != self._id:
             self._logger.debug('{}: {} -> {}'.format(self.id2, self.id, value))
+            self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
-            self._on_attr_changed(self.FIELD_ID)
+            self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
 
     @property
     def summary(self):
@@ -237,8 +243,10 @@ class Task(Changeable, TaskBase):
         if value != self._summary:
             self._logger.debug('{}: {} -> {}'.format(self.id2, self.summary,
                                                      value))
+            self._on_attr_changing(self.FIELD_SUMMARY, self._summary)
             self._summary = value
-            self._on_attr_changed(self.FIELD_SUMMARY)
+            self._on_attr_changed(self.FIELD_SUMMARY, self.OP_SET,
+                                  self._summary)
 
     @property
     def description(self):
@@ -249,8 +257,10 @@ class Task(Changeable, TaskBase):
         if value != self._description:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.description, value))
+            self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
-            self._on_attr_changed(self.FIELD_DESCRIPTION)
+            self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,
+                                  self._description)
 
     @property
     def is_done(self):
@@ -261,8 +271,10 @@ class Task(Changeable, TaskBase):
         if value != self._is_done:
             self._logger.debug('{}: {} -> {}'.format(self.id2, self.is_done,
                                                      value))
+            self._on_attr_changing(self.FIELD_IS_DONE, self._is_done)
             self._is_done = value
-            self._on_attr_changed(self.FIELD_IS_DONE)
+            self._on_attr_changed(self.FIELD_IS_DONE, self.OP_SET,
+                                  self._is_done)
 
     @property
     def is_deleted(self):
@@ -273,8 +285,10 @@ class Task(Changeable, TaskBase):
         if value != self._is_deleted:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.is_deleted, value))
+            self._on_attr_changing(self.FIELD_IS_DELETED, self._is_deleted)
             self._is_deleted = value
-            self._on_attr_changed(self.FIELD_IS_DELETED)
+            self._on_attr_changed(self.FIELD_IS_DELETED, self.OP_SET,
+                                  self._is_deleted)
 
     @property
     def order_num(self):
@@ -285,8 +299,10 @@ class Task(Changeable, TaskBase):
         if value != self._order_num:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.order_num, value))
+            self._on_attr_changing(self.FIELD_ORDER_NUM, self._order_num)
             self._order_num = value
-            self._on_attr_changed(self.FIELD_ORDER_NUM)
+            self._on_attr_changed(self.FIELD_ORDER_NUM, self.OP_SET,
+                                  self._order_num)
 
     @property
     def deadline(self):
@@ -297,8 +313,10 @@ class Task(Changeable, TaskBase):
         if value != self._deadline:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.deadline, value))
+            self._on_attr_changing(self.FIELD_DEADLINE, self._deadline)
             self._deadline = value
-            self._on_attr_changed(self.FIELD_DEADLINE)
+            self._on_attr_changed(self.FIELD_DEADLINE, self.OP_SET,
+                                  self._deadline)
 
     @property
     def expected_duration_minutes(self):
@@ -310,8 +328,10 @@ class Task(Changeable, TaskBase):
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.expected_duration_minutes,
                                       value))
+            self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES, self._expected_duration_minutes)
             self._expected_duration_minutes = value
-            self._on_attr_changed(self.FIELD_EXPECTED_DURATION_MINUTES)
+            self._on_attr_changed(self.FIELD_EXPECTED_DURATION_MINUTES,
+                                  self.OP_SET, self._expected_duration_minutes)
 
     @property
     def expected_cost(self):
@@ -322,8 +342,10 @@ class Task(Changeable, TaskBase):
         if value != self._expected_cost:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.expected_cost, value))
+            self._on_attr_changing(self.FIELD_EXPECTED_COST, self._expected_cost)
             self._expected_cost = value
-            self._on_attr_changed(self.FIELD_EXPECTED_COST)
+            self._on_attr_changed(self.FIELD_EXPECTED_COST, self.OP_SET,
+                                  self._expected_cost)
 
     @property
     def parent_id(self):
@@ -334,8 +356,10 @@ class Task(Changeable, TaskBase):
         if value != self._parent_id:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.parent_id, value))
+            self._on_attr_changing(self.FIELD_PARENT_ID, self._parent_id)
             self._parent_id = value
-            self._on_attr_changed(self.FIELD_PARENT_ID)
+            self._on_attr_changed(self.FIELD_PARENT_ID, self.OP_SET,
+                                  self._parent_id)
 
     @property
     def parent(self):
@@ -347,12 +371,13 @@ class Task(Changeable, TaskBase):
         if value != self._parent:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.parent, value))
+            self._on_attr_changing(self.FIELD_PARENT, self._parent)
             if self._parent is not None:
                 self._parent.children.discard(self)
             self._parent = value
             if self._parent is not None:
                 self._parent.children.append(self)
-            self._on_attr_changed(self.FIELD_PARENT)
+            self._on_attr_changed(self.FIELD_PARENT, self.OP_SET, self._parent)
 
     @property
     def children(self):
@@ -399,7 +424,6 @@ class Task(Changeable, TaskBase):
         is_deleted = d.get('is_deleted', False)
         order_num = d.get('order_num', 0)
         deadline = d.get('deadline', None)
-        parent_id = d.get('parent_id', None)
         expected_duration_minutes = d.get('expected_duration_minutes',
                                           None)
         expected_cost = d.get('expected_cost', None)
@@ -414,7 +438,10 @@ class Task(Changeable, TaskBase):
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
-        task.parent_id = parent_id
+        if 'parent' in d:
+            task.parent = d['parent']
+        elif 'parent_id' in d:
+            task.parent_id = d['parent_id']
         if 'children' in d:
             clear(task.users)
             extend(task.children, d['children'])
@@ -546,9 +573,11 @@ class InterlinkedChildren(collections.MutableSet):
     def add(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item not in self.set:
+            self.container._on_attr_changing(Task.FIELD_CHILDREN, None)
             self.set.add(item)
             item.parent = self.container
-            self.container._on_attr_changed(Task.FIELD_CHILDREN)
+            self.container._on_attr_changed(Task.FIELD_CHILDREN, Task.OP_ADD,
+                                            item)
 
     def append(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
@@ -557,9 +586,11 @@ class InterlinkedChildren(collections.MutableSet):
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item in self.set:
+            self.container._on_attr_changing(Task.FIELD_CHILDREN, None)
             self.set.discard(item)
             item.parent = None
-            self.container._on_attr_changed(Task.FIELD_CHILDREN)
+            self.container._on_attr_changed(Task.FIELD_CHILDREN,
+                                            Task.OP_REMOVE, item)
 
     def __str__(self):
         return str(self.set)
@@ -592,9 +623,10 @@ class InterlinkedTags(collections.MutableSet):
     def add(self, tag):
         self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
         if tag not in self.set:
+            self.container._on_attr_changing(Task.FIELD_TAGS, None)
             self.set.add(tag)
             tag.tasks.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_TAGS)
+            self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_ADD, tag)
 
     def append(self, tag):
         self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
@@ -603,9 +635,11 @@ class InterlinkedTags(collections.MutableSet):
     def discard(self, tag):
         self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
         if tag in self.set:
+            self.container._on_attr_changing(Task.FIELD_TAGS, None)
             self.set.discard(tag)
             tag.tasks.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_TAGS)
+            self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_REMOVE,
+                                            tag)
 
 
 class InterlinkedUsers(collections.MutableSet):
@@ -635,9 +669,11 @@ class InterlinkedUsers(collections.MutableSet):
     def add(self, user):
         self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
         if user not in self.set:
+            self.container._on_attr_changing(Task.FIELD_USERS, None)
             self.set.add(user)
             user.tasks.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_USERS)
+            self.container._on_attr_changed(Task.FIELD_USERS, Task.OP_ADD,
+                                            user)
 
     def append(self, user):
         self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
@@ -646,9 +682,11 @@ class InterlinkedUsers(collections.MutableSet):
     def discard(self, user):
         self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
         if user in self.set:
+            self.container._on_attr_changing(Task.FIELD_USERS, None)
             self.set.discard(user)
             user.tasks.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_USERS)
+            self.container._on_attr_changed(Task.FIELD_USERS, Task.OP_REMOVE,
+                                            user)
 
 
 class InterlinkedDependees(collections.MutableSet):
@@ -678,9 +716,11 @@ class InterlinkedDependees(collections.MutableSet):
     def add(self, dependee):
         self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
         if dependee not in self.set:
+            self.container._on_attr_changing(Task.FIELD_DEPENDEES, None)
             self.set.add(dependee)
             dependee.dependants.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDEES)
+            self.container._on_attr_changed(Task.FIELD_DEPENDEES, Task.OP_ADD,
+                                            dependee)
 
     def append(self, dependee):
         self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
@@ -689,9 +729,11 @@ class InterlinkedDependees(collections.MutableSet):
     def discard(self, dependee):
         self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
         if dependee in self.set:
+            self.container._on_attr_changing(Task.FIELD_DEPENDEES, None)
             self.set.discard(dependee)
             dependee.dependants.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDEES)
+            self.container._on_attr_changed(Task.FIELD_DEPENDEES,
+                                            Task.OP_REMOVE, dependee)
 
 
 class InterlinkedDependants(collections.MutableSet):
@@ -721,9 +763,11 @@ class InterlinkedDependants(collections.MutableSet):
     def add(self, dependant):
         self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
         if dependant not in self.set:
+            self.container._on_attr_changing(Task.FIELD_DEPENDANTS, None)
             self.set.add(dependant)
             dependant.dependees.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDANTS)
+            self.container._on_attr_changed(Task.FIELD_DEPENDANTS, Task.OP_ADD,
+                                            dependant)
 
     def append(self, dependant):
         self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
@@ -732,9 +776,11 @@ class InterlinkedDependants(collections.MutableSet):
     def discard(self, dependant):
         self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
         if dependant in self.set:
+            self.container._on_attr_changing(Task.FIELD_DEPENDANTS, None)
             self.set.discard(dependant)
             dependant.dependees.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDANTS)
+            self.container._on_attr_changed(Task.FIELD_DEPENDANTS,
+                                            Task.OP_REMOVE, dependant)
 
 
 class InterlinkedPrioritizeBefore(collections.MutableSet):
@@ -764,9 +810,12 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
     def add(self, before):
         self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
         if before not in self.set:
+            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_BEFORE,
+                                             None)
             self.set.add(before)
             before.prioritize_after.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_BEFORE)
+            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_BEFORE,
+                                            Task.OP_ADD, before)
 
     def append(self, before):
         self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
@@ -775,9 +824,12 @@ class InterlinkedPrioritizeBefore(collections.MutableSet):
     def discard(self, before):
         self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
         if before in self.set:
+            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_BEFORE,
+                                             None)
             self.set.discard(before)
             before.prioritize_after.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_BEFORE)
+            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_BEFORE,
+                                            Task.OP_REMOVE, before)
 
 
 class InterlinkedPrioritizeAfter(collections.MutableSet):
@@ -807,9 +859,11 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
     def add(self, after):
         self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
         if after not in self.set:
+            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_AFTER, None)
             self.set.add(after)
             after.prioritize_before.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER)
+            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER,
+                                            Task.OP_ADD, after)
 
     def append(self, after):
         self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
@@ -818,9 +872,11 @@ class InterlinkedPrioritizeAfter(collections.MutableSet):
     def discard(self, after):
         self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
         if after in self.set:
+            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_AFTER, None)
             self.set.discard(after)
             after.prioritize_before.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER)
+            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER,
+                                            Task.OP_REMOVE, after)
 
 
 class InterlinkedNotes(collections.MutableSet):
@@ -854,9 +910,11 @@ class InterlinkedNotes(collections.MutableSet):
     def add(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item not in self.set:
+            self.container._on_attr_changing(Task.FIELD_NOTES, None)
             self.set.add(item)
             item.task = self.container
-            self.container._on_attr_changed(Task.FIELD_NOTES)
+            self.container._on_attr_changed(Task.FIELD_NOTES, Task.OP_ADD,
+                                            item)
 
     def append(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
@@ -865,9 +923,11 @@ class InterlinkedNotes(collections.MutableSet):
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item in self.set:
+            self.container._on_attr_changing(Task.FIELD_NOTES, None)
             self.set.discard(item)
             item.task = None
-            self.container._on_attr_changed(Task.FIELD_NOTES)
+            self.container._on_attr_changed(Task.FIELD_NOTES, Task.OP_REMOVE,
+                                            item)
 
     def __str__(self):
         return str(self.set)
@@ -904,9 +964,11 @@ class InterlinkedAttachments(collections.MutableSet):
     def add(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item not in self.set:
+            self.container._on_attr_changing(Task.FIELD_ATTACHMENTS, None)
             self.set.add(item)
             item.task = self.container
-            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS)
+            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS,
+                                            Task.OP_ADD, item)
 
     def append(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
@@ -915,9 +977,11 @@ class InterlinkedAttachments(collections.MutableSet):
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item in self.set:
+            self.container._on_attr_changing(Task.FIELD_ATTACHMENTS, None)
             self.set.discard(item)
             item.task = None
-            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS)
+            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS,
+                                            Task.OP_REMOVE, item)
 
     def __str__(self):
         return str(self.set)

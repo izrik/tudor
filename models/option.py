@@ -11,6 +11,14 @@ class OptionBase(object):
         self.key = key
         self.value = value
 
+    @staticmethod
+    def get_related_fields(field):
+        return ()
+
+    @staticmethod
+    def get_autochange_fields():
+        return ()
+
     @property
     def id(self):
         return self.key
@@ -49,8 +57,9 @@ class Option(Changeable, OptionBase):
     @key.setter
     def key(self, value):
         if value != self._key:
+            self._on_attr_changing(self.FIELD_KEY, self._key)
             self._key = value
-            self._on_attr_changed(self.FIELD_KEY)
+            self._on_attr_changed(self.FIELD_KEY, self.OP_SET, self._key)
 
     @property
     def value(self):
@@ -59,8 +68,10 @@ class Option(Changeable, OptionBase):
     @value.setter
     def value(self, value):
         if value != self._value:
+            self._on_attr_changing(self.FIELD_VALUE,
+                                  self._value)
             self._value = value
-            self._on_attr_changed(self.FIELD_VALUE)
+            self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
 
     @staticmethod
     def from_dict(d):

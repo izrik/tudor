@@ -12,7 +12,7 @@ from models.user import User, UserBase
 from models.option import Option, OptionBase
 from collections_util import clear, extend
 import logging_util
-from models.changeable import id2
+from models.changeable import id2, Changeable
 
 
 def is_iterable(x):
@@ -91,6 +91,7 @@ class Pager(object):
 
 
 class PersistenceLayer(object):
+
     def __init__(self, app, db_uri, bcrypt):
         self._logger = logging_util.get_logger(__name__, self)
 
@@ -99,9 +100,11 @@ class PersistenceLayer(object):
         self.db = SQLAlchemy(self.app)
 
         db = self.db
-        self._changed_objects_fields = {}
         self._added_objects = set()
         self._deleted_objects = set()
+        self._changed_objects = set()
+        self._changed_objects_original_values = {}
+        self._fields_to_update_from_db_on_commit = {}
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -145,15 +148,35 @@ class PersistenceLayer(object):
         self._db_by_domain = {}
         self._domain_by_db = {}
 
+    def _get_fields_to_update_for_domobj(self, domobj):
+        if domobj not in self._fields_to_update_from_db_on_commit:
+            self._fields_to_update_from_db_on_commit[domobj] = set()
+        return self._fields_to_update_from_db_on_commit[domobj]
+
     def add(self, domobj):
         self._logger.debug('begin, domobj: {}'.format(domobj))
-        # dbobj = self._get_db_object_from_domain_object(domobj)
+        if domobj in self._deleted_objects:
+            raise Exception(
+                'The object has already been set to be deleted: {}'.format(
+                    domobj))
+        if domobj in self._added_objects or domobj in self._changed_objects:
+            # silently ignore
+            return
+
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:
             dbobj = self._create_db_object_from_domain_object(domobj)
         self._logger.debug('dbobj: {}'.format(dbobj))
+
+        self._update_db_object_from_domain_object(domobj)
+
         self._register_domain_object(domobj)
         self._added_objects.add(domobj)
+        self._changed_objects.add(domobj)
+
+        fields_to_update = self._get_fields_to_update_for_domobj(domobj)
+        fields_to_update.update(domobj.get_autochange_fields())
+
         self.db.session.add(dbobj)
         self._logger.debug('end')
 
@@ -167,10 +190,10 @@ class PersistenceLayer(object):
                     'Untracked domain object: {} ({})'.format(domobj,
                                                               type(domobj)))
         self._logger.debug('begin, dbobj: {}'.format(dbobj))
+        if domobj not in self._changed_objects_original_values:
+            self._changed_objects_original_values[domobj] = domobj.to_dict()
         self._deleted_objects.add(domobj)
-        self._added_objects.discard(domobj)
-        if domobj in self._changed_objects_fields:
-            self._changed_objects_fields[domobj].clear()
+
         domobj.clear_relationships()
         self.db.session.delete(dbobj)
         self._logger.debug('end')
@@ -178,94 +201,14 @@ class PersistenceLayer(object):
     def commit(self):
         self._logger.debug('begin')
 
-        def log_object(obj, extra=True):
-            if isinstance(obj, TaskBase):
-                self._logger.debug('{} {}'.format(type(obj).__name__,
-                                                  id2(obj)))
-                if self._is_domain_object(obj):
-                    self._logger.debug('  db obj: {}'.format(id2(obj._dbobj)))
-                else:
-                    self._logger.debug(
-                        '  domain obj: {}'.format(id2(obj._domobj)))
-
-                if extra:
-                    # self._logger.debug('  parent: {}'.format(
-                    #     id2(obj.parent) if obj.parent else 'None'))
-                    # self._logger.debug(
-                    #     '  children: {}'.format(list(obj.children)))
-                    self._logger.debug(
-                        '  tags: {}'.format(list(id2(tag) for tag in
-                                                 obj.tags)))
-                    # self._logger.debug('  users: {}'.format(list(obj.users)))
-                    # self._logger.debug(
-                    #     '  dependees: {}'.format(list(obj.dependees)))
-                    # self._logger.debug(
-                    #     '  dependants: {}'.format(list(obj.dependants)))
-                    # self._logger.debug('  prioritize_before: {}'.format(
-                    #     list(obj.prioritize_before)))
-                    # self._logger.debug('  prioritize_after: {}'.format(
-                    #     list(obj.prioritize_after)))
-            if isinstance(obj, TagBase):
-                self._logger.debug('{} {}'.format(type(obj).__name__,
-                                                  id2(obj)))
-                if self._is_domain_object(obj):
-                    self._logger.debug('  db obj: {}'.format(id2(obj._dbobj)))
-                else:
-                    self._logger.debug(
-                        '  domain obj: {}'.format(id2(obj._domobj)))
-
-                if extra:
-                    self._logger.debug('  tasks: {}'.format(
-                        list(id2(task) for task in obj.tasks)))
-
-        self._logger.debug('')
         added = list(self._added_objects)
         deleted = list(self._deleted_objects)
-        changed = list(self._changed_objects_fields.keys())
-        changed_fields = self._changed_objects_fields.copy()
-        all_affected_objects = list(
-            self._added_objects
-                .union(self._deleted_objects)
-                .union(self._changed_objects_fields.keys()))
-        self._logger.debug('get list of affected objects')
-        for domobj in all_affected_objects:
-            log_object(domobj)
-        self._changed_objects_fields.clear()
-        self._added_objects.clear()
-        self._deleted_objects.clear()
-        self._logger.debug('cleared list of changed objects')
-        for domobj in added:
-            self._logger.debug('adding db object -> {}'.format(id2(domobj)))
-            # it shouldn't have already been added, because add() and delete()
-            # will remove the object from the respective sets. Nevertheless,
-            # just to be thorough, consider the possiblity.
-            if domobj in deleted:
-                # delete trumps add
-                self._logger.debug('{} already deleted'.format(id2(domobj)))
-                continue
-            self._update_db_object_from_domain_object(domobj)
-            self._logger.debug('added db object -> {}'.format(id2(domobj)))
-        for domobj in changed:
-            self._logger.debug('changing db object -> {}'.format(id2(domobj)))
-            if domobj in added:
-                self._logger.debug('{} already added'.format(id2(domobj)))
-                continue
-            if domobj in deleted:
-                self._logger.debug('{} already deleted'.format(id2(domobj)))
-                continue
-            fields = changed_fields[domobj]
-            self._update_db_object_from_domain_object(domobj, fields)
-            self._logger.debug('changed db object -> {}'.format(id2(domobj)))
-        for domobj in deleted:
-            self._logger.debug('deleting db object -> {}'.format(id2(domobj)))
-            # self._update_db_object_from_domain_object(domobj)
-            self._logger.debug('deleted db object -> {}'.format(id2(domobj)))
-        self._logger.debug('updated all db objects')
+        fields_to_update = self._fields_to_update_from_db_on_commit.copy()
 
-        for domobj in all_affected_objects:
-            log_object(domobj)
-        for domobj in all_affected_objects:
-            log_object(domobj._dbobj, extra=False)
+        self._clear_affected_objects()
+
+        for domobj in deleted:
+            domobj.clear_relationships()
 
         ###############
         self._logger.debug('committing the db session/transaction')
@@ -273,59 +216,34 @@ class PersistenceLayer(object):
         self._logger.debug('committed the db session/transaction')
         ###############
 
-        for domobj in all_affected_objects:
-            log_object(domobj)
-        for domobj in all_affected_objects:
-            log_object(domobj._dbobj)
         for domobj in added:
-            self._logger.debug(
-                'updating added dom object -> {}'.format(id2(domobj)))
             self._update_domain_object_from_db_object(domobj)
-            self._logger.debug(
-                'updated added dom object -> {}'.format(id2(domobj)))
-        for domobj in changed:
-            self._logger.debug('changing dom object -> {}'.format(id2(domobj)))
-            if domobj in added:
-                self._logger.debug('{} already added'.format(id2(domobj)))
-                continue
-            if domobj in deleted:
-                self._logger.debug('{} already deleted'.format(id2(domobj)))
-                continue
-            # get fields that changed
-            fields = set(changed_fields[domobj])
-            others = set()
-            for field in fields:
-                try:
-                    relateds = set(domobj.get_related_fields(field))
-                except AttributeError:
-                    continue
-                others.update(relateds)
-            fields.update(others)
-            # update those fields
-            self._update_domain_object_from_db_object(domobj, fields)
-            self._logger.debug('changed dom object -> {}'.format(id2(domobj)))
 
-        self._logger.debug('updated all dom objects')
-        self._changed_objects_fields.clear()
-        self._added_objects.clear()
-        self._deleted_objects.clear()
-        self._logger.debug('cleared list of changed objects')
+        for domobj, fields in fields_to_update.iteritems():
+            self._update_domain_object_from_db_object(domobj, fields)
+
+        self._clear_affected_objects()
 
         self._logger.debug('end')
 
     def rollback(self):
         self._logger.debug('begin')
         self.db.session.rollback()
-        changed = list(self._changed_objects_fields.keys())
-        for domobj in changed:
-            self._update_domain_object_from_db_object(domobj)
+        original_values = self._changed_objects_original_values.copy()
+        for domobj, d in original_values.iteritems():
+            self._update_domain_object_from_dict(domobj, d)
         deleted = list(self._deleted_objects)
         for domobj in deleted:
             self._update_domain_object_from_db_object(domobj)
-        self._changed_objects_fields.clear()
+        self._clear_affected_objects()
+        self._logger.debug('end')
+
+    def _clear_affected_objects(self):
+        self._changed_objects.clear()
         self._added_objects.clear()
         self._deleted_objects.clear()
-        self._logger.debug('end')
+        self._changed_objects_original_values.clear()
+        self._fields_to_update_from_db_on_commit.clear()
 
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
@@ -554,6 +472,12 @@ class PersistenceLayer(object):
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
+    def _update_domain_object_from_dict(self, domobj, d):
+        self._logger.debug(
+            'begin, domobj: {}, d: {}'.format(domobj, d))
+        domobj.update_from_dict(d)
+        self._logger.debug('end')
+
     def _update_domain_object_from_db_object(self, domobj, fields=None):
         self._logger.debug(
             'begin, domobj: {}, fields: {}'.format(domobj, fields))
@@ -600,6 +524,8 @@ class PersistenceLayer(object):
             d2 = {}
         if 'parent' in d and d['parent'] is not None:
             d2['parent'] = self._get_db_object_from_domain_object(d['parent'])
+        if 'parent_id' in d and d['parent_id'] is not None:
+            d2['parent_id'] = d['parent_id']
         if 'children' in d:
             d2['children'] = [self._get_db_object_from_domain_object(domobj)
                               for domobj in d['children']]
@@ -609,6 +535,8 @@ class PersistenceLayer(object):
         if 'tasks' in d:
             d2['tasks'] = [self._get_db_object_from_domain_object(domobj) for
                            domobj in d['tasks']]
+        if 'task_id' in d and d['task_id'] is not None:
+            d2['task_id'] = d['task_id']
         if 'users' in d:
             d2['users'] = [self._get_db_object_from_domain_object(domobj) for
                            domobj in d['users']]
@@ -637,6 +565,15 @@ class PersistenceLayer(object):
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
+    def _db_value_from_domain(self, field, value):
+        if value is None:
+            return None
+        if field in ('PARENT', 'CHILDREN', 'TAGS', 'TASKS', 'USERS',
+                     'DEPENDEES', 'DEPENDANTS', 'PRIORITIZE_BEFORE',
+                     'PRIORITIZE_AFTER', 'NOTES', 'ATTACHMENTS'):
+            return self._get_db_object_from_domain_object(value)
+        return value
+
     def _update_db_object_from_domain_object(self, domobj, fields=None):
         self._logger.debug(
             'begin, domobj: {}, fields: {}'.format(domobj, fields))
@@ -652,18 +589,33 @@ class PersistenceLayer(object):
             'updated db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
         self._logger.debug('end')
 
-    def _on_domain_object_attr_changed(self, domobj, field):
-        self._logger.debug('begin, domobj: {}, field: {}'.format(domobj,
-                                                                 field))
-        if domobj not in self._changed_objects_fields:
-            self._changed_objects_fields[domobj] = set()
-        self._changed_objects_fields[domobj].add(field)
+    def _on_domain_object_attr_changing(self, domobj, field, value):
+        self._logger.debug(
+            'begin, domobj: {}, field: {}, value: {}'.format(domobj, field,
+                                                             value))
+        if domobj not in self._changed_objects_original_values:
+            self._changed_objects_original_values[domobj] = domobj.to_dict()
+        self._logger.debug('end')
+
+    def _on_domain_object_attr_changed(self, domobj, field, operation, value):
+        self._logger.debug(
+            'begin, domobj: {}, field: {}, op: {}, value: {}'.format(
+                domobj, field, operation, value))
+
+        fields_to_update = self._get_fields_to_update_for_domobj(domobj)
+        related_fields = domobj.get_related_fields(field)
+        fields_to_update.update(related_fields)
+
+        dbobj = self._get_db_object_from_domain_object(domobj)
+        value2 = self._db_value_from_domain(field, value)
+        dbobj.make_change(field, operation, value2)
+
         self._logger.debug('end')
 
     def _register_domain_object(self, domobj):
         self._logger.debug('begin, domobj: {}'.format(domobj))
-        self._added_objects.add(domobj)
-        domobj.register_change_listener(self._on_domain_object_attr_changed)
+        domobj.register_changing_listener(self._on_domain_object_attr_changing)
+        domobj.register_changed_listener(self._on_domain_object_attr_changed)
         self._logger.debug('end')
 
     def create_all(self):
@@ -1029,7 +981,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                         task_dependencies_table, task_prioritize_table):
     db = pl.db
 
-    class DbTask(db.Model, TaskBase):
+    class DbTask(Changeable, db.Model, TaskBase):
 
         __tablename__ = 'task'
 
@@ -1096,7 +1048,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             is_deleted = d.get('is_deleted', False)
             order_num = d.get('order_num', 0)
             deadline = d.get('deadline', None)
-            parent_id = d.get('parent_id', None)
             expected_duration_minutes = d.get('expected_duration_minutes',
                                               None)
             expected_cost = d.get('expected_cost', None)
@@ -1111,7 +1062,10 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if task_id is not None:
                 task.id = task_id
             task.order_num = order_num
-            task.parent_id = parent_id
+            if 'parent' in d:
+                task.parent = d['parent']
+            elif 'parent_id' in d:
+                task.parent_id = d['parent_id']
             if 'children' in d:
                 clear(task.users)
                 task.children.extend(d['children'])
@@ -1140,6 +1094,77 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 clear(task.attachments)
                 extend(task.attachments, d['attachments'])
             return task
+
+        def make_change(self, field, operation, value):
+            if field in (self.FIELD_ID, self.FIELD_SUMMARY,
+                         self.FIELD_DESCRIPTION, self.FIELD_IS_DONE,
+                         self.FIELD_IS_DELETED, self.FIELD_DEADLINE,
+                         self.FIELD_EXPECTED_DURATION_MINUTES,
+                         self.FIELD_EXPECTED_COST, self.FIELD_ORDER_NUM,
+                         self.FIELD_PARENT, self.FIELD_PARENT_ID):
+                if operation != Changeable.OP_SET:
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            elif field in (self.FIELD_CHILDREN, self.FIELD_DEPENDEES,
+                           self.FIELD_DEPENDANTS, self.FIELD_PRIORITIZE_BEFORE,
+                           self.FIELD_PRIORITIZE_AFTER, self.FIELD_TAGS,
+                           self.FIELD_USERS, self.FIELD_NOTES,
+                           self.FIELD_ATTACHMENTS):
+                if operation not in (Changeable.OP_ADD, Changeable.OP_REMOVE):
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            else:
+                raise ValueError('Unknown field "{}"'.format(field))
+
+            if field == self.FIELD_ID:
+                self.id = value
+            elif field == self.FIELD_SUMMARY:
+                self.summary = value
+            elif field == self.FIELD_DESCRIPTION:
+                self.description = value
+            elif field == self.FIELD_IS_DONE:
+                self.is_done = value
+            elif field == self.FIELD_IS_DELETED:
+                self.is_deleted = value
+            elif field == self.FIELD_DEADLINE:
+                self.deadline = value
+            elif field == self.FIELD_EXPECTED_DURATION_MINUTES:
+                self.expected_duration_minutes = value
+            elif field == self.FIELD_EXPECTED_COST:
+                self.expected_cost = value
+            elif field == self.FIELD_ORDER_NUM:
+                self.order_num = value
+            elif field == self.FIELD_PARENT:
+                self.parent = value
+            elif field == self.FIELD_PARENT_ID:
+                self.parent_id = value
+            elif field == self.FIELD_CHILDREN:
+                collection = self.children
+            elif field == self.FIELD_DEPENDEES:
+                collection = self.dependees
+            elif field == self.FIELD_DEPENDANTS:
+                collection = self.dependants
+            elif field == self.FIELD_PRIORITIZE_BEFORE:
+                collection = self.prioritize_before
+            elif field == self.FIELD_PRIORITIZE_AFTER:
+                collection = self.prioritize_after
+            elif field == self.FIELD_TAGS:
+                collection = self.tags
+            elif field == self.FIELD_USERS:
+                collection = self.users
+            elif field == self.FIELD_NOTES:
+                collection = self.notes
+            elif field == self.FIELD_ATTACHMENTS:
+                collection = self.attachments
+
+            if operation == Changeable.OP_ADD:
+                if value not in collection:
+                    collection.append(value)
+            elif operation == Changeable.OP_REMOVE:
+                if value in collection:
+                    collection.remove(value)
 
     return DbTask
 
@@ -1181,6 +1206,38 @@ def generate_tag_class(db, tags_tasks_table):
             logger.debug('tag: {}'.format(tag))
             return tag
 
+        def make_change(self, field, operation, value):
+            if operation == Changeable.OP_CHANGING:
+                raise ValueError('Invalid operation "{}"'.format(operation))
+
+            if field in (self.FIELD_ID, self.FIELD_VALUE,
+                         self.FIELD_DESCRIPTION):
+                if operation != Changeable.OP_SET:
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            elif field == self.FIELD_TASKS:
+                if operation not in (Changeable.OP_ADD, Changeable.OP_REMOVE):
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            else:
+                raise ValueError('Unknown field "{}"'.format(field))
+
+            if field == self.FIELD_ID:
+                self.id = value
+            elif field == self.FIELD_VALUE:
+                self.value = value
+            elif field == self.FIELD_DESCRIPTION:
+                self.description = value
+            else:  # field == self.FIELD_TASKS
+                if operation == Changeable.OP_ADD:
+                    if value not in self.tasks:
+                        self.tasks.append(value)
+                elif operation == Changeable.OP_REMOVE:
+                    if value in self.tasks:
+                        self.tasks.remove(value)
+
     return DbTag
 
 
@@ -1216,6 +1273,28 @@ def generate_note_class(db):
                 note.id = note_id
             note.task_id = task_id
             return note
+
+        def make_change(self, field, operation, value):
+            if field in (self.FIELD_ID, self.FIELD_CONTENT,
+                         self.FIELD_TIMESTAMP, self.FIELD_TASK_ID,
+                         self.FIELD_TASK):
+                if operation != Changeable.OP_SET:
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            else:
+                raise ValueError('Unknown field "{}"'.format(field))
+
+            if field == self.FIELD_ID:
+                self.id = value
+            elif field == self.FIELD_CONTENT:
+                self.content = value
+            elif field == self.FIELD_TIMESTAMP:
+                self.timestamp = value
+            elif field == self.FIELD_TASK_ID:
+                self.task_id = value
+            else:  # field == self.FIELD_TASK
+                self.task = value
 
     return DbNote
 
@@ -1260,6 +1339,33 @@ def generate_attachment_class(db):
             attachment.task_id = task_id
             return attachment
 
+        def make_change(self, field, operation, value):
+            if field in (self.FIELD_ID, self.FIELD_PATH,
+                         self.FIELD_DESCRIPTION, self.FIELD_TIMESTAMP,
+                         self.FIELD_FILENAME, self.FIELD_TASK_ID,
+                         self.FIELD_TASK):
+                if operation != Changeable.OP_SET:
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            else:
+                raise ValueError('Unknown field "{}"'.format(field))
+
+            if field == self.FIELD_ID:
+                self.id = value
+            elif field == self.FIELD_PATH:
+                self.path = value
+            elif field == self.FIELD_DESCRIPTION:
+                self.description = value
+            elif field == self.FIELD_TIMESTAMP:
+                self.timestamp = value
+            elif field == self.FIELD_FILENAME:
+                self.filename = value
+            elif field == self.FIELD_TASK_ID:
+                self.task_id = value
+            else:  # field == self.FIELD_TASK
+                self.task = value
+
     return DbAttachment
 
 
@@ -1297,6 +1403,35 @@ def generate_user_class(db, bcrypt):
                 user.id = user_id
             return user
 
+        def make_change(self, field, operation, value):
+            if field in (self.FIELD_ID, self.FIELD_EMAIL,
+                         self.FIELD_HASHED_PASSWORD, self.FIELD_IS_ADMIN):
+                if operation != Changeable.OP_SET:
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            elif field == self.FIELD_TASKS:
+                if operation not in (Changeable.OP_ADD, Changeable.OP_REMOVE):
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            else:
+                raise ValueError('Unknown field "{}"'.format(field))
+
+            if field == self.FIELD_ID:
+                self.id = value
+            elif field == self.FIELD_EMAIL:
+                self.email = value
+            elif field == self.FIELD_HASHED_PASSWORD:
+                self.hashed_password = value
+            elif field == self.FIELD_IS_ADMIN:
+                self.is_admin = value
+            else:  # field == self.FIELD_TASKS
+                if operation == Changeable.OP_ADD:
+                    self.tasks.append(value)
+                elif operation == Changeable.OP_REMOVE:
+                    self.tasks.remove(value)
+
     return DbUser
 
 
@@ -1319,5 +1454,19 @@ def generate_option_class(db):
             key = d.get('key')
             value = d.get('value', None)
             return DbOption(key, value)
+
+        def make_change(self, field, operation, value):
+            if field in (self.FIELD_KEY, self.FIELD_VALUE):
+                if operation != Changeable.OP_SET:
+                    raise ValueError(
+                        'Invalid operation "{}" for field "{}"'.format(
+                            operation, field))
+            else:
+                raise ValueError('Unknown field "{}"'.format(field))
+
+            if field == self.FIELD_KEY:
+                self.key = value
+            else:  # field == self.FIELD_VALUE:
+                self.value = value
 
     return DbOption
