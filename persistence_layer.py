@@ -142,7 +142,7 @@ class PersistenceLayer(object):
                                         task_prioritize_table)
         self.Note = generate_note_class(db)
         self.Attachment = generate_attachment_class(db)
-        self.User = generate_user_class(db, bcrypt)
+        self.User = generate_user_class(db, bcrypt, users_tasks_table)
         self.Option = generate_option_class(db)
 
         self._db_by_domain = {}
@@ -1010,8 +1010,9 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         @property
         def tags2(self):
             return list(self.tags)
+
         users = db.relationship('DbUser', secondary=users_tasks_table,
-                                backref=db.backref('tasks', lazy='dynamic'))
+                                back_populates="tasks")
 
         parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
                               nullable=True)
@@ -1377,7 +1378,7 @@ def generate_attachment_class(db):
     return DbAttachment
 
 
-def generate_user_class(db, bcrypt):
+def generate_user_class(db, bcrypt, users_tasks_table):
     class DbUser(db.Model, UserBase):
 
         __tablename__ = 'user'
@@ -1388,6 +1389,9 @@ def generate_user_class(db, bcrypt):
         email = db.Column(db.String(100), nullable=False, unique=True)
         hashed_password = db.Column(db.String(100), nullable=False)
         is_admin = db.Column(db.Boolean, nullable=False, default=False)
+
+        tasks = db.relationship('DbTask', secondary=users_tasks_table,
+                                back_populates='users')
 
         def __init__(self, email, hashed_password=None, is_admin=False):
             if hashed_password is None:
