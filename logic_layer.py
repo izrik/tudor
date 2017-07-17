@@ -269,6 +269,8 @@ class LogicLayer(object):
         elif self.pl.get_task(parent_id):
             pass
         else:
+            # TODO: does this silently ignore the case when parent_id holds a
+            # value that no task has as its id?
             parent_id = None
 
         task.summary = summary
