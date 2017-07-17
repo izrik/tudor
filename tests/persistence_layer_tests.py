@@ -3700,7 +3700,7 @@ class PersistenceLayerDeletionTest(unittest.TestCase):
         self.assertNotIn(c1, parent.children)
         self.assertNotIn(c2, parent.children)
         self.assertNotIn(c3, parent.children)
-        self.assertEqual(0, len(parent.children.all()))
+        self.assertEqual(0, len(parent.children))
 
     def test_deleting_parent_task_nullifies_parent_and_parent_id(self):
         # given
@@ -4082,7 +4082,7 @@ class PersistenceLayerDeletionTest(unittest.TestCase):
         self.assertNotIn(n1, task.notes)
         self.assertNotIn(n2, task.notes)
         self.assertNotIn(n3, task.notes)
-        self.assertEqual(0, len(task.notes.all()))
+        self.assertEqual(0, len(task.notes))
 
     def test_deleting_task_of_notes_nullifies_task_and_task_id(self):
         # given
@@ -4144,7 +4144,7 @@ class PersistenceLayerDeletionTest(unittest.TestCase):
         self.assertNotIn(a1, task.attachments)
         self.assertNotIn(a2, task.attachments)
         self.assertNotIn(a3, task.attachments)
-        self.assertEqual(0, len(task.attachments.all()))
+        self.assertEqual(0, len(task.attachments))
 
     def test_deleting_task_of_atts_nullifies_task_and_task_id(self):
         # given
