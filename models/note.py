@@ -30,6 +30,10 @@ class NoteBase(object):
     def get_autochange_fields():
         return (NoteBase.FIELD_ID, NoteBase.FIELD_TASK_ID, NoteBase.FIELD_TASK)
 
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({}, id={})'.format(cls, self.content, self.id)
+
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:

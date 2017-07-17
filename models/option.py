@@ -19,6 +19,10 @@ class OptionBase(object):
     def get_autochange_fields():
         return ()
 
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}(key{}, value={})'.format(cls, self.key, self.value)
+
     @property
     def id(self):
         return self.key

@@ -42,6 +42,10 @@ class AttachmentBase(object):
         return (AttachmentBase.FIELD_ID, AttachmentBase.FIELD_TASK_ID,
                 AttachmentBase.FIELD_TASK)
 
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({}, id={})'.format(cls, self.path, self.id)
+
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
