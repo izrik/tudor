@@ -30,4 +30,4 @@ class TagTest(unittest.TestCase):
         # then
         self.assertEqual({'value': 'name',
                           'description': '12345',
-                          'id': None}, tag.to_dict())
+                          'id': None, 'tasks': []}, tag.to_dict())
