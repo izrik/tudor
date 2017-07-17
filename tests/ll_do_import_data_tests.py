@@ -80,6 +80,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
         # when
         self.ll.do_import_data(json.loads(src))
+        self.pl.commit()
 
         # then
         self.assertEqual(1, self.pl.count_tasks())
@@ -184,6 +185,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
         # when
         self.ll.do_import_data(json.loads(src))
+        self.pl.commit()
 
         # then
         self.assertEqual(2, self.pl.count_tasks())

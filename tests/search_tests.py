@@ -29,6 +29,7 @@ class SearchTest(unittest.TestCase):
         # given
         task = Task('one two three')
         self.pl.add(task)
+        self.pl.commit()
         # when
         results = self.ll.search('two', self.admin)
         # then
@@ -40,6 +41,7 @@ class SearchTest(unittest.TestCase):
         # given
         task = Task('one two three')
         self.pl.add(task)
+        self.pl.commit()
         # when
         results = self.ll.search('four', self.admin)
         # then
@@ -54,6 +56,7 @@ class SearchTest(unittest.TestCase):
         task = Task('one two three')
         task.users.append(user1)
         self.pl.add(task)
+        self.pl.commit()
         # when
         results = self.ll.search('two', user1)
         # then
@@ -70,6 +73,7 @@ class SearchTest(unittest.TestCase):
         task = Task('one two three')
         task.users.append(user1)
         self.pl.add(task)
+        self.pl.commit()
         # when
         results = self.ll.search('two', user2)
         # then
