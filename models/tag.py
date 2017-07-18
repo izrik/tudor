@@ -5,6 +5,7 @@ import logging
 from changeable import Changeable
 import logging_util
 from collections_util import assign
+from interlinking import ManyToManySet
 
 
 class TagBase(object):
@@ -145,47 +146,6 @@ class Tag(Changeable, TagBase):
         self.tasks.clear()
 
 
-class InterlinkedTasks(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, task):
-        return self.set.__contains__(task)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, task):
-        self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
-        if task not in self.set:
-            self.container._on_attr_changing(Tag.FIELD_TASKS, None)
-            self.set.add(task)
-            task.tags.add(self.container)
-            self.container._on_attr_changed(Tag.FIELD_TASKS, Tag.OP_ADD, task)
-
-    def append(self, task):
-        self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
-        self.add(task)
-
-    def discard(self, task):
-        self._logger.debug('{}: {}'.format(self.c.id2, task.id2))
-        if task in self.set:
-            self.container._on_attr_changing(Tag.FIELD_TASKS, None)
-            self.set.discard(task)
-            task.tags.discard(self.container)
-            self.container._on_attr_changed(Tag.FIELD_TASKS, Tag.OP_REMOVE,
-                                            task)
+class InterlinkedTasks(ManyToManySet):
+    __change_field__ = Tag.FIELD_TASKS
+    __attr_counterpart__ = 'tags'

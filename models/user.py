@@ -3,6 +3,7 @@ import collections
 
 from changeable import Changeable
 from collections_util import assign
+from models.interlinking import ManyToManySet
 
 
 class UserBase(object):
@@ -158,39 +159,6 @@ class User(Changeable, UserBase):
         self.tasks.clear()
 
 
-class InterlinkedTasks(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self.container = container
-        self.set = set()
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, task):
-        return self.set.__contains__(task)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, task):
-        if task not in self.set:
-            self.container._on_attr_changing(User.FIELD_TASKS, None)
-            self.set.add(task)
-            task.users.add(self.container)
-            self.container._on_attr_changed(User.FIELD_TASKS, User.OP_ADD,
-                                            task)
-
-    def append(self, task):
-        self.add(task)
-
-    def discard(self, task):
-        if task in self.set:
-            self.container._on_attr_changing(User.FIELD_TASKS, None)
-            self.set.discard(task)
-            task.users.discard(self.container)
-            self.container._on_attr_changed(User.FIELD_TASKS, User.OP_REMOVE,
-                                            task)
+class InterlinkedTasks(ManyToManySet):
+    __change_field__ = User.FIELD_TASKS
+    __attr_counterpart__ = 'users'
