@@ -1,7 +1,6 @@
 
 import collections
 import random
-import logging
 
 from flask_sqlalchemy import SQLAlchemy
 from models.task import Task, TaskBase

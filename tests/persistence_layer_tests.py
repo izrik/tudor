@@ -5,7 +5,6 @@ from datetime import datetime
 import logging
 
 from tudor import generate_app
-from persistence_layer import PersistenceLayer
 from models.attachment import Attachment
 from models.note import Note
 from models.option import Option
@@ -672,34 +671,6 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.pl.add(self.tag2)
         self._logger.debug('setUp commit')
         self.pl.commit()
-
-        # self.t1 = self.pl.Task('t1')
-        # self.t1.order_num = 11
-        # self.t2 = self.pl.Task('t2')
-        # self.t2.order_num = 23
-        # self.t3 = self.pl.Task('t3')
-        # self.t3.order_num = 37
-        # self.t4 = self.pl.Task('t4')
-        # self.t4.order_num = 47
-        # self.t5 = self.pl.Task('t5')
-        # self.t5.order_num = 53
-        # self.tag1 = self.pl.Tag('tag1')
-        # self.tag2 = self.pl.Tag('tag2')
-        # self._logger.debug('setUp connect objects')
-        # self.t2.tags.append(self.tag1)
-        # self.t3.tags.append(self.tag1)
-        # self.t3.tags.append(self.tag2)
-        # self.t4.tags.append(self.tag1)
-        # self._logger.debug('setUp add objects')
-        # self.pl.db.session.add(self.t1)
-        # self.pl.db.session.add(self.t2)
-        # self.pl.db.session.add(self.t3)
-        # self.pl.db.session.add(self.t4)
-        # self.pl.db.session.add(self.t5)
-        # self.pl.db.session.add(self.tag1)
-        # self.pl.db.session.add(self.tag2)
-        # self._logger.debug('setUp commit')
-        # self.pl.db.session.commit()
 
         self._logger.debug('setUp finished')
 
