@@ -532,8 +532,6 @@ class PersistenceLayer(object):
             d2 = {}
         if 'parent' in d and d['parent'] is not None:
             d2['parent'] = self._get_db_object_from_domain_object(d['parent'])
-        if 'parent_id' in d and d['parent_id'] is not None:
-            d2['parent_id'] = d['parent_id']
         if 'children' in d:
             d2['children'] = [self._get_db_object_from_domain_object(domobj)
                               for domobj in d['children']]
@@ -1073,8 +1071,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             task.order_num = order_num
             if 'parent' in d:
                 task.parent = d['parent']
-            elif 'parent_id' in d:
-                task.parent_id = d['parent_id']
             if 'children' in d:
                 clear(task.users)
                 task.children.extend(d['children'])
@@ -1147,8 +1143,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 self.order_num = value
             elif field == self.FIELD_PARENT:
                 self.parent = value
-            elif field == self.FIELD_PARENT_ID:
-                self.parent_id = value
             elif field == self.FIELD_CHILDREN:
                 collection = self.children
             elif field == self.FIELD_DEPENDEES:
