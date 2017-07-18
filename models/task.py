@@ -22,8 +22,7 @@ class TaskBase(object):
     FIELD_EXPECTED_DURATION_MINUTES = 'EXPECTED_DURATION_MINUTES'
     FIELD_EXPECTED_COST = 'EXPECTED_COST'
     FIELD_ORDER_NUM = 'ORDER_NUM'
-    FIELD_PARENT = 'PARENT'  # related: PARENT_ID
-    FIELD_PARENT_ID = 'PARENT_ID'  # related: PARENT
+    FIELD_PARENT = 'PARENT'
     FIELD_CHILDREN = 'CHILDREN'
     FIELD_DEPENDEES = 'DEPENDEES'
     FIELD_DEPENDANTS = 'DEPENDANTS'
@@ -51,10 +50,6 @@ class TaskBase(object):
 
     @staticmethod
     def get_related_fields(field):
-        if field == TaskBase.FIELD_PARENT:
-            return (TaskBase.FIELD_PARENT_ID,)
-        if field == TaskBase.FIELD_PARENT_ID:
-            return (TaskBase.FIELD_PARENT,)
         return ()
 
     @staticmethod
