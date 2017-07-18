@@ -524,8 +524,8 @@ class InterlinkedChildren(collections.MutableSet):
     def __len__(self):
         return len(self.set)
 
-    def __contains__(self, value):
-        return self.set.__contains__(value)
+    def __contains__(self, item):
+        return self.set.__contains__(item)
 
     def __iter__(self):
         return self.set.__iter__()
@@ -574,32 +574,32 @@ class InterlinkedTags(collections.MutableSet):
     def __len__(self):
         return len(self.set)
 
-    def __contains__(self, tag):
-        return self.set.__contains__(tag)
+    def __contains__(self, item):
+        return self.set.__contains__(item)
 
     def __iter__(self):
         return self.set.__iter__()
 
-    def add(self, tag):
-        self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
-        if tag not in self.set:
+    def add(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item not in self.set:
             self.container._on_attr_changing(Task.FIELD_TAGS, None)
-            self.set.add(tag)
-            tag.tasks.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_ADD, tag)
+            self.set.add(item)
+            item.tasks.add(self.container)
+            self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_ADD, item)
 
-    def append(self, tag):
-        self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
-        self.add(tag)
+    def append(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        self.add(item)
 
-    def discard(self, tag):
-        self._logger.debug('{}: {}'.format(self.c.id2, tag.id2))
-        if tag in self.set:
+    def discard(self, item):
+        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
+        if item in self.set:
             self.container._on_attr_changing(Task.FIELD_TAGS, None)
-            self.set.discard(tag)
-            tag.tasks.discard(self.container)
+            self.set.discard(item)
+            item.tasks.discard(self.container)
             self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_REMOVE,
-                                            tag)
+                                            item)
 
 
 class InterlinkedUsers(collections.MutableSet):
