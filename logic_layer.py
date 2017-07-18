@@ -891,6 +891,7 @@ class LogicLayer(object):
             task.order_num = order_num
             task.expected_duration_minutes = duration
             task.expected_cost = cost
+            # TODO: don't modify parent_id
             task.parent_id = parent_id
 
             self.pl.add(task)
