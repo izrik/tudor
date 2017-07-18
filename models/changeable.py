@@ -21,7 +21,7 @@ class Changeable(object):
 
     def register_changing_listener(self, changing_listener):
         if (self.changing_listener and
-                    self.changing_listener != changing_listener):
+                self.changing_listener != changing_listener):
             raise Exception('The "changing" listener has already been set.')
         self.changing_listener = changing_listener
 

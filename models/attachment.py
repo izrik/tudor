@@ -116,7 +116,7 @@ class Attachment(Changeable, AttachmentBase):
     def timestamp(self, value):
         if value != self._timestamp:
             self._on_attr_changing(self.FIELD_TIMESTAMP,
-                                  self._timestamp)
+                                   self._timestamp)
             self._timestamp = value
             self._on_attr_changed(self.FIELD_TIMESTAMP, self.OP_SET,
                                   self._timestamp)
@@ -129,7 +129,7 @@ class Attachment(Changeable, AttachmentBase):
     def path(self, value):
         if value != self._path:
             self._on_attr_changing(self.FIELD_PATH,
-                                  self._path)
+                                   self._path)
             self._path = value
             self._on_attr_changed(self.FIELD_PATH, self.OP_SET,
                                   self._path)
@@ -142,7 +142,7 @@ class Attachment(Changeable, AttachmentBase):
     def filename(self, value):
         if value != self._filename:
             self._on_attr_changing(self.FIELD_FILENAME,
-                                  self._filename)
+                                   self._filename)
             self._filename = value
             self._on_attr_changed(self.FIELD_FILENAME, self.OP_SET,
                                   self._filename)
@@ -155,7 +155,7 @@ class Attachment(Changeable, AttachmentBase):
     def description(self, value):
         if value != self._description:
             self._on_attr_changing(self.FIELD_DESCRIPTION,
-                                  self._description)
+                                   self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,
                                   self._description)
@@ -174,7 +174,7 @@ class Attachment(Changeable, AttachmentBase):
     def task(self, value):
         if value != self._task:
             self._on_attr_changing(self.FIELD_TASK,
-                                  self._task)
+                                   self._task)
             if self._task is not None:
                 self._task.attachments.discard(self)
             self._task = value

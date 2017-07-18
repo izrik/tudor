@@ -120,7 +120,8 @@ class User(Changeable, UserBase):
     @hashed_password.setter
     def hashed_password(self, value):
         if value != self._hashed_password:
-            self._on_attr_changing(self.FIELD_HASHED_PASSWORD, self._hashed_password)
+            self._on_attr_changing(self.FIELD_HASHED_PASSWORD,
+                                   self._hashed_password)
             self._hashed_password = value
             self._on_attr_changed(self.FIELD_HASHED_PASSWORD, self.OP_SET,
                                   self._hashed_password)

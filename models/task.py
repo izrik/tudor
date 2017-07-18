@@ -312,7 +312,8 @@ class Task(Changeable, TaskBase):
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.expected_duration_minutes,
                                       value))
-            self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES, self._expected_duration_minutes)
+            self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES,
+                                   self._expected_duration_minutes)
             self._expected_duration_minutes = value
             self._on_attr_changed(self.FIELD_EXPECTED_DURATION_MINUTES,
                                   self.OP_SET, self._expected_duration_minutes)
@@ -326,7 +327,8 @@ class Task(Changeable, TaskBase):
         if value != self._expected_cost:
             self._logger.debug(
                 '{}: {} -> {}'.format(self.id2, self.expected_cost, value))
-            self._on_attr_changing(self.FIELD_EXPECTED_COST, self._expected_cost)
+            self._on_attr_changing(self.FIELD_EXPECTED_COST,
+                                   self._expected_cost)
             self._expected_cost = value
             self._on_attr_changed(self.FIELD_EXPECTED_COST, self.OP_SET,
                                   self._expected_cost)

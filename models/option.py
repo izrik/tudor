@@ -73,7 +73,7 @@ class Option(Changeable, OptionBase):
     def value(self, value):
         if value != self._value:
             self._on_attr_changing(self.FIELD_VALUE,
-                                  self._value)
+                                   self._value)
             self._value = value
             self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
 

@@ -736,7 +736,8 @@ class PersistenceLayer(object):
             query = query.filter(self.DbTask.order_num >= order_num_greq_than)
 
         if order_num_lesseq_than is not self.UNSPECIFIED:
-            query = query.filter(self.DbTask.order_num <= order_num_lesseq_than)
+            query = query.filter(self.DbTask.order_num <=
+                                 order_num_lesseq_than)
 
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):
@@ -911,7 +912,8 @@ class PersistenceLayer(object):
         query = self.attachment_query
         if attachment_id_in is not self.UNSPECIFIED:
             if attachment_id_in:
-                query = query.filter(self.DbAttachment.id.in_(attachment_id_in))
+                query = query.filter(
+                    self.DbAttachment.id.in_(attachment_id_in))
             else:
                 query = query.filter(False)
         return query

@@ -29,6 +29,7 @@ def extend(c, other):
         for item in list(other):
             add(c, item)
 
+
 def assign(c, other):
     c2 = set(c)
     other2 = set(other)
