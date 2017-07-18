@@ -263,15 +263,18 @@ class LogicLayer(object):
             order_num = 0
 
         if parent_id is None:
-            pass
+            parent = None
         elif parent_id == '':
-            parent_id = None
-        elif self.pl.get_task(parent_id):
-            pass
+            parent = None
         else:
-            # TODO: does this silently ignore the case when parent_id holds a
-            # value that no task has as its id?
-            parent_id = None
+            parent = self.pl.get_task(parent_id)
+            if parent:
+                pass
+            else:
+                # TODO: does this silently ignore the case when parent_id holds a
+                # value that no task has as its id?
+                parent_id = None
+                parent = None
 
         task.summary = summary
         task.description = description
@@ -287,7 +290,7 @@ class LogicLayer(object):
 
         task.expected_cost = expected_cost
 
-        task.parent_id = parent_id
+        task.parent = parent
 
         return task
 
@@ -717,6 +720,9 @@ class LogicLayer(object):
                         raise werkzeug.exceptions.Conflict(
                             'Some specified task id\'s already exist in the '
                             'database')
+
+                tasks_by_id = {}
+                parent_id_by_task = {}
                 for task in src['tasks']:
                     id = task['id']
                     summary = task['summary']
@@ -736,7 +742,7 @@ class LogicLayer(object):
                              expected_duration_minutes=exp_dur_min,
                              expected_cost=expected_cost)
                     t.id = id
-                    t.parent_id = parent_id
+                    parent_id_by_task[t] = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
                         tag = self.pl.get_tag(tag_id)
@@ -759,6 +765,10 @@ class LogicLayer(object):
                             raise Exception('User not found')
                         t.users.append(user)
                     db_objects.append(t)
+                    tasks_by_id[t.id] = t
+                for task, parent_id in parent_id_by_task.iteritems():
+                    if parent_id is not None:
+                        task.parent = tasks_by_id[parent_id]
 
             if 'notes' in src:
                 ids = set()

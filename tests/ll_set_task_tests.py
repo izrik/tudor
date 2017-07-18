@@ -215,7 +215,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
         # then
         self.assertEqual(ptask.id, self.task.parent_id)
-        self.assertIsNone(self.task.parent)
+        self.assertIs(ptask, self.task.parent)
 
         # when
         self.pl.commit()

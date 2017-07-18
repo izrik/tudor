@@ -143,8 +143,6 @@ class TaskBase(object):
             self.expected_cost = d['expected_cost']
         if 'parent' in d:
             self.parent = d['parent']
-        elif 'parent_id' in d:
-            self.parent_id = d['parent_id']
         if 'children' in d:
             clear(self.children)
             extend(self.children, d['children'])
@@ -194,7 +192,6 @@ class Task(Changeable, TaskBase):
     _deadline = None
     _expected_duration_minutes = None
     _expected_cost = None
-    _parent_id = None
     _parent = None
 
     _dbobj = None
@@ -217,10 +214,6 @@ class Task(Changeable, TaskBase):
         self._children = InterlinkedChildren(self)
         self._notes = InterlinkedNotes(self)
         self._attachments = InterlinkedAttachments(self)
-
-        self.id = None
-        self.parent = None
-        self.parent_id = None
 
     @property
     def id(self):
@@ -349,17 +342,9 @@ class Task(Changeable, TaskBase):
 
     @property
     def parent_id(self):
-        return self._parent_id
-
-    @parent_id.setter
-    def parent_id(self, value):
-        if value != self._parent_id:
-            self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.parent_id, value))
-            self._on_attr_changing(self.FIELD_PARENT_ID, self._parent_id)
-            self._parent_id = value
-            self._on_attr_changed(self.FIELD_PARENT_ID, self.OP_SET,
-                                  self._parent_id)
+        if self._parent:
+            return self.parent.id
+        return None
 
     @property
     def parent(self):
@@ -532,7 +517,6 @@ class Task(Changeable, TaskBase):
 
     def clear_relationships(self):
         self.parent = None
-        self.parent_id = None
         self.children.clear()
         self.tags.clear()
         self.users.clear()
