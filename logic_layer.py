@@ -941,7 +941,7 @@ class LogicLayer(object):
         tag = Tag(task.summary, task.description)
         self.pl.add(tag)
 
-        for child in task.children:
+        for child in list(task.children):
             child.tags.append(tag)
             child.parent = task.parent
             for tag2 in task.tags:
