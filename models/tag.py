@@ -4,6 +4,7 @@ import logging
 
 from changeable import Changeable
 import logging_util
+from collections_util import assign
 
 
 class TagBase(object):
@@ -56,6 +57,8 @@ class TagBase(object):
             self.value = d['value']
         if 'description' in d:
             self.description = d['description']
+        if 'tasks' in d:
+            assign(self.tasks, d['tasks'])
 
     @property
     def id2(self):

@@ -2,6 +2,7 @@
 import collections
 
 from changeable import Changeable
+from collections_util import assign
 
 
 class UserBase(object):
@@ -54,6 +55,8 @@ class UserBase(object):
             self.hashed_password = d['hashed_password']
         if 'is_admin' in d:
             self.is_admin = d['is_admin']
+        if 'tasks' in d:
+            assign(self.tasks, d['tasks'])
 
     def is_active(self):
         return True

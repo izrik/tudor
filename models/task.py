@@ -6,7 +6,7 @@ from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
 from changeable import Changeable, id2
-from collections_util import clear, extend
+from collections_util import assign
 import logging_util
 
 
@@ -144,32 +144,23 @@ class TaskBase(object):
         if 'parent' in d:
             self.parent = d['parent']
         if 'children' in d:
-            clear(self.children)
-            extend(self.children, d['children'])
+            assign(self.children, d['children'])
         if 'tags' in d:
-            clear(self.tags)
-            extend(self.tags, d['tags'])
+            assign(self.tags, d['tags'])
         if 'users' in d:
-            clear(self.users)
-            extend(self.users, d['users'])
+            assign(self.users, d['users'])
         if 'dependees' in d:
-            clear(self.dependees)
-            extend(self.dependees, d['dependees'])
+            assign(self.dependees, d['dependees'])
         if 'dependants' in d:
-            clear(self.dependants)
-            extend(self.dependants, d['dependants'])
+            assign(self.dependants, d['dependants'])
         if 'prioritize_before' in d:
-            clear(self.prioritize_before)
-            extend(self.prioritize_before, d['prioritize_before'])
+            assign(self.prioritize_before, d['prioritize_before'])
         if 'prioritize_after' in d:
-            clear(self.prioritize_after)
-            extend(self.prioritize_after, d['prioritize_after'])
+            assign(self.prioritize_after, d['prioritize_after'])
         if 'notes' in d:
-            clear(self.notes)
-            extend(self.notes, d['notes'])
+            assign(self.notes, d['notes'])
         if 'attachments' in d:
-            clear(self.attachments)
-            extend(self.attachments, d['attachments'])
+            assign(self.attachments, d['attachments'])
 
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
@@ -428,32 +419,23 @@ class Task(Changeable, TaskBase):
         elif 'parent_id' in d:
             task.parent_id = d['parent_id']
         if 'children' in d:
-            clear(task.users)
-            extend(task.children, d['children'])
+            assign(task.children, d['children'])
         if 'tags' in d:
-            clear(task.users)
-            extend(task.tags, d['tags'])
+            assign(task.tags, d['tags'])
         if 'users' in d:
-            clear(task.users)
-            extend(task.users, d['users'])
+            assign(task.users, d['users'])
         if 'dependees' in d:
-            clear(task.dependees)
-            extend(task.dependees, d['dependees'])
+            assign(task.dependees, d['dependees'])
         if 'dependants' in d:
-            clear(task.dependants)
-            extend(task.dependants, d['dependants'])
+            assign(task.dependants, d['dependants'])
         if 'prioritize_before' in d:
-            clear(task.prioritize_before)
-            extend(task.prioritize_before, d['prioritize_before'])
+            assign(task.prioritize_before, d['prioritize_before'])
         if 'prioritize_after' in d:
-            clear(task.prioritize_after)
-            extend(task.prioritize_after, d['prioritize_after'])
+            assign(task.prioritize_after, d['prioritize_after'])
         if 'notes' in d:
-            clear(task.notes)
-            extend(task.notes, d['notes'])
+            assign(task.notes, d['notes'])
         if 'attachments' in d:
-            clear(task.attachments)
-            extend(task.attachments, d['attachments'])
+            assign(task.attachments, d['attachments'])
         return task
 
     def get_css_class(self):
