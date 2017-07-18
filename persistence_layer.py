@@ -113,7 +113,7 @@ class PersistenceLayer(object):
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
 
-        self.Tag = generate_tag_class(db, tags_tasks_table)
+        self.DbTag = generate_tag_class(db, tags_tasks_table)
 
         users_tasks_table = db.Table(
             'users_tasks',
@@ -136,14 +136,14 @@ class PersistenceLayer(object):
             db.Column('prioritize_after_id', db.Integer,
                       db.ForeignKey('task.id'), primary_key=True))
 
-        self.Task = generate_task_class(self, tags_tasks_table,
-                                        users_tasks_table,
-                                        task_dependencies_table,
-                                        task_prioritize_table)
-        self.Note = generate_note_class(db)
-        self.Attachment = generate_attachment_class(db)
-        self.User = generate_user_class(db, bcrypt, users_tasks_table)
-        self.Option = generate_option_class(db)
+        self.DbTask = generate_task_class(self, tags_tasks_table,
+                                          users_tasks_table,
+                                          task_dependencies_table,
+                                          task_prioritize_table)
+        self.DbNote = generate_note_class(db)
+        self.DbAttachment = generate_attachment_class(db)
+        self.DbUser = generate_user_class(db, bcrypt, users_tasks_table)
+        self.DbOption = generate_option_class(db)
 
         self._db_by_domain = {}
         self._domain_by_db = {}
@@ -333,17 +333,17 @@ class PersistenceLayer(object):
                 'in the cache: {} ({})'.format(domobj, type(domobj)))
 
         if isinstance(domobj, Attachment):
-            dbclass = self.Attachment
+            dbclass = self.DbAttachment
         elif isinstance(domobj, Note):
-            dbclass = self.Note
+            dbclass = self.DbNote
         elif isinstance(domobj, Option):
-            dbclass = self.Option
+            dbclass = self.DbOption
         elif isinstance(domobj, Tag):
-            dbclass = self.Tag
+            dbclass = self.DbTag
         elif isinstance(domobj, Task):
-            dbclass = self.Task
+            dbclass = self.DbTask
         elif isinstance(domobj, User):
-            dbclass = self.User
+            dbclass = self.DbUser
         else:
             raise Exception('Unknown domain object: {} ({})'.format(
                 domobj, type(domobj)))
@@ -409,17 +409,17 @@ class PersistenceLayer(object):
                 'Cannot create a new domain object; the DB object is already '
                 'in the cache: {} ({})'.format(dbobj, type(dbobj)))
 
-        if isinstance(dbobj, self.Attachment):
+        if isinstance(dbobj, self.DbAttachment):
             domclass = Attachment
-        elif isinstance(dbobj, self.Task):
+        elif isinstance(dbobj, self.DbTask):
             domclass = Task
-        elif isinstance(dbobj, self.Tag):
+        elif isinstance(dbobj, self.DbTag):
             domclass = Tag
-        elif isinstance(dbobj, self.Note):
+        elif isinstance(dbobj, self.DbNote):
             domclass = Note
-        elif isinstance(dbobj, self.User):
+        elif isinstance(dbobj, self.DbUser):
             domclass = User
-        elif isinstance(dbobj, self.Option):
+        elif isinstance(dbobj, self.DbOption):
             domclass = Option
         else:
             raise Exception(
@@ -640,16 +640,16 @@ class PersistenceLayer(object):
 
     def get_db_field_by_order_field(self, f):
         if f is self.ORDER_NUM:
-            return self.Task.order_num
+            return self.DbTask.order_num
         if f is self.TASK_ID:
-            return self.Task.id
+            return self.DbTask.id
         if f is self.DEADLINE:
-            return self.Task.deadline
+            return self.DbTask.deadline
         raise Exception('Unhandled order_by field: {}'.format(f))
 
     @property
     def task_query(self):
-        return self.Task.query
+        return self.DbTask.query
 
     def get_task(self, task_id):
         return self._get_domain_object_from_db_object(
@@ -683,13 +683,13 @@ class PersistenceLayer(object):
 
         if parent_id is not self.UNSPECIFIED:
             if parent_id is None:
-                query = query.filter(self.Task.parent_id.is_(None))
+                query = query.filter(self.DbTask.parent_id.is_(None))
             else:
                 query = query.filter_by(parent_id=parent_id)
 
         if parent_id_in is not self.UNSPECIFIED:
             if parent_id_in:
-                query = query.filter(self.Task.parent_id.in_(parent_id_in))
+                query = query.filter(self.DbTask.parent_id.in_(parent_id_in))
             else:
                 # avoid performance penalty
                 query = query.filter(False)
@@ -697,7 +697,7 @@ class PersistenceLayer(object):
         if users_contains is not self.UNSPECIFIED:
             users_contains2 = self._get_db_object_from_domain_object(
                 users_contains)
-            query = query.filter(self.Task.users.contains(users_contains2))
+            query = query.filter(self.DbTask.users.contains(users_contains2))
 
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
@@ -705,7 +705,7 @@ class PersistenceLayer(object):
             # that always returns an empty set, without the performance
             # penalty.
             if task_id_in:
-                query = query.filter(self.Task.id.in_(task_id_in))
+                query = query.filter(self.DbTask.id.in_(task_id_in))
             else:
                 query = query.filter(False)
 
@@ -715,29 +715,29 @@ class PersistenceLayer(object):
             # rows. In the case of an empty collection, just use the same query
             # object again, so we won't incur the performance penalty.
             if task_id_not_in:
-                query = query.filter(self.Task.id.notin_(task_id_not_in))
+                query = query.filter(self.DbTask.id.notin_(task_id_not_in))
             else:
                 query = query
 
         if deadline_is_not_none:
-            query = query.filter(self.Task.deadline.isnot(None))
+            query = query.filter(self.DbTask.deadline.isnot(None))
 
         if tags_contains is not self.UNSPECIFIED:
             tags_contains2 = self._get_db_object_from_domain_object(
                 tags_contains)
-            query = query.filter(self.Task.tags.contains(tags_contains2))
+            query = query.filter(self.DbTask.tags.contains(tags_contains2))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
             query = query.filter(
-                self.Task.summary.like(like_term) |
-                self.Task.description.like(like_term))
+                self.DbTask.summary.like(like_term) |
+                self.DbTask.description.like(like_term))
 
         if order_num_greq_than is not self.UNSPECIFIED:
-            query = query.filter(self.Task.order_num >= order_num_greq_than)
+            query = query.filter(self.DbTask.order_num >= order_num_greq_than)
 
         if order_num_lesseq_than is not self.UNSPECIFIED:
-            query = query.filter(self.Task.order_num <= order_num_lesseq_than)
+            query = query.filter(self.DbTask.order_num <= order_num_lesseq_than)
 
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):
@@ -842,7 +842,7 @@ class PersistenceLayer(object):
 
     @property
     def tag_query(self):
-        return self.Tag.query
+        return self.DbTag.query
 
     def _get_db_tag(self, tag_id):
         return self.tag_query.get(tag_id)
@@ -851,7 +851,7 @@ class PersistenceLayer(object):
         return self._get_domain_object_from_db_object(self._get_db_tag(tag_id))
 
     def _get_tags_query(self, value=UNSPECIFIED, limit=None):
-        query = self.Tag.query
+        query = self.DbTag.query
         if value is not self.UNSPECIFIED:
             query = query.filter_by(value=value)
         if limit is not None:
@@ -871,7 +871,7 @@ class PersistenceLayer(object):
 
     @property
     def note_query(self):
-        return self.Note.query
+        return self.DbNote.query
 
     def _get_db_note(self, note_id):
         return self.note_query.get(note_id)
@@ -884,7 +884,7 @@ class PersistenceLayer(object):
         query = self.note_query
         if note_id_in is not self.UNSPECIFIED:
             if note_id_in:
-                query = query.filter(self.Note.id.in_(note_id_in))
+                query = query.filter(self.DbNote.id.in_(note_id_in))
             else:
                 # performance improvement
                 query = query.filter(False)
@@ -899,7 +899,7 @@ class PersistenceLayer(object):
 
     @property
     def attachment_query(self):
-        return self.Attachment.query
+        return self.DbAttachment.query
 
     def _get_db_attachment(self, attachment_id):
         return self.attachment_query.get(attachment_id)
@@ -912,7 +912,7 @@ class PersistenceLayer(object):
         query = self.attachment_query
         if attachment_id_in is not self.UNSPECIFIED:
             if attachment_id_in:
-                query = query.filter(self.Attachment.id.in_(attachment_id_in))
+                query = query.filter(self.DbAttachment.id.in_(attachment_id_in))
             else:
                 query = query.filter(False)
         return query
@@ -927,7 +927,7 @@ class PersistenceLayer(object):
 
     @property
     def user_query(self):
-        return self.User.query
+        return self.DbUser.query
 
     def _get_db_user(self, user_id):
         return self.user_query.get(user_id)
@@ -944,7 +944,7 @@ class PersistenceLayer(object):
         query = self.user_query
         if email_in is not self.UNSPECIFIED:
             if email_in:
-                query = query.filter(self.User.email.in_(email_in))
+                query = query.filter(self.DbUser.email.in_(email_in))
             else:
                 # avoid performance penalty
                 query = query.filter(False)
@@ -959,7 +959,7 @@ class PersistenceLayer(object):
 
     @property
     def option_query(self):
-        return self.Option.query
+        return self.DbOption.query
 
     def _get_db_option(self, key):
         return self.option_query.get(key)
@@ -971,7 +971,7 @@ class PersistenceLayer(object):
         query = self.option_query
         if key_in is not self.UNSPECIFIED:
             if key_in:
-                query = query.filter(self.Option.key.in_(key_in))
+                query = query.filter(self.DbOption.key.in_(key_in))
             else:
                 # avoid performance penalty
                 query = query.filter(False)

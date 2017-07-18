@@ -1997,7 +1997,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertEqual(p3.id, child.parent_id)
 
     def test_db_only_rollback_reverts_changes(self):
-        tag = self.pl.Tag('tag', description='a')
+        tag = self.pl.DbTag('tag', description='a')
         self.pl.db.session.add(tag)
         self.pl.db.session.commit()
         tag.description = 'b'
@@ -2006,17 +2006,17 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # when
         self.pl.db.session.rollback()
         # then
-        tag2 = self.pl.Tag.query.filter_by(value='tag').first()
+        tag2 = self.pl.DbTag.query.filter_by(value='tag').first()
         self.assertIsNotNone(tag2)
         self.assertEqual('a', tag2.description)
         self.assertEqual('a', tag.description)
 
     def test_db_only_rollback_reverts_changes_to_collections(self):
         # given:
-        task = self.pl.Task('task')
-        tag1 = self.pl.Tag('tag1')
-        tag2 = self.pl.Tag('tag2')
-        tag3 = self.pl.Tag('tag3')
+        task = self.pl.DbTask('task')
+        tag1 = self.pl.DbTag('tag1')
+        tag2 = self.pl.DbTag('tag2')
+        tag3 = self.pl.DbTag('tag3')
         task.tags.append(tag1)
         task.tags.append(tag2)
         self.pl.db.session.add(task)
@@ -2056,7 +2056,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertNotIn(task, tag3.tasks)
 
     def test_db_only_rollback_does_not_reverts_changes_on_unadded_objs(self):
-        tag = self.pl.Tag('tag', description='a')
+        tag = self.pl.DbTag('tag', description='a')
         tag.description = 'b'
         # precondition
         self.assertEqual('b', tag.description)
@@ -2066,7 +2066,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         self.assertEqual('b', tag.description)
 
     def test_db_only_changes_to_objects_are_tracked_automatically(self):
-        tag = self.pl.Tag('tag', description='a')
+        tag = self.pl.DbTag('tag', description='a')
         self.pl.db.session.add(tag)
         self.pl.db.session.commit()
         # precondition
@@ -2086,8 +2086,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
-        task = self.pl.Task('task')
-        tag = self.pl.Tag('tag', description='a')
+        task = self.pl.DbTask('task')
+        tag = self.pl.DbTag('tag', description='a')
         self.pl.db.session.add(task)
         self.pl.db.session.add(tag)
         self.pl.db.session.commit()
@@ -2112,8 +2112,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_adding_child_also_sets_parent(self):
         # given
-        parent = self.pl.Task('parent')
-        child = self.pl.Task('child')
+        parent = self.pl.DbTask('parent')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(parent)
         self.pl.db.session.add(child)
         self.pl.db.session.commit()
@@ -2139,8 +2139,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_adding_child_also_sets_parent_id(self):
         # given
-        parent = self.pl.Task('parent')
-        child = self.pl.Task('child')
+        parent = self.pl.DbTask('parent')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(parent)
         self.pl.db.session.add(child)
         self.pl.db.session.commit()
@@ -2167,8 +2167,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_setting_parent_also_sets_parent_id(self):
         # given
-        parent = self.pl.Task('parent')
-        child = self.pl.Task('child')
+        parent = self.pl.DbTask('parent')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(parent)
         self.pl.db.session.add(child)
         self.pl.db.session.commit()
@@ -2196,8 +2196,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_setting_parent_also_adds_child(self):
         # given
-        parent = self.pl.Task('parent')
-        child = self.pl.Task('child')
+        parent = self.pl.DbTask('parent')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(parent)
         self.pl.db.session.add(child)
         self.pl.db.session.commit()
@@ -2223,8 +2223,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_setting_parent_id_also_sets_parent(self):
         # given
-        parent = self.pl.Task('parent')
-        child = self.pl.Task('child')
+        parent = self.pl.DbTask('parent')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(parent)
         self.pl.db.session.add(child)
         self.pl.db.session.commit()
@@ -2252,8 +2252,8 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_setting_parent_id_also_adds_child(self):
         # given
-        parent = self.pl.Task('parent')
-        child = self.pl.Task('child')
+        parent = self.pl.DbTask('parent')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(parent)
         self.pl.db.session.add(child)
         self.pl.db.session.commit()
@@ -2279,10 +2279,10 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_inconsistent_parent_always_overrides_parent_id(self):
         # given
-        p1 = self.pl.Task('p1')
-        p2 = self.pl.Task('p2')
-        p3 = self.pl.Task('p3')
-        child = self.pl.Task('child')
+        p1 = self.pl.DbTask('p1')
+        p2 = self.pl.DbTask('p2')
+        p3 = self.pl.DbTask('p3')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(p1)
         self.pl.db.session.add(p2)
         self.pl.db.session.add(p3)
@@ -2319,10 +2319,10 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_inconsistent_parent_children_overrides_parent_id(self):
         # given
-        p1 = self.pl.Task('p1')
-        p2 = self.pl.Task('p2')
-        p3 = self.pl.Task('p3')
-        child = self.pl.Task('child')
+        p1 = self.pl.DbTask('p1')
+        p2 = self.pl.DbTask('p2')
+        p3 = self.pl.DbTask('p3')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(p1)
         self.pl.db.session.add(p2)
         self.pl.db.session.add(p3)
@@ -2359,10 +2359,10 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_incon_parent_parent_and_children_last_one_wins_1(self):
         # given
-        p1 = self.pl.Task('p1')
-        p2 = self.pl.Task('p2')
-        p3 = self.pl.Task('p3')
-        child = self.pl.Task('child')
+        p1 = self.pl.DbTask('p1')
+        p2 = self.pl.DbTask('p2')
+        p3 = self.pl.DbTask('p3')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(p1)
         self.pl.db.session.add(p2)
         self.pl.db.session.add(p3)
@@ -2399,10 +2399,10 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
     def test_db_only_incon_parent_parent_and_children_last_one_wins_2(self):
         # given
-        p1 = self.pl.Task('p1')
-        p2 = self.pl.Task('p2')
-        p3 = self.pl.Task('p3')
-        child = self.pl.Task('child')
+        p1 = self.pl.DbTask('p1')
+        p2 = self.pl.DbTask('p2')
+        p3 = self.pl.DbTask('p3')
+        child = self.pl.DbTask('child')
         self.pl.db.session.add(p1)
         self.pl.db.session.add(p2)
         self.pl.db.session.add(p3)
@@ -2577,13 +2577,13 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_db_task_is_db_object(self):
         # given
-        task = self.pl.Task('task')
+        task = self.pl.DbTask('task')
         # expect
         self.assertTrue(self.pl._is_db_object(task))
 
     def test_db_task_is_not_domain_object(self):
         # given
-        task = self.pl.Task('task')
+        task = self.pl.DbTask('task')
         # expect
         self.assertFalse(self.pl._is_domain_object(task))
 
@@ -2601,7 +2601,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_domain_object_db_task_returns_domain_task(self):
         # given
-        task = self.pl.Task('task')
+        task = self.pl.DbTask('task')
         # when
         result = self.pl._get_domain_object_from_db_object(task)
         # then
@@ -2610,7 +2610,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_db_object_db_task_raises(self):
         # given
-        task = self.pl.Task('task')
+        task = self.pl.DbTask('task')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
@@ -2631,17 +2631,17 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         result = self.pl._get_db_object_from_domain_object(task)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.Task)
+        self.assertIsInstance(result, self.pl.DbTask)
 
     def test_db_tag_is_db_object(self):
         # given
-        tag = self.pl.Tag('tag')
+        tag = self.pl.DbTag('tag')
         # expect
         self.assertTrue(self.pl._is_db_object(tag))
 
     def test_db_tag_is_not_domain_object(self):
         # given
-        tag = self.pl.Tag('tag')
+        tag = self.pl.DbTag('tag')
         # expect
         self.assertFalse(self.pl._is_domain_object(tag))
 
@@ -2659,7 +2659,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_domain_object_db_tag_returns_domain_tag(self):
         # given
-        tag = self.pl.Tag('tag')
+        tag = self.pl.DbTag('tag')
         # when
         result = self.pl._get_domain_object_from_db_object(tag)
         # then
@@ -2676,7 +2676,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_db_object_db_tag_raises(self):
         # given
-        tag = self.pl.Tag('tag')
+        tag = self.pl.DbTag('tag')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
@@ -2689,11 +2689,11 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         result = self.pl._get_db_object_from_domain_object(tag)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.Tag)
+        self.assertIsInstance(result, self.pl.DbTag)
 
     def test_db_note_is_db_object(self):
         # given
-        note = self.pl.Note('note')
+        note = self.pl.DbNote('note')
         # expect
         self.assertTrue(self.pl._is_db_object(note))
 
@@ -2711,13 +2711,13 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_db_note_is_not_domain_object(self):
         # given
-        note = self.pl.Note('note')
+        note = self.pl.DbNote('note')
         # expect
         self.assertFalse(self.pl._is_domain_object(note))
 
     def test_get_domain_object_db_note_returns_domain_object(self):
         # given
-        note = self.pl.Note('note')
+        note = self.pl.DbNote('note')
         # when
         result = self.pl._get_domain_object_from_db_object(note)
         # then
@@ -2726,7 +2726,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_db_object_db_note_raises(self):
         # given
-        note = self.pl.Note('note')
+        note = self.pl.DbNote('note')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
@@ -2747,11 +2747,11 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         result = self.pl._get_db_object_from_domain_object(note)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.Note)
+        self.assertIsInstance(result, self.pl.DbNote)
 
     def test_db_attachment_is_db_object(self):
         # given
-        attachment = self.pl.Attachment('attachment')
+        attachment = self.pl.DbAttachment('attachment')
         # expect
         self.assertTrue(self.pl._is_db_object(attachment))
 
@@ -2763,7 +2763,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_db_attachment_is_not_domain_object(self):
         # given
-        attachment = self.pl.Attachment('attachment')
+        attachment = self.pl.DbAttachment('attachment')
         # expect
         self.assertFalse(self.pl._is_domain_object(attachment))
 
@@ -2783,7 +2783,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_domain_object_db_attachment_returns_domain(self):
         # given
-        attachment = self.pl.Attachment('attachment')
+        attachment = self.pl.DbAttachment('attachment')
         # when
         result = self.pl._get_domain_object_from_db_object(attachment)
         # then
@@ -2792,7 +2792,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_db_object_db_attachment_raises(self):
         # given
-        attachment = self.pl.Attachment('attachment')
+        attachment = self.pl.DbAttachment('attachment')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
@@ -2805,17 +2805,17 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         result = self.pl._get_db_object_from_domain_object(attachment)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.Attachment)
+        self.assertIsInstance(result, self.pl.DbAttachment)
 
     def test_db_user_is_db_object(self):
         # given
-        user = self.pl.User('name@example.com')
+        user = self.pl.DbUser('name@example.com')
         # expect
         self.assertTrue(self.pl._is_db_object(user))
 
     def test_db_user_is_not_domain_object(self):
         # given
-        user = self.pl.User('name@example.com')
+        user = self.pl.DbUser('name@example.com')
         # expect
         self.assertFalse(self.pl._is_domain_object(user))
 
@@ -2833,7 +2833,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_domain_object_db_user_returns_domain_user(self):
         # given
-        user = self.pl.User('name@example.com')
+        user = self.pl.DbUser('name@example.com')
         # when
         result = self.pl._get_domain_object_from_db_object(user)
         # then
@@ -2850,7 +2850,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_db_object_db_user_raises(self):
         # given
-        user = self.pl.User('name@example.com')
+        user = self.pl.DbUser('name@example.com')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
@@ -2863,11 +2863,11 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         result = self.pl._get_db_object_from_domain_object(user)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.User)
+        self.assertIsInstance(result, self.pl.DbUser)
 
     def test_db_option_is_db_object(self):
         # given
-        option = self.pl.Option('key', 'value')
+        option = self.pl.DbOption('key', 'value')
         # expect
         self.assertTrue(self.pl._is_db_object(option))
 
@@ -2879,7 +2879,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_db_option_is_not_domain_object(self):
         # given
-        option = self.pl.Option('key', 'value')
+        option = self.pl.DbOption('key', 'value')
         # expect
         self.assertFalse(self.pl._is_domain_object(option))
 
@@ -2899,7 +2899,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
     def test_get_domain_object_db_option_returns_domain_object(self):
         # given
-        option = self.pl.Option('key', 'value')
+        option = self.pl.DbOption('key', 'value')
         # when
         result = self.pl._get_domain_object_from_db_object(option)
         # then
@@ -2913,11 +2913,11 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
         result = self.pl._get_db_object_from_domain_object(option)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.Option)
+        self.assertIsInstance(result, self.pl.DbOption)
 
     def test_get_db_object_db_option_raises(self):
         # given
-        option = self.pl.Option('key', 'value')
+        option = self.pl.DbOption('key', 'value')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_db_object_from_domain_object,
@@ -2937,7 +2937,7 @@ class PersistenceLayerInternalsTest(unittest.TestCase):
         result = self.pl._create_db_object_from_domain_object(task)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, self.pl.Task)
+        self.assertIsInstance(result, self.pl.DbTask)
         self.assertEqual('task1', result.summary)
 
     def test_get_db_object_from_cache_when_none_exist_returns_none(self):
@@ -3025,10 +3025,10 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_removes_all_children(self):
         # given
-        parent = self.pl.Task('parent')
-        c1 = self.pl.Task('c1')
-        c2 = self.pl.Task('c2')
-        c3 = self.pl.Task('c3')
+        parent = self.pl.DbTask('parent')
+        c1 = self.pl.DbTask('c1')
+        c2 = self.pl.DbTask('c2')
+        c3 = self.pl.DbTask('c3')
         parent.children.append(c1)
         parent.children.append(c2)
         parent.children.append(c3)
@@ -3055,10 +3055,10 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_parent_task_nullifies_parent_and_parent_id(self):
         # given
-        parent = self.pl.Task('parent')
-        c1 = self.pl.Task('c1')
-        c2 = self.pl.Task('c2')
-        c3 = self.pl.Task('c3')
+        parent = self.pl.DbTask('parent')
+        c1 = self.pl.DbTask('c1')
+        c2 = self.pl.DbTask('c2')
+        c3 = self.pl.DbTask('c3')
         parent.children.append(c1)
         parent.children.append(c2)
         parent.children.append(c3)
@@ -3087,8 +3087,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_removes_task_from_tag(self):
         # given
-        task = self.pl.Task('task')
-        tag = self.pl.Tag('tag')
+        task = self.pl.DbTask('task')
+        tag = self.pl.DbTag('tag')
         task.tags.append(tag)
         self.pl.db.session.add(task)
         self.pl.db.session.add(tag)
@@ -3107,8 +3107,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_task_does_not_remove_tag_from_task(self):
         # given
-        task = self.pl.Task('task')
-        tag = self.pl.Tag('tag')
+        task = self.pl.DbTask('task')
+        tag = self.pl.DbTag('tag')
         task.tags.append(tag)
         self.pl.db.session.add(task)
         self.pl.db.session.add(tag)
@@ -3127,8 +3127,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_tag_removes_tag_from_task(self):
         # given
-        task = self.pl.Task('task')
-        tag = self.pl.Tag('tag')
+        task = self.pl.DbTask('task')
+        tag = self.pl.DbTag('tag')
         task.tags.append(tag)
         self.pl.db.session.add(task)
         self.pl.db.session.add(tag)
@@ -3147,8 +3147,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_tag_does_not_remove_task_from_tag(self):
         # given
-        task = self.pl.Task('task')
-        tag = self.pl.Tag('tag')
+        task = self.pl.DbTask('task')
+        tag = self.pl.DbTag('tag')
         task.tags.append(tag)
         self.pl.db.session.add(task)
         self.pl.db.session.add(tag)
@@ -3167,8 +3167,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_removes_task_from_user(self):
         # given
-        task = self.pl.Task('task')
-        user = self.pl.User('user')
+        task = self.pl.DbTask('task')
+        user = self.pl.DbUser('user')
         task.users.append(user)
         self.pl.db.session.add(task)
         self.pl.db.session.add(user)
@@ -3187,8 +3187,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_task_does_not_remove_user_from_task(self):
         # given
-        task = self.pl.Task('task')
-        user = self.pl.User('user')
+        task = self.pl.DbTask('task')
+        user = self.pl.DbUser('user')
         task.users.append(user)
         self.pl.db.session.add(task)
         self.pl.db.session.add(user)
@@ -3207,8 +3207,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_user_removes_user_from_task(self):
         # given
-        task = self.pl.Task('task')
-        user = self.pl.User('user')
+        task = self.pl.DbTask('task')
+        user = self.pl.DbUser('user')
         task.users.append(user)
         self.pl.db.session.add(task)
         self.pl.db.session.add(user)
@@ -3227,8 +3227,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_user_does_not_remove_task_from_user(self):
         # given
-        task = self.pl.Task('task')
-        user = self.pl.User('user')
+        task = self.pl.DbTask('task')
+        user = self.pl.DbUser('user')
         task.users.append(user)
         self.pl.db.session.add(task)
         self.pl.db.session.add(user)
@@ -3247,8 +3247,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_dependee_removes_dependee_from_dependant(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.dependees.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3267,8 +3267,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_dependee_does_not_remove_dependant(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.dependees.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3287,8 +3287,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_dependant_removes_dependant_from_dependee(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.dependants.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3307,8 +3307,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_dependant_does_not_remove_dependee(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.dependants.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3327,8 +3327,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_pbefore_removes_pbefore_from_pafter(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.prioritize_before.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3347,8 +3347,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_pbefore_does_not_remove_pafter(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.prioritize_before.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3367,8 +3367,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_pafter_removes_pafter_from_pbefore(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.prioritize_after.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3387,8 +3387,8 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_notice_db_only_deleting_pafter_does_not_remove_pbefore(self):
         # given
-        t1 = self.pl.Task('t1')
-        t2 = self.pl.Task('t2')
+        t1 = self.pl.DbTask('t1')
+        t2 = self.pl.DbTask('t2')
         t1.prioritize_after.append(t2)
         self.pl.db.session.add(t1)
         self.pl.db.session.add(t2)
@@ -3407,10 +3407,10 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_removes_all_notes(self):
         # given
-        task = self.pl.Task('task')
-        n1 = self.pl.Note('n1')
-        n2 = self.pl.Note('n2')
-        n3 = self.pl.Note('n3')
+        task = self.pl.DbTask('task')
+        n1 = self.pl.DbNote('n1')
+        n2 = self.pl.DbNote('n2')
+        n3 = self.pl.DbNote('n3')
         task.notes.append(n1)
         task.notes.append(n2)
         task.notes.append(n3)
@@ -3437,10 +3437,10 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_of_notes_nullifies_task_and_task_id(self):
         # given
-        task = self.pl.Task('task')
-        n1 = self.pl.Note('n1')
-        n2 = self.pl.Note('n2')
-        n3 = self.pl.Note('n3')
+        task = self.pl.DbTask('task')
+        n1 = self.pl.DbNote('n1')
+        n2 = self.pl.DbNote('n2')
+        n3 = self.pl.DbNote('n3')
         task.notes.append(n1)
         task.notes.append(n2)
         task.notes.append(n3)
@@ -3469,10 +3469,10 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_removes_all_attachments(self):
         # given
-        task = self.pl.Task('task')
-        n1 = self.pl.Attachment('n1')
-        n2 = self.pl.Attachment('n2')
-        n3 = self.pl.Attachment('n3')
+        task = self.pl.DbTask('task')
+        n1 = self.pl.DbAttachment('n1')
+        n2 = self.pl.DbAttachment('n2')
+        n3 = self.pl.DbAttachment('n3')
         task.attachments.append(n1)
         task.attachments.append(n2)
         task.attachments.append(n3)
@@ -3499,10 +3499,10 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
     def test_db_only_deleting_task_of_atts_nullifies_task_and_task_id(self):
         # given
-        task = self.pl.Task('task')
-        n1 = self.pl.Attachment('n1')
-        n2 = self.pl.Attachment('n2')
-        n3 = self.pl.Attachment('n3')
+        task = self.pl.DbTask('task')
+        n1 = self.pl.DbAttachment('n1')
+        n2 = self.pl.DbAttachment('n2')
+        n3 = self.pl.DbAttachment('n3')
         task.attachments.append(n1)
         task.attachments.append(n2)
         task.attachments.append(n3)
