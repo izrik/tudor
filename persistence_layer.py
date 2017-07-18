@@ -1440,9 +1440,11 @@ def generate_user_class(db, bcrypt, users_tasks_table):
                 self.is_admin = value
             else:  # field == self.FIELD_TASKS
                 if operation == Changeable.OP_ADD:
-                    self.tasks.append(value)
+                    if value not in self.tasks:
+                        self.tasks.append(value)
                 elif operation == Changeable.OP_REMOVE:
-                    self.tasks.remove(value)
+                    if value in self.tasks:
+                        self.tasks.remove(value)
 
     return DbUser
 
