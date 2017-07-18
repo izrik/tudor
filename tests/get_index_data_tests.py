@@ -43,6 +43,8 @@ class GetIndexDataTest(unittest.TestCase):
 
         self.pl.add(tag1)
 
+        self.pl.commit()
+
         # when
         data = self.ll.get_index_data(True, True, self.admin)
 
@@ -117,6 +119,8 @@ class GetIndexDataTest(unittest.TestCase):
 
         self.pl.add(tag1)
 
+        self.pl.commit()
+
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.admin)
 
@@ -187,6 +191,8 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.add(t3)
         self.pl.add(t4)
 
+        self.pl.commit()
+
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.admin)
 
@@ -219,6 +225,8 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.add(t2)
         self.pl.add(t3)
         self.pl.add(t4)
+
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_data(True, True, self.admin)
