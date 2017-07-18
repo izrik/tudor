@@ -504,7 +504,11 @@ class Task(Changeable, TaskBase):
         self.prioritize_after.clear()
 
 
-class InterlinkedChildren(collections.MutableSet):
+class OneToManySet(collections.MutableSet):
+
+    __change_field__ = None
+    __attr_counterpart__ = None
+
     def __init__(self, container):
         self._logger = logging_util.get_logger(__name__, self)
         if container is None:
@@ -533,10 +537,10 @@ class InterlinkedChildren(collections.MutableSet):
     def add(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item not in self.set:
-            self.container._on_attr_changing(Task.FIELD_CHILDREN, None)
+            self.container._on_attr_changing(self.__change_field__, None)
             self.set.add(item)
-            item.parent = self.container
-            self.container._on_attr_changed(Task.FIELD_CHILDREN, Task.OP_ADD,
+            setattr(item, self.__attr_counterpart__, self.container)
+            self.container._on_attr_changed(self.__change_field__, Task.OP_ADD,
                                             item)
 
     def append(self, item):
@@ -546,17 +550,25 @@ class InterlinkedChildren(collections.MutableSet):
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item in self.set:
-            self.container._on_attr_changing(Task.FIELD_CHILDREN, None)
+            self.container._on_attr_changing(self.__change_field__, None)
             self.set.discard(item)
-            item.parent = None
-            self.container._on_attr_changed(Task.FIELD_CHILDREN,
+            setattr(item, self.__attr_counterpart__, None)
+            self.container._on_attr_changed(self.__change_field__,
                                             Task.OP_REMOVE, item)
 
     def __str__(self):
         return str(self.set)
 
 
-class InterlinkedTags(collections.MutableSet):
+class InterlinkedChildren(OneToManySet):
+    __change_field__ = Task.FIELD_CHILDREN
+    __attr_counterpart__ = 'parent'
+
+
+class ManyToManySet(collections.MutableSet):
+
+    __change_field__ = None
+    __attr_counterpart__ = None
 
     def __init__(self, container):
         if container is None:
@@ -583,297 +595,10 @@ class InterlinkedTags(collections.MutableSet):
     def add(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item not in self.set:
-            self.container._on_attr_changing(Task.FIELD_TAGS, None)
+            self.container._on_attr_changing(self.__change_field__, None)
             self.set.add(item)
-            item.tasks.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_ADD, item)
-
-    def append(self, item):
-        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
-        self.add(item)
-
-    def discard(self, item):
-        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
-        if item in self.set:
-            self.container._on_attr_changing(Task.FIELD_TAGS, None)
-            self.set.discard(item)
-            item.tasks.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_TAGS, Task.OP_REMOVE,
-                                            item)
-
-
-class InterlinkedUsers(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, user):
-        return self.set.__contains__(user)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, user):
-        self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
-        if user not in self.set:
-            self.container._on_attr_changing(Task.FIELD_USERS, None)
-            self.set.add(user)
-            user.tasks.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_USERS, Task.OP_ADD,
-                                            user)
-
-    def append(self, user):
-        self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
-        self.add(user)
-
-    def discard(self, user):
-        self._logger.debug('{}: {}'.format(self.c.id2, user.id2))
-        if user in self.set:
-            self.container._on_attr_changing(Task.FIELD_USERS, None)
-            self.set.discard(user)
-            user.tasks.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_USERS, Task.OP_REMOVE,
-                                            user)
-
-
-class InterlinkedDependees(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, dependee):
-        return self.set.__contains__(dependee)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, dependee):
-        self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
-        if dependee not in self.set:
-            self.container._on_attr_changing(Task.FIELD_DEPENDEES, None)
-            self.set.add(dependee)
-            dependee.dependants.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDEES, Task.OP_ADD,
-                                            dependee)
-
-    def append(self, dependee):
-        self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
-        self.add(dependee)
-
-    def discard(self, dependee):
-        self._logger.debug('{}: {}'.format(self.c.id2, dependee.id2))
-        if dependee in self.set:
-            self.container._on_attr_changing(Task.FIELD_DEPENDEES, None)
-            self.set.discard(dependee)
-            dependee.dependants.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDEES,
-                                            Task.OP_REMOVE, dependee)
-
-
-class InterlinkedDependants(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, dependant):
-        return self.set.__contains__(dependant)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, dependant):
-        self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
-        if dependant not in self.set:
-            self.container._on_attr_changing(Task.FIELD_DEPENDANTS, None)
-            self.set.add(dependant)
-            dependant.dependees.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDANTS, Task.OP_ADD,
-                                            dependant)
-
-    def append(self, dependant):
-        self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
-        self.add(dependant)
-
-    def discard(self, dependant):
-        self._logger.debug('{}: {}'.format(self.c.id2, dependant.id2))
-        if dependant in self.set:
-            self.container._on_attr_changing(Task.FIELD_DEPENDANTS, None)
-            self.set.discard(dependant)
-            dependant.dependees.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_DEPENDANTS,
-                                            Task.OP_REMOVE, dependant)
-
-
-class InterlinkedPrioritizeBefore(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, before):
-        return self.set.__contains__(before)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, before):
-        self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
-        if before not in self.set:
-            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_BEFORE,
-                                             None)
-            self.set.add(before)
-            before.prioritize_after.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_BEFORE,
-                                            Task.OP_ADD, before)
-
-    def append(self, before):
-        self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
-        self.add(before)
-
-    def discard(self, before):
-        self._logger.debug('{}: {}'.format(self.c.id2, before.id2))
-        if before in self.set:
-            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_BEFORE,
-                                             None)
-            self.set.discard(before)
-            before.prioritize_after.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_BEFORE,
-                                            Task.OP_REMOVE, before)
-
-
-class InterlinkedPrioritizeAfter(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, after):
-        return self.set.__contains__(after)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, after):
-        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
-        if after not in self.set:
-            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_AFTER, None)
-            self.set.add(after)
-            after.prioritize_before.add(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER,
-                                            Task.OP_ADD, after)
-
-    def append(self, after):
-        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
-        self.add(after)
-
-    def discard(self, after):
-        self._logger.debug('{}: {}'.format(self.c.id2, after.id2))
-        if after in self.set:
-            self.container._on_attr_changing(Task.FIELD_PRIORITIZE_AFTER, None)
-            self.set.discard(after)
-            after.prioritize_before.discard(self.container)
-            self.container._on_attr_changed(Task.FIELD_PRIORITIZE_AFTER,
-                                            Task.OP_REMOVE, after)
-
-
-class InterlinkedNotes(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    def __repr__(self):
-        cls = type(self).__name__
-        return '{}({})'.format(cls, self.set)
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, item):
-        return self.set.__contains__(item)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, item):
-        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
-        if item not in self.set:
-            self.container._on_attr_changing(Task.FIELD_NOTES, None)
-            self.set.add(item)
-            item.task = self.container
-            self.container._on_attr_changed(Task.FIELD_NOTES, Task.OP_ADD,
+            getattr(item, self.__attr_counterpart__).add(self.container)
+            self.container._on_attr_changed(self.__change_field__, Task.OP_ADD,
                                             item)
 
     def append(self, item):
@@ -883,65 +608,48 @@ class InterlinkedNotes(collections.MutableSet):
     def discard(self, item):
         self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
         if item in self.set:
-            self.container._on_attr_changing(Task.FIELD_NOTES, None)
+            self.container._on_attr_changing(self.__change_field__, None)
             self.set.discard(item)
-            item.task = None
-            self.container._on_attr_changed(Task.FIELD_NOTES, Task.OP_REMOVE,
-                                            item)
-
-    def __str__(self):
-        return str(self.set)
-
-
-class InterlinkedAttachments(collections.MutableSet):
-
-    def __init__(self, container):
-        if container is None:
-            raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
-
-        self.container = container
-        self.set = set()
-
-    def __repr__(self):
-        cls = type(self).__name__
-        return '{}({})'.format(cls, self.set)
-
-    @property
-    def c(self):
-        return self.container
-
-    def __len__(self):
-        return len(self.set)
-
-    def __contains__(self, item):
-        return self.set.__contains__(item)
-
-    def __iter__(self):
-        return self.set.__iter__()
-
-    def add(self, item):
-        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
-        if item not in self.set:
-            self.container._on_attr_changing(Task.FIELD_ATTACHMENTS, None)
-            self.set.add(item)
-            item.task = self.container
-            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS,
-                                            Task.OP_ADD, item)
-
-    def append(self, item):
-        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
-        self.add(item)
-
-    def discard(self, item):
-        self._logger.debug('{}: {}'.format(self.c.id2, item.id2))
-        if item in self.set:
-            self.container._on_attr_changing(Task.FIELD_ATTACHMENTS, None)
-            self.set.discard(item)
-            item.task = None
-            self.container._on_attr_changed(Task.FIELD_ATTACHMENTS,
+            getattr(item, self.__attr_counterpart__).discard(self.container)
+            self.container._on_attr_changed(self.__change_field__,
                                             Task.OP_REMOVE, item)
 
-    def __str__(self):
-        return str(self.set)
+
+class InterlinkedTags(ManyToManySet):
+    __change_field__ = Task.FIELD_TAGS
+    __attr_counterpart__ = 'tasks'
+
+
+class InterlinkedUsers(ManyToManySet):
+    __change_field__ = Task.FIELD_USERS
+    __attr_counterpart__ = 'tasks'
+
+
+class InterlinkedDependees(ManyToManySet):
+    __change_field__ = Task.FIELD_DEPENDEES
+    __attr_counterpart__ = 'dependants'
+
+
+class InterlinkedDependants(ManyToManySet):
+    __change_field__ = Task.FIELD_DEPENDANTS
+    __attr_counterpart__ = 'dependees'
+
+
+class InterlinkedPrioritizeBefore(ManyToManySet):
+    __change_field__ = Task.FIELD_PRIORITIZE_BEFORE
+    __attr_counterpart__ = 'prioritize_after'
+
+
+class InterlinkedPrioritizeAfter(ManyToManySet):
+    __change_field__ = Task.FIELD_PRIORITIZE_AFTER
+    __attr_counterpart__ = 'prioritize_before'
+
+
+class InterlinkedNotes(OneToManySet):
+    __change_field__ = Task.FIELD_NOTES
+    __attr_counterpart__ = 'task'
+
+
+class InterlinkedAttachments(OneToManySet):
+    __change_field__ = Task.FIELD_ATTACHMENTS
+    __attr_counterpart__ = 'task'
