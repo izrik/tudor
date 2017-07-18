@@ -28,6 +28,7 @@ class TagTest(unittest.TestCase):
         # when
         tag = Tag('name', '12345')
         # then
-        self.assertEqual({'value': 'name',
-                          'description': '12345',
-                          'id': None, 'tasks': []}, tag.to_dict())
+        self.assertEqual({Tag.FIELD_VALUE: 'name',
+                          Tag.FIELD_DESCRIPTION: '12345',
+                          Tag.FIELD_ID: None, Tag.FIELD_TASKS: []},
+                         tag.to_dict())

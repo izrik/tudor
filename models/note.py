@@ -41,25 +41,25 @@ class NoteBase(object):
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
-            d['id'] = self.id
+            d[self.FIELD_ID] = self.id
         if fields is None or self.FIELD_TIMESTAMP in fields:
-            d['timestamp'] = str_from_datetime(self.timestamp)
+            d[self.FIELD_TIMESTAMP] = str_from_datetime(self.timestamp)
         if fields is None or self.FIELD_CONTENT in fields:
-            d['content'] = self.content
+            d[self.FIELD_CONTENT] = self.content
         if fields is None or self.FIELD_TASK in fields:
-            d['task'] = self.task
+            d[self.FIELD_TASK] = self.task
 
         return d
 
     def update_from_dict(self, d):
-        if 'id' in d and d['id'] is not None:
-            self.id = d['id']
-        if 'content' in d:
-            self.content = d['content']
-        if 'timestamp' in d:
-            self.timestamp = self._clean_timestamp(d['timestamp'])
-        if 'task' in d:
-            self.task = d['task']
+        if self.FIELD_ID in d and d[self.FIELD_ID] is not None:
+            self.id = d[self.FIELD_ID]
+        if self.FIELD_CONTENT in d:
+            self.content = d[self.FIELD_CONTENT]
+        if self.FIELD_TIMESTAMP in d:
+            self.timestamp = self._clean_timestamp(d[self.FIELD_TIMESTAMP])
+        if self.FIELD_TASK in d:
+            self.task = d[self.FIELD_TASK]
 
     @property
     def id2(self):
@@ -136,10 +136,10 @@ class Note(Changeable, NoteBase):
 
     @staticmethod
     def from_dict(d):
-        note_id = d.get('id', None)
-        content = d.get('content')
-        timestamp = d.get('timestamp', None)
-        task = d.get('task')
+        note_id = d.get(Note.FIELD_ID, None)
+        content = d.get(Note.FIELD_CONTENT)
+        timestamp = d.get(Note.FIELD_TIMESTAMP, None)
+        task = d.get(Note.FIELD_TASK)
 
         note = Note(content, timestamp)
         if note_id is not None:

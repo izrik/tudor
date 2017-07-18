@@ -31,17 +31,17 @@ class OptionBase(object):
 
         d = {}
         if fields is None or self.FIELD_KEY in fields:
-            d['key'] = self.key
+            d[self.FIELD_KEY] = self.key
         if fields is None or self.FIELD_VALUE in fields:
-            d['value'] = self.value
+            d[self.FIELD_VALUE] = self.value
 
         return d
 
     def update_from_dict(self, d):
-        if 'key' in d and d['key'] is not None:
-            self.key = d['key']
-        if 'value' in d:
-            self.value = d['value']
+        if self.FIELD_KEY in d and d[self.FIELD_KEY] is not None:
+            self.key = d[self.FIELD_KEY]
+        if self.FIELD_VALUE in d:
+            self.value = d[self.FIELD_VALUE]
 
     @property
     def id2(self):
@@ -79,8 +79,8 @@ class Option(Changeable, OptionBase):
 
     @staticmethod
     def from_dict(d):
-        key = d.get('key')
-        value = d.get('value', None)
+        key = d.get(Option.FIELD_KEY)
+        value = d.get(Option.FIELD_VALUE, None)
         return Option(key, value)
 
     def clear_relationships(self):

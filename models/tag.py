@@ -38,27 +38,27 @@ class TagBase(object):
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
-            d['id'] = self.id
+            d[self.FIELD_ID] = self.id
         if fields is None or self.FIELD_VALUE in fields:
-            d['value'] = self.value
+            d[self.FIELD_VALUE] = self.value
         if fields is None or self.FIELD_DESCRIPTION in fields:
-            d['description'] = self.description
+            d[self.FIELD_DESCRIPTION] = self.description
 
         if fields is None or self.FIELD_TASKS in fields:
-            d['tasks'] = list(self.tasks)
+            d[self.FIELD_TASKS] = list(self.tasks)
 
         return d
 
     def update_from_dict(self, d):
         self._logger.debug('{}: {}'.format(self.id2, d))
-        if 'id' in d and d['id'] is not None:
-            self.id = d['id']
-        if 'value' in d:
-            self.value = d['value']
-        if 'description' in d:
-            self.description = d['description']
-        if 'tasks' in d:
-            assign(self.tasks, d['tasks'])
+        if self.FIELD_ID in d and d[self.FIELD_ID] is not None:
+            self.id = d[self.FIELD_ID]
+        if self.FIELD_VALUE in d:
+            self.value = d[self.FIELD_VALUE]
+        if self.FIELD_DESCRIPTION in d:
+            self.description = d[self.FIELD_DESCRIPTION]
+        if self.FIELD_TASKS in d:
+            assign(self.tasks, d[self.FIELD_TASKS])
 
     @property
     def id2(self):
@@ -129,9 +129,9 @@ class Tag(Changeable, TagBase):
         logger = logging_util.get_logger_by_class(__name__, Tag)
         logger.debug('d: {}'.format(d))
 
-        tag_id = d.get('id', None)
-        value = d.get('value')
-        description = d.get('description', None)
+        tag_id = d.get(Tag.FIELD_ID, None)
+        value = d.get(Tag.FIELD_VALUE)
+        description = d.get(Tag.FIELD_DESCRIPTION, None)
 
         tag = Tag(value, description)
         logger = logging_util.get_logger(__name__, tag)

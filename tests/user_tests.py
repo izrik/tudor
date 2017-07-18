@@ -69,7 +69,8 @@ class UserTest(unittest.TestCase):
         # when
         user = User('name@example.org', '12345')
         # then
-        self.assertEqual({'email': 'name@example.org',
-                          'hashed_password': '12345',
-                          'is_admin': False, 'id': None, 'tasks': []},
+        self.assertEqual({User.FIELD_EMAIL: 'name@example.org',
+                          User.FIELD_HASHED_PASSWORD: '12345',
+                          User.FIELD_IS_ADMIN: False, User.FIELD_ID: None,
+                          User.FIELD_TASKS: []},
                          user.to_dict())

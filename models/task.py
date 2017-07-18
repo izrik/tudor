@@ -72,87 +72,89 @@ class TaskBase(object):
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
-            d['id'] = self.id
+            d[self.FIELD_ID] = self.id
         if fields is None or self.FIELD_SUMMARY in fields:
-            d['summary'] = self.summary
+            d[self.FIELD_SUMMARY] = self.summary
         if fields is None or self.FIELD_DESCRIPTION in fields:
-            d['description'] = self.description
+            d[self.FIELD_DESCRIPTION] = self.description
         if fields is None or self.FIELD_IS_DONE in fields:
-            d['is_done'] = self.is_done
+            d[self.FIELD_IS_DONE] = self.is_done
         if fields is None or self.FIELD_IS_DELETED in fields:
-            d['is_deleted'] = self.is_deleted
+            d[self.FIELD_IS_DELETED] = self.is_deleted
         if fields is None or self.FIELD_DEADLINE in fields:
-            d['deadline'] = str_from_datetime(self.deadline)
+            d[self.FIELD_DEADLINE] = str_from_datetime(self.deadline)
         if fields is None or self.FIELD_EXPECTED_DURATION_MINUTES in fields:
-            d['expected_duration_minutes'] = self.expected_duration_minutes
+            d[self.FIELD_EXPECTED_DURATION_MINUTES] = \
+                self.expected_duration_minutes
         if fields is None or self.FIELD_EXPECTED_COST in fields:
-            d['expected_cost'] = self.get_expected_cost_for_export()
+            d[self.FIELD_EXPECTED_COST] = self.get_expected_cost_for_export()
         if fields is None or self.FIELD_ORDER_NUM in fields:
-            d['order_num'] = self.order_num
+            d[self.FIELD_ORDER_NUM] = self.order_num
         if fields is None or self.FIELD_PARENT in fields:
-            d['parent'] = self.parent
+            d[self.FIELD_PARENT] = self.parent
 
         if fields is None or self.FIELD_CHILDREN in fields:
-            d['children'] = list(self.children)
+            d[self.FIELD_CHILDREN] = list(self.children)
         if fields is None or self.FIELD_DEPENDEES in fields:
-            d['dependees'] = list(self.dependees)
+            d[self.FIELD_DEPENDEES] = list(self.dependees)
         if fields is None or self.FIELD_DEPENDANTS in fields:
-            d['dependants'] = list(self.dependants)
+            d[self.FIELD_DEPENDANTS] = list(self.dependants)
         if fields is None or self.FIELD_PRIORITIZE_BEFORE in fields:
-            d['prioritize_before'] = list(self.prioritize_before)
+            d[self.FIELD_PRIORITIZE_BEFORE] = list(self.prioritize_before)
         if fields is None or self.FIELD_PRIORITIZE_AFTER in fields:
-            d['prioritize_after'] = list(self.prioritize_after)
+            d[self.FIELD_PRIORITIZE_AFTER] = list(self.prioritize_after)
         if fields is None or self.FIELD_TAGS in fields:
-            d['tags'] = list(self.tags)
+            d[self.FIELD_TAGS] = list(self.tags)
         if fields is None or self.FIELD_USERS in fields:
-            d['users'] = list(self.users)
+            d[self.FIELD_USERS] = list(self.users)
         if fields is None or self.FIELD_NOTES in fields:
-            d['notes'] = list(self.notes)
+            d[self.FIELD_NOTES] = list(self.notes)
         if fields is None or self.FIELD_ATTACHMENTS in fields:
-            d['attachments'] = list(self.attachments)
+            d[self.FIELD_ATTACHMENTS] = list(self.attachments)
 
         return d
 
     def update_from_dict(self, d):
         self._logger.debug('{}: {}'.format(id2(self), d))
-        if 'id' in d and d['id'] is not None:
-            self.id = d['id']
-        if 'summary' in d:
-            self.summary = d['summary']
-        if 'description' in d:
-            self.description = d['description']
-        if 'is_done' in d:
-            self.is_done = d['is_done']
-        if 'is_deleted' in d:
-            self.is_deleted = d['is_deleted']
-        if 'order_num' in d:
-            self.order_num = d['order_num']
-        if 'deadline' in d:
-            self.deadline = self._clean_deadline(d['deadline'])
-        if 'expected_duration_minutes' in d:
-            self.expected_duration_minutes = d['expected_duration_minutes']
-        if 'expected_cost' in d:
-            self.expected_cost = d['expected_cost']
-        if 'parent' in d:
-            self.parent = d['parent']
-        if 'children' in d:
-            assign(self.children, d['children'])
-        if 'tags' in d:
-            assign(self.tags, d['tags'])
-        if 'users' in d:
-            assign(self.users, d['users'])
-        if 'dependees' in d:
-            assign(self.dependees, d['dependees'])
-        if 'dependants' in d:
-            assign(self.dependants, d['dependants'])
-        if 'prioritize_before' in d:
-            assign(self.prioritize_before, d['prioritize_before'])
-        if 'prioritize_after' in d:
-            assign(self.prioritize_after, d['prioritize_after'])
-        if 'notes' in d:
-            assign(self.notes, d['notes'])
-        if 'attachments' in d:
-            assign(self.attachments, d['attachments'])
+        if self.FIELD_ID in d and d[self.FIELD_ID] is not None:
+            self.id = d[self.FIELD_ID]
+        if self.FIELD_SUMMARY in d:
+            self.summary = d[self.FIELD_SUMMARY]
+        if self.FIELD_DESCRIPTION in d:
+            self.description = d[self.FIELD_DESCRIPTION]
+        if self.FIELD_IS_DONE in d:
+            self.is_done = d[self.FIELD_IS_DONE]
+        if self.FIELD_IS_DELETED in d:
+            self.is_deleted = d[self.FIELD_IS_DELETED]
+        if self.FIELD_ORDER_NUM in d:
+            self.order_num = d[self.FIELD_ORDER_NUM]
+        if self.FIELD_DEADLINE in d:
+            self.deadline = self._clean_deadline(d[self.FIELD_DEADLINE])
+        if self.FIELD_EXPECTED_DURATION_MINUTES in d:
+            self.expected_duration_minutes = \
+                d[self.FIELD_EXPECTED_DURATION_MINUTES]
+        if self.FIELD_EXPECTED_COST in d:
+            self.expected_cost = d[self.FIELD_EXPECTED_COST]
+        if self.FIELD_PARENT in d:
+            self.parent = d[self.FIELD_PARENT]
+        if self.FIELD_CHILDREN in d:
+            assign(self.children, d[self.FIELD_CHILDREN])
+        if self.FIELD_TAGS in d:
+            assign(self.tags, d[self.FIELD_TAGS])
+        if self.FIELD_USERS in d:
+            assign(self.users, d[self.FIELD_USERS])
+        if self.FIELD_DEPENDEES in d:
+            assign(self.dependees, d[self.FIELD_DEPENDEES])
+        if self.FIELD_DEPENDANTS in d:
+            assign(self.dependants, d[self.FIELD_DEPENDANTS])
+        if self.FIELD_PRIORITIZE_BEFORE in d:
+            assign(self.prioritize_before, d[self.FIELD_PRIORITIZE_BEFORE])
+        if self.FIELD_PRIORITIZE_AFTER in d:
+            assign(self.prioritize_after, d[self.FIELD_PRIORITIZE_AFTER])
+        if self.FIELD_NOTES in d:
+            assign(self.notes, d[self.FIELD_NOTES])
+        if self.FIELD_ATTACHMENTS in d:
+            assign(self.attachments, d[self.FIELD_ATTACHMENTS])
 
     def get_expected_cost_for_export(self):
         if self.expected_cost is None:
@@ -387,18 +389,16 @@ class Task(Changeable, TaskBase):
 
     @staticmethod
     def from_dict(d):
-        task_id = d.get('id', None)
-        summary = d.get('summary')
-        description = d.get('description', '')
-        is_done = d.get('is_done', False)
-        is_deleted = d.get('is_deleted', False)
-        order_num = d.get('order_num', 0)
-        deadline = d.get('deadline', None)
-        expected_duration_minutes = d.get('expected_duration_minutes',
+        task_id = d.get(Task.FIELD_ID, None)
+        summary = d.get(Task.FIELD_SUMMARY)
+        description = d.get(Task.FIELD_DESCRIPTION, '')
+        is_done = d.get(Task.FIELD_IS_DONE, False)
+        is_deleted = d.get(Task.FIELD_IS_DELETED, False)
+        order_num = d.get(Task.FIELD_ORDER_NUM, 0)
+        deadline = d.get(Task.FIELD_DEADLINE, None)
+        expected_duration_minutes = d.get(Task.FIELD_EXPECTED_DURATION_MINUTES,
                                           None)
-        expected_cost = d.get('expected_cost', None)
-        # 'tag_ids': [tag.id for tag in self.tags],
-        # 'user_ids': [user.id for user in self.users]
+        expected_cost = d.get(Task.FIELD_EXPECTED_COST, None)
 
         task = Task(summary=summary, description=description,
                     is_done=is_done, is_deleted=is_deleted,
@@ -408,28 +408,26 @@ class Task(Changeable, TaskBase):
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
-        if 'parent' in d:
-            task.parent = d['parent']
-        elif 'parent_id' in d:
-            task.parent_id = d['parent_id']
-        if 'children' in d:
-            assign(task.children, d['children'])
-        if 'tags' in d:
-            assign(task.tags, d['tags'])
-        if 'users' in d:
-            assign(task.users, d['users'])
-        if 'dependees' in d:
-            assign(task.dependees, d['dependees'])
-        if 'dependants' in d:
-            assign(task.dependants, d['dependants'])
-        if 'prioritize_before' in d:
-            assign(task.prioritize_before, d['prioritize_before'])
-        if 'prioritize_after' in d:
-            assign(task.prioritize_after, d['prioritize_after'])
-        if 'notes' in d:
-            assign(task.notes, d['notes'])
-        if 'attachments' in d:
-            assign(task.attachments, d['attachments'])
+        if Task.FIELD_PARENT in d:
+            task.parent = d[Task.FIELD_PARENT]
+        if Task.FIELD_CHILDREN in d:
+            assign(task.children, d[Task.FIELD_CHILDREN])
+        if Task.FIELD_TAGS in d:
+            assign(task.tags, d[Task.FIELD_TAGS])
+        if Task.FIELD_USERS in d:
+            assign(task.users, d[Task.FIELD_USERS])
+        if Task.FIELD_DEPENDEES in d:
+            assign(task.dependees, d[Task.FIELD_DEPENDEES])
+        if Task.FIELD_DEPENDANTS in d:
+            assign(task.dependants, d[Task.FIELD_DEPENDANTS])
+        if Task.FIELD_PRIORITIZE_BEFORE in d:
+            assign(task.prioritize_before, d[Task.FIELD_PRIORITIZE_BEFORE])
+        if Task.FIELD_PRIORITIZE_AFTER in d:
+            assign(task.prioritize_after, d[Task.FIELD_PRIORITIZE_AFTER])
+        if Task.FIELD_NOTES in d:
+            assign(task.notes, d[Task.FIELD_NOTES])
+        if Task.FIELD_ATTACHMENTS in d:
+            assign(task.attachments, d[Task.FIELD_ATTACHMENTS])
         return task
 
     def get_css_class(self):

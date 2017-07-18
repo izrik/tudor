@@ -52,33 +52,33 @@ class AttachmentBase(object):
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
-            d['id'] = self.id
+            d[self.FIELD_ID] = self.id
         if fields is None or self.FIELD_TIMESTAMP in fields:
-            d['timestamp'] = str_from_datetime(self.timestamp)
+            d[self.FIELD_TIMESTAMP] = str_from_datetime(self.timestamp)
         if fields is None or self.FIELD_PATH in fields:
-            d['path'] = self.path
+            d[self.FIELD_PATH] = self.path
         if fields is None or self.FIELD_FILENAME in fields:
-            d['filename'] = self.filename
+            d[self.FIELD_FILENAME] = self.filename
         if fields is None or self.FIELD_DESCRIPTION in fields:
-            d['description'] = self.description
+            d[self.FIELD_DESCRIPTION] = self.description
         if fields is None or self.FIELD_TASK in fields:
-            d['task'] = self.task
+            d[self.FIELD_TASK] = self.task
 
         return d
 
     def update_from_dict(self, d):
-        if 'id' in d and d['id'] is not None:
-            self.id = d['id']
-        if 'timestamp' in d:
-            self.timestamp = self._clean_timestamp(d['timestamp'])
-        if 'path' in d:
-            self.path = d['path']
-        if 'filename' in d:
-            self.filename = d['filename']
-        if 'description' in d:
-            self.description = d['description']
-        if 'task' in d:
-            self.task = d['task']
+        if self.FIELD_ID in d and d[self.FIELD_ID] is not None:
+            self.id = d[self.FIELD_ID]
+        if self.FIELD_TIMESTAMP in d:
+            self.timestamp = self._clean_timestamp(d[self.FIELD_TIMESTAMP])
+        if self.FIELD_PATH in d:
+            self.path = d[self.FIELD_PATH]
+        if self.FIELD_FILENAME in d:
+            self.filename = d[self.FIELD_FILENAME]
+        if self.FIELD_DESCRIPTION in d:
+            self.description = d[self.FIELD_DESCRIPTION]
+        if self.FIELD_TASK in d:
+            self.task = d[self.FIELD_TASK]
 
     @property
     def id2(self):
@@ -184,12 +184,12 @@ class Attachment(Changeable, AttachmentBase):
 
     @staticmethod
     def from_dict(d):
-        attachment_id = d.get('id', None)
-        timestamp = d.get('timestamp', None)
-        path = d.get('path')
-        filename = d.get('filename', None)
-        description = d.get('description', None)
-        task = d.get('task')
+        attachment_id = d.get(Attachment.FIELD_ID, None)
+        timestamp = d.get(Attachment.FIELD_TIMESTAMP, None)
+        path = d.get(Attachment.FIELD_PATH)
+        filename = d.get(Attachment.FIELD_FILENAME, None)
+        description = d.get(Attachment.FIELD_DESCRIPTION, None)
+        task = d.get(Attachment.FIELD_TASK)
 
         attachment = Attachment(path, description, timestamp, filename)
         if attachment_id is not None:

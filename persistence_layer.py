@@ -440,44 +440,58 @@ class PersistenceLayer(object):
     def _domain_attrs_from_db(self, d):
         self._logger.debug('d: {}'.format(d))
         d2 = d.copy()
-        if 'parent' in d2 and d2['parent'] is not None:
-            d2['parent'] = self._get_domain_object_from_db_object(d2['parent'])
-        if 'children' in d2 and d2['children'] is not None:
-            d2['children'] = [self._get_domain_object_from_db_object(dbobj) for
-                              dbobj in d2['children']]
-        if 'tags' in d2 and d2['tags'] is not None:
-            d2['tags'] = [self._get_domain_object_from_db_object(dbobj) for
-                          dbobj in d2['tags']]
-        if 'tasks' in d2 and d2['tasks'] is not None:
-            d2['tasks'] = [self._get_domain_object_from_db_object(dbobj) for
-                           dbobj in d2['tasks']]
-        if 'users' in d2 and d2['users'] is not None:
-            d2['users'] = [self._get_domain_object_from_db_object(dbobj) for
-                           dbobj in d2['users']]
-        if 'dependees' in d2 and d2['dependees'] is not None:
-            d2['dependees'] = [self._get_domain_object_from_db_object(dbobj)
-                               for dbobj in d2['dependees']]
-        if 'dependants' in d2 and d2['dependants'] is not None:
-            d2['dependants'] = [self._get_domain_object_from_db_object(dbobj)
-                                for dbobj in d2['dependants']]
-        if 'prioritize_before' in d2 and d2['prioritize_before'] is not None:
-            d2['prioritize_before'] = [
+        if Task.FIELD_PARENT in d2 and d2[Task.FIELD_PARENT] is not None:
+            d2[Task.FIELD_PARENT] = self._get_domain_object_from_db_object(
+                d2[Task.FIELD_PARENT])
+        if Task.FIELD_CHILDREN in d2 and d2[Task.FIELD_CHILDREN] is not None:
+            d2[Task.FIELD_CHILDREN] = [
+                self._get_domain_object_from_db_object(dbobj)
+                for dbobj in d2[Task.FIELD_CHILDREN]]
+        if Task.FIELD_TAGS in d2 and d2[Task.FIELD_TAGS] is not None:
+            d2[Task.FIELD_TAGS] = [
+                self._get_domain_object_from_db_object(dbobj)
+                for dbobj in d2[Task.FIELD_TAGS]]
+        if Tag.FIELD_TASKS in d2 and d2[Tag.FIELD_TASKS] is not None:
+            d2[Tag.FIELD_TASKS] = [
+                self._get_domain_object_from_db_object(dbobj)
+                for dbobj in d2[Tag.FIELD_TASKS]]
+        # User.FIELD_TASKS
+        if Task.FIELD_USERS in d2 and d2[Task.FIELD_USERS] is not None:
+            d2[Task.FIELD_USERS] = [
+                self._get_domain_object_from_db_object(dbobj)
+                for dbobj in d2[Task.FIELD_USERS]]
+        if Task.FIELD_DEPENDEES in d2 and d2[Task.FIELD_DEPENDEES] is not None:
+            d2[Task.FIELD_DEPENDEES] = [
+                self._get_domain_object_from_db_object(dbobj)
+                for dbobj in d2[Task.FIELD_DEPENDEES]]
+        if Task.FIELD_DEPENDANTS in d2 and \
+                d2[Task.FIELD_DEPENDANTS] is not None:
+            d2[Task.FIELD_DEPENDANTS] = [
+                self._get_domain_object_from_db_object(dbobj)
+                for dbobj in d2[Task.FIELD_DEPENDANTS]]
+        if Task.FIELD_PRIORITIZE_BEFORE in d2 and \
+                d2[Task.FIELD_PRIORITIZE_BEFORE] is not None:
+            d2[Task.FIELD_PRIORITIZE_BEFORE] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
-                d2['prioritize_before']]
-        if 'prioritize_after' in d2 and d2['prioritize_after'] is not None:
-            d2['prioritize_after'] = [
+                d2[Task.FIELD_PRIORITIZE_BEFORE]]
+        if Task.FIELD_PRIORITIZE_AFTER in d2 and \
+                d2[Task.FIELD_PRIORITIZE_AFTER] is not None:
+            d2[Task.FIELD_PRIORITIZE_AFTER] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
-                d2['prioritize_after']]
-        if 'notes' in d2 and d2['notes'] is not None:
-            d2['notes'] = [
+                d2[Task.FIELD_PRIORITIZE_AFTER]]
+        if Task.FIELD_NOTES in d2 and d2[Task.FIELD_NOTES] is not None:
+            d2[Task.FIELD_NOTES] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
-                d2['notes']]
-        if 'attachments' in d2 and d2['attachments'] is not None:
-            d2['attachments'] = [
+                d2[Task.FIELD_NOTES]]
+        if Task.FIELD_ATTACHMENTS in d2 and \
+                d2[Task.FIELD_ATTACHMENTS] is not None:
+            d2[Task.FIELD_ATTACHMENTS] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
-                d2['attachments']]
-        if 'task' in d2 and d2['task'] is not None:
-            d2['task'] = self._get_domain_object_from_db_object(d2['task'])
+                d2[Task.FIELD_ATTACHMENTS]]
+        if Note.FIELD_TASK in d2 and d2[Note.FIELD_TASK] is not None:
+            d2[Note.FIELD_TASK] = self._get_domain_object_from_db_object(
+                d2[Note.FIELD_TASK])
+        # Attachment.FIELD_TASK
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
@@ -502,9 +516,22 @@ class PersistenceLayer(object):
             'updated dom obj {} -> {}'.format(id2(domobj), id2(dbobj)))
         self._logger.debug('end')
 
-    _relational_attrs = {'parent', 'children', 'tags', 'tasks', 'users',
-                         'dependees', 'dependants', 'prioritize_before',
-                         'prioritize_after', 'notes', 'attachments', 'task'}
+    _relational_attrs = {
+        Attachment.FIELD_TASK,
+        Note.FIELD_TASK,
+        Tag.FIELD_TASKS,
+        Task.FIELD_PARENT,
+        Task.FIELD_CHILDREN,
+        Task.FIELD_DEPENDEES,
+        Task.FIELD_DEPENDANTS,
+        Task.FIELD_PRIORITIZE_BEFORE,
+        Task.FIELD_PRIORITIZE_AFTER,
+        Task.FIELD_TAGS,
+        Task.FIELD_USERS,
+        Task.FIELD_NOTES,
+        Task.FIELD_ATTACHMENTS,
+        User.FIELD_TASKS,
+    }
 
     def _db_attrs_from_domain_all(self, d):
         self._logger.debug('d: {}'.format(d))
@@ -531,44 +558,54 @@ class PersistenceLayer(object):
         self._logger.debug('d: {}'.format(d))
         if d2 is None:
             d2 = {}
-        if 'parent' in d and d['parent'] is not None:
-            d2['parent'] = self._get_db_object_from_domain_object(d['parent'])
-        if 'children' in d:
-            d2['children'] = [self._get_db_object_from_domain_object(domobj)
-                              for domobj in d['children']]
-        if 'tags' in d:
-            d2['tags'] = [self._get_db_object_from_domain_object(domobj) for
-                          domobj in d['tags']]
-        if 'tasks' in d:
-            d2['tasks'] = [self._get_db_object_from_domain_object(domobj) for
-                           domobj in d['tasks']]
-        if 'task' in d and d['task'] is not None:
-            d2['task'] = self._get_db_object_from_domain_object(d['task'])
-        if 'users' in d:
-            d2['users'] = [self._get_db_object_from_domain_object(domobj) for
-                           domobj in d['users']]
-        if 'dependees' in d:
-            d2['dependees'] = [self._get_db_object_from_domain_object(domobj)
-                               for domobj in d['dependees']]
-        if 'dependants' in d:
-            d2['dependants'] = [self._get_db_object_from_domain_object(domobj)
-                                for domobj in d['dependants']]
-        if 'prioritize_before' in d:
-            d2['prioritize_before'] = [
+        if Task.FIELD_PARENT in d and d[Task.FIELD_PARENT] is not None:
+            d2[Task.FIELD_PARENT] = self._get_db_object_from_domain_object(
+                d[Task.FIELD_PARENT])
+        if Task.FIELD_CHILDREN in d:
+            d2[Task.FIELD_CHILDREN] = [
+                self._get_db_object_from_domain_object(domobj)
+                for domobj in d[Task.FIELD_CHILDREN]]
+        if Task.FIELD_TAGS in d:
+            d2[Task.FIELD_TAGS] = [
+                self._get_db_object_from_domain_object(domobj)
+                for domobj in d[Task.FIELD_TAGS]]
+        if Tag.FIELD_TASKS in d:
+            d2[Tag.FIELD_TASKS] = [
+                self._get_db_object_from_domain_object(domobj)
+                for domobj in d[Tag.FIELD_TASKS]]
+        # User.FIELD_TASKS
+        if Note.FIELD_TASK in d and d[Note.FIELD_TASK] is not None:
+            d2[Note.FIELD_TASK] = self._get_db_object_from_domain_object(
+                d[Note.FIELD_TASK])
+        # Attachment.FIELD_TASK
+        if Task.FIELD_USERS in d:
+            d2[Task.FIELD_USERS] = [
+                self._get_db_object_from_domain_object(domobj)
+                for domobj in d[Task.FIELD_USERS]]
+        if Task.FIELD_DEPENDEES in d:
+            d2[Task.FIELD_DEPENDEES] = [
+                self._get_db_object_from_domain_object(domobj)
+                for domobj in d[Task.FIELD_DEPENDEES]]
+        if Task.FIELD_DEPENDANTS in d:
+            d2[Task.FIELD_DEPENDANTS] = [
+                self._get_db_object_from_domain_object(domobj)
+                for domobj in d[Task.FIELD_DEPENDANTS]]
+        if Task.FIELD_PRIORITIZE_BEFORE in d:
+            d2[Task.FIELD_PRIORITIZE_BEFORE] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
-                d['prioritize_before']]
-        if 'prioritize_after' in d:
-            d2['prioritize_after'] = [
+                d[Task.FIELD_PRIORITIZE_BEFORE]]
+        if Task.FIELD_PRIORITIZE_AFTER in d:
+            d2[Task.FIELD_PRIORITIZE_AFTER] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
-                d['prioritize_after']]
-        if 'notes' in d:
-            d2['notes'] = [
+                d[Task.FIELD_PRIORITIZE_AFTER]]
+        if Task.FIELD_NOTES in d:
+            d2[Task.FIELD_NOTES] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
-                d['notes']]
-        if 'attachments' in d:
-            d2['attachments'] = [
+                d[Task.FIELD_NOTES]]
+        if Task.FIELD_ATTACHMENTS in d:
+            d2[Task.FIELD_ATTACHMENTS] = [
                 self._get_db_object_from_domain_object(domobj) for domobj in
-                d['attachments']]
+                d[Task.FIELD_ATTACHMENTS]]
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
@@ -1051,16 +1088,16 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
 
         @staticmethod
         def from_dict(d):
-            task_id = d.get('id', None)
-            summary = d.get('summary')
-            description = d.get('description', '')
-            is_done = d.get('is_done', False)
-            is_deleted = d.get('is_deleted', False)
-            order_num = d.get('order_num', 0)
-            deadline = d.get('deadline', None)
-            expected_duration_minutes = d.get('expected_duration_minutes',
-                                              None)
-            expected_cost = d.get('expected_cost', None)
+            task_id = d.get(Task.FIELD_ID, None)
+            summary = d.get(Task.FIELD_SUMMARY)
+            description = d.get(Task.FIELD_DESCRIPTION, '')
+            is_done = d.get(Task.FIELD_IS_DONE, False)
+            is_deleted = d.get(Task.FIELD_IS_DELETED, False)
+            order_num = d.get(Task.FIELD_ORDER_NUM, 0)
+            deadline = d.get(Task.FIELD_DEADLINE, None)
+            expected_duration_minutes = d.get(
+                Task.FIELD_EXPECTED_DURATION_MINUTES, None)
+            expected_cost = d.get(Task.FIELD_EXPECTED_COST, None)
             # 'tag_ids': [tag.id for tag in self.tags],
             # 'user_ids': [user.id for user in self.users]
 
@@ -1072,35 +1109,35 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if task_id is not None:
                 task.id = task_id
             task.order_num = order_num
-            if 'parent' in d:
-                task.parent = d['parent']
-            if 'children' in d:
+            if Task.FIELD_PARENT in d:
+                task.parent = d[Task.FIELD_PARENT]
+            if Task.FIELD_CHILDREN in d:
                 clear(task.users)
-                task.children.extend(d['children'])
-            if 'tags' in d:
+                task.children.extend(d[Task.FIELD_CHILDREN])
+            if Task.FIELD_TAGS in d:
                 clear(task.users)
-                extend(task.tags, d['tags'])
-            if 'users' in d:
+                extend(task.tags, d[Task.FIELD_TAGS])
+            if Task.FIELD_USERS in d:
                 clear(task.users)
-                extend(task.users, d['users'])
-            if 'dependees' in d:
+                extend(task.users, d[Task.FIELD_USERS])
+            if Task.FIELD_DEPENDEES in d:
                 clear(task.dependees)
-                extend(task.dependees, d['dependees'])
-            if 'dependants' in d:
+                extend(task.dependees, d[Task.FIELD_DEPENDEES])
+            if Task.FIELD_DEPENDANTS in d:
                 clear(task.dependants)
-                extend(task.dependants, d['dependants'])
-            if 'prioritize_before' in d:
+                extend(task.dependants, d[Task.FIELD_DEPENDANTS])
+            if Task.FIELD_PRIORITIZE_BEFORE in d:
                 clear(task.prioritize_before)
-                extend(task.prioritize_before, d['prioritize_before'])
-            if 'prioritize_after' in d:
+                extend(task.prioritize_before, d[Task.FIELD_PRIORITIZE_BEFORE])
+            if Task.FIELD_PRIORITIZE_AFTER in d:
                 clear(task.prioritize_after)
-                extend(task.prioritize_after, d['prioritize_after'])
-            if 'notes' in d:
+                extend(task.prioritize_after, d[Task.FIELD_PRIORITIZE_AFTER])
+            if Task.FIELD_NOTES in d:
                 clear(task.notes)
-                extend(task.notes, d['notes'])
-            if 'attachments' in d:
+                extend(task.notes, d[Task.FIELD_NOTES])
+            if Task.FIELD_ATTACHMENTS in d:
                 clear(task.attachments)
-                extend(task.attachments, d['attachments'])
+                extend(task.attachments, d[Task.FIELD_ATTACHMENTS])
             return task
 
         def make_change(self, field, operation, value):
@@ -1202,9 +1239,9 @@ def generate_tag_class(db, tags_tasks_table):
             logger = logging_util.get_logger_by_class(__name__, Tag)
             logger.debug('d: {}'.format(d))
 
-            tag_id = d.get('id', None)
-            value = d.get('value')
-            description = d.get('description', None)
+            tag_id = d.get(Tag.FIELD_ID, None)
+            value = d.get(Tag.FIELD_VALUE)
+            description = d.get(Tag.FIELD_DESCRIPTION, None)
 
             tag = DbTag(value, description)
             if tag_id is not None:
@@ -1269,10 +1306,10 @@ def generate_note_class(db):
 
         @staticmethod
         def from_dict(d):
-            note_id = d.get('id', None)
-            content = d.get('content')
-            timestamp = d.get('timestamp', None)
-            task = d.get('task')
+            note_id = d.get(Note.FIELD_ID, None)
+            content = d.get(Note.FIELD_CONTENT)
+            timestamp = d.get(Note.FIELD_TIMESTAMP, None)
+            task = d.get(Note.FIELD_TASK)
 
             note = DbNote(content, timestamp)
             if note_id is not None:
@@ -1329,12 +1366,12 @@ def generate_attachment_class(db):
 
         @staticmethod
         def from_dict(d):
-            attachment_id = d.get('id', None)
-            timestamp = d.get('timestamp', None)
-            path = d.get('path')
-            filename = d.get('filename', None)
-            description = d.get('description', None)
-            task = d.get('task')
+            attachment_id = d.get(Attachment.FIELD_ID, None)
+            timestamp = d.get(Attachment.FIELD_TIMESTAMP, None)
+            path = d.get(Attachment.FIELD_PATH)
+            filename = d.get(Attachment.FIELD_FILENAME, None)
+            description = d.get(Attachment.FIELD_DESCRIPTION, None)
+            task = d.get(Attachment.FIELD_TASK)
 
             attachment = DbAttachment(path, description, timestamp, filename)
             if attachment_id is not None:
@@ -1396,10 +1433,10 @@ def generate_user_class(db, bcrypt, users_tasks_table):
 
         @staticmethod
         def from_dict(d):
-            user_id = d.get('id', None)
-            email = d.get('email')
-            hashed_password = d.get('hashed_password', None)
-            is_admin = d.get('is_admin', False)
+            user_id = d.get(User.FIELD_ID, None)
+            email = d.get(User.FIELD_EMAIL)
+            hashed_password = d.get(User.FIELD_HASHED_PASSWORD, None)
+            is_admin = d.get(User.FIELD_IS_ADMIN, False)
 
             user = DbUser(email, hashed_password, is_admin)
             if user_id is not None:
@@ -1456,8 +1493,8 @@ def generate_option_class(db):
 
         @staticmethod
         def from_dict(d):
-            key = d.get('key')
-            value = d.get('value', None)
+            key = d.get(Option.FIELD_KEY)
+            value = d.get(Option.FIELD_VALUE, None)
             return DbOption(key, value)
 
         def make_change(self, field, operation, value):

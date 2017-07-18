@@ -33,30 +33,30 @@ class UserBase(object):
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
-            d['id'] = self.id
+            d[self.FIELD_ID] = self.id
         if fields is None or self.FIELD_EMAIL in fields:
-            d['email'] = self.email
+            d[self.FIELD_EMAIL] = self.email
         if fields is None or self.FIELD_HASHED_PASSWORD in fields:
-            d['hashed_password'] = self.hashed_password
+            d[self.FIELD_HASHED_PASSWORD] = self.hashed_password
         if fields is None or self.FIELD_IS_ADMIN in fields:
-            d['is_admin'] = self.is_admin
+            d[self.FIELD_IS_ADMIN] = self.is_admin
 
         if fields is None or self.FIELD_TASKS in fields:
-            d['tasks'] = list(self.tasks)
+            d[self.FIELD_TASKS] = list(self.tasks)
 
         return d
 
     def update_from_dict(self, d):
-        if 'id' in d and d['id'] is not None:
-            self.id = d['id']
-        if 'email' in d:
-            self.email = d['email']
-        if 'hashed_password' in d:
-            self.hashed_password = d['hashed_password']
-        if 'is_admin' in d:
-            self.is_admin = d['is_admin']
-        if 'tasks' in d:
-            assign(self.tasks, d['tasks'])
+        if self.FIELD_ID in d and d[self.FIELD_ID] is not None:
+            self.id = d[self.FIELD_ID]
+        if self.FIELD_EMAIL in d:
+            self.email = d[self.FIELD_EMAIL]
+        if self.FIELD_HASHED_PASSWORD in d:
+            self.hashed_password = d[self.FIELD_HASHED_PASSWORD]
+        if self.FIELD_IS_ADMIN in d:
+            self.is_admin = d[self.FIELD_IS_ADMIN]
+        if self.FIELD_TASKS in d:
+            assign(self.tasks, d[self.FIELD_TASKS])
 
     def is_active(self):
         return True
@@ -144,10 +144,10 @@ class User(Changeable, UserBase):
 
     @staticmethod
     def from_dict(d):
-        user_id = d.get('id', None)
-        email = d.get('email')
-        hashed_password = d.get('hashed_password', None)
-        is_admin = d.get('is_admin', False)
+        user_id = d.get(User.FIELD_ID, None)
+        email = d.get(User.FIELD_EMAIL)
+        hashed_password = d.get(User.FIELD_HASHED_PASSWORD, None)
+        is_admin = d.get(User.FIELD_IS_ADMIN, False)
 
         user = User(email, hashed_password, is_admin)
         if user_id is not None:
