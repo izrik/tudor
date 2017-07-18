@@ -1109,7 +1109,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                          self.FIELD_IS_DELETED, self.FIELD_DEADLINE,
                          self.FIELD_EXPECTED_DURATION_MINUTES,
                          self.FIELD_EXPECTED_COST, self.FIELD_ORDER_NUM,
-                         self.FIELD_PARENT, self.FIELD_PARENT_ID):
+                         self.FIELD_PARENT):
                 if operation != Changeable.OP_SET:
                     raise ValueError(
                         'Invalid operation "{}" for field "{}"'.format(

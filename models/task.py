@@ -54,8 +54,7 @@ class TaskBase(object):
 
     @staticmethod
     def get_autochange_fields():
-        return (TaskBase.FIELD_ID, TaskBase.FIELD_PARENT_ID,
-                TaskBase.FIELD_PARENT)
+        return (TaskBase.FIELD_ID, TaskBase.FIELD_PARENT)
 
     def __repr__(self):
         cls = type(self).__name__
@@ -92,8 +91,6 @@ class TaskBase(object):
             d['order_num'] = self.order_num
         if fields is None or self.FIELD_PARENT in fields:
             d['parent'] = self.parent
-        if fields is None or self.FIELD_PARENT_ID in fields:
-            d['parent_id'] = self.parent_id
 
         if fields is None or self.FIELD_CHILDREN in fields:
             d['children'] = list(self.children)

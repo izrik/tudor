@@ -84,13 +84,11 @@ class TaskTest(unittest.TestCase):
         # when
         result = task.to_dict()
         # then
-        self.assertEqual(20, len(result))
+        self.assertEqual(19, len(result))
         self.assertIn('id', result)
         self.assertIsNone(result['id'])
         self.assertIn('order_num', result)
         self.assertEqual(0, result['order_num'])
-        self.assertIn('parent_id', result)
-        self.assertIsNone(result['parent_id'])
         self.assertIn('tags', result)
         self.assertEqual([], result['tags'])
         self.assertIn('users', result)
