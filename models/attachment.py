@@ -14,7 +14,6 @@ class AttachmentBase(object):
     FIELD_DESCRIPTION = 'DESCRIPTION'
     FIELD_TIMESTAMP = 'TIMESTAMP'
     FIELD_FILENAME = 'FILENAME'
-    FIELD_TASK_ID = 'TASK_ID'
     FIELD_TASK = 'TASK'
 
     def __init__(self, path, description=None, timestamp=None,
@@ -31,16 +30,11 @@ class AttachmentBase(object):
 
     @staticmethod
     def get_related_fields(field):
-        if field == AttachmentBase.FIELD_TASK:
-            return (AttachmentBase.FIELD_TASK_ID,)
-        if field == AttachmentBase.FIELD_TASK_ID:
-            return (AttachmentBase.FIELD_TASK,)
         return ()
 
     @staticmethod
     def get_autochange_fields():
-        return (AttachmentBase.FIELD_ID, AttachmentBase.FIELD_TASK_ID,
-                AttachmentBase.FIELD_TASK)
+        return (AttachmentBase.FIELD_ID, AttachmentBase.FIELD_TASK)
 
     def __repr__(self):
         cls = type(self).__name__
@@ -67,8 +61,6 @@ class AttachmentBase(object):
             d['filename'] = self.filename
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
-        if fields is None or self.FIELD_TASK_ID in fields:
-            d['task_id'] = self.task_id
         if fields is None or self.FIELD_TASK in fields:
             d['task'] = self.task
 
@@ -85,8 +77,8 @@ class AttachmentBase(object):
             self.filename = d['filename']
         if 'description' in d:
             self.description = d['description']
-        if 'task_id' in d:
-            self.task_id = d['task_id']
+        if 'task' in d:
+            self.task = d['task']
 
     @property
     def id2(self):
@@ -102,7 +94,6 @@ class Attachment(Changeable, AttachmentBase):
     _description = ''
 
     _task = None
-    _task_id = None
 
     _dbobj = None
 
@@ -171,16 +162,9 @@ class Attachment(Changeable, AttachmentBase):
 
     @property
     def task_id(self):
-        return self._task_id
-
-    @task_id.setter
-    def task_id(self, value):
-        if value != self._task_id:
-            self._on_attr_changing(self.FIELD_TASK_ID,
-                                  self._task_id)
-            self._task_id = value
-            self._on_attr_changed(self.FIELD_TASK_ID, self.OP_SET,
-                                  self._task_id)
+        if self.task:
+            return self.task.id
+        return None
 
     @property
     def task(self):
@@ -205,14 +189,13 @@ class Attachment(Changeable, AttachmentBase):
         path = d.get('path')
         filename = d.get('filename', None)
         description = d.get('description', None)
-        task_id = d.get('task_id')
+        task = d.get('task')
 
         attachment = Attachment(path, description, timestamp, filename)
         if attachment_id is not None:
             attachment.id = attachment_id
-        attachment.task_id = task_id
+        attachment.task = task
         return attachment
 
     def clear_relationships(self):
         self.task = None
-        self.task_id = None

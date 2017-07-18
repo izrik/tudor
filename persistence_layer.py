@@ -477,6 +477,8 @@ class PersistenceLayer(object):
             d2['attachments'] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
                 d2['attachments']]
+        if 'task' in d2 and d2['task'] is not None:
+            d2['task'] = self._get_domain_object_from_db_object(d2['task'])
         self._logger.debug('d2: {}'.format(d2))
         return d2
 
@@ -503,7 +505,7 @@ class PersistenceLayer(object):
 
     _relational_attrs = {'parent', 'children', 'tags', 'tasks', 'users',
                          'dependees', 'dependants', 'prioritize_before',
-                         'prioritize_after', 'notes', 'attachments'}
+                         'prioritize_after', 'notes', 'attachments', 'task'}
 
     def _db_attrs_from_domain_all(self, d):
         self._logger.debug('d: {}'.format(d))
@@ -541,8 +543,8 @@ class PersistenceLayer(object):
         if 'tasks' in d:
             d2['tasks'] = [self._get_db_object_from_domain_object(domobj) for
                            domobj in d['tasks']]
-        if 'task_id' in d and d['task_id'] is not None:
-            d2['task_id'] = d['task_id']
+        if 'task' in d and d['task'] is not None:
+            d2['task'] = self._get_db_object_from_domain_object(d['task'])
         if 'users' in d:
             d2['users'] = [self._get_db_object_from_domain_object(domobj) for
                            domobj in d['users']]
@@ -1269,18 +1271,17 @@ def generate_note_class(db):
             note_id = d.get('id', None)
             content = d.get('content')
             timestamp = d.get('timestamp', None)
-            task_id = d.get('task_id')
+            task = d.get('task')
 
             note = DbNote(content, timestamp)
             if note_id is not None:
                 note.id = note_id
-            note.task_id = task_id
+            note.task = task
             return note
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_ID, self.FIELD_CONTENT,
-                         self.FIELD_TIMESTAMP, self.FIELD_TASK_ID,
-                         self.FIELD_TASK):
+                         self.FIELD_TIMESTAMP, self.FIELD_TASK):
                 if operation != Changeable.OP_SET:
                     raise ValueError(
                         'Invalid operation "{}" for field "{}"'.format(
@@ -1294,8 +1295,6 @@ def generate_note_class(db):
                 self.content = value
             elif field == self.FIELD_TIMESTAMP:
                 self.timestamp = value
-            elif field == self.FIELD_TASK_ID:
-                self.task_id = value
             else:  # field == self.FIELD_TASK
                 self.task = value
 
@@ -1334,19 +1333,18 @@ def generate_attachment_class(db):
             path = d.get('path')
             filename = d.get('filename', None)
             description = d.get('description', None)
-            task_id = d.get('task_id')
+            task = d.get('task')
 
             attachment = DbAttachment(path, description, timestamp, filename)
             if attachment_id is not None:
                 attachment.id = attachment_id
-            attachment.task_id = task_id
+            attachment.task = task
             return attachment
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_ID, self.FIELD_PATH,
                          self.FIELD_DESCRIPTION, self.FIELD_TIMESTAMP,
-                         self.FIELD_FILENAME, self.FIELD_TASK_ID,
-                         self.FIELD_TASK):
+                         self.FIELD_FILENAME, self.FIELD_TASK):
                 if operation != Changeable.OP_SET:
                     raise ValueError(
                         'Invalid operation "{}" for field "{}"'.format(
@@ -1364,8 +1362,6 @@ def generate_attachment_class(db):
                 self.timestamp = value
             elif field == self.FIELD_FILENAME:
                 self.filename = value
-            elif field == self.FIELD_TASK_ID:
-                self.task_id = value
             else:  # field == self.FIELD_TASK
                 self.task = value
 

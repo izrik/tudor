@@ -11,7 +11,6 @@ class NoteBase(object):
     FIELD_ID = 'ID'
     FIELD_CONTENT = 'CONTENT'
     FIELD_TIMESTAMP = 'TIMESTAMP'
-    FIELD_TASK_ID = 'TASK_ID'
     FIELD_TASK = 'TASK'
 
     def __init__(self, content, timestamp=None):
@@ -20,15 +19,11 @@ class NoteBase(object):
 
     @staticmethod
     def get_related_fields(field):
-        if field == NoteBase.FIELD_TASK:
-            return (NoteBase.FIELD_TASK_ID,)
-        if field == NoteBase.FIELD_TASK_ID:
-            return (NoteBase.FIELD_TASK,)
         return ()
 
     @staticmethod
     def get_autochange_fields():
-        return (NoteBase.FIELD_ID, NoteBase.FIELD_TASK_ID, NoteBase.FIELD_TASK)
+        return (NoteBase.FIELD_ID, NoteBase.FIELD_TASK)
 
     def __repr__(self):
         cls = type(self).__name__
@@ -51,8 +46,6 @@ class NoteBase(object):
             d['timestamp'] = str_from_datetime(self.timestamp)
         if fields is None or self.FIELD_CONTENT in fields:
             d['content'] = self.content
-        if fields is None or self.FIELD_TASK_ID in fields:
-            d['task_id'] = self.task_id
         if fields is None or self.FIELD_TASK in fields:
             d['task'] = self.task
 
@@ -65,8 +58,8 @@ class NoteBase(object):
             self.content = d['content']
         if 'timestamp' in d:
             self.timestamp = self._clean_timestamp(d['timestamp'])
-        if 'task_id' in d:
-            self.task_id = d['task_id']
+        if 'task' in d:
+            self.task = d['task']
 
     @property
     def id2(self):
@@ -81,7 +74,6 @@ class Note(Changeable, NoteBase):
     _content = ''
     _timestamp = None
 
-    _task_id = None
     _task = None
 
     _dbobj = None
@@ -123,15 +115,9 @@ class Note(Changeable, NoteBase):
 
     @property
     def task_id(self):
-        return self._task_id
-
-    @task_id.setter
-    def task_id(self, value):
-        if value != self._task_id:
-            self._on_attr_changing(self.FIELD_TASK_ID, self._task_id)
-            self._task_id = value
-            self._on_attr_changed(self.FIELD_TASK_ID, self.OP_SET,
-                                  self._task_id)
+        if self.task:
+            return self.task.id
+        return None
 
     @property
     def task(self):
@@ -153,14 +139,13 @@ class Note(Changeable, NoteBase):
         note_id = d.get('id', None)
         content = d.get('content')
         timestamp = d.get('timestamp', None)
-        task_id = d.get('task_id')
+        task = d.get('task')
 
         note = Note(content, timestamp)
         if note_id is not None:
             note.id = note_id
-        note.task_id = task_id
+        note.task = task
         return note
 
     def clear_relationships(self):
         self.task = None
-        self.task_id = None
