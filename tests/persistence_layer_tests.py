@@ -3366,7 +3366,7 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
         # then
         self.assertNotIn(user, task.users)
 
-    def test_db_only_deleting_user_removes_task_from_user(self):
+    def test_notice_db_only_deleting_user_does_not_remove_task_from_user(self):
         # given
         task = self.pl.Task('task')
         user = self.pl.User('user')
@@ -3384,7 +3384,7 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
         self.pl.db.session.commit()
 
         # then
-        self.assertNotIn(task, user.tasks)
+        self.assertIn(task, user.tasks)
 
     def test_db_only_deleting_dependee_removes_dependee_from_dependant(self):
         # given
