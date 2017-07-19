@@ -38,7 +38,7 @@ class AttachmentBase(object):
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}({}, id={})'.format(cls, self.path, self.id)
+        return '{}({}, id={})'.format(cls, repr(self.path), self.id)
 
     @staticmethod
     def _clean_timestamp(timestamp):
@@ -82,7 +82,7 @@ class AttachmentBase(object):
 
     @property
     def id2(self):
-        return '[{}] {} ({})'.format(id(self), self.filename, self.id)
+        return '[{}] {} ({})'.format(id(self), repr(self.filename), self.id)
 
 
 class Attachment(Changeable, AttachmentBase):

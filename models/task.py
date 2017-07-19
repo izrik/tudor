@@ -59,7 +59,7 @@ class TaskBase(object):
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}({}, id={})'.format(cls, self.summary, self.id)
+        return '{}({}, id={})'.format(cls, repr(self.summary), self.id)
 
     @staticmethod
     def _clean_deadline(deadline):
@@ -162,7 +162,7 @@ class TaskBase(object):
 
     @property
     def id2(self):
-        return '[{}] {} ({})'.format(id(self), self.summary, self.id)
+        return '[{}] {} ({})'.format(id(self), repr(self.summary), self.id)
 
 
 class Task(Changeable, TaskBase):

@@ -31,7 +31,7 @@ class TagBase(object):
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}({}, id={})'.format(cls, self.value, self.id)
+        return '{}({}, id={})'.format(cls, repr(self.value), self.id)
 
     def to_dict(self, fields=None):
 
@@ -63,7 +63,7 @@ class TagBase(object):
 
     @property
     def id2(self):
-        return '[{}] {} ({})'.format(id(self), self.value, self.id)
+        return '[{}] {} ({})'.format(id(self), repr(self.value), self.id)
 
 
 class Tag(Changeable, TagBase):

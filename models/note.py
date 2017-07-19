@@ -27,7 +27,7 @@ class NoteBase(object):
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}({}, id={})'.format(cls, self.content, self.id)
+        return '{}({}, id={})'.format(cls, repr(self.content), self.id)
 
     @staticmethod
     def _clean_timestamp(timestamp):
@@ -64,9 +64,9 @@ class NoteBase(object):
     @property
     def id2(self):
         if len(self.content) > 20:
-            return '[{}] {}... ({})'.format(id(self), self.content[:20],
+            return '[{}] {}... ({})'.format(id(self), repr(self.content[:20]),
                                             self.id)
-        return '[{}] {} ({})'.format(id(self), self.content, self.id)
+        return '[{}] {} ({})'.format(id(self), repr(self.content), self.id)
 
 
 class Note(Changeable, NoteBase):

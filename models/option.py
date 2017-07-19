@@ -21,7 +21,8 @@ class OptionBase(object):
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}(key{}, value={})'.format(cls, self.key, self.value)
+        return '{}(key{}, value={})'.format(cls, repr(self.key),
+                                            repr(self.value))
 
     @property
     def id(self):
@@ -45,7 +46,7 @@ class OptionBase(object):
 
     @property
     def id2(self):
-        return '[{}] {}={}'.format(id(self), self.key, self.value)
+        return '[{}] {}={}'.format(id(self), repr(self.key), repr(self.value))
 
 
 class Option(Changeable, OptionBase):

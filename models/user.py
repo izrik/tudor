@@ -30,6 +30,10 @@ class UserBase(object):
     def get_autochange_fields():
         return (UserBase.FIELD_ID,)
 
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({}, id={})'.format(cls, repr(self.email), self.id)
+
     def to_dict(self, fields=None):
 
         d = {}
@@ -73,7 +77,7 @@ class UserBase(object):
 
     @property
     def id2(self):
-        return '[{}] {} ({})'.format(id(self), self.email, self.id)
+        return '[{}] {} ({})'.format(id(self), repr(self.email), self.id)
 
 
 class User(Changeable, UserBase):
