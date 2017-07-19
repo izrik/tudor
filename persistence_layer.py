@@ -1200,6 +1200,8 @@ def generate_tag_class(db, tags_tasks_table):
             tag = DbTag(value, description)
             if tag_id is not None:
                 tag.id = tag_id
+            if 'tasks' in d:
+                assign(tag.tasks, d['tasks'])
             logger.debug('tag: {}'.format(tag))
             return tag
 
@@ -1395,6 +1397,8 @@ def generate_user_class(db, bcrypt, users_tasks_table):
             user = DbUser(email, hashed_password, is_admin)
             if user_id is not None:
                 user.id = user_id
+            if 'tasks' in d:
+                assign(user.tasks, d['tasks'])
             return user
 
         def make_change(self, field, operation, value):
