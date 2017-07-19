@@ -12,7 +12,7 @@ from werkzeug import secure_filename
 from conversions import int_from_str, money_from_str
 from models.task import Task
 from models.tag import Tag
-from models.note import NoteBase
+from models.note import Note
 from models.attachment import Attachment
 from models.option import Option
 from models.user import User
