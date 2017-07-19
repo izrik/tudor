@@ -10,7 +10,7 @@ logging.basicConfig(
            ' %(message)s')
 
 
-def get_logger(module, obj):
+def get_logger_by_object(module, obj):
     return get_logger_by_class(module, type(obj))
 
 

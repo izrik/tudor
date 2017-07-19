@@ -3,6 +3,7 @@ import datetime
 import os
 from dateutil.parser import parse as dparse
 
+import logging_util
 from conversions import str_from_datetime
 from changeable import Changeable
 
@@ -86,6 +87,7 @@ class AttachmentBase(object):
 
 
 class Attachment(Changeable, AttachmentBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'Attachment')
 
     _id = None
     _timestamp = None

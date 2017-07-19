@@ -2970,7 +2970,7 @@ class PersistenceLayerInternalsTest(unittest.TestCase):
 
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
-        logger = logging_util.get_logger(__name__, self)
+        logger = logging_util.get_logger_by_object(__name__, self)
         logger.debug('before create task')
         task = Task('task')
         logger.debug('after create task')

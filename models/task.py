@@ -37,7 +37,6 @@ class TaskBase(object):
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None):
-        self._logger = logging_util.get_logger(__name__, self)
         self._logger.debug('TaskBase.__init__ {}'.format(self.id2))
 
         self.summary = summary
@@ -166,6 +165,7 @@ class TaskBase(object):
 
 
 class Task(Changeable, TaskBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'Task')
 
     _id = None
     _summary = None

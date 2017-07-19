@@ -16,7 +16,6 @@ class TagBase(object):
     FIELD_TASKS = 'TASKS'
 
     def __init__(self, value, description=None):
-        self._logger = logging_util.get_logger(__name__, self)
         self._logger.debug('TagBase.__init__ {}'.format(self.id2))
         self.value = value
         self.description = description
@@ -67,6 +66,7 @@ class TagBase(object):
 
 
 class Tag(Changeable, TagBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'Tag')
 
     _id = None
     _value = None
@@ -127,7 +127,7 @@ class Tag(Changeable, TagBase):
 
     @staticmethod
     def from_dict(d):
-        logger = logging_util.get_logger_by_class(__name__, Tag)
+        logger = Tag._logger
         logger.debug('d: {}'.format(d))
 
         tag_id = d.get('id', None)
@@ -135,7 +135,7 @@ class Tag(Changeable, TagBase):
         description = d.get('description', None)
 
         tag = Tag(value, description)
-        logger = logging_util.get_logger(__name__, tag)
+        logger = tag._logger
         logger.debug('{}'.format(tag.id2))
         if tag_id is not None:
             tag.id = tag_id

@@ -5,12 +5,12 @@ from changeable import Changeable
 
 
 class OneToManySet(collections.MutableSet):
+    _logger = logging_util.get_logger_by_name(__name__, 'OneToManySet')
 
     __change_field__ = None
     __attr_counterpart__ = None
 
     def __init__(self, container):
-        self._logger = logging_util.get_logger(__name__, self)
         if container is None:
             raise ValueError('container cannot be None')
 
@@ -61,6 +61,7 @@ class OneToManySet(collections.MutableSet):
 
 
 class ManyToManySet(collections.MutableSet):
+    _logger = logging_util.get_logger_by_name(__name__, 'ManyToManySet')
 
     __change_field__ = None
     __attr_counterpart__ = None
@@ -68,8 +69,6 @@ class ManyToManySet(collections.MutableSet):
     def __init__(self, container):
         if container is None:
             raise ValueError('container cannot be None')
-
-        self._logger = logging_util.get_logger(__name__, self)
 
         self.container = container
         self.set = set()

@@ -2,6 +2,7 @@
 import datetime
 from dateutil.parser import parse as dparse
 
+import logging_util
 from conversions import str_from_datetime
 from changeable import Changeable
 
@@ -70,6 +71,8 @@ class NoteBase(object):
 
 
 class Note(Changeable, NoteBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'Note')
+
     _id = None
     _content = ''
     _timestamp = None

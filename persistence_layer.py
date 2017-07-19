@@ -90,10 +90,9 @@ class Pager(object):
 
 
 class PersistenceLayer(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'PersistenceLayer')
 
     def __init__(self, app, db_uri, bcrypt):
-        self._logger = logging_util.get_logger(__name__, self)
-
         self.app = app
         self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
         self.db = SQLAlchemy(self.app)
@@ -991,6 +990,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
     db = pl.db
 
     class DbTask(Changeable, db.Model, TaskBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTask')
 
         __tablename__ = 'task'
 
@@ -1168,6 +1168,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
 
 def generate_tag_class(db, tags_tasks_table):
     class DbTag(db.Model, TagBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTag')
 
         __tablename__ = 'tag'
 
@@ -1190,7 +1191,7 @@ def generate_tag_class(db, tags_tasks_table):
 
         @staticmethod
         def from_dict(d):
-            logger = logging_util.get_logger_by_class(__name__, Tag)
+            logger = DbTag._logger
             logger.debug('d: {}'.format(d))
 
             tag_id = d.get('id', None)
@@ -1237,11 +1238,13 @@ def generate_tag_class(db, tags_tasks_table):
                     if value in self.tasks:
                         self.tasks.remove(value)
 
+
     return DbTag
 
 
 def generate_note_class(db):
     class DbNote(db.Model, NoteBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbNote')
 
         __tablename__ = 'note'
 
@@ -1297,6 +1300,7 @@ def generate_note_class(db):
 
 def generate_attachment_class(db):
     class DbAttachment(db.Model, AttachmentBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbAttachment')
 
         __tablename__ = 'attachment'
 
@@ -1359,11 +1363,13 @@ def generate_attachment_class(db):
             else:  # field == self.FIELD_TASK
                 self.task = value
 
+
     return DbAttachment
 
 
 def generate_user_class(db, bcrypt, users_tasks_table):
     class DbUser(db.Model, UserBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbUser')
 
         __tablename__ = 'user'
 
@@ -1437,6 +1443,7 @@ def generate_user_class(db, bcrypt, users_tasks_table):
 
 def generate_option_class(db):
     class DbOption(db.Model, OptionBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbOption')
 
         __tablename__ = 'option'
 

@@ -1,6 +1,7 @@
 
 import collections
 
+import logging_util
 from changeable import Changeable
 from collections_util import assign
 from models.interlinking import ManyToManySet
@@ -81,6 +82,8 @@ class UserBase(object):
 
 
 class User(Changeable, UserBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'User')
+
     _id = None
     _email = None
     _hashed_password = None

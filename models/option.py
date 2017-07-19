@@ -1,4 +1,4 @@
-
+import logging_util
 from changeable import Changeable
 
 
@@ -50,10 +50,13 @@ class OptionBase(object):
 
 
 class Option(Changeable, OptionBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'Option')
+
     _key = None
     _value = None
 
     _dbobj = None
+
 
     @property
     def key(self):
