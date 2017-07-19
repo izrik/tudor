@@ -411,8 +411,6 @@ class Task(Changeable, TaskBase):
         task.order_num = order_num
         if 'parent' in d:
             task.parent = d['parent']
-        elif 'parent_id' in d:
-            task.parent_id = d['parent_id']
         if 'children' in d:
             assign(task.children, d['children'])
         if 'tags' in d:
