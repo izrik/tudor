@@ -9,7 +9,7 @@ from models.note import Note, NoteBase
 from models.attachment import Attachment, AttachmentBase
 from models.user import User, UserBase
 from models.option import Option, OptionBase
-from collections_util import clear, extend
+from collections_util import assign
 import logging_util
 from models.changeable import id2, Changeable
 
@@ -1075,32 +1075,23 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if 'parent' in d:
                 task.parent = d['parent']
             if 'children' in d:
-                clear(task.users)
-                task.children.extend(d['children'])
+                assign(task.childrend['children'])
             if 'tags' in d:
-                clear(task.users)
-                extend(task.tags, d['tags'])
+                assign(task.tags, d['tags'])
             if 'users' in d:
-                clear(task.users)
-                extend(task.users, d['users'])
+                assign(task.users, d['users'])
             if 'dependees' in d:
-                clear(task.dependees)
-                extend(task.dependees, d['dependees'])
+                assign(task.dependees, d['dependees'])
             if 'dependants' in d:
-                clear(task.dependants)
-                extend(task.dependants, d['dependants'])
+                assign(task.dependants, d['dependants'])
             if 'prioritize_before' in d:
-                clear(task.prioritize_before)
-                extend(task.prioritize_before, d['prioritize_before'])
+                assign(task.prioritize_before, d['prioritize_before'])
             if 'prioritize_after' in d:
-                clear(task.prioritize_after)
-                extend(task.prioritize_after, d['prioritize_after'])
+                assign(task.prioritize_after, d['prioritize_after'])
             if 'notes' in d:
-                clear(task.notes)
-                extend(task.notes, d['notes'])
+                assign(task.notes, d['notes'])
             if 'attachments' in d:
-                clear(task.attachments)
-                extend(task.attachments, d['attachments'])
+                assign(task.attachments, d['attachments'])
             return task
 
         def make_change(self, field, operation, value):
