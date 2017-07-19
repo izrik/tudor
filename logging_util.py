@@ -11,8 +11,12 @@ logging.basicConfig(
 
 
 def get_logger(module, obj):
-    return logging.getLogger('{}.{}'.format(module, type(obj).__name__))
+    return get_logger_by_class(module, type(obj))
 
 
 def get_logger_by_class(module, cls):
-    return logging.getLogger('{}.{}'.format(module, cls.__name__))
+    return get_logger_by_name(module, cls.__name__)
+
+
+def get_logger_by_name(module, name):
+    return logging.getLogger('{}.{}'.format(module, name))
