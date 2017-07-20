@@ -398,8 +398,6 @@ class Task(Changeable, TaskBase):
         expected_duration_minutes = d.get('expected_duration_minutes',
                                           None)
         expected_cost = d.get('expected_cost', None)
-        # 'tag_ids': [tag.id for tag in self.tags],
-        # 'user_ids': [user.id for user in self.users]
 
         task = Task(summary=summary, description=description,
                     is_done=is_done, is_deleted=is_deleted,
