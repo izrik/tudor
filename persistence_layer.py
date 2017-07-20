@@ -1266,7 +1266,6 @@ def generate_tag_class(db, tags_tasks_table):
                     if value in self.tasks:
                         self.tasks.remove(value)
 
-
     return DbTag
 
 
@@ -1390,7 +1389,6 @@ def generate_attachment_class(db):
                 self.filename = value
             else:  # field == self.FIELD_TASK
                 self.task = value
-
 
     return DbAttachment
 
