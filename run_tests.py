@@ -38,6 +38,7 @@ from tests.persistence_layer_tests import *
 from tests.ll_do_import_data_tests import *
 from tests.ll_set_task_tests import *
 from tests.task_interlinking_tests import *
+from tests.interlinking_tests import *
 
 
 def run():

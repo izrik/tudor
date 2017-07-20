@@ -37,4 +37,7 @@ class Changeable(object):
 def id2(obj):
     if obj is None:
         return 'None'
-    return obj.id2
+    try:
+        return obj.id2
+    except AttributeError:
+        return id(obj)
