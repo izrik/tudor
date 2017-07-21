@@ -151,7 +151,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         @staticmethod
         def get_user():
-            return pl.get_user(current_user.id)
+            try:
+                return pl.get_user(current_user.id)
+            except AttributeError:
+                return None
 
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
