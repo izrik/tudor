@@ -342,6 +342,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return vl.task_authorize_user(request, Options.get_user(), task_id)
 
     @app.route('/task/<int:task_id>/pick_user')
+    @login_required
     def pick_user_to_authorize(task_id):
         return vl.task_pick_user(request, Options.get_user(), task_id)
 
@@ -358,6 +359,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'], defaults={'user_id': None})
     @app.route('/task/<int:task_id>/deauthorize_user/<int:user_id>',
                methods=['GET', 'POST'])
+    @login_required
     def deauthorize_user_for_task(task_id, user_id):
         return vl.task_deauthorize_user(request, Options.get_user(), task_id,
                                         user_id)
@@ -473,6 +475,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'], defaults={'dependee_id': None})
     @app.route('/task/<int:task_id>/remove_dependee/<int:dependee_id>',
                methods=['GET', 'POST'])
+    @login_required
     def remove_dependee_from_task(task_id, dependee_id):
         return vl.task_id_remove_dependee(request, Options.get_user(), task_id,
                                           dependee_id)
@@ -494,6 +497,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'], defaults={'dependant_id': None})
     @app.route('/task/<int:task_id>/remove_dependant/<int:dependant_id>',
                methods=['GET', 'POST'])
+    @login_required
     def remove_dependant_from_task(task_id, dependant_id):
         return vl.task_id_remove_dependant(request, Options.get_user(),
                                            task_id, dependant_id)
@@ -522,6 +526,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '/task/<int:task_id>/remove_prioritize_before/'
         '<int:prioritize_before_id>',
         methods=['GET', 'POST'])
+    @login_required
     def remove_prioritize_before_from_task(task_id, prioritize_before_id):
         return vl.task_id_remove_prioritize_before(request, Options.get_user(),
                                                    task_id,
@@ -547,6 +552,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '/task/<int:task_id>/remove_prioritize_after/'
         '<int:prioritize_after_id>',
         methods=['GET', 'POST'])
+    @login_required
     def remove_prioritize_after_from_task(task_id, prioritize_after_id):
         return vl.task_id_remove_prioritize_after(request, Options.get_user(),
                                                   task_id, prioritize_after_id)
