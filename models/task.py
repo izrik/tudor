@@ -218,8 +218,8 @@ class Task(Changeable, TaskBase):
     @summary.setter
     def summary(self, value):
         if value != self._summary:
-            self._logger.debug('{}: {} -> {}'.format(self.id2, self.summary,
-                                                     value))
+            self._logger.debug('{}: {} -> {}'.format(
+                self.id2, repr(self.summary), repr(value)))
             self._on_attr_changing(self.FIELD_SUMMARY, self._summary)
             self._summary = value
             self._on_attr_changed(self.FIELD_SUMMARY, self.OP_SET,
