@@ -4,7 +4,7 @@ import logging
 config_was_set = False
 
 logging.basicConfig(
-    level=logging.WARN,
+    level=logging.INFO,
     format='%(relativeCreated)d:%(levelname)s:%(name)s:%(funcName)s:'
            # '%(pathname)s,%(lineno)d:'
            ' %(message)s')
