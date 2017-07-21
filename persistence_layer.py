@@ -425,7 +425,8 @@ class PersistenceLayer(object):
 
         dbattrs = dbobj.to_dict()
         domattrs_nonrel = self._domain_attrs_from_db_no_links(dbattrs)
-        domobj = domclass.from_dict(domattrs_nonrel)
+        domattrs_rel = self._domain_attrs_from_db_links_lazy(dbattrs)
+        domobj = domclass.from_dict(domattrs_nonrel, lazy=domattrs_rel)
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
@@ -433,11 +434,10 @@ class PersistenceLayer(object):
             domobj._dbobj = dbobj
             dbobj._domobj = domobj
 
-        # translate the relational attributes after storing the domobj in the
-        # cache. otherwise, graph cycles lead to infinite recursion trying to
-        # continually create new domain objects.
-        domattrs_rel = self._domain_attrs_from_db_links(dbattrs)
-        domobj.update_from_dict(domattrs_rel)
+        # lazily load the relational attributes. this prevents graph cycles
+        # from leading to infinite recursion trying to continually create new
+        # domain objects. also prevents loading the entire object graph when
+        # all we need is one object.
 
         self._logger.debug('end')
         return domobj
@@ -503,6 +503,51 @@ class PersistenceLayer(object):
             d2['attachments'] = [
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
                 d['attachments']]
+        if 'task' in d and d['task'] is not None:
+            d2['task'] = self._get_domain_object_from_db_object(d['task'])
+        self._logger.debug('d2: {}'.format(d2))
+        return d2
+
+    def _domain_attrs_from_db_links_lazy(self, d, d2=None):
+        # self._logger.debug('d: {}'.format(d))
+        if d2 is None:
+            d2 = {}
+        if 'parent' in d and d['parent'] is not None:
+            d2['parent'] = self._get_domain_object_from_db_object(d['parent'])
+        if 'children' in d and d['children'] is not None:
+            d2['children'] = (self._get_domain_object_from_db_object(dbobj) for
+                              dbobj in d['children'])
+        if 'tags' in d and d['tags'] is not None:
+            d2['tags'] = (self._get_domain_object_from_db_object(dbobj) for
+                          dbobj in d['tags'])
+        if 'tasks' in d and d['tasks'] is not None:
+            d2['tasks'] = (self._get_domain_object_from_db_object(dbobj) for
+                           dbobj in d['tasks'])
+        if 'users' in d and d['users'] is not None:
+            d2['users'] = (self._get_domain_object_from_db_object(dbobj) for
+                           dbobj in d['users'])
+        if 'dependees' in d and d['dependees'] is not None:
+            d2['dependees'] = (self._get_domain_object_from_db_object(dbobj)
+                               for dbobj in d['dependees'])
+        if 'dependants' in d and d['dependants'] is not None:
+            d2['dependants'] = (self._get_domain_object_from_db_object(dbobj)
+                                for dbobj in d['dependants'])
+        if 'prioritize_before' in d and d['prioritize_before'] is not None:
+            d2['prioritize_before'] = (
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d['prioritize_before'])
+        if 'prioritize_after' in d and d['prioritize_after'] is not None:
+            d2['prioritize_after'] = (
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d['prioritize_after'])
+        if 'notes' in d and d['notes'] is not None:
+            d2['notes'] = (
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d['notes'])
+        if 'attachments' in d and d['attachments'] is not None:
+            d2['attachments'] = (
+                self._get_domain_object_from_db_object(dbobj) for dbobj in
+                d['attachments'])
         if 'task' in d and d['task'] is not None:
             d2['task'] = self._get_domain_object_from_db_object(d['task'])
         self._logger.debug('d2: {}'.format(d2))

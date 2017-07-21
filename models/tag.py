@@ -76,10 +76,14 @@ class Tag(Changeable, TagBase):
 
     _dbobj = None
 
-    def __init__(self, value, description=None):
+    def __init__(self, value, description=None, lazy=None):
         super(Tag, self).__init__(value=value, description=description)
         self._logger.debug('Tag.__init__ {}'.format(self.id2))
-        self._tasks = InterlinkedTasks(self)
+
+        if lazy is None:
+            lazy = {}
+
+        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
 
     @property
     def id(self):
@@ -126,7 +130,7 @@ class Tag(Changeable, TagBase):
         return self._tasks
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, lazy=None):
         logger = Tag._logger
         logger.debug('d: {}'.format(d))
 
@@ -134,11 +138,14 @@ class Tag(Changeable, TagBase):
         value = d.get('value')
         description = d.get('description', None)
 
-        tag = Tag(value, description)
+        tag = Tag(value, description, lazy=lazy)
         logger = tag._logger
         logger.debug('{}'.format(tag.id2))
         if tag_id is not None:
             tag.id = tag_id
+        if not lazy:
+            if 'tasks' in d:
+                assign(tag.tasks, d['tasks'])
         logger.debug('tag: {}'.format(tag))
         return tag
 

@@ -91,13 +91,17 @@ class User(Changeable, UserBase):
 
     _dbobj = None
 
-    def __init__(self, email, hashed_password=None, is_admin=False):
+    def __init__(self, email, hashed_password=None, is_admin=False, lazy=None):
         if hashed_password is None:
             hashed_password = ''
         super(User, self).__init__(email=email,
                                    hashed_password=hashed_password,
                                    is_admin=is_admin)
-        self._tasks = InterlinkedTasks(self)
+
+        if lazy is None:
+            lazy = {}
+
+        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
 
     @property
     def id(self):
@@ -151,15 +155,18 @@ class User(Changeable, UserBase):
         return self._tasks
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, lazy=None):
         user_id = d.get('id', None)
         email = d.get('email')
         hashed_password = d.get('hashed_password', None)
         is_admin = d.get('is_admin', False)
 
-        user = User(email, hashed_password, is_admin)
+        user = User(email, hashed_password, is_admin, lazy=lazy)
         if user_id is not None:
             user.id = user_id
+        if not lazy:
+            if 'tasks' in d:
+                assign(user.tasks, d['tasks'])
         return user
 
     def clear_relationships(self):

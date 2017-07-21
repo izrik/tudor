@@ -81,7 +81,7 @@ class Option(Changeable, OptionBase):
             self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, lazy=None):
         key = d.get('key')
         value = d.get('value', None)
         return Option(key, value)

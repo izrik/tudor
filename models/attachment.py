@@ -185,7 +185,7 @@ class Attachment(Changeable, AttachmentBase):
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, lazy=None):
         attachment_id = d.get('id', None)
         timestamp = d.get('timestamp', None)
         path = d.get('path')

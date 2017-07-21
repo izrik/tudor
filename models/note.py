@@ -138,7 +138,7 @@ class Note(Changeable, NoteBase):
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, lazy=None):
         note_id = d.get('id', None)
         content = d.get('content')
         timestamp = d.get('timestamp', None)

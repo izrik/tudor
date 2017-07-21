@@ -182,22 +182,31 @@ class Task(Changeable, TaskBase):
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
-                 expected_duration_minutes=None, expected_cost=None):
+                 expected_duration_minutes=None, expected_cost=None,
+                 lazy=None):
         super(Task, self).__init__(
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost)
 
         self._logger.debug('Task.__init__ {}'.format(self.id2))
 
-        self._dependees = InterlinkedDependees(self)
-        self._dependants = InterlinkedDependants(self)
-        self._prioritize_before = InterlinkedPrioritizeBefore(self)
-        self._prioritize_after = InterlinkedPrioritizeAfter(self)
-        self._tags = InterlinkedTags(self)
-        self._users = InterlinkedUsers(self)
-        self._children = InterlinkedChildren(self)
-        self._notes = InterlinkedNotes(self)
-        self._attachments = InterlinkedAttachments(self)
+        if lazy is None:
+            lazy = {}
+
+        self._dependees = InterlinkedDependees(
+            self, lazy=lazy.get('dependees'))
+        self._dependants = InterlinkedDependants(
+            self, lazy=lazy.get('dependants'))
+        self._prioritize_before = InterlinkedPrioritizeBefore(
+            self, lazy=lazy.get('prioritize_before'))
+        self._prioritize_after = InterlinkedPrioritizeAfter(
+            self, lazy=lazy.get('prioritize_after'))
+        self._tags = InterlinkedTags(self, lazy=lazy.get('tags'))
+        self._users = InterlinkedUsers(self, lazy=lazy.get('users'))
+        self._children = InterlinkedChildren(self, lazy=lazy.get('children'))
+        self._notes = InterlinkedNotes(self, lazy=lazy.get('notes'))
+        self._attachments = InterlinkedAttachments(
+            self, lazy=lazy.get('attachments'))
 
     @property
     def id(self):
@@ -387,7 +396,7 @@ class Task(Changeable, TaskBase):
         return self._attachments
 
     @staticmethod
-    def from_dict(d):
+    def from_dict(d, lazy=None):
         task_id = d.get('id', None)
         summary = d.get('summary')
         description = d.get('description', '')
@@ -403,30 +412,31 @@ class Task(Changeable, TaskBase):
                     is_done=is_done, is_deleted=is_deleted,
                     deadline=deadline,
                     expected_duration_minutes=expected_duration_minutes,
-                    expected_cost=expected_cost)
+                    expected_cost=expected_cost, lazy=lazy)
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
         if 'parent' in d:
             task.parent = d['parent']
-        if 'children' in d:
-            assign(task.children, d['children'])
-        if 'tags' in d:
-            assign(task.tags, d['tags'])
-        if 'users' in d:
-            assign(task.users, d['users'])
-        if 'dependees' in d:
-            assign(task.dependees, d['dependees'])
-        if 'dependants' in d:
-            assign(task.dependants, d['dependants'])
-        if 'prioritize_before' in d:
-            assign(task.prioritize_before, d['prioritize_before'])
-        if 'prioritize_after' in d:
-            assign(task.prioritize_after, d['prioritize_after'])
-        if 'notes' in d:
-            assign(task.notes, d['notes'])
-        if 'attachments' in d:
-            assign(task.attachments, d['attachments'])
+        if not lazy:
+            if 'children' in d:
+                assign(task.children, d['children'])
+            if 'tags' in d:
+                assign(task.tags, d['tags'])
+            if 'users' in d:
+                assign(task.users, d['users'])
+            if 'dependees' in d:
+                assign(task.dependees, d['dependees'])
+            if 'dependants' in d:
+                assign(task.dependants, d['dependants'])
+            if 'prioritize_before' in d:
+                assign(task.prioritize_before, d['prioritize_before'])
+            if 'prioritize_after' in d:
+                assign(task.prioritize_after, d['prioritize_after'])
+            if 'notes' in d:
+                assign(task.notes, d['notes'])
+            if 'attachments' in d:
+                assign(task.attachments, d['attachments'])
         return task
 
     def get_css_class(self):
