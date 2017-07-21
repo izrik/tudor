@@ -21,8 +21,8 @@ class OptionBase(object):
 
     def __repr__(self):
         cls = type(self).__name__
-        return '{}(key{}, value={})'.format(cls, repr(self.key),
-                                            repr(self.value))
+        return '{}(key={}, value={})'.format(cls, repr(self.key),
+                                             repr(self.value))
 
     @property
     def id(self):
