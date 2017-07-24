@@ -959,7 +959,6 @@ class LogicLayer(object):
             self.pl.add(child)
 
         task.parent = None
-        self.pl.add(task)
 
         self.pl.delete(task)
 

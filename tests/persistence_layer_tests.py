@@ -4046,3 +4046,68 @@ class AsIterableTest(unittest.TestCase):
     def test_non_iterable_returns_tuple(self):
         # expect
         self.assertEqual((4,), as_iterable(4))
+
+
+class PersistenceLayerAddDeleteTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_add_after_add_silently_ignored(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        # precondition
+        self.assertIn(task, self.pl._added_objects)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertIn(task, self.pl._added_objects)
+
+    def test_delete_after_delete_silently_ignored(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        self.pl.delete(task)
+        # precondition
+        self.assertIn(task, self.pl._deleted_objects)
+        # when
+        self.pl.delete(task)
+        # then
+        self.assertIn(task, self.pl._deleted_objects)
+
+    def test_delete_after_add_raises(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        # precondition
+        self.assertIn(task, self.pl._added_objects)
+        self.assertNotIn(task, self.pl._deleted_objects)
+        # when
+        self.assertRaises(
+            Exception,
+            self.pl.delete,
+            task)
+        # then
+        self.assertIn(task, self.pl._added_objects)
+        self.assertNotIn(task, self.pl._deleted_objects)
+
+    def test_add_after_delete_raises(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        self.pl.delete(task)
+        # precondition
+        self.assertNotIn(task, self.pl._added_objects)
+        self.assertIn(task, self.pl._deleted_objects)
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl.add,
+            task)
+        # and
+        self.assertNotIn(task, self.pl._added_objects)
+        self.assertIn(task, self.pl._deleted_objects)

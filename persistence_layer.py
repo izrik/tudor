@@ -180,6 +180,10 @@ class PersistenceLayer(object):
 
     def delete(self, domobj):
         self._logger.debug('begin, domobj: {}'.format(domobj))
+        if domobj in self._added_objects:
+            raise Exception(
+                'The object has been added but not yet committed: {}'.format(
+                    domobj))
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:
             dbobj = self._get_db_object_from_domain_object_by_id(domobj)
