@@ -427,6 +427,7 @@ class PersistenceLayer(object):
         domattrs_nonrel = self._domain_attrs_from_db_no_links(dbattrs)
         domattrs_rel = self._domain_attrs_from_db_links_lazy(dbattrs)
         domobj = domclass.from_dict(domattrs_nonrel, lazy=domattrs_rel)
+        self._register_domain_object(domobj)
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj

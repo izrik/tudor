@@ -1750,6 +1750,29 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertEqual('b', tag.description)
 
+    def test_changes_after_get_are_also_tracked(self):
+        # given
+        dbtag = self.pl.DbTag('tag', description='a')
+        self.pl.db.session.add(dbtag)
+        self.pl.db.session.commit()
+        tag = self.pl.get_tag_by_value('tag')
+        # precondition
+        self.assertEqual('a', tag.description)
+        # when
+        tag.description = 'b'
+        # then
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.commit()
+        # then
+        self.assertEqual('b', tag.description)
+        self.assertEqual('b', dbtag.description)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertEqual('b', tag.description)
+        self.assertEqual('b', dbtag.description)
+
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
         task = Task('task')
