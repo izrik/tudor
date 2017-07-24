@@ -35,6 +35,7 @@ class Changeable(object):
 
 
 def id2(obj):
+    # TODO: get rid of this function
     if obj is None:
         return 'None'
     try:

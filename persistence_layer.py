@@ -311,6 +311,7 @@ class PersistenceLayer(object):
             self._logger.debug('dbobj is not None')
             self._domain_by_db[dbobj] = domobj
             self._db_by_domain[domobj] = dbobj
+            # TODO: get rid of _domobj and _dbobj
             if hasattr(domobj, '_dbobj'):
                 domobj._dbobj = dbobj
                 dbobj._domobj = domobj
