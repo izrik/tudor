@@ -4148,3 +4148,24 @@ class PersistenceLayerDbDeletionTest(unittest.TestCase):
 
         # expect
         self.assertRaises(Exception, self.pl.delete, task)
+
+    def test_rollback_of_deleted_objects(self):
+
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        task.description = 'a'
+        self.pl.commit()
+        self.pl.delete(task)
+        task.description = 'b'
+
+        # precondition
+        self.assertIn(task, self.pl._deleted_objects)
+        self.assertEqual('b', task.description)
+
+        # when
+        self.pl.rollback()
+
+        # then
+        self.assertNotIn(task, self.pl._deleted_objects)
+        self.assertEqual('a', task.description)
