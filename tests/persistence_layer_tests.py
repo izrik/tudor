@@ -4111,3 +4111,40 @@ class PersistenceLayerAddDeleteTest(unittest.TestCase):
         # and
         self.assertNotIn(task, self.pl._added_objects)
         self.assertIn(task, self.pl._deleted_objects)
+
+
+class PersistenceLayerDbDeletionTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_delete_of_db_only_object_gets_dbobj_from_db(self):
+        dbtask = self.pl.DbTask('task')
+        self.pl.db.session.add(dbtask)
+        self.pl.db.session.commit()
+
+        task = Task('task')
+        task.id = dbtask.id
+
+        # precondition
+        self.assertEqual(0, len(self.pl._db_by_domain))
+        self.assertEqual(0, len(self.pl._domain_by_db))
+        self.assertEqual(0, len(self.pl._added_objects))
+        self.assertEqual(0, len(self.pl._deleted_objects))
+
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+
+        # then nothing raised
+        self.assertTrue(True)
+
+    def test_delete_object_not_in_db_raises(self):
+
+        # given
+        task = Task('task')
+        task.id = 1
+
+        # expect
+        self.assertRaises(Exception, self.pl.delete, task)
