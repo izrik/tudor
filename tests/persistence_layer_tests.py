@@ -4361,6 +4361,7 @@ class CreateDbFromDomainTest(unittest.TestCase):
         task = self.pl.get_task(dbtask.id)
         # precondition
         self.assertIn(task, self.pl._db_by_domain)
+        self.assertIn(dbtask, self.pl._domain_by_db)
         # expect
         self.assertRaises(
             Exception,
