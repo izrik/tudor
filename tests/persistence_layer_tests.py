@@ -4409,3 +4409,44 @@ class GetDomainFromDbTest(unittest.TestCase):
             Exception,
             self.pl._get_domain_object_from_db_object_in_cache,
             Task('task'))
+
+
+class CreateDomainFromDbTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_none_raises(self):
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._create_domain_object_from_db_object,
+            None)
+
+    def test_not_db_object_raises(self):
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._create_domain_object_from_db_object,
+            1)
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._create_domain_object_from_db_object,
+            Task('task'))
+
+    def test_already_cached_raises(self):
+        # given
+        dbtask = self.pl.DbTask('task')
+        self.pl.db.session.add(dbtask)
+        self.pl.db.session.commit()
+        task = self.pl.get_task(dbtask.id)
+        # precondition
+        self.assertIn(task, self.pl._db_by_domain)
+        self.assertIn(dbtask, self.pl._domain_by_db)
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._create_domain_object_from_db_object,
+            dbtask)
