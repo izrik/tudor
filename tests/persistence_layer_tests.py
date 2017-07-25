@@ -4366,3 +4366,45 @@ class CreateDbFromDomainTest(unittest.TestCase):
             Exception,
             self.pl._create_db_object_from_domain_object,
             task)
+
+
+class GetDomainFromDbTest(unittest.TestCase):
+    def setUp(self):
+        self.app = generate_app(db_uri='sqlite://')
+        self.pl = self.app.pl
+        self.pl.create_all()
+
+    def test_none_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl._get_domain_object_from_db_object(None))
+
+    def test_cache_none_raises(self):
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._get_domain_object_from_db_object_in_cache,
+            None)
+
+    def test_not_db_object_raises(self):
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._get_domain_object_from_db_object,
+            1)
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._get_domain_object_from_db_object,
+            Task('task'))
+
+    def test_cached_not_db_object_raises(self):
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._get_domain_object_from_db_object_in_cache,
+            1)
+        # expect
+        self.assertRaises(
+            Exception,
+            self.pl._get_domain_object_from_db_object_in_cache,
+            Task('task'))
