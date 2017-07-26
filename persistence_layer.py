@@ -431,6 +431,11 @@ class PersistenceLayer(object):
         dbattrs = dbobj.to_dict()
         domattrs_nonrel = self._domain_attrs_from_db_no_links(dbattrs)
         domattrs_rel = self._domain_attrs_from_db_links_lazy(dbattrs)
+
+        # lazily load the relational attributes. this prevents graph cycles
+        # from leading to infinite recursion trying to continually create new
+        # domain objects. also prevents loading the entire object graph when
+        # all we need is one object.
         domobj = domclass.from_dict(domattrs_nonrel, lazy=domattrs_rel)
         self._register_domain_object(domobj)
 
@@ -439,11 +444,6 @@ class PersistenceLayer(object):
         if hasattr(domobj, '_dbobj'):
             domobj._dbobj = dbobj
             dbobj._domobj = domobj
-
-        # lazily load the relational attributes. this prevents graph cycles
-        # from leading to infinite recursion trying to continually create new
-        # domain objects. also prevents loading the entire object graph when
-        # all we need is one object.
 
         self._logger.debug('end')
         return domobj
