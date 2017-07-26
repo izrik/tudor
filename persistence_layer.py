@@ -305,11 +305,9 @@ class PersistenceLayer(object):
             dbobj = self._get_db_tag(domobj.id)
         elif isinstance(domobj, Task):
             dbobj = self._get_db_task(domobj.id)
-        elif isinstance(domobj, User):
+        else:  # isinstance(domobj, User):
+            # _is_domain_object above means domobj can't be any other type
             dbobj = self._get_db_user(domobj.id)
-        else:
-            raise Exception(
-                'Unknown domain object: {} ({})'.format(domobj, type(domobj)))
 
         if dbobj is not None:
             self._logger.debug('dbobj is not None')
@@ -345,11 +343,9 @@ class PersistenceLayer(object):
             dbclass = self.DbTag
         elif isinstance(domobj, Task):
             dbclass = self.DbTask
-        elif isinstance(domobj, User):
+        else:  # isinstance(domobj, User):
+            # _is_domain_object above means domobj can't be any other type
             dbclass = self.DbUser
-        else:
-            raise Exception('Unknown domain object: {} ({})'.format(
-                domobj, type(domobj)))
 
         domattrs = domobj.to_dict()
         dbattrs_nonrel = self._db_attrs_from_domain_no_links(domattrs)
@@ -422,11 +418,9 @@ class PersistenceLayer(object):
             domclass = Note
         elif isinstance(dbobj, self.DbUser):
             domclass = User
-        elif isinstance(dbobj, self.DbOption):
+        else:  # isinstance(dbobj, self.DbOption):
+            # _is_db_object above means dbobj can't be any other type
             domclass = Option
-        else:
-            raise Exception(
-                'Unknown db object type: {}, {}'.format(dbobj, type(dbobj)))
 
         dbattrs = dbobj.to_dict()
         domattrs_nonrel = self._domain_attrs_from_db_no_links(dbattrs)
