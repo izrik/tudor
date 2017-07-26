@@ -15,10 +15,14 @@ import logging_util
 from persistence_layer import as_iterable
 
 
+def generate_pl():
+    app = generate_app(db_uri='sqlite://')
+    return app.pl
+
+
 class PersistenceLayerTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.pl.add(self.t1)
@@ -138,8 +142,7 @@ class PersistenceLayerTest(unittest.TestCase):
 
 class PersistenceLayerOrderByTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t1.id = 5
@@ -243,8 +246,7 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
 
 class PersistenceLayerOrderByDeadlineTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1', deadline='2017-01-01')
         self.t2 = Task('t2', deadline='2017-01-02')
@@ -283,8 +285,7 @@ class PersistenceLayerOrderByDeadlineTest(unittest.TestCase):
 
 class PersistenceLayerIdInTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.pl.add(self.t1)
@@ -434,8 +435,7 @@ class PersistenceLayerIdInTest(unittest.TestCase):
 
 class PersistenceLayerLimitTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t1.order_num = 1
@@ -482,8 +482,7 @@ class PersistenceLayerLimitTest(unittest.TestCase):
 
 class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1', deadline=datetime(2017, 1, 1))
         self.pl.add(self.t1)
@@ -515,8 +514,7 @@ class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
 
 class PersistenceLayerParentIdInTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.pl.add(self.t1)
@@ -597,8 +595,7 @@ class PersistenceLayerParentIdInTest(unittest.TestCase):
 
 class PersistenceLayerTagsTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t2 = Task('t2')
@@ -638,8 +635,7 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
     def setUp(self):
         self._logger = logging.getLogger('test')
         self._logger.debug('setUp generate_app')
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self._logger.debug('setUp create_all')
         self.pl.db.drop_all()
         self.pl.create_all()
@@ -858,8 +854,7 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
 
 class PersistenceLayerPagerTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t1.order_num = 11
@@ -1028,8 +1023,7 @@ class PersistenceLayerPagerTest(unittest.TestCase):
 
 class PersistenceLayerSearchTermTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
         self.t1 = Task('t1', description='qwerty')
@@ -1059,8 +1053,7 @@ class PersistenceLayerSearchTermTest(unittest.TestCase):
 
 class PersistenceLayerOrderNumberGreaterLessEqualTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
         self.t1 = Task('t1')
@@ -1131,8 +1124,7 @@ class PersistenceLayerOrderNumberGreaterLessEqualTest(unittest.TestCase):
 
 class PersistenceLayerGetTagsTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.t1 = Tag('t1')
         self.pl.add(self.t1)
@@ -1241,8 +1233,7 @@ class PersistenceLayerGetTagsTest(unittest.TestCase):
 
 class PersistenceLayerGetNotesTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.n1 = Note('n1')
         self.pl.add(self.n1)
@@ -1314,8 +1305,7 @@ class PersistenceLayerGetNotesTest(unittest.TestCase):
 
 class PersistenceLayerGetAttachmentsTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.a1 = Attachment('a1.txt')
         self.pl.add(self.a1)
@@ -1390,8 +1380,7 @@ class PersistenceLayerGetAttachmentsTest(unittest.TestCase):
 
 class PersistenceLayerGetUsersTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.user1 = User('admin@example.com', is_admin=True)
         self.pl.add(self.user1)
@@ -1480,8 +1469,7 @@ class PersistenceLayerGetUsersTest(unittest.TestCase):
 
 class PersistenceLayerGetOptionsTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
         self.option1 = Option('option1', 'value1')
         self.pl.add(self.option1)
@@ -1554,8 +1542,7 @@ class PersistenceLayerGetOptionsTest(unittest.TestCase):
 
 class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_adding_task_does_not_create_id(self):
@@ -2566,8 +2553,7 @@ class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
 
 class PersistenceLayerBridgeTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_db_task_is_db_object(self):
@@ -2921,8 +2907,7 @@ class PersistenceLayerBridgeTest(unittest.TestCase):
 
 class PersistenceLayerInternalsTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_create_db_object_from_domain_object(self):
@@ -3014,8 +2999,7 @@ class PersistenceLayerInternalsTest(unittest.TestCase):
 
 class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_db_only_deleting_task_removes_all_children(self):
@@ -3527,8 +3511,7 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
 
 class PersistenceLayerDeletionTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_deleting_task_removes_all_children(self):
@@ -4050,8 +4033,7 @@ class AsIterableTest(unittest.TestCase):
 
 class PersistenceLayerAddDeleteTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_add_after_add_silently_ignored(self):
@@ -4115,8 +4097,7 @@ class PersistenceLayerAddDeleteTest(unittest.TestCase):
 
 class PersistenceLayerDbDeletionTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_delete_of_db_only_object_gets_dbobj_from_db(self):
@@ -4173,8 +4154,7 @@ class PersistenceLayerDbDeletionTest(unittest.TestCase):
 
 class GetDbFromDomainTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_domobj_is_none_raises(self):
@@ -4330,8 +4310,7 @@ class GetDbFromDomainTest(unittest.TestCase):
 
 class CreateDbFromDomainTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_none_raises(self):
@@ -4371,8 +4350,7 @@ class CreateDbFromDomainTest(unittest.TestCase):
 
 class GetDomainFromDbTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_none_yields_none(self):
@@ -4413,8 +4391,7 @@ class GetDomainFromDbTest(unittest.TestCase):
 
 class CreateDomainFromDbTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = generate_pl()
         self.pl.create_all()
 
     def test_none_raises(self):
