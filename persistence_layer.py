@@ -449,6 +449,8 @@ class PersistenceLayer(object):
         return domobj
 
     def _domain_attrs_from_db_all(self, d):
+        if d is None:
+            raise ValueError('d must not be None')
         self._logger.debug('d: {}'.format(d))
         d2 = {}
         self._domain_attrs_from_db_no_links(d, d2)
@@ -457,6 +459,8 @@ class PersistenceLayer(object):
         return d2
 
     def _domain_attrs_from_db_no_links(self, d, d2=None):
+        if d is None:
+            raise ValueError('d must not be None')
         self._logger.debug('d: {}'.format(d))
 
         if d2 is None:
@@ -470,6 +474,8 @@ class PersistenceLayer(object):
         return d2
 
     def _domain_attrs_from_db_links(self, d, d2=None):
+        if d is None:
+            raise ValueError('d must not be None')
         # self._logger.debug('d: {}'.format(d))
         if d2 is None:
             d2 = {}
@@ -515,6 +521,8 @@ class PersistenceLayer(object):
         return d2
 
     def _domain_attrs_from_db_links_lazy(self, d, d2=None):
+        if d is None:
+            raise ValueError('d must not be None')
         # self._logger.debug('d: {}'.format(d))
         if d2 is None:
             d2 = {}
