@@ -81,6 +81,15 @@ class Note(Changeable, NoteBase):
 
     _dbobj = None
 
+    def __init__(self, content, timestamp=None, lazy=None):
+        super(Note, self).__init__(content, timestamp)
+        self._logger.debug('Note.__init__ {}'.format(self.id2))
+
+        if lazy is None:
+            lazy = {}
+
+        self._task_lazy = lazy.get('task')
+
     @property
     def id(self):
         return self._id
@@ -124,6 +133,8 @@ class Note(Changeable, NoteBase):
 
     @property
     def task(self):
+        if self._task_lazy:
+            self.task = self._task_lazy()
         return self._task
 
     @task.setter
@@ -136,6 +147,7 @@ class Note(Changeable, NoteBase):
             if self._task is not None:
                 self._task.notes.add(self)
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
+        self._task_lazy = None
 
     @staticmethod
     def from_dict(d, lazy=None):

@@ -193,6 +193,8 @@ class Task(Changeable, TaskBase):
         if lazy is None:
             lazy = {}
 
+        self._parent_lazy = lazy.get('parent')
+
         self._dependees = InterlinkedDependees(
             self, lazy=lazy.get('dependees'))
         self._dependants = InterlinkedDependants(
@@ -343,6 +345,8 @@ class Task(Changeable, TaskBase):
 
     @property
     def parent(self):
+        if self._parent_lazy:
+            self.parent = self._parent_lazy()
         return self._parent
 
     @parent.setter
@@ -358,6 +362,7 @@ class Task(Changeable, TaskBase):
             if self._parent is not None:
                 self._parent.children.append(self)
             self._on_attr_changed(self.FIELD_PARENT, self.OP_SET, self._parent)
+        self._parent_lazy = None
 
     @property
     def children(self):

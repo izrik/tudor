@@ -4952,21 +4952,19 @@ class DomainAttrsFromDbTest(unittest.TestCase):
         self.assertEqual(
             {}, self.pl._domain_attrs_from_db_links_lazy({'task': None}))
 
-    # TODO: fix this
-
-    # def test_links_lazy_parent_is_translated_lazily(self):
-    #     # given
-    #     task = Task('task')
-    #     self.pl.add(task)
-    #     self.pl.commit()
-    #     dbtask = self.pl._get_db_object_from_domain_object(task)
-    #     # when
-    #     result = self.pl._domain_attrs_from_db_links_lazy({'parent': dbtask})
-    #     # then
-    #     self.assertEqual(1, len(result))
-    #     self.assertIn('parent', result)
-    #     self.assertIsInstance(result['parent'], types.GeneratorType)
-    #     self.assertEqual([task], list(result['parent']))
+    def test_links_lazy_parent_is_translated_lazily(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        dbtask = self.pl._get_db_object_from_domain_object(task)
+        # when
+        result = self.pl._domain_attrs_from_db_links_lazy({'parent': dbtask})
+        # then
+        self.assertEqual(1, len(result))
+        self.assertIn('parent', result)
+        self.assertTrue(callable(result['parent']))
+        self.assertEqual(task, result['parent']())
 
     def test_links_lazy_children_are_translated_lazily(self):
         # given
@@ -5114,18 +5112,16 @@ class DomainAttrsFromDbTest(unittest.TestCase):
         self.assertIsInstance(result['attachments'], types.GeneratorType)
         self.assertEqual([att], list(result['attachments']))
 
-    # TODO: fix this
-
-    # def test_links_lazy_task_is_translated_lazily(self):
-    #     # given
-    #     task = Task('task')
-    #     self.pl.add(task)
-    #     self.pl.commit()
-    #     dbtask = self.pl._get_db_object_from_domain_object(task)
-    #     # when
-    #     result = self.pl._domain_attrs_from_db_links_lazy({'task': dbtask})
-    #     # then
-    #     self.assertEqual(1, len(result))
-    #     self.assertIn('task', result)
-    #     self.assertIsInstance(result['task'], types.GeneratorType)
-    #     self.assertEqual([task], list(result['task']))
+    def test_links_lazy_task_is_translated_lazily(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        dbtask = self.pl._get_db_object_from_domain_object(task)
+        # when
+        result = self.pl._domain_attrs_from_db_links_lazy({'task': dbtask})
+        # then
+        self.assertEqual(1, len(result))
+        self.assertIn('task', result)
+        self.assertTrue(callable(result['task']))
+        self.assertEqual(task, result['task']())

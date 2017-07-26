@@ -527,7 +527,8 @@ class PersistenceLayer(object):
         if d2 is None:
             d2 = {}
         if 'parent' in d and d['parent'] is not None:
-            d2['parent'] = self._get_domain_object_from_db_object(d['parent'])
+            d2['parent'] = \
+                lambda: self._get_domain_object_from_db_object(d['parent'])
         if 'children' in d and d['children'] is not None:
             d2['children'] = (self._get_domain_object_from_db_object(dbobj) for
                               dbobj in d['children'])
@@ -563,7 +564,8 @@ class PersistenceLayer(object):
                 self._get_domain_object_from_db_object(dbobj) for dbobj in
                 d['attachments'])
         if 'task' in d and d['task'] is not None:
-            d2['task'] = self._get_domain_object_from_db_object(d['task'])
+            d2['task'] = \
+                lambda: self._get_domain_object_from_db_object(d['task'])
         self._logger.debug('d2: {}'.format(d2))
         return d2
 

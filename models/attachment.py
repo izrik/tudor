@@ -99,6 +99,17 @@ class Attachment(Changeable, AttachmentBase):
 
     _dbobj = None
 
+    def __init__(self, path, description=None, timestamp=None, filename=None,
+                 lazy=None):
+        super(Attachment, self).__init__(path, description, timestamp,
+                                         filename)
+        self._logger.debug('Note.__init__ {}'.format(self.id2))
+
+        if lazy is None:
+            lazy = {}
+
+        self._task_lazy = lazy.get('task')
+
     @property
     def id(self):
         return self._id
@@ -165,6 +176,8 @@ class Attachment(Changeable, AttachmentBase):
 
     @property
     def task(self):
+        if self._task_lazy:
+            self.task = self._task_lazy()
         return self._task
 
     @task.setter
@@ -177,6 +190,7 @@ class Attachment(Changeable, AttachmentBase):
             if self._task is not None:
                 self._task.attachments.add(self)
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
+        self._task_lazy = None
 
     @staticmethod
     def from_dict(d, lazy=None):
