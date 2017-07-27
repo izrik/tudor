@@ -1177,7 +1177,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if 'parent' in d:
                 task.parent = d['parent']
             if 'children' in d:
-                assign(task.childrend['children'])
+                assign(task.children, d['children'])
             if 'tags' in d:
                 assign(task.tags, d['tags'])
             if 'users' in d:
