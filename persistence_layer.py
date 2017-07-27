@@ -14,6 +14,9 @@ import logging_util
 from models.changeable import id2, Changeable
 
 
+# TODO: 100% test coverage
+
+
 def is_iterable(x):
     return isinstance(x, collections.Iterable)
 

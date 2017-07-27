@@ -10,6 +10,8 @@ from werkzeug.exceptions import NotFound, BadRequest
 
 from conversions import int_from_str, money_from_str, bool_from_str
 
+# TODO: move all calls tp pl.add, pl.delete, pl.commit, etc., to the LL
+
 
 class ViewLayer(object):
     def __init__(self, ll, app, upload_folder, pl):
