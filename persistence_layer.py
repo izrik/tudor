@@ -1114,10 +1114,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         tags = db.relationship('DbTag', secondary=tags_tasks_table,
                                back_populates="tasks")
 
-        @property
-        def tags2(self):
-            return list(self.tags)
-
         users = db.relationship('DbUser', secondary=users_tasks_table,
                                 back_populates="tasks")
 
