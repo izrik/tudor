@@ -195,12 +195,18 @@ class Task(Changeable, TaskBase):
 
         self._parent_lazy = lazy.get('parent')
 
+        # self depends on self.dependees
         self._dependees = InterlinkedDependees(
             self, lazy=lazy.get('dependees'))
+        # self.dependants depend on self
         self._dependants = InterlinkedDependants(
             self, lazy=lazy.get('dependants'))
+        # self is after self.prioritize_before's
+        # self has lower priority than self.prioritize_before's
         self._prioritize_before = InterlinkedPrioritizeBefore(
             self, lazy=lazy.get('prioritize_before'))
+        # self is before self.prioritize_after's
+        # self has higher priority than self.prioritize_after's
         self._prioritize_after = InterlinkedPrioritizeAfter(
             self, lazy=lazy.get('prioritize_after'))
         self._tags = InterlinkedTags(self, lazy=lazy.get('tags'))
