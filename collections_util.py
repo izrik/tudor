@@ -31,6 +31,10 @@ def extend(c, other):
 
 
 def assign(c, other):
+    if c is None:
+        c = ()
+    if other is None:
+        other = ()
     c2 = set(c)
     other2 = set(other)
     to_add = other2 - c2
