@@ -54,7 +54,7 @@ def run():
                                     '%(filename)s(%(lineno)d):'
                                     '%(threadName)s(%(thread)d):%(message)s'))
 
-    unittest.main(argv=[''])
+    unittest.main(argv=[''], failfast=True)
 
 if __name__ == '__main__':
     run()
