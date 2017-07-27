@@ -963,9 +963,13 @@ class PersistenceLayer(object):
         return self.DbNote.query
 
     def _get_db_note(self, note_id):
+        if note_id is None:
+            raise ValueError('note_id acannot be None')
         return self.note_query.get(note_id)
 
     def get_note(self, note_id):
+        if note_id is None:
+            raise ValueError('note_id acannot be None')
         return self._get_domain_object_from_db_object(
             self._get_db_note(note_id))
 
@@ -991,9 +995,13 @@ class PersistenceLayer(object):
         return self.DbAttachment.query
 
     def _get_db_attachment(self, attachment_id):
+        if attachment_id is None:
+            raise ValueError('attachment_id acannot be None')
         return self.attachment_query.get(attachment_id)
 
     def get_attachment(self, attachment_id):
+        if attachment_id is None:
+            raise ValueError('attachment_id acannot be None')
         return self._get_domain_object_from_db_object(
             self._get_db_attachment(attachment_id))
 
@@ -1020,9 +1028,13 @@ class PersistenceLayer(object):
         return self.DbUser.query
 
     def _get_db_user(self, user_id):
+        if user_id is None:
+            raise ValueError('user_id acannot be None')
         return self.user_query.get(user_id)
 
     def get_user(self, user_id):
+        if user_id is None:
+            raise ValueError('user_id acannot be None')
         return self._get_domain_object_from_db_object(
             self._get_db_user(user_id))
 
@@ -1052,9 +1064,13 @@ class PersistenceLayer(object):
         return self.DbOption.query
 
     def _get_db_option(self, key):
+        if key is None:
+            raise ValueError('key acannot be None')
         return self.option_query.get(key)
 
     def get_option(self, key):
+        if key is None:
+            raise ValueError('key acannot be None')
         return self._get_domain_object_from_db_object(self._get_db_option(key))
 
     def _get_options_query(self, key_in=UNSPECIFIED):

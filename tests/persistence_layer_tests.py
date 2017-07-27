@@ -5173,3 +5173,195 @@ class GetTagTest(unittest.TestCase):
         # then
         self.assertIsNotNone(result)
         self.assertIs(dbtag, result)
+
+
+class GetNoteTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_get_note_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_note, None)
+
+    def test_get_note_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl.get_note(1))
+
+    def test_get_note_existing_yields_that_note(self):
+        # given
+        note = Note('note')
+        self.pl.add(note)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(note.id)
+        # when
+        result = self.pl.get_note(note.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(note, result)
+
+    def test_get_db_note_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl._get_db_note, None)
+
+    def test_get_db_note_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl._get_db_note(1))
+
+    def test_get_db_note_existing_yields_that_dbnote(self):
+        # given
+        dbnote = self.pl.DbNote('note')
+        self.pl.db.session.add(dbnote)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertIsNotNone(dbnote.id)
+        # when
+        result = self.pl._get_db_note(dbnote.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(dbnote, result)
+
+
+class GetAttachmentTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_get_attachment_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_attachment, None)
+
+    def test_get_attachment_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl.get_attachment(1))
+
+    def test_get_attachment_existing_yields_that_attachment(self):
+        # given
+        attachment = Attachment('attachment')
+        self.pl.add(attachment)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(attachment.id)
+        # when
+        result = self.pl.get_attachment(attachment.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(attachment, result)
+
+    def test_get_db_attachment_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl._get_db_attachment, None)
+
+    def test_get_db_attachment_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl._get_db_attachment(1))
+
+    def test_get_db_attachment_existing_yields_that_dbattachment(self):
+        # given
+        dbattachment = self.pl.DbAttachment('attachment')
+        self.pl.db.session.add(dbattachment)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertIsNotNone(dbattachment.id)
+        # when
+        result = self.pl._get_db_attachment(dbattachment.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(dbattachment, result)
+
+
+class GetUserTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_get_user_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_user, None)
+
+    def test_get_user_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl.get_user(1))
+
+    def test_get_user_existing_yields_that_user(self):
+        # given
+        user = User('user')
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(user.id)
+        # when
+        result = self.pl.get_user(user.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(user, result)
+
+    def test_get_db_user_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl._get_db_user, None)
+
+    def test_get_db_user_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl._get_db_user(1))
+
+    def test_get_db_user_existing_yields_that_dbuser(self):
+        # given
+        dbuser = self.pl.DbUser('user')
+        self.pl.db.session.add(dbuser)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertIsNotNone(dbuser.id)
+        # when
+        result = self.pl._get_db_user(dbuser.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(dbuser, result)
+
+
+class GetOptionTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_get_option_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_option, None)
+
+    def test_get_option_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl.get_option(1))
+
+    def test_get_option_existing_yields_that_option(self):
+        # given
+        option = Option('key', 'value')
+        self.pl.add(option)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(option.id)
+        # when
+        result = self.pl.get_option(option.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(option, result)
+
+    def test_get_db_option_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl._get_db_option, None)
+
+    def test_get_db_option_non_existent_yields_none(self):
+        # expect
+        self.assertIsNone(self.pl._get_db_option(1))
+
+    def test_get_db_option_existing_yields_that_dboption(self):
+        # given
+        dboption = self.pl.DbOption('key', 'value')
+        self.pl.db.session.add(dboption)
+        self.pl.db.session.commit()
+        # precondition
+        self.assertIsNotNone(dboption.id)
+        # when
+        result = self.pl._get_db_option(dboption.id)
+        # then
+        self.assertIsNotNone(result)
+        self.assertIs(dboption, result)
