@@ -930,9 +930,13 @@ class PersistenceLayer(object):
         return self.DbTag.query
 
     def _get_db_tag(self, tag_id):
+        if tag_id is None:
+            raise ValueError('tag_id cannot be None')
         return self.tag_query.get(tag_id)
 
     def get_tag(self, tag_id):
+        if tag_id is None:
+            raise ValueError('tag_id cannot be None')
         return self._get_domain_object_from_db_object(self._get_db_tag(tag_id))
 
     def _get_tags_query(self, value=UNSPECIFIED, limit=None):
