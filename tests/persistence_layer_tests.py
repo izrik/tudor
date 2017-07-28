@@ -5853,29 +5853,6 @@ class DbTaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, self.pl.DbTask)
         self.assertEqual([attachment], list(result.attachments))
 
-    def test_empty_yields_empty_dbtask(self):
-        # when
-        result = self.pl.DbTask.from_dict({})
-        # then
-        self.assertIsInstance(result, self.pl.DbTask)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.summary)
-        self.assertEqual('', result.description)
-        self.assertFalse(result.is_done)
-        self.assertFalse(result.is_deleted)
-        self.assertEqual(0, result.order_num)
-        self.assertIsNone(result.deadline)
-        self.assertIsNone(result.expected_duration_minutes)
-        self.assertIsNone(result.expected_cost)
-        self.assertEqual([], list(result.tags))
-        self.assertEqual([], list(result.users))
-        self.assertIsNone(result.parent)
-        self.assertIsNone(result.parent_id)
-        self.assertEqual([], list(result.dependees))
-        self.assertEqual([], list(result.dependants))
-        self.assertEqual([], list(result.prioritize_before))
-        self.assertEqual([], list(result.prioritize_after))
-
     def test_none_lazy_does_not_raise(self):
         # when
         result = self.pl.DbTask.from_dict({}, lazy=None)
