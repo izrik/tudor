@@ -1168,8 +1168,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             expected_duration_minutes = d.get('expected_duration_minutes',
                                               None)
             expected_cost = d.get('expected_cost', None)
-            # 'tag_ids': [tag.id for tag in self.tags],
-            # 'user_ids': [user.id for user in self.users]
 
             task = cls(summary=summary, description=description,
                        is_done=is_done, is_deleted=is_deleted,
