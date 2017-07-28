@@ -1152,7 +1152,9 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 expected_cost=expected_cost)
 
         @classmethod
-        def from_dict(cls, d):
+        def from_dict(cls, d, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             task_id = d.get('id', None)
             summary = d.get('summary')
             description = d.get('description', '')
