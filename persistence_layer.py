@@ -1176,26 +1176,27 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             if task_id is not None:
                 task.id = task_id
             task.order_num = order_num
-            if 'parent' in d:
-                task.parent = d['parent']
-            if 'children' in d:
-                assign(task.children, d['children'])
-            if 'tags' in d:
-                assign(task.tags, d['tags'])
-            if 'users' in d:
-                assign(task.users, d['users'])
-            if 'dependees' in d:
-                assign(task.dependees, d['dependees'])
-            if 'dependants' in d:
-                assign(task.dependants, d['dependants'])
-            if 'prioritize_before' in d:
-                assign(task.prioritize_before, d['prioritize_before'])
-            if 'prioritize_after' in d:
-                assign(task.prioritize_after, d['prioritize_after'])
-            if 'notes' in d:
-                assign(task.notes, d['notes'])
-            if 'attachments' in d:
-                assign(task.attachments, d['attachments'])
+            if not lazy:
+                if 'parent' in d:
+                    task.parent = d['parent']
+                if 'children' in d:
+                    assign(task.children, d['children'])
+                if 'tags' in d:
+                    assign(task.tags, d['tags'])
+                if 'users' in d:
+                    assign(task.users, d['users'])
+                if 'dependees' in d:
+                    assign(task.dependees, d['dependees'])
+                if 'dependants' in d:
+                    assign(task.dependants, d['dependants'])
+                if 'prioritize_before' in d:
+                    assign(task.prioritize_before, d['prioritize_before'])
+                if 'prioritize_after' in d:
+                    assign(task.prioritize_after, d['prioritize_after'])
+                if 'notes' in d:
+                    assign(task.notes, d['notes'])
+                if 'attachments' in d:
+                    assign(task.attachments, d['attachments'])
             return task
 
         def make_change(self, field, operation, value):
