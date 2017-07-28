@@ -213,16 +213,16 @@ class TaskFromDictTest(unittest.TestCase):
             Task.from_dict,
             {'parent': 1})
 
-    # def test_lazy_overrides_non_lazy_parent(self):
-    #     # given
-    #     parent = Task('parent')
-    #     parent2 = Task('parent2')
-    #     # when
-    #     result = Task.from_dict({'parent': parent},
-    #                             lazy={'parent': lambda: parent2})
-    #     # then
-    #     self.assertIsInstance(result, Task)
-    #     self.assertIs(parent2, result.parent)
+    def test_lazy_overrides_non_lazy_parent(self):
+        # given
+        parent = Task('parent')
+        parent2 = Task('parent2')
+        # when
+        result = Task.from_dict({'parent': parent},
+                                lazy={'parent': lambda: parent2})
+        # then
+        self.assertIsInstance(result, Task)
+        self.assertIs(parent2, result.parent)
 
     def test_parent_id_none_is_ignored(self):
         # when

@@ -427,9 +427,9 @@ class Task(Changeable, TaskBase):
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
-        if 'parent' in d:
-            task.parent = d['parent']
         if not lazy:
+            if 'parent' in d:
+                task.parent = d['parent']
             if 'children' in d:
                 assign(task.children, d['children'])
             if 'tags' in d:
