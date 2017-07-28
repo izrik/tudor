@@ -48,6 +48,7 @@ class TaskLazyParentTest(unittest.TestCase):
     def test_lazy_parent_returns_object_parent_lazy_is_set(self):
         # given
         parent = Task('parent')
+
         def parent_source():
             return parent
         # when
@@ -60,6 +61,7 @@ class TaskLazyParentTest(unittest.TestCase):
     def test_accessing_parent_populates_it_and_removes_parent_lazy(self):
         # given
         parent = Task('parent')
+
         def parent_source():
             return parent
         task = Task('task', lazy={'parent': parent_source})
