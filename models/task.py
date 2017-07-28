@@ -360,7 +360,7 @@ class Task(Changeable, TaskBase):
         self._logger.debug('{}'.format(self.id2))
         if value != self._parent:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.parent, value))
+                '{}: {} -> {}'.format(self.id2, self._parent, value))
             self._on_attr_changing(self.FIELD_PARENT, self._parent)
             if self._parent is not None:
                 self._parent.children.discard(self)
