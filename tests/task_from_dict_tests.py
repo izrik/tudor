@@ -556,3 +556,15 @@ class TaskFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, Task)
         self.assertEqual([attachment2], list(result.attachments))
+
+    def test_lazy_overrides_all_non_lazy_properties(self):
+        # given
+        attachment = Attachment('attachment')
+        note = Note('note')
+        # when
+        result = Task.from_dict({'attachments': [attachment]},
+                                lazy={'notes': [note]})
+        # then
+        self.assertIsInstance(result, Task)
+        self.assertEqual([], list(result.attachments))
+        self.assertEqual([note], list(result.notes))
