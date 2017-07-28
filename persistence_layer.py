@@ -1143,7 +1143,10 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
 
         def __init__(self, summary, description='', is_done=False,
                      is_deleted=False, deadline=None,
-                     expected_duration_minutes=None, expected_cost=None):
+                     expected_duration_minutes=None, expected_cost=None,
+                     lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
             TaskBase.__init__(
                 self, summary=summary, description=description,
@@ -1172,7 +1175,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                        is_done=is_done, is_deleted=is_deleted,
                        deadline=deadline,
                        expected_duration_minutes=expected_duration_minutes,
-                       expected_cost=expected_cost)
+                       expected_cost=expected_cost, lazy=lazy)
             if task_id is not None:
                 task.id = task_id
             task.order_num = order_num
