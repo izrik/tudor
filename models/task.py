@@ -406,8 +406,8 @@ class Task(Changeable, TaskBase):
     def attachments(self):
         return self._attachments
 
-    @staticmethod
-    def from_dict(d, lazy=None):
+    @classmethod
+    def from_dict(cls, d, lazy=None):
         task_id = d.get('id', None)
         summary = d.get('summary')
         description = d.get('description', '')

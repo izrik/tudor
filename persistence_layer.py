@@ -1151,8 +1151,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 expected_duration_minutes=expected_duration_minutes,
                 expected_cost=expected_cost)
 
-        @staticmethod
-        def from_dict(d):
+        @classmethod
+        def from_dict(cls, d):
             task_id = d.get('id', None)
             summary = d.get('summary')
             description = d.get('description', '')
