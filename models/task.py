@@ -419,11 +419,11 @@ class Task(Changeable, TaskBase):
                                           None)
         expected_cost = d.get('expected_cost', None)
 
-        task = Task(summary=summary, description=description,
-                    is_done=is_done, is_deleted=is_deleted,
-                    deadline=deadline,
-                    expected_duration_minutes=expected_duration_minutes,
-                    expected_cost=expected_cost, lazy=lazy)
+        task = cls(summary=summary, description=description,
+                   is_done=is_done, is_deleted=is_deleted,
+                   deadline=deadline,
+                   expected_duration_minutes=expected_duration_minutes,
+                   expected_cost=expected_cost, lazy=lazy)
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
