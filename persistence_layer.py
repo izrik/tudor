@@ -1247,10 +1247,6 @@ def generate_tag_class(db, tags_tasks_table):
         tasks = db.relationship('DbTask', secondary=tags_tasks_table,
                                 back_populates='tags')
 
-        @property
-        def tasks2(self):
-            return list(self.tasks)
-
         def __init__(self, value, description=None):
             db.Model.__init__(self)
             TagBase.__init__(self, value, description)
