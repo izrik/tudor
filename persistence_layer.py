@@ -1158,47 +1158,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         def from_dict(cls, d, lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
-            task_id = d.get('id', None)
-            summary = d.get('summary')
-            description = d.get('description', '')
-            is_done = d.get('is_done', False)
-            is_deleted = d.get('is_deleted', False)
-            order_num = d.get('order_num', 0)
-            deadline = d.get('deadline', None)
-            expected_duration_minutes = d.get('expected_duration_minutes',
-                                              None)
-            expected_cost = d.get('expected_cost', None)
-
-            task = cls(summary=summary, description=description,
-                       is_done=is_done, is_deleted=is_deleted,
-                       deadline=deadline,
-                       expected_duration_minutes=expected_duration_minutes,
-                       expected_cost=expected_cost, lazy=lazy)
-            if task_id is not None:
-                task.id = task_id
-            task.order_num = order_num
-            if not lazy:
-                if 'parent' in d:
-                    task.parent = d['parent']
-                if 'children' in d:
-                    assign(task.children, d['children'])
-                if 'tags' in d:
-                    assign(task.tags, d['tags'])
-                if 'users' in d:
-                    assign(task.users, d['users'])
-                if 'dependees' in d:
-                    assign(task.dependees, d['dependees'])
-                if 'dependants' in d:
-                    assign(task.dependants, d['dependants'])
-                if 'prioritize_before' in d:
-                    assign(task.prioritize_before, d['prioritize_before'])
-                if 'prioritize_after' in d:
-                    assign(task.prioritize_after, d['prioritize_after'])
-                if 'notes' in d:
-                    assign(task.notes, d['notes'])
-                if 'attachments' in d:
-                    assign(task.attachments, d['attachments'])
-            return task
+            return super(DbTask, cls).from_dict(d=d, lazy=None)
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_ID, self.FIELD_SUMMARY,
