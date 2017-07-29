@@ -6179,7 +6179,7 @@ class DbTaskMakeChangeTest(unittest.TestCase):
             self.task.make_change,
             Task.FIELD_ORDER_NUM, Changeable.OP_CHANGING, 2)
 
-    def test_setting_paret_sets_parent(self):
+    def test_setting_parent_sets_parent(self):
         # given
         parent = self.pl.DbTask('parent')
         # precondition
