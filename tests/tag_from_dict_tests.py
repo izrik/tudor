@@ -94,7 +94,7 @@ class TagFromDictTest(unittest.TestCase):
         task2 = Task('task2')
         # when
         result = Tag.from_dict({'tasks': [task]},
-                                lazy={'tasks': [task2]})
+                               lazy={'tasks': [task2]})
         # then
         self.assertIsInstance(result, Tag)
         self.assertEqual([task2], list(result.tasks))
@@ -104,7 +104,7 @@ class TagFromDictTest(unittest.TestCase):
         task = Task('task')
         # when
         result = Tag.from_dict({'tasks': [task]},
-                                lazy={'x': 123})
+                               lazy={'x': 123})
         # then
         self.assertIsInstance(result, Tag)
         self.assertEqual([], list(result.tasks))
