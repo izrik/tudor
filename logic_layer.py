@@ -233,7 +233,8 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        note = Note(content)
+        timestamp = datetime.utcnow()
+        note = Note(content, timestamp)
         note.task = task
         return note
 
