@@ -6860,3 +6860,229 @@ class DbTagMakeChangeTest(unittest.TestCase):
         self.tag.make_change(Tag.FIELD_TASKS, Changeable.OP_REMOVE, task)
         # then
         self.assertEqual([], list(self.tag.tasks))
+
+
+class DbNoteFromDictTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_empty_yields_empty_dbnote(self):
+        # when
+        result = self.pl.DbNote.from_dict({})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.content)
+        self.assertIsNone(result.timestamp)
+        self.assertIsNone(result.task)
+
+    def test_id_none_is_ignored(self):
+        # when
+        result = self.pl.DbNote.from_dict({'id': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.id)
+
+    def test_valid_id_gets_set(self):
+        # when
+        result = self.pl.DbNote.from_dict({'id': 123})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertEqual(123, result.id)
+
+    def test_content_none_is_ignored(self):
+        # when
+        result = self.pl.DbNote.from_dict({'content': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.content)
+
+    def test_valid_content_gets_set(self):
+        # when
+        result = self.pl.DbNote.from_dict({'content': 'abc'})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertEqual('abc', result.content)
+
+    def test_timestamp_none_becomes_none(self):
+        # when
+        result = self.pl.DbNote.from_dict({'timestamp': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.timestamp)
+
+    def test_valid_timestamp_gets_set(self):
+        # when
+        result = self.pl.DbNote.from_dict({'timestamp': datetime(2017, 1, 1)})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertEqual(datetime(2017, 1, 1), result.timestamp)
+
+    def test_task_none_yields_empty(self):
+        # when
+        result = self.pl.DbNote.from_dict({'task': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.task)
+
+    def test_task_not_none_yields_same(self):
+        # given
+        task = self.pl.DbTask('task')
+        # when
+        result = self.pl.DbNote.from_dict({'task': task})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIs(task, result.task)
+
+
+class DbNoteMakeChangeTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+        self.Note = self.pl.DbNote('Note', datetime(2017, 1, 1))
+
+    def test_setting_id_sets_id(self):
+        # precondition
+        self.assertIsNone(self.Note.id)
+        # when
+        self.Note.make_change(Note.FIELD_ID, Changeable.OP_SET, 1)
+        # then
+        self.assertEqual(1, self.Note.id)
+
+    def test_adding_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_ID, Changeable.OP_ADD, 1)
+
+    def test_removing_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_ID, Changeable.OP_REMOVE, 1)
+
+    def test_changing_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_ID, Changeable.OP_CHANGING, 1)
+
+    def test_setting_content_sets_content(self):
+        # precondition
+        self.assertEqual('Note', self.Note.content)
+        # when
+        self.Note.make_change(Note.FIELD_CONTENT, Changeable.OP_SET, 'a')
+        # then
+        self.assertEqual('a', self.Note.content)
+
+    def test_adding_content_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_CONTENT, Changeable.OP_ADD, 'a')
+
+    def test_removing_content_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_CONTENT, Changeable.OP_REMOVE, 'a')
+
+    def test_changing_content_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_CONTENT, Changeable.OP_CHANGING, 'a')
+
+    def test_setting_timestamp_sets_timestamp(self):
+        # precondition
+        self.assertEqual(datetime(2017, 1, 1), self.Note.timestamp)
+        # when
+        self.Note.make_change(Note.FIELD_TIMESTAMP, Changeable.OP_SET,
+                              datetime(2017, 1, 2))
+        # then
+        self.assertEqual(datetime(2017, 1, 2), self.Note.timestamp)
+
+    def test_adding_timestamp_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_TIMESTAMP, Changeable.OP_ADD, 'b')
+
+    def test_removing_timestamp_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_TIMESTAMP, Changeable.OP_REMOVE, 'b')
+
+    def test_changing_timestamp_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_TIMESTAMP, Changeable.OP_CHANGING, 'b')
+
+    def test_setting_task_sets_task(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.Note.task)
+        # when
+        self.Note.make_change(Note.FIELD_TASK, Changeable.OP_SET, task)
+        # then
+        self.assertEqual(task, self.Note.task)
+
+    def test_adding_task_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.Note.task)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_TASK, Changeable.OP_ADD, 'b')
+
+    def test_removing_task_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.Note.task)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_TASK, Changeable.OP_REMOVE, 'b')
+
+    def test_changing_task_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.Note.task)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Note.FIELD_TASK, Changeable.OP_CHANGING, 'b')
+
+    def test_non_note_field_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            Task.FIELD_SUMMARY, Changeable.OP_SET, 'value')
+
+    def test_invalid_field_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.Note.make_change,
+            'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
