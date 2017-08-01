@@ -44,7 +44,7 @@ class AttachmentBase(object):
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
-            return datetime.datetime.utcnow()
+            return None
         if isinstance(timestamp, basestring):
             return dparse(timestamp)
         return timestamp
