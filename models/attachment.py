@@ -197,10 +197,12 @@ class Attachment(Changeable, AttachmentBase):
         description = d.get('description', None)
         task = d.get('task')
 
-        attachment = Attachment(path, description, timestamp, filename)
+        attachment = Attachment(path, description, timestamp, filename,
+                                lazy=lazy)
         if attachment_id is not None:
             attachment.id = attachment_id
-        attachment.task = task
+        if not lazy:
+            attachment.task = task
         return attachment
 
     def clear_relationships(self):
