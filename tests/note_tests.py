@@ -4,6 +4,7 @@ import unittest
 from datetime import datetime
 
 from models.note import Note, NoteBase
+from models.task import Task
 
 
 class CleanTimestampTest(unittest.TestCase):
@@ -28,3 +29,17 @@ class CleanTimestampTest(unittest.TestCase):
         result = NoteBase._clean_timestamp(datetime(2017, 1, 1))
         # then
         self.assertEqual(datetime(2017, 1, 1), result)
+
+
+class NoteClearRelationshipsTest(unittest.TestCase):
+    def test_clearing_nullifies_task(self):
+        # given
+        task = Task('task')
+        note = Note('note')
+        note.task = task
+        # precondition
+        self.assertIs(task, note.task)
+        # when
+        note.clear_relationships()
+        # then
+        self.assertIsNone(note.task)
