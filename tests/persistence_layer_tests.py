@@ -7086,3 +7086,322 @@ class DbNoteMakeChangeTest(unittest.TestCase):
             ValueError,
             self.Note.make_change,
             'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
+
+
+class DbAttachmentFromDictTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_empty_yields_empty_dbattachment(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.path)
+        self.assertIsNone(result.description)
+        self.assertIsNone(result.timestamp)
+        self.assertIsNone(result.filename)
+        self.assertIsNone(result.task)
+
+    def test_id_none_is_ignored(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'id': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.id)
+
+    def test_valid_id_gets_set(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'id': 123})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertEqual(123, result.id)
+
+    def test_path_none_is_ignored(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'path': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.path)
+
+    def test_valid_path_gets_set(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'path': 'abc'})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertEqual('abc', result.path)
+
+    def test_description_none_is_ignored(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'description': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.description)
+
+    def test_valid_description_gets_set(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'description': 'abc'})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertEqual('abc', result.description)
+
+    def test_timestamp_none_becomes_none(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'timestamp': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.timestamp)
+
+    def test_valid_timestamp_gets_set(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'timestamp':
+                                                 datetime(2017, 1, 1)})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertEqual(datetime(2017, 1, 1), result.timestamp)
+
+    def test_filename_none_is_ignored(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'filename': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.filename)
+
+    def test_valid_filename_gets_set(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'filename': 'abc'})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertEqual('abc', result.filename)
+
+    def test_task_none_yields_empty(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({'task': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.task)
+
+    def test_task_not_none_yields_same(self):
+        # given
+        task = self.pl.DbTask('task')
+        # when
+        result = self.pl.DbAttachment.from_dict({'task': task})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIs(task, result.task)
+
+
+class DbAttachmentMakeChangeTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+        self.attachment = self.pl.DbAttachment('attachment')
+
+    def test_setting_id_sets_id(self):
+        # precondition
+        self.assertIsNone(self.attachment.id)
+        # when
+        self.attachment.make_change(Attachment.FIELD_ID, Changeable.OP_SET, 1)
+        # then
+        self.assertEqual(1, self.attachment.id)
+
+    def test_adding_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_ID, Changeable.OP_ADD, 1)
+
+    def test_removing_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_ID, Changeable.OP_REMOVE, 1)
+
+    def test_changing_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_ID, Changeable.OP_CHANGING, 1)
+
+    def test_setting_path_sets_path(self):
+        # precondition
+        self.assertEqual('attachment', self.attachment.path)
+        # when
+        self.attachment.make_change(Attachment.FIELD_PATH, Changeable.OP_SET,
+                                    'a')
+        # then
+        self.assertEqual('a', self.attachment.path)
+
+    def test_adding_path_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_PATH, Changeable.OP_ADD, 'a')
+
+    def test_removing_path_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_PATH, Changeable.OP_REMOVE, 'a')
+
+    def test_changing_path_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_PATH, Changeable.OP_CHANGING, 'a')
+
+    def test_setting_description_sets_description(self):
+        # precondition
+        self.assertIsNone(self.attachment.description)
+        # when
+        self.attachment.make_change(Attachment.FIELD_DESCRIPTION,
+                                    Changeable.OP_SET, 'a')
+        # then
+        self.assertEqual('a', self.attachment.description)
+
+    def test_adding_description_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_DESCRIPTION, Changeable.OP_ADD, 'a')
+
+    def test_removing_description_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_DESCRIPTION, Changeable.OP_REMOVE, 'a')
+
+    def test_changing_description_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_DESCRIPTION, Changeable.OP_CHANGING, 'a')
+
+    def test_setting_timestamp_sets_timestamp(self):
+        # precondition
+        self.assertIsNone(self.attachment.timestamp)
+        # when
+        self.attachment.make_change(Attachment.FIELD_TIMESTAMP,
+                                    Changeable.OP_SET, datetime(2017, 1, 2))
+        # then
+        self.assertEqual(datetime(2017, 1, 2), self.attachment.timestamp)
+
+    def test_adding_timestamp_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_TIMESTAMP, Changeable.OP_ADD, 'b')
+
+    def test_removing_timestamp_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_TIMESTAMP, Changeable.OP_REMOVE, 'b')
+
+    def test_changing_timestamp_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_TIMESTAMP, Changeable.OP_CHANGING, 'b')
+
+    def test_setting_filename_sets_filename(self):
+        # precondition
+        self.assertIsNone(self.attachment.filename)
+        # when
+        self.attachment.make_change(Attachment.FIELD_FILENAME,
+                                    Changeable.OP_SET, 'a')
+        # then
+        self.assertEqual('a', self.attachment.filename)
+
+    def test_adding_filename_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_FILENAME, Changeable.OP_ADD, 'a')
+
+    def test_removing_filename_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_FILENAME, Changeable.OP_REMOVE, 'a')
+
+    def test_changing_filename_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_FILENAME, Changeable.OP_CHANGING, 'a')
+
+    def test_setting_task_sets_task(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.attachment.task)
+        # when
+        self.attachment.make_change(Attachment.FIELD_TASK,
+                                    Changeable.OP_SET, task)
+        # then
+        self.assertEqual(task, self.attachment.task)
+
+    def test_adding_task_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.attachment.task)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_TASK, Changeable.OP_ADD, 'b')
+
+    def test_removing_task_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.attachment.task)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_TASK, Changeable.OP_REMOVE, 'b')
+
+    def test_changing_task_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertIsNone(self.attachment.task)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Attachment.FIELD_TASK, Changeable.OP_CHANGING, 'b')
+
+    def test_non_attachment_field_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            Task.FIELD_SUMMARY, Changeable.OP_SET, 'value')
+
+    def test_invalid_field_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.attachment.make_change,
+            'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
