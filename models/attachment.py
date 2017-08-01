@@ -17,13 +17,9 @@ class AttachmentBase(object):
     FIELD_FILENAME = 'FILENAME'
     FIELD_TASK = 'TASK'
 
-    def __init__(self, path, description=None, timestamp=None,
+    def __init__(self, path, description='', timestamp=None,
                  filename=None):
-        if description is None:
-            description = ''
         timestamp = self._clean_timestamp(timestamp)
-        if filename is None:
-            filename = os.path.basename(path)
         self.timestamp = timestamp
         self.path = path
         self.filename = filename
