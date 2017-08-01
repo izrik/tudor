@@ -64,7 +64,7 @@ class NoteBase(object):
 
     @property
     def id2(self):
-        if len(self.content) > 20:
+        if self.content is not None and len(self.content) > 20:
             return '[{}] {}... ({})'.format(id(self), repr(self.content[:20]),
                                             self.id)
         return '[{}] {} ({})'.format(id(self), repr(self.content), self.id)
