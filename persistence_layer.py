@@ -1368,10 +1368,10 @@ def generate_attachment_class(db):
         _domobj = None
 
         id = db.Column(db.Integer, primary_key=True)
-        timestamp = db.Column(db.DateTime, nullable=False)
         path = db.Column(db.String(1000), nullable=False)
-        filename = db.Column(db.String(100), nullable=False)
-        description = db.Column(db.String(100), nullable=False, default='')
+        timestamp = db.Column(db.DateTime)
+        filename = db.Column(db.String(100))
+        description = db.Column(db.String(100), default='')
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
         task = db.relationship('DbTask',
