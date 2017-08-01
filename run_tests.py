@@ -42,6 +42,7 @@ from tests.interlinking_tests import *
 from tests.task_from_dict_tests import *
 from tests.task_lazy_tests import *
 from tests.tag_from_dict_tests import *
+from tests.note_from_dict_tests import *
 
 
 def run():
