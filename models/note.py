@@ -156,10 +156,11 @@ class Note(Changeable, NoteBase):
         timestamp = d.get('timestamp', None)
         task = d.get('task')
 
-        note = Note(content, timestamp)
+        note = Note(content, timestamp, lazy=lazy)
         if note_id is not None:
             note.id = note_id
-        note.task = task
+        if not lazy:
+            note.task = task
         return note
 
     def clear_relationships(self):
