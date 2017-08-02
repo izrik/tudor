@@ -429,9 +429,14 @@ class ViewLayer(object):
         password = request.form['password']
         user = self.pl.get_user_by_email(email)
 
-        if (user is None or
-                not self.app.bcrypt.check_password_hash(user.hashed_password,
-                                                        password)):
+        if user is None:
+            flash('Username or Password is invalid', 'error')
+            return redirect(url_for('login'))
+        if user.hashed_password is None or user.hashed_password == '':
+            flash('Username or Password is invalid', 'error')
+            return redirect(url_for('login'))
+        if not self.app.bcrypt.check_password_hash(user.hashed_password,
+                                                   password):
             flash('Username or Password is invalid', 'error')
             return redirect(url_for('login'))
 

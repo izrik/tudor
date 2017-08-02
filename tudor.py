@@ -180,9 +180,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             email, password = api_key.split(':', 1)
             user = pl.get_user_by_email(email)
 
-            if (user is None or
-                    not bcrypt.check_password_hash(
-                        user.hashed_password, password)):
+            if user is None:
+                return None
+            if user.hashed_password is None or user.hashed_password == '':
+                return None
+            if not bcrypt.check_password_hash(user.hashed_password, password):
                 return None
 
             return user
