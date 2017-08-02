@@ -6826,7 +6826,7 @@ class DbTagMakeChangeTest(unittest.TestCase):
             self.tag.make_change,
             Tag.FIELD_TASKS, Changeable.OP_CHANGING, task)
 
-    def test_non_task_field_raises(self):
+    def test_non_tag_field_raises(self):
         # expect
         self.assertRaises(
             ValueError,
@@ -7666,7 +7666,7 @@ class DbUserMakeChangeTest(unittest.TestCase):
             self.user.make_change,
             User.FIELD_TASKS, Changeable.OP_CHANGING, task)
 
-    def test_non_task_field_raises(self):
+    def test_non_user_field_raises(self):
         # expect
         self.assertRaises(
             ValueError,
