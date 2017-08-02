@@ -46,6 +46,7 @@ from tests.note_from_dict_tests import *
 from tests.note_tests import *
 from tests.attachment_tests import *
 from tests.attachment_from_dict_tests import *
+from tests.user_from_dict_tests import *
 
 
 def run():
