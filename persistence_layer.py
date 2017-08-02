@@ -1437,7 +1437,7 @@ def generate_user_class(db, bcrypt, users_tasks_table):
 
         id = db.Column(db.Integer, primary_key=True)
         email = db.Column(db.String(100), nullable=False, unique=True)
-        hashed_password = db.Column(db.String(100), nullable=False)
+        hashed_password = db.Column(db.String(100))
         is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
         tasks = db.relationship('DbTask', secondary=users_tasks_table,
