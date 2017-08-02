@@ -27,10 +27,12 @@ class AttachmentBase(object):
 
     @staticmethod
     def get_related_fields(field):
+        # TODO: get rid of this function?
         return ()
 
     @staticmethod
     def get_autochange_fields():
+        # TODO: get rid of this function?
         return (AttachmentBase.FIELD_ID, AttachmentBase.FIELD_TASK)
 
     def __repr__(self):

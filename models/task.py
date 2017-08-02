@@ -50,10 +50,12 @@ class TaskBase(object):
 
     @staticmethod
     def get_related_fields(field):
+        # TODO: get rid of this function?
         return ()
 
     @staticmethod
     def get_autochange_fields():
+        # TODO: get rid of this function?
         return (TaskBase.FIELD_ID, TaskBase.FIELD_PARENT)
 
     def __repr__(self):

@@ -13,10 +13,12 @@ class OptionBase(object):
 
     @staticmethod
     def get_related_fields(field):
+        # TODO: get rid of this function?
         return ()
 
     @staticmethod
     def get_autochange_fields():
+        # TODO: get rid of this function?
         return ()
 
     def __repr__(self):
