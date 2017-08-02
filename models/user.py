@@ -92,8 +92,6 @@ class User(Changeable, UserBase):
     _dbobj = None
 
     def __init__(self, email, hashed_password=None, is_admin=False, lazy=None):
-        if hashed_password is None:
-            hashed_password = ''
         super(User, self).__init__(email=email,
                                    hashed_password=hashed_password,
                                    is_admin=is_admin)

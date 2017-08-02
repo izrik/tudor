@@ -1444,10 +1444,6 @@ def generate_user_class(db, bcrypt, users_tasks_table):
                                 back_populates='users')
 
         def __init__(self, email, hashed_password=None, is_admin=False):
-            if hashed_password is None:
-                digits = '0123456789abcdef'
-                key = ''.join((random.choice(digits) for x in xrange(48)))
-                hashed_password = bcrypt.generate_password_hash(key)
             db.Model.__init__(self)
             UserBase.__init__(self, email=email,
                               hashed_password=hashed_password,
