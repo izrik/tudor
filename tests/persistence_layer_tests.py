@@ -7405,3 +7405,298 @@ class DbAttachmentMakeChangeTest(unittest.TestCase):
             ValueError,
             self.attachment.make_change,
             'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
+
+
+class DbUserFromDictTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_empty_yields_empty_dbuser(self):
+        # when
+        result = self.pl.DbUser.from_dict({})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.email)
+        self.assertIsNone(result.hashed_password)
+        self.assertFalse(result.is_admin)
+        self.assertEqual([], list(result.tasks))
+
+    def test_id_none_is_ignored(self):
+        # when
+        result = self.pl.DbUser.from_dict({'id': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertIsNone(result.id)
+
+    def test_valid_id_gets_set(self):
+        # when
+        result = self.pl.DbUser.from_dict({'id': 123})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertEqual(123, result.id)
+
+    def test_email_none_is_ignored(self):
+        # when
+        result = self.pl.DbUser.from_dict({'email': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertIsNone(result.email)
+
+    def test_valid_email_gets_set(self):
+        # when
+        result = self.pl.DbUser.from_dict({'email': 'name@example.com'})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertEqual('name@example.com', result.email)
+
+    def test_hashed_password_none_becomes_none(self):
+        # when
+        result = self.pl.DbUser.from_dict({'hashed_password': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertIsNone(result.hashed_password)
+
+    def test_valid_hashed_password_gets_set(self):
+        # when
+        result = self.pl.DbUser.from_dict({'hashed_password': 'abc'})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertEqual('abc', result.hashed_password)
+
+    def test_is_admin_none_is_ignored(self):
+        # when
+        result = self.pl.DbUser.from_dict({'is_admin': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertFalse(result.is_admin)
+
+    def test_valid_is_admin_gets_set(self):
+        # when
+        result = self.pl.DbUser.from_dict({'is_admin': True})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertTrue(result.is_admin)
+
+    def test_tasks_none_yields_empty(self):
+        # when
+        result = self.pl.DbUser.from_dict({'tasks': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertEqual([], list(result.tasks))
+
+    def test_tasks_empty_yields_empty(self):
+        # when
+        result = self.pl.DbUser.from_dict({'tasks': []})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertEqual([], list(result.tasks))
+
+    def test_tasks_non_empty_yields_same(self):
+        # given
+        task = self.pl.DbTask('task')
+        # when
+        result = self.pl.DbUser.from_dict({'tasks': [task]})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertEqual([task], list(result.tasks))
+
+
+class DbUserMakeChangeTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+        self.user = self.pl.DbUser('name@example.com')
+
+    def test_setting_id_sets_id(self):
+        # precondition
+        self.assertIsNone(self.user.id)
+        # when
+        self.user.make_change(User.FIELD_ID, Changeable.OP_SET, 1)
+        # then
+        self.assertEqual(1, self.user.id)
+
+    def test_adding_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_ID, Changeable.OP_ADD, 1)
+
+    def test_removing_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_ID, Changeable.OP_REMOVE, 1)
+
+    def test_changing_id_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_ID, Changeable.OP_CHANGING, 1)
+
+    def test_setting_email_sets_email(self):
+        # precondition
+        self.assertEqual('name@example.com', self.user.email)
+        # when
+        self.user.make_change(User.FIELD_EMAIL, Changeable.OP_SET,
+                              'another@example.com')
+        # then
+        self.assertEqual('another@example.com', self.user.email)
+
+    def test_adding_email_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_EMAIL, Changeable.OP_ADD, 'another@example.com')
+
+    def test_removing_email_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_EMAIL, Changeable.OP_REMOVE, 'another@example.com')
+
+    def test_changing_email_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_EMAIL, Changeable.OP_CHANGING, 'another@example.com')
+
+    def test_setting_hashed_password_sets_hashed_password(self):
+        # precondition
+        self.assertIsNone(self.user.hashed_password)
+        # when
+        self.user.make_change(User.FIELD_HASHED_PASSWORD, Changeable.OP_SET,
+                              'b')
+        # then
+        self.assertEqual('b', self.user.hashed_password)
+
+    def test_adding_hashed_password_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_HASHED_PASSWORD, Changeable.OP_ADD, 'b')
+
+    def test_removing_hashed_password_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_HASHED_PASSWORD, Changeable.OP_REMOVE, 'b')
+
+    def test_changing_hashed_password_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_HASHED_PASSWORD, Changeable.OP_CHANGING, 'b')
+
+    def test_setting_is_admin_sets_is_admin(self):
+        # precondition
+        self.assertFalse(self.user.is_admin)
+        # when
+        self.user.make_change(User.FIELD_IS_ADMIN, Changeable.OP_SET, True)
+        # then
+        self.assertTrue(self.user.is_admin)
+
+    def test_adding_is_admin_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_IS_ADMIN, Changeable.OP_ADD, True)
+
+    def test_removing_is_admin_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_IS_ADMIN, Changeable.OP_REMOVE, True)
+
+    def test_changing_is_admin_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_IS_ADMIN, Changeable.OP_CHANGING, True)
+
+    def test_adding_tasks_adds(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertEqual([], list(self.user.tasks))
+        # when
+        self.user.make_change(User.FIELD_TASKS, Changeable.OP_ADD, task)
+        # then
+        self.assertEqual([task], list(self.user.tasks))
+
+    def test_removing_tasks_removes(self):
+        # given
+        task = self.pl.DbTask('task')
+        self.user.tasks.append(task)
+        # precondition
+        self.assertEqual([task], list(self.user.tasks))
+        # when
+        self.user.make_change(User.FIELD_TASKS, Changeable.OP_REMOVE, task)
+        # then
+        self.assertEqual([], list(self.user.tasks))
+
+    def test_setting_tasks_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_TASKS, Changeable.OP_SET, task)
+
+    def test_changing_tasks_raises(self):
+        # given
+        task = self.pl.DbTask('task')
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            User.FIELD_TASKS, Changeable.OP_CHANGING, task)
+
+    def test_non_task_field_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            Task.FIELD_SUMMARY, Changeable.OP_SET, 'value')
+
+    def test_invalid_field_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.user.make_change,
+            'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
+
+    def test_adding_task_already_in_silently_ignored(self):
+        # given
+        task = self.pl.DbTask('task')
+        self.user.tasks.append(task)
+        # precondition
+        self.assertEqual([task], list(self.user.tasks))
+        # when
+        self.user.make_change(User.FIELD_TASKS, Changeable.OP_ADD, task)
+        # then
+        self.assertEqual([task], list(self.user.tasks))
+
+    def test_removing_task_not_in_silently_ignored(self):
+        # given
+        task = self.pl.DbTask('task')
+        # precondition
+        self.assertEqual([], list(self.user.tasks))
+        # when
+        self.user.make_change(User.FIELD_TASKS, Changeable.OP_REMOVE, task)
+        # then
+        self.assertEqual([], list(self.user.tasks))
