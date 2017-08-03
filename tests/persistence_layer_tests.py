@@ -7049,7 +7049,7 @@ class DbNoteMakeChangeTest(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TASK, Changeable.OP_ADD, 'b')
+            Note.FIELD_TASK, Changeable.OP_ADD, task)
 
     def test_removing_task_raises(self):
         # given
@@ -7060,7 +7060,7 @@ class DbNoteMakeChangeTest(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TASK, Changeable.OP_REMOVE, 'b')
+            Note.FIELD_TASK, Changeable.OP_REMOVE, task)
 
     def test_changing_task_raises(self):
         # given
@@ -7071,7 +7071,7 @@ class DbNoteMakeChangeTest(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TASK, Changeable.OP_CHANGING, 'b')
+            Note.FIELD_TASK, Changeable.OP_CHANGING, task)
 
     def test_non_note_field_raises(self):
         # expect
@@ -7368,7 +7368,7 @@ class DbAttachmentMakeChangeTest(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.attachment.make_change,
-            Attachment.FIELD_TASK, Changeable.OP_ADD, 'b')
+            Attachment.FIELD_TASK, Changeable.OP_ADD, task)
 
     def test_removing_task_raises(self):
         # given
@@ -7379,7 +7379,7 @@ class DbAttachmentMakeChangeTest(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.attachment.make_change,
-            Attachment.FIELD_TASK, Changeable.OP_REMOVE, 'b')
+            Attachment.FIELD_TASK, Changeable.OP_REMOVE, task)
 
     def test_changing_task_raises(self):
         # given
@@ -7390,7 +7390,7 @@ class DbAttachmentMakeChangeTest(unittest.TestCase):
         self.assertRaises(
             ValueError,
             self.attachment.make_change,
-            Attachment.FIELD_TASK, Changeable.OP_CHANGING, 'b')
+            Attachment.FIELD_TASK, Changeable.OP_CHANGING, task)
 
     def test_non_attachment_field_raises(self):
         # expect
