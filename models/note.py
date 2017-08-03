@@ -19,11 +19,6 @@ class NoteBase(object):
         self.timestamp = self._clean_timestamp(timestamp)
 
     @staticmethod
-    def get_related_fields(field):
-        # TODO: get rid of this function?
-        return ()
-
-    @staticmethod
     def get_autochange_fields():
         # TODO: get rid of this function?
         return (NoteBase.FIELD_ID, NoteBase.FIELD_TASK)

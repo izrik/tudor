@@ -24,11 +24,6 @@ class UserBase(object):
         self.is_admin = is_admin
 
     @staticmethod
-    def get_related_fields(field):
-        # TODO: get rid of this function?
-        return ()
-
-    @staticmethod
     def get_autochange_fields():
         # TODO: get rid of this function?
         return (UserBase.FIELD_ID,)

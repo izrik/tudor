@@ -691,10 +691,6 @@ class PersistenceLayer(object):
             'begin, domobj: {}, field: {}, op: {}, value: {}'.format(
                 domobj, field, operation, value))
 
-        fields_to_update = self._get_fields_to_update_for_domobj(domobj)
-        related_fields = domobj.get_related_fields(field)
-        fields_to_update.update(related_fields)
-
         dbobj = self._get_db_object_from_domain_object(domobj)
         value2 = self._db_value_from_domain(field, value)
         dbobj.make_change(field, operation, value2)
