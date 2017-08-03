@@ -102,7 +102,6 @@ class PersistenceLayer(object):
         self._deleted_objects = set()
         self._changed_objects = set()
         self._changed_objects_original_values = {}
-        self._fields_to_update_from_db_on_commit = {}
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -145,11 +144,6 @@ class PersistenceLayer(object):
 
         self._db_by_domain = {}
         self._domain_by_db = {}
-
-    def _get_fields_to_update_for_domobj(self, domobj):
-        if domobj not in self._fields_to_update_from_db_on_commit:
-            self._fields_to_update_from_db_on_commit[domobj] = set()
-        return self._fields_to_update_from_db_on_commit[domobj]
 
     def add(self, domobj):
         self._logger.debug('begin, domobj: {}'.format(domobj))
@@ -202,7 +196,6 @@ class PersistenceLayer(object):
 
         added = list(self._added_objects)
         deleted = list(self._deleted_objects)
-        fields_to_update = self._fields_to_update_from_db_on_commit.copy()
 
         self._clear_affected_objects()
 
@@ -217,9 +210,6 @@ class PersistenceLayer(object):
 
         for domobj in added:
             self._update_domain_object_from_db_object(domobj)
-
-        for domobj, fields in fields_to_update.iteritems():
-            self._update_domain_object_from_db_object(domobj, fields)
 
         self._clear_affected_objects()
 
@@ -242,7 +232,6 @@ class PersistenceLayer(object):
         self._added_objects.clear()
         self._deleted_objects.clear()
         self._changed_objects_original_values.clear()
-        self._fields_to_update_from_db_on_commit.clear()
 
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
