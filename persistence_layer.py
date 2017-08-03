@@ -1,6 +1,5 @@
 
 import collections
-import random
 
 from flask_sqlalchemy import SQLAlchemy
 from models.task import Task, TaskBase
