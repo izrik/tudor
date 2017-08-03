@@ -66,8 +66,6 @@ class Tag(Changeable, TagBase):
 
     _tasks = None
 
-    _dbobj = None
-
     def __init__(self, value, description=None, lazy=None):
         super(Tag, self).__init__(value=value, description=description)
         self._logger.debug('Tag.__init__ {}'.format(self.id2))

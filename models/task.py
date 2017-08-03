@@ -214,8 +214,6 @@ class Task(Changeable, TaskBase):
     _expected_cost = None
     _parent = None
 
-    _dbobj = None
-
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,

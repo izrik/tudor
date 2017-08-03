@@ -71,8 +71,6 @@ class Note(Changeable, NoteBase):
 
     _task = None
 
-    _dbobj = None
-
     def __init__(self, content, timestamp=None, lazy=None):
         super(Note, self).__init__(content, timestamp)
         self._logger.debug('Note.__init__ {}'.format(self.id2))

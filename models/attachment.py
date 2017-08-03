@@ -85,8 +85,6 @@ class Attachment(Changeable, AttachmentBase):
 
     _task = None
 
-    _dbobj = None
-
     def __init__(self, path, description=None, timestamp=None, filename=None,
                  lazy=None):
         super(Attachment, self).__init__(path, description, timestamp,

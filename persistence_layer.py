@@ -299,10 +299,6 @@ class PersistenceLayer(object):
             self._logger.debug('dbobj is not None')
             self._domain_by_db[dbobj] = domobj
             self._db_by_domain[domobj] = dbobj
-            # TODO: get rid of _domobj and _dbobj
-            if hasattr(domobj, '_dbobj'):
-                domobj._dbobj = dbobj
-                dbobj._domobj = domobj
 
         self._logger.debug('end')
         return dbobj
@@ -339,9 +335,6 @@ class PersistenceLayer(object):
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
-        if hasattr(domobj, '_dbobj'):
-            domobj._dbobj = dbobj
-            dbobj._domobj = domobj
 
         # translate the relational attributes after storing the dbobj in the
         # cache. otherwise, graph cycles lead to infinite recursion trying to
@@ -421,9 +414,6 @@ class PersistenceLayer(object):
 
         self._domain_by_db[dbobj] = domobj
         self._db_by_domain[domobj] = dbobj
-        if hasattr(domobj, '_dbobj'):
-            domobj._dbobj = dbobj
-            dbobj._domobj = domobj
 
         self._logger.debug('end')
         return domobj
@@ -1079,8 +1069,6 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
 
         __tablename__ = 'task'
 
-        _domobj = None
-
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
         description = db.Column(db.String(4000))
@@ -1217,8 +1205,6 @@ def generate_tag_class(db, tags_tasks_table):
 
         __tablename__ = 'tag'
 
-        _domobj = None
-
         id = db.Column(db.Integer, primary_key=True)
         value = db.Column(db.String(100), nullable=False, unique=True)
         description = db.Column(db.String(4000), nullable=True)
@@ -1288,8 +1274,6 @@ def generate_note_class(db):
 
         __tablename__ = 'note'
 
-        _domobj = None
-
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.String(4000))
         timestamp = db.Column(db.DateTime)
@@ -1343,8 +1327,6 @@ def generate_attachment_class(db):
         _logger = logging_util.get_logger_by_name(__name__, 'DbAttachment')
 
         __tablename__ = 'attachment'
-
-        _domobj = None
 
         id = db.Column(db.Integer, primary_key=True)
         path = db.Column(db.String(1000), nullable=False)
@@ -1411,8 +1393,6 @@ def generate_user_class(db, bcrypt, users_tasks_table):
         _logger = logging_util.get_logger_by_name(__name__, 'DbUser')
 
         __tablename__ = 'user'
-
-        _domobj = None
 
         id = db.Column(db.Integer, primary_key=True)
         email = db.Column(db.String(100), nullable=False, unique=True)
@@ -1481,8 +1461,6 @@ def generate_option_class(db):
         _logger = logging_util.get_logger_by_name(__name__, 'DbOption')
 
         __tablename__ = 'option'
-
-        _domobj = None
 
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)

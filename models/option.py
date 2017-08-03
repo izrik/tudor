@@ -47,8 +47,6 @@ class Option(Changeable, OptionBase):
     _key = None
     _value = None
 
-    _dbobj = None
-
     @property
     def key(self):
         return self._key
