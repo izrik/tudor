@@ -48,11 +48,6 @@ class TaskBase(object):
         self.expected_cost = expected_cost
         self.order_num = 0
 
-    @staticmethod
-    def get_autochange_fields():
-        # TODO: get rid of this function?
-        return (TaskBase.FIELD_ID, TaskBase.FIELD_PARENT)
-
     def __repr__(self):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.summary), self.id)

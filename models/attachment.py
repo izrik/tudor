@@ -25,11 +25,6 @@ class AttachmentBase(object):
         self.filename = filename
         self.description = description
 
-    @staticmethod
-    def get_autochange_fields():
-        # TODO: get rid of this function?
-        return (AttachmentBase.FIELD_ID, AttachmentBase.FIELD_TASK)
-
     def __repr__(self):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.path), self.id)

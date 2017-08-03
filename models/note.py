@@ -18,11 +18,6 @@ class NoteBase(object):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
 
-    @staticmethod
-    def get_autochange_fields():
-        # TODO: get rid of this function?
-        return (NoteBase.FIELD_ID, NoteBase.FIELD_TASK)
-
     def __repr__(self):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.content), self.id)

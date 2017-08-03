@@ -11,11 +11,6 @@ class OptionBase(object):
         self.key = key
         self.value = value
 
-    @staticmethod
-    def get_autochange_fields():
-        # TODO: get rid of this function?
-        return ()
-
     def __repr__(self):
         cls = type(self).__name__
         return '{}(key={}, value={})'.format(cls, repr(self.key),

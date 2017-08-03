@@ -172,9 +172,6 @@ class PersistenceLayer(object):
         self._added_objects.add(domobj)
         self._changed_objects.add(domobj)
 
-        fields_to_update = self._get_fields_to_update_for_domobj(domobj)
-        fields_to_update.update(domobj.get_autochange_fields())
-
         self.db.session.add(dbobj)
         self._logger.debug('end')
 

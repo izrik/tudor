@@ -20,11 +20,6 @@ class TagBase(object):
         self.value = value
         self.description = description
 
-    @staticmethod
-    def get_autochange_fields():
-        # TODO: get rid of this function?
-        return (Tag.FIELD_ID,)
-
     def __repr__(self):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.value), self.id)
