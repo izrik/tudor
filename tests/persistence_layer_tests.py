@@ -7822,3 +7822,29 @@ class DbOptionMakeChangeTest(unittest.TestCase):
             ValueError,
             self.option.make_change,
             'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
+
+
+class UpdateDomainObjectFromDbObjectTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_domobj_none_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl._update_domain_object_from_db_object,
+            None)
+
+
+class UpdateDbObjectFromDomainObjectTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+
+    def test_domobj_none_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl._update_db_object_from_domain_object,
+            None)

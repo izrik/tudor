@@ -545,6 +545,8 @@ class PersistenceLayer(object):
         self._logger.debug('end')
 
     def _update_domain_object_from_db_object(self, domobj, fields=None):
+        if domobj is None:
+            raise ValueError('domobj cannot be None')
         self._logger.debug(
             'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
@@ -639,6 +641,8 @@ class PersistenceLayer(object):
         return value
 
     def _update_db_object_from_domain_object(self, domobj, fields=None):
+        if domobj is None:
+            raise ValueError('domobj cannot be None')
         self._logger.debug(
             'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
