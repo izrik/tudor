@@ -1,7 +1,4 @@
 
-import collections
-import logging
-
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime

@@ -1,7 +1,4 @@
 
-import collections
-import logging
-
 from changeable import Changeable
 import logging_util
 from collections_util import assign
