@@ -32,13 +32,3 @@ class Changeable(object):
 
     def unregister_change_listener(self, callable):
         self.change_listener = None
-
-
-def id2(obj):
-    # TODO: get rid of this function
-    if obj is None:
-        return 'None'
-    try:
-        return obj.id2
-    except AttributeError:
-        return id(obj)

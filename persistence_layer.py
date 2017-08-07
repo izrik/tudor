@@ -10,7 +10,7 @@ from models.user import User, UserBase
 from models.option import Option, OptionBase
 from collections_util import assign
 import logging_util
-from models.changeable import id2, Changeable
+from models.changeable import Changeable
 
 
 def is_iterable(x):
@@ -551,14 +551,14 @@ class PersistenceLayer(object):
             'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
-            'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
+            'got db obj {} -> {}'.format(domobj, dbobj))
         d = dbobj.to_dict(fields)
-        self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
+        self._logger.debug('got db attrs {} -> {}'.format(domobj, d))
         d = self._domain_attrs_from_db_all(d)
-        self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
+        self._logger.debug('got dom attrs {} -> {}'.format(domobj, d))
         domobj.update_from_dict(d)
         self._logger.debug(
-            'updated dom obj {} -> {}'.format(id2(domobj), id2(dbobj)))
+            'updated dom obj {} -> {}'.format(domobj, dbobj))
         self._logger.debug('end')
 
     _relational_attrs = {'parent', 'children', 'tags', 'tasks', 'users',
@@ -647,14 +647,14 @@ class PersistenceLayer(object):
             'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
-            'got db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
+            'got db obj {} -> {}'.format(domobj, dbobj))
         d = domobj.to_dict(fields)
-        self._logger.debug('got dom attrs {} -> {}'.format(id2(domobj), d))
+        self._logger.debug('got dom attrs {} -> {}'.format(domobj, d))
         d = self._db_attrs_from_domain_all(d)
-        self._logger.debug('got db attrs {} -> {}'.format(id2(domobj), d))
+        self._logger.debug('got db attrs {} -> {}'.format(domobj, d))
         dbobj.update_from_dict(d)
         self._logger.debug(
-            'updated db obj {} -> {}'.format(id2(domobj), id2(dbobj)))
+            'updated db obj {} -> {}'.format(domobj, dbobj))
         self._logger.debug('end')
 
     def _on_domain_object_attr_changing(self, domobj, field, value):

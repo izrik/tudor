@@ -27,6 +27,11 @@ class AttachmentBase(object):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.path), self.id)
 
+    def __str__(self):
+        cls = type(self).__name__
+        return '{}({}, attachment id={}, id=[{}])'.format(
+            cls, repr(self.path), self.id, id(self))
+
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
@@ -67,10 +72,6 @@ class AttachmentBase(object):
         if 'task' in d:
             self.task = d['task']
 
-    @property
-    def id2(self):
-        return '[{}] {} ({})'.format(id(self), repr(self.filename), self.id)
-
 
 class Attachment(Changeable, AttachmentBase):
     _logger = logging_util.get_logger_by_name(__name__, 'Attachment')
@@ -87,7 +88,7 @@ class Attachment(Changeable, AttachmentBase):
                  lazy=None):
         super(Attachment, self).__init__(path, description, timestamp,
                                          filename)
-        self._logger.debug('Note.__init__ {}'.format(self.id2))
+        self._logger.debug('Note.__init__ {}'.format(self))
 
         if lazy is None:
             lazy = {}

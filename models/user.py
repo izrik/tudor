@@ -25,6 +25,11 @@ class UserBase(object):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.email), self.id)
 
+    def __str__(self):
+        cls = type(self).__name__
+        return '{}({}, user id={}, id=[{}])'.format(cls, repr(self.email),
+                                                    self.id, id(self))
+
     def to_dict(self, fields=None):
 
         d = {}
@@ -65,10 +70,6 @@ class UserBase(object):
 
     def is_anonymous(self):
         return False
-
-    @property
-    def id2(self):
-        return '[{}] {} ({})'.format(id(self), repr(self.email), self.id)
 
 
 class User(Changeable, UserBase):

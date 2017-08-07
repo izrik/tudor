@@ -21,6 +21,14 @@ class NoteBase(object):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.content), self.id)
 
+    def __str__(self):
+        cls = type(self).__name__
+        if self.content is not None and len(self.content) > 20:
+            return '{}({}..., note id={}, id=[{}])'.format(
+                cls, repr(self.content[:20]), self.id, id(self))
+        return '{}({}, note id={}, id=[{}])'.format(
+            cls, repr(self.content), self.id, id(self))
+
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
@@ -53,13 +61,6 @@ class NoteBase(object):
         if 'task' in d:
             self.task = d['task']
 
-    @property
-    def id2(self):
-        if self.content is not None and len(self.content) > 20:
-            return '[{}] {}... ({})'.format(id(self), repr(self.content[:20]),
-                                            self.id)
-        return '[{}] {} ({})'.format(id(self), repr(self.content), self.id)
-
 
 class Note(Changeable, NoteBase):
     _logger = logging_util.get_logger_by_name(__name__, 'Note')
@@ -72,7 +73,7 @@ class Note(Changeable, NoteBase):
 
     def __init__(self, content, timestamp=None, lazy=None):
         super(Note, self).__init__(content, timestamp)
-        self._logger.debug('Note.__init__ {}'.format(self.id2))
+        self._logger.debug('Note.__init__ {}'.format(self))
 
         if lazy is None:
             lazy = {}

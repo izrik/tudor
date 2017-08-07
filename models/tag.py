@@ -13,7 +13,7 @@ class TagBase(object):
     FIELD_TASKS = 'TASKS'
 
     def __init__(self, value, description=None):
-        self._logger.debug('TagBase.__init__ {}'.format(self.id2))
+        self._logger.debug('TagBase.__init__ {}'.format(self))
         self.value = value
         self.description = description
 
@@ -21,9 +21,14 @@ class TagBase(object):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.value), self.id)
 
+    def __str__(self):
+        cls = type(self).__name__
+        return '{}({}, tag id={}, id=[{}])'.format(cls, repr(self.value),
+                                                   self.id, id(self))
+
     def to_dict(self, fields=None):
 
-        self._logger.debug('{}'.format(self.id2))
+        self._logger.debug('{}'.format(self))
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
@@ -39,7 +44,7 @@ class TagBase(object):
         return d
 
     def update_from_dict(self, d):
-        self._logger.debug('{}: {}'.format(self.id2, d))
+        self._logger.debug('{}: {}'.format(self, d))
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'value' in d:
@@ -48,10 +53,6 @@ class TagBase(object):
             self.description = d['description']
         if 'tasks' in d:
             assign(self.tasks, d['tasks'])
-
-    @property
-    def id2(self):
-        return '[{}] {} ({})'.format(id(self), repr(self.value), self.id)
 
 
 class Tag(Changeable, TagBase):
@@ -65,7 +66,7 @@ class Tag(Changeable, TagBase):
 
     def __init__(self, value, description=None, lazy=None):
         super(Tag, self).__init__(value=value, description=description)
-        self._logger.debug('Tag.__init__ {}'.format(self.id2))
+        self._logger.debug('Tag.__init__ {}'.format(self))
 
         if lazy is None:
             lazy = {}
@@ -80,7 +81,7 @@ class Tag(Changeable, TagBase):
     def id(self, value):
         if value != self._id:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self._id, value))
+                '{}: {} -> {}'.format(self, self._id, value))
             self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
             self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
@@ -93,7 +94,7 @@ class Tag(Changeable, TagBase):
     def value(self, value):
         if value != self._value:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self._value, value))
+                '{}: {} -> {}'.format(self, self._value, value))
             self._on_attr_changing(self.FIELD_VALUE, self._value)
             self._value = value
             self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
@@ -106,7 +107,7 @@ class Tag(Changeable, TagBase):
     def description(self, value):
         if value != self._description:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self._description, value))
+                '{}: {} -> {}'.format(self, self._description, value))
             self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,
@@ -127,7 +128,7 @@ class Tag(Changeable, TagBase):
 
         tag = Tag(value, description, lazy=lazy)
         logger = tag._logger
-        logger.debug('{}'.format(tag.id2))
+        logger.debug('{}'.format(tag))
         if tag_id is not None:
             tag.id = tag_id
         if not lazy:

@@ -2,7 +2,7 @@
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
-from changeable import Changeable, id2
+from changeable import Changeable
 from collections_util import assign
 import logging_util
 from models.interlinking import OneToManySet, ManyToManySet
@@ -34,7 +34,7 @@ class TaskBase(object):
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None):
-        self._logger.debug('TaskBase.__init__ {}'.format(self.id2))
+        self._logger.debug('TaskBase.__init__ {}'.format(self))
 
         self.summary = summary
         self.description = description
@@ -49,6 +49,11 @@ class TaskBase(object):
         cls = type(self).__name__
         return '{}({}, id={})'.format(cls, repr(self.summary), self.id)
 
+    def __str__(self):
+        cls = type(self).__name__
+        return '{}({}, task id={}, id=[{}])'.format(cls, repr(self.summary),
+                                                    self.id, id(self))
+
     @staticmethod
     def _clean_deadline(deadline):
         if isinstance(deadline, basestring):
@@ -57,7 +62,7 @@ class TaskBase(object):
 
     def to_dict(self, fields=None):
 
-        self._logger.debug('{}'.format(self.id2))
+        self._logger.debug('{}'.format(self))
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
@@ -147,7 +152,7 @@ class TaskBase(object):
         return task
 
     def update_from_dict(self, d):
-        self._logger.debug('{}: {}'.format(id2(self), d))
+        self._logger.debug('{}: {}'.format(self, d))
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'summary' in d:
@@ -192,10 +197,6 @@ class TaskBase(object):
             return None
         return '{:.2f}'.format(self.expected_cost)
 
-    @property
-    def id2(self):
-        return '[{}] {} ({})'.format(id(self), repr(self.summary), self.id)
-
 
 class Task(Changeable, TaskBase):
     _logger = logging_util.get_logger_by_name(__name__, 'Task')
@@ -219,7 +220,7 @@ class Task(Changeable, TaskBase):
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost)
 
-        self._logger.debug('Task.__init__ {}'.format(self.id2))
+        self._logger.debug('Task.__init__ {}'.format(self))
 
         if lazy is None:
             lazy = {}
@@ -254,7 +255,7 @@ class Task(Changeable, TaskBase):
     @id.setter
     def id(self, value):
         if value != self._id:
-            self._logger.debug('{}: {} -> {}'.format(self.id2, self.id, value))
+            self._logger.debug('{}: {} -> {}'.format(self, self.id, value))
             self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
             self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
@@ -267,7 +268,7 @@ class Task(Changeable, TaskBase):
     def summary(self, value):
         if value != self._summary:
             self._logger.debug('{}: {} -> {}'.format(
-                self.id2, repr(self.summary), repr(value)))
+                self, repr(self.summary), repr(value)))
             self._on_attr_changing(self.FIELD_SUMMARY, self._summary)
             self._summary = value
             self._on_attr_changed(self.FIELD_SUMMARY, self.OP_SET,
@@ -281,7 +282,7 @@ class Task(Changeable, TaskBase):
     def description(self, value):
         if value != self._description:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.description, value))
+                '{}: {} -> {}'.format(self, self.description, value))
             self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,
@@ -294,7 +295,7 @@ class Task(Changeable, TaskBase):
     @is_done.setter
     def is_done(self, value):
         if value != self._is_done:
-            self._logger.debug('{}: {} -> {}'.format(self.id2, self.is_done,
+            self._logger.debug('{}: {} -> {}'.format(self, self.is_done,
                                                      value))
             self._on_attr_changing(self.FIELD_IS_DONE, self._is_done)
             self._is_done = value
@@ -309,7 +310,7 @@ class Task(Changeable, TaskBase):
     def is_deleted(self, value):
         if value != self._is_deleted:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.is_deleted, value))
+                '{}: {} -> {}'.format(self, self.is_deleted, value))
             self._on_attr_changing(self.FIELD_IS_DELETED, self._is_deleted)
             self._is_deleted = value
             self._on_attr_changed(self.FIELD_IS_DELETED, self.OP_SET,
@@ -323,7 +324,7 @@ class Task(Changeable, TaskBase):
     def order_num(self, value):
         if value != self._order_num:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.order_num, value))
+                '{}: {} -> {}'.format(self, self.order_num, value))
             self._on_attr_changing(self.FIELD_ORDER_NUM, self._order_num)
             self._order_num = value
             self._on_attr_changed(self.FIELD_ORDER_NUM, self.OP_SET,
@@ -337,7 +338,7 @@ class Task(Changeable, TaskBase):
     def deadline(self, value):
         if value != self._deadline:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.deadline, value))
+                '{}: {} -> {}'.format(self, self.deadline, value))
             self._on_attr_changing(self.FIELD_DEADLINE, self._deadline)
             self._deadline = value
             self._on_attr_changed(self.FIELD_DEADLINE, self.OP_SET,
@@ -351,7 +352,7 @@ class Task(Changeable, TaskBase):
     def expected_duration_minutes(self, value):
         if value != self._expected_duration_minutes:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.expected_duration_minutes,
+                '{}: {} -> {}'.format(self, self.expected_duration_minutes,
                                       value))
             self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES,
                                    self._expected_duration_minutes)
@@ -367,7 +368,7 @@ class Task(Changeable, TaskBase):
     def expected_cost(self, value):
         if value != self._expected_cost:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self.expected_cost, value))
+                '{}: {} -> {}'.format(self, self.expected_cost, value))
             self._on_attr_changing(self.FIELD_EXPECTED_COST,
                                    self._expected_cost)
             self._expected_cost = value
@@ -388,10 +389,10 @@ class Task(Changeable, TaskBase):
 
     @parent.setter
     def parent(self, value):
-        self._logger.debug('{}'.format(self.id2))
+        self._logger.debug('{}'.format(self))
         if value != self._parent:
             self._logger.debug(
-                '{}: {} -> {}'.format(self.id2, self._parent, value))
+                '{}: {} -> {}'.format(self, self._parent, value))
             self._on_attr_changing(self.FIELD_PARENT, self._parent)
             if self._parent is not None:
                 self._parent.children.discard(self)

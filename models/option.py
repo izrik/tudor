@@ -16,6 +16,11 @@ class OptionBase(object):
         return '{}(key={}, value={})'.format(cls, repr(self.key),
                                              repr(self.value))
 
+    def __str__(self):
+        cls = type(self).__name__
+        return '{}(key={}, value={}, id=[{}])'.format(cls, repr(self.key),
+                                             repr(self.value), id(self))
+
     @property
     def id(self):
         return self.key
@@ -35,10 +40,6 @@ class OptionBase(object):
             self.key = d['key']
         if 'value' in d:
             self.value = d['value']
-
-    @property
-    def id2(self):
-        return '[{}] {}={}'.format(id(self), repr(self.key), repr(self.value))
 
 
 class Option(Changeable, OptionBase):

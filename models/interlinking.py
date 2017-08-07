@@ -1,7 +1,7 @@
 import collections
 
 import logging_util
-from changeable import Changeable, id2
+from changeable import Changeable
 
 
 class InterlinkedSet(collections.MutableSet):
@@ -46,7 +46,7 @@ class InterlinkedSet(collections.MutableSet):
         return self.set.__iter__()
 
     def append(self, item):
-        self._logger.debug('{}: {}'.format(id2(self.c), id2(item)))
+        self._logger.debug('{}: {}'.format(self.c, item))
         self._populate()
         self.add(item)
 
@@ -68,7 +68,7 @@ class OneToManySet(InterlinkedSet):
     _logger = logging_util.get_logger_by_name(__name__, 'OneToManySet')
 
     def add(self, item):
-        self._logger.debug('{}: {}'.format(id2(self.c), id2(item)))
+        self._logger.debug('{}: {}'.format(self.c, item))
         if item not in self:
             self.container._on_attr_changing(self.__change_field__, None)
             self._add(item)
@@ -77,7 +77,7 @@ class OneToManySet(InterlinkedSet):
                                             Changeable.OP_ADD, item)
 
     def discard(self, item):
-        self._logger.debug('{}: {}'.format(id2(self.c), id2(item)))
+        self._logger.debug('{}: {}'.format(self.c, item))
         if item in self:
             self.container._on_attr_changing(self.__change_field__, None)
             self._discard(item)
@@ -90,7 +90,7 @@ class ManyToManySet(InterlinkedSet):
     _logger = logging_util.get_logger_by_name(__name__, 'ManyToManySet')
 
     def add(self, item):
-        self._logger.debug('{}: {}'.format(id2(self.c), id2(item)))
+        self._logger.debug('{}: {}'.format(self.c, item))
         if item not in self:
             self.container._on_attr_changing(self.__change_field__, None)
             self._add(item)
@@ -99,7 +99,7 @@ class ManyToManySet(InterlinkedSet):
                                             Changeable.OP_ADD, item)
 
     def discard(self, item):
-        self._logger.debug('{}: {}'.format(id2(self.c), id2(item)))
+        self._logger.debug('{}: {}'.format(self.c, item))
         if item in self:
             self.container._on_attr_changing(self.__change_field__, None)
             self._discard(item)
