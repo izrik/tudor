@@ -18,8 +18,8 @@ class OptionBase(object):
 
     def __str__(self):
         cls = type(self).__name__
-        return '{}(key={}, value={}, id=[{}])'.format(cls, repr(self.key),
-                                             repr(self.value), id(self))
+        return '{}(key={}, value={}, id=[{}])'.format(
+            cls, repr(self.key), repr(self.value), id(self))
 
     @property
     def id(self):
