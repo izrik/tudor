@@ -162,3 +162,149 @@ class LazyLoadingTest(unittest.TestCase):
         # then
         self.assertIsNone(i._lazy)
         self.assertEqual(set(), i.set)
+
+
+class InterlinkedSetTest(unittest.TestCase):
+    def setUp(self):
+        self.c = object()
+        self.s = TestingCollection(self.c)
+
+    def test_init_sets_container(self):
+        # expect
+        self.assertIsNotNone(self.c)
+        self.assertIsNotNone(self.s)
+        self.assertIs(self.c, self.s.container)
+        self.assertIs(self.c, self.s.c)
+
+    def test_init_creates_backing_store(self):
+        # expect
+        self.assertIsNotNone(self.s.set)
+        self.assertIsInstance(self.s.set, set)
+
+    def test_not_in(self):
+        # precondition
+        self.assertTrue(1 not in self.s.set)
+        # expect
+        self.assertTrue(1 not in self.s)
+
+    def test_in(self):
+        # given
+        self.s.set.add(1)
+        # precondition
+        self.assertTrue(1 in self.s.set)
+        # expect
+        self.assertTrue(1 in self.s)
+
+    def test_len_zero(self):
+        # precondition
+        self.assertEqual(0, len(self.s.set))
+        # expect
+        self.assertEqual(0, len(self.s))
+
+    def test_len_one(self):
+        # given
+        self.s.set.add(123)
+        # precondition
+        self.assertEqual(1, len(self.s.set))
+        # expect
+        self.assertEqual(1, len(self.s))
+
+    def test_len_two(self):
+        # given
+        self.s.set.add(456)
+        self.s.set.add(789)
+        # precondition
+        self.assertEqual(2, len(self.s.set))
+        # expect
+        self.assertEqual(2, len(self.s))
+
+    def test_iter(self):
+        # given
+        self.s.set.add(456)
+        self.s.set.add(789)
+        # precondition
+        self.assertEqual(2, len(self.s.set))
+        # when
+        result = set(iter(self.s))
+        # then
+        self.assertEqual({456, 789}, result)
+
+    def test_str(self):
+        # given
+        self.s.set.add(456)
+        self.s.set.add(789)
+        # precondition
+        self.assertEqual(2, len(self.s.set))
+        # when
+        result = str(self.s)
+        # then
+        self.assertEqual('set([456, 789])', result)
+
+    def test_repr(self):
+        # given
+        self.s.set.add(456)
+        self.s.set.add(789)
+        # precondition
+        self.assertEqual(2, len(self.s.set))
+        # when
+        result = repr(self.s)
+        # then
+        self.assertEqual('TestingCollection(set([456, 789]))', result)
+
+    def test_add_adds_item(self):
+        # precondition
+        self.assertEqual(0, len(self.s))
+        self.assertFalse(1 in self.s)
+        # when
+        self.s.add(1)
+        # then
+        self.assertEqual(1, len(self.s))
+        self.assertTrue(1 in self.s)
+
+    def test__add_adds_item(self):
+        # precondition
+        self.assertEqual(0, len(self.s))
+        self.assertFalse(1 in self.s)
+        # when
+        self.s._add(1)
+        # then
+        self.assertEqual(1, len(self.s))
+        self.assertTrue(1 in self.s)
+
+    def test_append_adds_item(self):
+        # precondition
+        self.assertEqual(0, len(self.s))
+        self.assertFalse(1 in self.s)
+        # when
+        self.s.append(1)
+        # then
+        self.assertEqual(1, len(self.s))
+        self.assertTrue(1 in self.s)
+
+    def test_discard_discards_item(self):
+        # given
+        self.s._add(1)
+        # precondition
+        self.assertEqual(1, len(self.s))
+        self.assertTrue(1 in self.s)
+        # when
+        self.s.discard(1)
+        # then
+        self.assertEqual(0, len(self.s))
+        self.assertFalse(1 in self.s)
+
+    def test__discard_discards_item(self):
+        # given
+        self.s._add(1)
+        # precondition
+        self.assertEqual(1, len(self.s))
+        self.assertTrue(1 in self.s)
+        # when
+        self.s._discard(1)
+        # then
+        self.assertEqual(0, len(self.s))
+        self.assertFalse(1 in self.s)
+
+    def test_container_none_raises(self):
+        # expect
+        self.assertRaises(ValueError, TestingCollection, None)
