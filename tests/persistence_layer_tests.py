@@ -6693,6 +6693,34 @@ class DbTagFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, self.pl.DbTag)
         self.assertEqual([task], list(result.tasks))
 
+    def test_none_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbTag.from_dict({}, lazy=None)
+        # then
+        self.assertIsInstance(result, self.pl.DbTag)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.value)
+        self.assertIsNone(result.description)
+        self.assertEqual([], list(result.tasks))
+
+    def test_empty_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbTag.from_dict({}, lazy={})
+        # then
+        self.assertIsInstance(result, self.pl.DbTag)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.value)
+        self.assertIsNone(result.description)
+        self.assertEqual([], list(result.tasks))
+
+    def test_non_none_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbTag.from_dict,
+            {},
+            lazy={'tasks': None})
+
 
 class DbTagMakeChangeTest(unittest.TestCase):
     def setUp(self):
@@ -6934,6 +6962,34 @@ class DbNoteFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, self.pl.DbNote)
         self.assertIs(task, result.task)
+
+    def test_none_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbNote.from_dict({}, lazy=None)
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.content)
+        self.assertIsNone(result.timestamp)
+        self.assertIsNone(result.task)
+
+    def test_empty_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbNote.from_dict({}, lazy={})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.content)
+        self.assertIsNone(result.timestamp)
+        self.assertIsNone(result.task)
+
+    def test_non_none_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbNote.from_dict,
+            {},
+            lazy={'tasks': None})
 
 
 class DbNoteMakeChangeTest(unittest.TestCase):
@@ -7191,6 +7247,38 @@ class DbAttachmentFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, self.pl.DbAttachment)
         self.assertIs(task, result.task)
+
+    def test_none_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({}, lazy=None)
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.path)
+        self.assertIsNone(result.description)
+        self.assertIsNone(result.timestamp)
+        self.assertIsNone(result.filename)
+        self.assertIsNone(result.task)
+
+    def test_empty_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbAttachment.from_dict({}, lazy={})
+        # then
+        self.assertIsInstance(result, self.pl.DbAttachment)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.path)
+        self.assertIsNone(result.description)
+        self.assertIsNone(result.timestamp)
+        self.assertIsNone(result.filename)
+        self.assertIsNone(result.task)
+
+    def test_non_none_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbAttachment.from_dict,
+            {},
+            lazy={'tasks': None})
 
 
 class DbAttachmentMakeChangeTest(unittest.TestCase):
@@ -7502,6 +7590,36 @@ class DbUserFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, self.pl.DbUser)
         self.assertEqual([task], list(result.tasks))
 
+    def test_none_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbUser.from_dict({}, lazy=None)
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.email)
+        self.assertIsNone(result.hashed_password)
+        self.assertFalse(result.is_admin)
+        self.assertEqual([], list(result.tasks))
+
+    def test_empty_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbUser.from_dict({}, lazy={})
+        # then
+        self.assertIsInstance(result, self.pl.DbUser)
+        self.assertIsNone(result.id)
+        self.assertIsNone(result.email)
+        self.assertIsNone(result.hashed_password)
+        self.assertFalse(result.is_admin)
+        self.assertEqual([], list(result.tasks))
+
+    def test_non_none_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbUser.from_dict,
+            {},
+            lazy={'tasks': None})
+
 
 class DbUserMakeChangeTest(unittest.TestCase):
     def setUp(self):
@@ -7742,6 +7860,30 @@ class DbOptionFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, self.pl.DbOption)
         self.assertEqual('something', result.value)
+
+    def test_none_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbOption.from_dict({}, lazy=None)
+        # then
+        self.assertIsInstance(result, self.pl.DbOption)
+        self.assertIsNone(result.key)
+        self.assertIsNone(result.value)
+
+    def test_empty_lazy_does_not_raise(self):
+        # when
+        result = self.pl.DbOption.from_dict({}, lazy={})
+        # then
+        self.assertIsInstance(result, self.pl.DbOption)
+        self.assertIsNone(result.key)
+        self.assertIsNone(result.value)
+
+    def test_non_none_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbOption.from_dict,
+            {},
+            lazy={'tasks': None})
 
 
 class DbOptionMakeChangeTest(unittest.TestCase):
