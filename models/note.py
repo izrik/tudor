@@ -51,6 +51,20 @@ class NoteBase(object):
 
         return d
 
+    @classmethod
+    def from_dict(cls, d, lazy=None):
+        note_id = d.get('id', None)
+        content = d.get('content')
+        timestamp = d.get('timestamp', None)
+        task = d.get('task')
+
+        note = cls(content, timestamp, lazy=lazy)
+        if note_id is not None:
+            note.id = note_id
+        if not lazy:
+            note.task = task
+        return note
+
     def update_from_dict(self, d):
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
@@ -138,20 +152,6 @@ class Note(Changeable, NoteBase):
                 self._task.notes.add(self)
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
         self._task_lazy = None
-
-    @staticmethod
-    def from_dict(d, lazy=None):
-        note_id = d.get('id', None)
-        content = d.get('content')
-        timestamp = d.get('timestamp', None)
-        task = d.get('task')
-
-        note = Note(content, timestamp, lazy=lazy)
-        if note_id is not None:
-            note.id = note_id
-        if not lazy:
-            note.task = task
-        return note
 
     def clear_relationships(self):
         self.task = None

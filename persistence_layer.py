@@ -1215,26 +1215,17 @@ def generate_tag_class(db, tags_tasks_table):
         tasks = db.relationship('DbTask', secondary=tags_tasks_table,
                                 back_populates='tags')
 
-        def __init__(self, value, description=None):
+        def __init__(self, value, description=None, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
             TagBase.__init__(self, value, description)
 
-        @staticmethod
-        def from_dict(d):
-            logger = DbTag._logger
-            logger.debug('d: {}'.format(d))
-
-            tag_id = d.get('id', None)
-            value = d.get('value')
-            description = d.get('description', None)
-
-            tag = DbTag(value, description)
-            if tag_id is not None:
-                tag.id = tag_id
-            if 'tasks' in d:
-                assign(tag.tasks, d['tasks'])
-            logger.debug('tag: {}'.format(tag))
-            return tag
+        @classmethod
+        def from_dict(cls, d, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
+            return super(DbTag, cls).from_dict(d=d, lazy=None)
 
         def make_change(self, field, operation, value):
             if operation == Changeable.OP_CHANGING:
@@ -1286,22 +1277,17 @@ def generate_note_class(db):
                                backref=db.backref('notes', lazy='dynamic',
                                                   order_by=timestamp))
 
-        def __init__(self, content, timestamp=None):
+        def __init__(self, content, timestamp=None, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
             NoteBase.__init__(self, content, timestamp)
 
-        @staticmethod
-        def from_dict(d):
-            note_id = d.get('id', None)
-            content = d.get('content')
-            timestamp = d.get('timestamp', None)
-            task = d.get('task')
-
-            note = DbNote(content, timestamp)
-            if note_id is not None:
-                note.id = note_id
-            note.task = task
-            return note
+        @classmethod
+        def from_dict(cls, d, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
+            return super(DbNote, cls).from_dict(d=d, lazy=None)
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_ID, self.FIELD_CONTENT,
@@ -1344,25 +1330,18 @@ def generate_attachment_class(db):
                                                   order_by=timestamp))
 
         def __init__(self, path, description=None, timestamp=None,
-                     filename=None):
+                     filename=None, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
             AttachmentBase.__init__(self, path, description, timestamp,
                                     filename)
 
-        @staticmethod
-        def from_dict(d):
-            attachment_id = d.get('id', None)
-            timestamp = d.get('timestamp', None)
-            path = d.get('path')
-            filename = d.get('filename', None)
-            description = d.get('description', None)
-            task = d.get('task')
-
-            attachment = DbAttachment(path, description, timestamp, filename)
-            if attachment_id is not None:
-                attachment.id = attachment_id
-            attachment.task = task
-            return attachment
+        @classmethod
+        def from_dict(cls, d, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
+            return super(DbAttachment, cls).from_dict(d=d, lazy=None)
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_ID, self.FIELD_PATH,
@@ -1405,25 +1384,20 @@ def generate_user_class(db, bcrypt, users_tasks_table):
         tasks = db.relationship('DbTask', secondary=users_tasks_table,
                                 back_populates='users')
 
-        def __init__(self, email, hashed_password=None, is_admin=False):
+        def __init__(self, email, hashed_password=None, is_admin=False,
+                     lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
             UserBase.__init__(self, email=email,
                               hashed_password=hashed_password,
                               is_admin=is_admin)
 
-        @staticmethod
-        def from_dict(d):
-            user_id = d.get('id', None)
-            email = d.get('email')
-            hashed_password = d.get('hashed_password', None)
-            is_admin = d.get('is_admin', False)
-
-            user = DbUser(email, hashed_password, is_admin)
-            if user_id is not None:
-                user.id = user_id
-            if 'tasks' in d:
-                assign(user.tasks, d['tasks'])
-            return user
+        @classmethod
+        def from_dict(cls, d, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
+            return super(DbUser, cls).from_dict(d=d, lazy=None)
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_ID, self.FIELD_EMAIL,
@@ -1468,15 +1442,17 @@ def generate_option_class(db):
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)
 
-        def __init__(self, key, value):
+        def __init__(self, key, value, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
             OptionBase.__init__(self, key, value)
 
-        @staticmethod
-        def from_dict(d):
-            key = d.get('key')
-            value = d.get('value', None)
-            return DbOption(key, value)
+        @classmethod
+        def from_dict(cls, d, lazy=None):
+            if lazy:
+                raise ValueError('parameter \'lazy\' must be None or empty')
+            return super(DbOption, cls).from_dict(d=d, lazy=None)
 
         def make_change(self, field, operation, value):
             if field in (self.FIELD_KEY, self.FIELD_VALUE):

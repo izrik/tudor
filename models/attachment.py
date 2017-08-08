@@ -58,6 +58,22 @@ class AttachmentBase(object):
 
         return d
 
+    @classmethod
+    def from_dict(cls, d, lazy=None):
+        attachment_id = d.get('id', None)
+        timestamp = d.get('timestamp', None)
+        path = d.get('path')
+        filename = d.get('filename', None)
+        description = d.get('description', None)
+        task = d.get('task')
+
+        attachment = cls(path, description, timestamp, filename, lazy=lazy)
+        if attachment_id is not None:
+            attachment.id = attachment_id
+        if not lazy:
+            attachment.task = task
+        return attachment
+
     def update_from_dict(self, d):
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
@@ -176,23 +192,6 @@ class Attachment(Changeable, AttachmentBase):
                 self._task.attachments.add(self)
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
         self._task_lazy = None
-
-    @staticmethod
-    def from_dict(d, lazy=None):
-        attachment_id = d.get('id', None)
-        timestamp = d.get('timestamp', None)
-        path = d.get('path')
-        filename = d.get('filename', None)
-        description = d.get('description', None)
-        task = d.get('task')
-
-        attachment = Attachment(path, description, timestamp, filename,
-                                lazy=lazy)
-        if attachment_id is not None:
-            attachment.id = attachment_id
-        if not lazy:
-            attachment.task = task
-        return attachment
 
     def clear_relationships(self):
         self.task = None

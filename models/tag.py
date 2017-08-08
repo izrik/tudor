@@ -43,6 +43,24 @@ class TagBase(object):
 
         return d
 
+    @classmethod
+    def from_dict(cls, d, lazy=None):
+        logger = cls._logger
+        logger.debug('d: {}'.format(d))
+
+        tag_id = d.get('id', None)
+        value = d.get('value')
+        description = d.get('description', None)
+
+        tag = cls(value, description, lazy=lazy)
+        if tag_id is not None:
+            tag.id = tag_id
+        if not lazy:
+            if 'tasks' in d:
+                assign(tag.tasks, d['tasks'])
+        logger.debug('tag: {}'.format(tag))
+        return tag
+
     def update_from_dict(self, d):
         self._logger.debug('{}: {}'.format(self, d))
         if 'id' in d and d['id'] is not None:
@@ -116,26 +134,6 @@ class Tag(Changeable, TagBase):
     @property
     def tasks(self):
         return self._tasks
-
-    @staticmethod
-    def from_dict(d, lazy=None):
-        logger = Tag._logger
-        logger.debug('d: {}'.format(d))
-
-        tag_id = d.get('id', None)
-        value = d.get('value')
-        description = d.get('description', None)
-
-        tag = Tag(value, description, lazy=lazy)
-        logger = tag._logger
-        logger.debug('{}'.format(tag))
-        if tag_id is not None:
-            tag.id = tag_id
-        if not lazy:
-            if 'tasks' in d:
-                assign(tag.tasks, d['tasks'])
-        logger.debug('tag: {}'.format(tag))
-        return tag
 
     def clear_relationships(self):
         self.tasks.clear()

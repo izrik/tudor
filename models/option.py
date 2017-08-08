@@ -35,6 +35,12 @@ class OptionBase(object):
 
         return d
 
+    @classmethod
+    def from_dict(cls, d, lazy=None):
+        key = d.get('key')
+        value = d.get('value', None)
+        return cls(key, value)
+
     def update_from_dict(self, d):
         if 'key' in d and d['key'] is not None:
             self.key = d['key']
@@ -70,12 +76,6 @@ class Option(Changeable, OptionBase):
                                    self._value)
             self._value = value
             self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
-
-    @staticmethod
-    def from_dict(d, lazy=None):
-        key = d.get('key')
-        value = d.get('value', None)
-        return Option(key, value)
 
     def clear_relationships(self):
         pass

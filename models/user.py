@@ -47,6 +47,21 @@ class UserBase(object):
 
         return d
 
+    @classmethod
+    def from_dict(cls, d, lazy=None):
+        user_id = d.get('id', None)
+        email = d.get('email')
+        hashed_password = d.get('hashed_password', None)
+        is_admin = d.get('is_admin', False)
+
+        user = cls(email, hashed_password, is_admin, lazy=lazy)
+        if user_id is not None:
+            user.id = user_id
+        if not lazy:
+            if 'tasks' in d:
+                assign(user.tasks, d['tasks'])
+        return user
+
     def update_from_dict(self, d):
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
@@ -140,21 +155,6 @@ class User(Changeable, UserBase):
     @property
     def tasks(self):
         return self._tasks
-
-    @staticmethod
-    def from_dict(d, lazy=None):
-        user_id = d.get('id', None)
-        email = d.get('email')
-        hashed_password = d.get('hashed_password', None)
-        is_admin = d.get('is_admin', False)
-
-        user = User(email, hashed_password, is_admin, lazy=lazy)
-        if user_id is not None:
-            user.id = user_id
-        if not lazy:
-            if 'tasks' in d:
-                assign(user.tasks, d['tasks'])
-        return user
 
     def clear_relationships(self):
         self.tasks.clear()
