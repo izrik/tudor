@@ -6613,6 +6613,27 @@ class DbTaskMakeChangeTest(unittest.TestCase):
         self.assertEqual([], list(self.task.children))
 
 
+class DbTagConstructorTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+
+    def test_none_lazy_is_allowed(self):
+        # when
+        tag = self.pl.DbTag('tag', lazy={})
+        # then
+        self.assertIsInstance(tag, self.pl.DbTag)
+
+    def test_empty_lazy_is_allowed(self):
+        # when
+        tag = self.pl.DbTag('tag', lazy={})
+        # then
+        self.assertIsInstance(tag, self.pl.DbTag)
+
+    def test_non_empty_lazy_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.DbTag, 'tag', lazy={'id': 1})
+
+
 class DbTagFromDictTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
@@ -6890,6 +6911,27 @@ class DbTagMakeChangeTest(unittest.TestCase):
         self.assertEqual([], list(self.tag.tasks))
 
 
+class DbNoteConstructorTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+
+    def test_none_lazy_is_allowed(self):
+        # when
+        note = self.pl.DbNote('note', lazy={})
+        # then
+        self.assertIsInstance(note, self.pl.DbNote)
+
+    def test_empty_lazy_is_allowed(self):
+        # when
+        note = self.pl.DbNote('note', lazy={})
+        # then
+        self.assertIsInstance(note, self.pl.DbNote)
+
+    def test_non_empty_lazy_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.DbNote, 'note', lazy={'id': 1})
+
+
 class DbNoteFromDictTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
@@ -7142,6 +7184,31 @@ class DbNoteMakeChangeTest(unittest.TestCase):
             ValueError,
             self.Note.make_change,
             'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
+
+
+class DbAttachmentConstructorTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+
+    def test_none_lazy_is_allowed(self):
+        # when
+        attachment = self.pl.DbAttachment('attachment', lazy={})
+        # then
+        self.assertIsInstance(attachment, self.pl.DbAttachment)
+
+    def test_empty_lazy_is_allowed(self):
+        # when
+        attachment = self.pl.DbAttachment('attachment', lazy={})
+        # then
+        self.assertIsInstance(attachment, self.pl.DbAttachment)
+
+    def test_non_empty_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbAttachment,
+            'attachment',
+            lazy={'id': 1})
 
 
 class DbAttachmentFromDictTest(unittest.TestCase):
@@ -7495,6 +7562,27 @@ class DbAttachmentMakeChangeTest(unittest.TestCase):
             'SOME_OTHER_FIELD', Changeable.OP_SET, 'value')
 
 
+class DbUserConstructorTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+
+    def test_none_lazy_is_allowed(self):
+        # when
+        user = self.pl.DbUser('user', lazy={})
+        # then
+        self.assertIsInstance(user, self.pl.DbUser)
+
+    def test_empty_lazy_is_allowed(self):
+        # when
+        user = self.pl.DbUser('user', lazy={})
+        # then
+        self.assertIsInstance(user, self.pl.DbUser)
+
+    def test_non_empty_lazy_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.DbUser, 'user', lazy={'id': 1})
+
+
 class DbUserFromDictTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
@@ -7818,6 +7906,31 @@ class DbUserMakeChangeTest(unittest.TestCase):
         self.user.make_change(User.FIELD_TASKS, Changeable.OP_REMOVE, task)
         # then
         self.assertEqual([], list(self.user.tasks))
+
+
+class DbOptionConstructorTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+
+    def test_none_lazy_is_allowed(self):
+        # when
+        option = self.pl.DbOption('key', 'value', lazy={})
+        # then
+        self.assertIsInstance(option, self.pl.DbOption)
+
+    def test_empty_lazy_is_allowed(self):
+        # when
+        option = self.pl.DbOption('key', 'value', lazy={})
+        # then
+        self.assertIsInstance(option, self.pl.DbOption)
+
+    def test_non_empty_lazy_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.pl.DbOption,
+            'key', 'value',
+            lazy={'id': 1})
 
 
 class DbOptionFromDictTest(unittest.TestCase):
