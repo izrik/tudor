@@ -381,15 +381,22 @@ class Task(Changeable, TaskBase):
             return self.parent.id
         return None
 
+    def _populate_parent(self):
+        if self._parent_lazy:
+            self._logger.debug('populating parent from lazy {}'.format(self))
+            value = self._parent_lazy()
+            self._parent_lazy = None
+            self.parent = value
+
     @property
     def parent(self):
-        if self._parent_lazy:
-            self.parent = self._parent_lazy()
+        self._populate_parent()
         return self._parent
 
     @parent.setter
     def parent(self, value):
         self._logger.debug('{}'.format(self))
+        self._populate_parent()
         if value != self._parent:
             self._logger.debug(
                 '{}: {} -> {}'.format(self, self._parent, value))
@@ -400,7 +407,6 @@ class Task(Changeable, TaskBase):
             if self._parent is not None:
                 self._parent.children.append(self)
             self._on_attr_changed(self.FIELD_PARENT, self.OP_SET, self._parent)
-        self._parent_lazy = None
 
     @property
     def children(self):

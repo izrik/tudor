@@ -135,14 +135,21 @@ class Note(Changeable, NoteBase):
             return self.task.id
         return None
 
+    def _populate_task(self):
+        if self._task_lazy:
+            self._logger.debug('populating task from lazy {}'.format(self))
+            value = self._task_lazy()
+            self._task_lazy = None
+            self.task = value
+
     @property
     def task(self):
-        if self._task_lazy:
-            self.task = self._task_lazy()
+        self._populate_task()
         return self._task
 
     @task.setter
     def task(self, value):
+        self._populate_task()
         if value != self._task:
             self._on_attr_changing(self.FIELD_TASK, self._task)
             if self._task is not None:
@@ -151,7 +158,6 @@ class Note(Changeable, NoteBase):
             if self._task is not None:
                 self._task.notes.add(self)
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
-        self._task_lazy = None
 
     def clear_relationships(self):
         self.task = None
