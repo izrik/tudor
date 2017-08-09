@@ -17,8 +17,8 @@ from persistence_layer import as_iterable
 from models.changeable import Changeable
 
 
-def generate_pl():
-    app = generate_app(db_uri='sqlite://')
+def generate_pl(db_uri='sqlite://'):
+    app = generate_app(db_uri=db_uri)
     return app.pl
 
 
