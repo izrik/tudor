@@ -377,7 +377,7 @@ class Task(Changeable, TaskBase):
 
     @property
     def parent_id(self):
-        if self._parent:
+        if self.parent:
             return self.parent.id
         return None
 
