@@ -3,6 +3,9 @@
 import unittest
 
 from tudor import generate_app
+from models.task import Task
+from models.user import User
+from models.tag import Tag
 
 
 class GetIndexDataTest(unittest.TestCase):
@@ -13,23 +16,22 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.create_all()
         self.app = app
         self.ll = app.ll
-        self.Task = app.pl.Task
-        self.admin = app.pl.User('name@example.org', None, True)
+        self.admin = User('name@example.org', None, True)
         self.pl.add(self.admin)
-        self.user = app.pl.User('name2@example.org', None, False)
+        self.user = User('name2@example.org', None, False)
         self.pl.add(self.user)
 
     def test_get_index_data_returns_tasks_and_tags(self):
 
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
-        t2 = self.Task('t2')
+        t2 = Task('t2')
         t2.order_num = 2
-        t3 = self.Task('t3')
+        t3 = Task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = self.Task('t4')
+        t4 = Task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
@@ -37,9 +39,11 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.add(t3)
         self.pl.add(t4)
 
-        tag1 = self.app.pl.Tag('tag1')
+        tag1 = Tag('tag1')
 
         self.pl.add(tag1)
+
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_data(True, True, self.admin)
@@ -75,9 +79,9 @@ class GetIndexDataTest(unittest.TestCase):
     def test_get_index_data_only_yields_tasks_the_user_is_authorized_for(self):
 
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
-        t2 = self.Task('t2')
+        t2 = Task('t2')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -96,14 +100,14 @@ class GetIndexDataTest(unittest.TestCase):
     def test_get_index_hierarchy_data_returns_tasks_and_tags(self):
 
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
-        t2 = self.Task('t2')
+        t2 = Task('t2')
         t2.order_num = 2
-        t3 = self.Task('t3')
+        t3 = Task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = self.Task('t4')
+        t4 = Task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
@@ -111,9 +115,11 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.add(t3)
         self.pl.add(t4)
 
-        tag1 = self.app.pl.Tag('tag1')
+        tag1 = Tag('tag1')
 
         self.pl.add(tag1)
+
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.admin)
@@ -149,9 +155,9 @@ class GetIndexDataTest(unittest.TestCase):
     def test_hierarchy_only_yields_tasks_user_is_authorized_for(self):
 
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
-        t2 = self.Task('t2')
+        t2 = Task('t2')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -170,20 +176,22 @@ class GetIndexDataTest(unittest.TestCase):
     def test_hierarchy_returns_descendants(self):
 
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
-        t2 = self.Task('t2')
+        t2 = Task('t2')
         t2.order_num = 2
-        t3 = self.Task('t3')
+        t3 = Task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = self.Task('t4')
+        t4 = Task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
         self.pl.add(t4)
+
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_hierarchy_data(True, True, self.admin)
@@ -203,20 +211,22 @@ class GetIndexDataTest(unittest.TestCase):
     def test_non_hierarchy_returns_only_top_level_tasks(self):
 
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
-        t2 = self.Task('t2')
+        t2 = Task('t2')
         t2.order_num = 2
-        t3 = self.Task('t3')
+        t3 = Task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = self.Task('t4')
+        t4 = Task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
         self.pl.add(t4)
+
+        self.pl.commit()
 
         # when
         data = self.ll.get_index_data(True, True, self.admin)

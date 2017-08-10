@@ -151,7 +151,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         @staticmethod
         def get_user():
-            return current_user
+            try:
+                return pl.get_user(current_user.id)
+            except AttributeError:
+                return None
 
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
@@ -177,9 +180,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
             email, password = api_key.split(':', 1)
             user = pl.get_user_by_email(email)
 
-            if (user is None or
-                    not bcrypt.check_password_hash(
-                        user.hashed_password, password)):
+            if user is None:
+                return None
+            if user.hashed_password is None or user.hashed_password == '':
+                return None
+            if not bcrypt.check_password_hash(user.hashed_password, password):
                 return None
 
             return user
@@ -208,121 +213,121 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/')
     @login_required
     def index():
-        return vl.index(request, current_user)
+        return vl.index(request, Options.get_user())
 
     @app.route('/hierarchy')
     @login_required
     def hierarchy():
-        return vl.hierarchy(request, current_user)
+        return vl.hierarchy(request, Options.get_user())
 
     @app.route('/deadlines')
     @login_required
     def deadlines():
-        return vl.deadlines(request, current_user)
+        return vl.deadlines(request, Options.get_user())
 
     @app.route('/task/new', methods=['GET'])
     @login_required
     def get_new_task():
-        return vl.task_new_get(request, current_user)
+        return vl.task_new_get(request, Options.get_user())
 
     @app.route('/task/new', methods=['POST'])
     @login_required
     def new_task():
-        return vl.task_new_post(request, current_user)
+        return vl.task_new_post(request, Options.get_user())
 
     @app.route('/task/<int:id>/mark_done')
     @login_required
     def task_done(id):
-        return vl.task_mark_done(request, current_user, id)
+        return vl.task_mark_done(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/mark_undone')
     @login_required
     def task_undo(id):
-        return vl.task_mark_undone(request, current_user, id)
+        return vl.task_mark_undone(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/delete')
     @login_required
     def delete_task(id):
-        return vl.task_delete(request, current_user, id)
+        return vl.task_delete(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/undelete')
     @login_required
     def undelete_task(id):
-        return vl.task_undelete(request, current_user, id)
+        return vl.task_undelete(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/purge')
     @login_required
     @admin_required
     def purge_task(id):
-        return vl.task_purge(request, current_user, id)
+        return vl.task_purge(request, Options.get_user(), id)
 
     @app.route('/purge_all')
     @login_required
     @admin_required
     def purge_deleted_tasks():
-        return vl.purge_all(request, current_user)
+        return vl.purge_all(request, Options.get_user())
 
     @app.route('/task/<int:id>')
     @login_required
     def view_task(id):
-        return vl.task(request, current_user, id)
+        return vl.task(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/hierarchy')
     @login_required
     def view_task_hierarchy(id):
-        return vl.task_hierarchy(request, current_user, id)
+        return vl.task_hierarchy(request, Options.get_user(), id)
 
     @app.route('/note/new', methods=['POST'])
     @login_required
     def new_note():
-        return vl.note_new_post(request, current_user)
+        return vl.note_new_post(request, Options.get_user())
 
     @app.route('/task/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_task(id):
-        return vl.task_edit(request, current_user, id)
+        return vl.task_edit(request, Options.get_user(), id)
 
     @app.route('/attachment/new', methods=['POST'])
     @login_required
     def new_attachment():
-        return vl.attachment_new(request, current_user)
+        return vl.attachment_new(request, Options.get_user())
 
     @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/<path:x>')
     @login_required
     def get_attachment(aid, x):
-        return vl.attachment(request, current_user, aid, x)
+        return vl.attachment(request, Options.get_user(), aid, x)
 
     @app.route('/task/<int:id>/up')
     @login_required
     def move_task_up(id):
-        return vl.task_up(request, current_user, id)
+        return vl.task_up(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/top')
     @login_required
     def move_task_to_top(id):
-        return vl.task_top(request, current_user, id)
+        return vl.task_top(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/down')
     @login_required
     def move_task_down(id):
-        return vl.task_down(request, current_user, id)
+        return vl.task_down(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/bottom')
     @login_required
     def move_task_to_bottom(id):
-        return vl.task_bottom(request, current_user, id)
+        return vl.task_bottom(request, Options.get_user(), id)
 
     @app.route('/long_order_change', methods=['POST'])
     @login_required
     def long_order_change():
-        return vl.long_order_change(request, current_user)
+        return vl.long_order_change(request, Options.get_user())
 
     @app.route('/task/<int:id>/add_tag', methods=['GET', 'POST'])
     @login_required
     def add_tag_to_task(id):
-        return vl.task_add_tag(request, current_user, id)
+        return vl.task_add_tag(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/delete_tag', methods=['GET', 'POST'],
                defaults={'tag_id': None})
@@ -331,23 +336,24 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/task/<int:id>/delete_tag/<tag_id>', methods=['GET', 'POST'])
     @login_required
     def delete_tag_from_task(id, tag_id):
-        return vl.task_delete_tag(request, current_user, id, tag_id)
+        return vl.task_delete_tag(request, Options.get_user(), id, tag_id)
 
     @app.route('/task/<int:task_id>/authorize_user', methods=['GET', 'POST'])
     @login_required
     def authorize_user_for_task(task_id):
-        return vl.task_authorize_user(request, current_user, task_id)
+        return vl.task_authorize_user(request, Options.get_user(), task_id)
 
     @app.route('/task/<int:task_id>/pick_user')
+    @login_required
     def pick_user_to_authorize(task_id):
-        return vl.task_pick_user(request, current_user, task_id)
+        return vl.task_pick_user(request, Options.get_user(), task_id)
 
     @app.route('/task/<int:task_id>/authorize_user/<int:user_id>',
                methods=['GET', 'POST'])
     @login_required
     def authorize_picked_user_for_task(task_id, user_id):
-        return vl.task_authorize_user_user(request, current_user, task_id,
-                                           user_id)
+        return vl.task_authorize_user_user(request, Options.get_user(),
+                                           task_id, user_id)
 
     @app.route('/task/<int:task_id>/deauthorize_user', methods=['GET', 'POST'],
                defaults={'user_id': None})
@@ -355,94 +361,95 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'], defaults={'user_id': None})
     @app.route('/task/<int:task_id>/deauthorize_user/<int:user_id>',
                methods=['GET', 'POST'])
+    @login_required
     def deauthorize_user_for_task(task_id, user_id):
-        return vl.task_deauthorize_user(request, current_user, task_id,
+        return vl.task_deauthorize_user(request, Options.get_user(), task_id,
                                         user_id)
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        return vl.login(request, current_user)
+        return vl.login(request, Options.get_user())
 
     @app.route('/logout')
     def logout():
-        return vl.logout(request, current_user)
+        return vl.logout(request, Options.get_user())
 
     @app.route('/users', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def list_users():
-        return vl.users(request, current_user)
+        return vl.users(request, Options.get_user())
 
     @app.route('/users/<int:user_id>', methods=['GET'])
     @login_required
     def view_user(user_id):
-        return vl.users_user_get(request, current_user, user_id)
+        return vl.users_user_get(request, Options.get_user(), user_id)
 
     @app.route('/show_hide_deleted')
     @login_required
     def show_hide_deleted():
-        return vl.show_hide_deleted(request, current_user)
+        return vl.show_hide_deleted(request, Options.get_user())
 
     @app.route('/show_hide_done')
     @login_required
     def show_hide_done():
-        return vl.show_hide_done(request, current_user)
+        return vl.show_hide_done(request, Options.get_user())
 
     @app.route('/options', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def view_options():
-        return vl.options(request, current_user)
+        return vl.options(request, Options.get_user())
 
     @app.route('/option/<path:key>/delete')
     @login_required
     @admin_required
     def delete_option(key):
-        return vl.option_delete(request, current_user, key)
+        return vl.option_delete(request, Options.get_user(), key)
 
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        return vl. reset_order_nums(request, current_user)
+        return vl. reset_order_nums(request, Options.get_user())
 
     @app.route('/export', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def export_data():
-        return vl.export(request, current_user)
+        return vl.export(request, Options.get_user())
 
     @app.route('/import', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def import_data():
-        return vl.import_(request, current_user)
+        return vl.import_(request, Options.get_user())
 
     @app.route('/task_crud', methods=['GET', 'POST'])
     @login_required
     @admin_required
     def task_crud():
-        return vl.task_crud(request, current_user)
+        return vl.task_crud(request, Options.get_user())
 
     @app.route('/tags')
     @app.route('/tags/')
     @login_required
     def list_tags():
-        return vl.tags(request, current_user)
+        return vl.tags(request, Options.get_user())
 
     @app.route('/tags/<int:id>')
     @login_required
     def view_tag(id):
-        return vl.tags_id_get(request, current_user, id)
+        return vl.tags_id_get(request, Options.get_user(), id)
 
     @app.route('/tags/<int:id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_tag(id):
-        return vl.tags_id_edit(request, current_user, id)
+        return vl.tags_id_edit(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/convert_to_tag')
     @login_required
     def convert_task_to_tag(id):
-        return vl.task_id_convert_to_tag(request, current_user, id)
+        return vl.task_id_convert_to_tag(request, Options.get_user(), id)
 
     @app.route('/search', methods=['GET', 'POST'],
                defaults={'search_query': None})
@@ -451,7 +458,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     @app.route('/search/<search_query>', methods=['GET'])
     @login_required
     def search(search_query):
-        return vl.search(request, current_user, search_query)
+        return vl.search(request, Options.get_user(), search_query)
 
     @app.route('/task/<int:task_id>/add_dependee', methods=['GET', 'POST'],
                defaults={'dependee_id': None})
@@ -461,7 +468,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'])
     @login_required
     def add_dependee_to_task(task_id, dependee_id):
-        return vl.task_id_add_dependee(request, current_user, task_id,
+        return vl.task_id_add_dependee(request, Options.get_user(), task_id,
                                        dependee_id)
 
     @app.route('/task/<int:task_id>/remove_dependee',
@@ -470,8 +477,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'], defaults={'dependee_id': None})
     @app.route('/task/<int:task_id>/remove_dependee/<int:dependee_id>',
                methods=['GET', 'POST'])
+    @login_required
     def remove_dependee_from_task(task_id, dependee_id):
-        return vl.task_id_remove_dependee(request, current_user, task_id,
+        return vl.task_id_remove_dependee(request, Options.get_user(), task_id,
                                           dependee_id)
 
     @app.route('/task/<int:task_id>/add_dependant', methods=['GET', 'POST'],
@@ -482,7 +490,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'])
     @login_required
     def add_dependant_to_task(task_id, dependant_id):
-        return vl.task_id_add_dependant(request, current_user, task_id,
+        return vl.task_id_add_dependant(request, Options.get_user(), task_id,
                                         dependant_id)
 
     @app.route('/task/<int:task_id>/remove_dependant',
@@ -491,9 +499,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                methods=['GET', 'POST'], defaults={'dependant_id': None})
     @app.route('/task/<int:task_id>/remove_dependant/<int:dependant_id>',
                methods=['GET', 'POST'])
+    @login_required
     def remove_dependant_from_task(task_id, dependant_id):
-        return vl.task_id_remove_dependant(request, current_user, task_id,
-                                           dependant_id)
+        return vl.task_id_remove_dependant(request, Options.get_user(),
+                                           task_id, dependant_id)
 
     @app.route('/task/<int:task_id>/add_prioritize_before',
                methods=['GET', 'POST'],
@@ -506,8 +515,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         methods=['GET', 'POST'])
     @login_required
     def add_prioritize_before_to_task(task_id, prioritize_before_id):
-        return vl.task_id_add_prioritize_before(request, current_user, task_id,
-                                                prioritize_before_id)
+        return vl.task_id_add_prioritize_before(request, Options.get_user(),
+                                                task_id, prioritize_before_id)
 
     @app.route('/task/<int:task_id>/remove_prioritize_before',
                methods=['GET', 'POST'],
@@ -519,8 +528,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '/task/<int:task_id>/remove_prioritize_before/'
         '<int:prioritize_before_id>',
         methods=['GET', 'POST'])
+    @login_required
     def remove_prioritize_before_from_task(task_id, prioritize_before_id):
-        return vl.task_id_remove_prioritize_before(request, current_user,
+        return vl.task_id_remove_prioritize_before(request, Options.get_user(),
                                                    task_id,
                                                    prioritize_before_id)
 
@@ -533,8 +543,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         methods=['GET', 'POST'])
     @login_required
     def add_prioritize_after_to_task(task_id, prioritize_after_id):
-        return vl.task_id_add_prioritize_after(request, current_user, task_id,
-                                               prioritize_after_id)
+        return vl.task_id_add_prioritize_after(request, Options.get_user(),
+                                               task_id, prioritize_after_id)
 
     @app.route('/task/<int:task_id>/remove_prioritize_after',
                methods=['GET', 'POST'], defaults={'prioritize_after_id': None})
@@ -544,8 +554,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         '/task/<int:task_id>/remove_prioritize_after/'
         '<int:prioritize_after_id>',
         methods=['GET', 'POST'])
+    @login_required
     def remove_prioritize_after_from_task(task_id, prioritize_after_id):
-        return vl.task_id_remove_prioritize_after(request, current_user,
+        return vl.task_id_remove_prioritize_after(request, Options.get_user(),
                                                   task_id, prioritize_after_id)
 
     @app.template_filter(name='gfm')

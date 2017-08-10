@@ -3,6 +3,7 @@
 import unittest
 
 from tudor import generate_app
+from models.task import Task
 
 
 class TaskIdTest(unittest.TestCase):
@@ -10,17 +11,16 @@ class TaskIdTest(unittest.TestCase):
         self.app = generate_app(db_uri='sqlite://')
         self.pl = self.app.pl
         self.pl.create_all()
-        self.Task = self.pl.Task
 
     def test_constructor_default_id_is_none(self):
         # when
-        task = self.Task('summary')
+        task = Task('summary')
         # then
         self.assertIsNone(task.id)
 
     def test_db_add_does_not_assign_id(self):
         # given
-        task = self.Task('summary')
+        task = Task('summary')
         # when
         self.pl.add(task)
         # then
@@ -28,7 +28,7 @@ class TaskIdTest(unittest.TestCase):
 
     def test_db_commit_assigns_non_null_id(self):
         # given
-        task = self.Task('summary')
+        task = Task('summary')
         self.pl.add(task)
         # when
         self.pl.commit()

@@ -10,6 +10,8 @@ from werkzeug.exceptions import NotFound, BadRequest
 
 from conversions import int_from_str, money_from_str, bool_from_str
 
+# TODO: move all calls tp pl.add, pl.delete, pl.commit, etc., to the LL
+
 
 class ViewLayer(object):
     def __init__(self, ll, app, upload_folder, pl):
@@ -427,9 +429,14 @@ class ViewLayer(object):
         password = request.form['password']
         user = self.pl.get_user_by_email(email)
 
-        if (user is None or
-                not self.app.bcrypt.check_password_hash(user.hashed_password,
-                                                        password)):
+        if user is None:
+            flash('Username or Password is invalid', 'error')
+            return redirect(url_for('login'))
+        if user.hashed_password is None or user.hashed_password == '':
+            flash('Username or Password is invalid', 'error')
+            return redirect(url_for('login'))
+        if not self.app.bcrypt.check_password_hash(user.hashed_password,
+                                                   password):
             flash('Username or Password is invalid', 'error')
             return redirect(url_for('login'))
 

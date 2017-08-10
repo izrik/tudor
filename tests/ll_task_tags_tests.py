@@ -5,6 +5,9 @@ import unittest
 from werkzeug.exceptions import NotFound, Forbidden
 
 from tudor import generate_app
+from models.task import Task
+from models.user import User
+from models.tag import Tag
 
 
 class LogicLayerTaskTagsTest(unittest.TestCase):
@@ -13,13 +16,10 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         app = generate_app(db_uri='sqlite://')
         self.pl = app.pl
         self.pl.create_all()
-        self.Task = self.pl.Task
-        self.Tag = self.pl.Tag
         self.ll = app.ll
-        self.User = self.pl.User
-        self.admin = self.User('name@example.org', None, True)
+        self.admin = User('name@example.org', None, True)
         self.pl.add(self.admin)
-        self.user = self.User('name2@example.org', None, False)
+        self.user = User('name2@example.org', None, False)
         self.pl.add(self.user)
 
     def test_get_or_create_tag_nonexistent_creates_tag(self):
@@ -32,12 +32,12 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag)
-        self.assertIsInstance(tag, self.Tag)
+        self.assertIsInstance(tag, Tag)
         self.assertEqual('abc', tag.value)
 
     def test_get_or_create_tag_existent_gets_tag(self):
         # given
-        tag1 = self.Tag('def')
+        tag1 = Tag('def')
         self.pl.add(tag1)
 
         # precondition
@@ -49,13 +49,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag2)
-        self.assertIsInstance(tag2, self.Tag)
+        self.assertIsInstance(tag2, Tag)
         self.assertEqual('def', tag2.value)
         self.assertIs(tag1, tag2)
 
     def test_add_tag_to_task_admin_nonexistent_adds_tag(self):
         # given
-        task = self.Task('task')
+        task = Task('task')
         self.pl.add(task)
         self.pl.commit()
 
@@ -69,13 +69,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag)
-        self.assertIsInstance(tag, self.Tag)
+        self.assertIsInstance(tag, Tag)
         self.assertEqual('ghi', tag.value)
 
     def test_add_tag_to_task_admin_existent_adds_tag(self):
         # given
-        task = self.Task('task')
-        tag1 = self.Tag('jkl')
+        task = Task('task')
+        tag1 = Tag('jkl')
         self.pl.add(task)
         self.pl.add(tag1)
         self.pl.commit()
@@ -90,13 +90,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag2)
-        self.assertIsInstance(tag2, self.Tag)
+        self.assertIsInstance(tag2, Tag)
         self.assertEqual('jkl', tag2.value)
         self.assertIs(tag1, tag2)
 
     def test_add_tag_to_task_user_nonexistent_adds_tag(self):
         # given
-        task = self.Task('task')
+        task = Task('task')
         task.users.append(self.user)
         self.pl.add(task)
         self.pl.commit()
@@ -111,13 +111,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag)
-        self.assertIsInstance(tag, self.Tag)
+        self.assertIsInstance(tag, Tag)
         self.assertEqual('mno', tag.value)
 
     def test_add_tag_to_task_user_existent_adds_tag(self):
         # given
-        task = self.Task('task')
-        tag1 = self.Tag('pqr')
+        task = Task('task')
+        tag1 = Tag('pqr')
         task.users.append(self.user)
         self.pl.add(task)
         self.pl.add(tag1)
@@ -133,7 +133,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag2)
-        self.assertIsInstance(tag2, self.Tag)
+        self.assertIsInstance(tag2, Tag)
         self.assertEqual('pqr', tag2.value)
         self.assertIs(tag1, tag2)
 
@@ -148,9 +148,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_user_not_authorized_raises_forbidden(self):
         # given
-        other_user = self.User('name3@example.org', None, False)
+        other_user = User('name3@example.org', None, False)
         self.pl.add(other_user)
-        task = self.Task('task')
+        task = Task('task')
         self.pl.add(task)
         self.pl.commit()
 

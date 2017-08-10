@@ -7,6 +7,8 @@ from flask import json
 from werkzeug.exceptions import Conflict, NotFound, Forbidden
 
 from tudor import generate_app
+from models.task import Task
+from models.user import User
 
 
 class LogicLayerSetTaskTest(unittest.TestCase):
@@ -15,9 +17,9 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.ll = self.app.ll
         self.pl = self.app.pl
         self.pl.create_all()
-        self.admin = self.pl.User('admin@example.com', is_admin=True)
-        self.user = self.pl.User('user@example.com', is_admin=False)
-        self.task = self.pl.Task('summary')
+        self.admin = User('admin@example.com', is_admin=True)
+        self.user = User('user@example.com', is_admin=False)
+        self.task = Task('summary')
         self.pl.add(self.admin)
         self.pl.add(self.user)
         self.pl.add(self.task)
@@ -193,7 +195,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
     def test_set_task_parent_id(self):
         # given
-        ptask = self.pl.Task('parent')
+        ptask = Task('parent')
         self.pl.add(ptask)
         self.pl.commit()
 
@@ -213,7 +215,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
         # then
         self.assertEqual(ptask.id, self.task.parent_id)
-        self.assertIsNone(self.task.parent)
+        self.assertIs(ptask, self.task.parent)
 
         # when
         self.pl.commit()

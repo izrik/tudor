@@ -1,56 +1,165 @@
 
-import random
+import logging_util
+from changeable import Changeable
+from collections_util import assign
+from models.interlinking import ManyToManySet
 
 
-def generate_user_class(db, bcrypt):
-    class User(db.Model):
+class UserBase(object):
 
-        id = db.Column(db.Integer, primary_key=True)
-        email = db.Column(db.String(100), nullable=False, unique=True)
-        hashed_password = db.Column(db.String(100), nullable=False)
-        is_admin = db.Column(db.Boolean, nullable=False, default=False)
-        authenticated = True
+    FIELD_ID = 'ID'
+    FIELD_EMAIL = 'EMAIL'
+    FIELD_HASHED_PASSWORD = 'HASHED_PASSWORD'
+    FIELD_IS_ADMIN = 'IS_ADMIN'
+    FIELD_TASKS = 'TASKS'
 
-        def __init__(self, email, hashed_password=None, is_admin=False):
-            if hashed_password is None:
-                digits = '0123456789abcdef'
-                key = ''.join((random.choice(digits) for x in xrange(48)))
-                hashed_password = bcrypt.generate_password_hash(key)
+    authenticated = True
 
-            self.email = email
-            self.hashed_password = hashed_password
-            self.is_admin = is_admin
+    def __init__(self, email, hashed_password, is_admin=False):
 
-        def to_dict(self):
-            return {
-                'id': self.id,
-                'email': self.email,
-                'hashed_password': self.hashed_password,
-                'is_admin': self.is_admin
-            }
+        self.email = email
+        self.hashed_password = hashed_password
+        self.is_admin = is_admin
 
-        @staticmethod
-        def from_dict(d):
-            user_id = d.get('id', None)
-            email = d.get('email')
-            hashed_password = d.get('hashed_password', None)
-            is_admin = d.get('is_admin', False)
+    def __repr__(self):
+        cls = type(self).__name__
+        return '{}({}, id={})'.format(cls, repr(self.email), self.id)
 
-            user = User(email, hashed_password, is_admin)
-            if user_id is not None:
-                user.id = user_id
-            return user
+    def __str__(self):
+        cls = type(self).__name__
+        return '{}({}, user id={}, id=[{}])'.format(cls, repr(self.email),
+                                                    self.id, id(self))
 
-        def is_active(self):
-            return True
+    def to_dict(self, fields=None):
 
-        def get_id(self):
-            return self.email
+        d = {}
+        if fields is None or self.FIELD_ID in fields:
+            d['id'] = self.id
+        if fields is None or self.FIELD_EMAIL in fields:
+            d['email'] = self.email
+        if fields is None or self.FIELD_HASHED_PASSWORD in fields:
+            d['hashed_password'] = self.hashed_password
+        if fields is None or self.FIELD_IS_ADMIN in fields:
+            d['is_admin'] = self.is_admin
 
-        def is_authenticated(self):
-            return self.authenticated
+        if fields is None or self.FIELD_TASKS in fields:
+            d['tasks'] = list(self.tasks)
 
-        def is_anonymous(self):
-            return False
+        return d
 
-    return User
+    @classmethod
+    def from_dict(cls, d, lazy=None):
+        user_id = d.get('id', None)
+        email = d.get('email')
+        hashed_password = d.get('hashed_password', None)
+        is_admin = d.get('is_admin', False)
+
+        user = cls(email, hashed_password, is_admin, lazy=lazy)
+        if user_id is not None:
+            user.id = user_id
+        if not lazy:
+            if 'tasks' in d:
+                assign(user.tasks, d['tasks'])
+        return user
+
+    def update_from_dict(self, d):
+        if 'id' in d and d['id'] is not None:
+            self.id = d['id']
+        if 'email' in d:
+            self.email = d['email']
+        if 'hashed_password' in d:
+            self.hashed_password = d['hashed_password']
+        if 'is_admin' in d:
+            self.is_admin = d['is_admin']
+        if 'tasks' in d:
+            assign(self.tasks, d['tasks'])
+
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.email
+
+    def is_authenticated(self):
+        return self.authenticated
+
+    def is_anonymous(self):
+        return False
+
+
+class User(Changeable, UserBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'User')
+
+    _id = None
+    _email = None
+    _hashed_password = None
+    _is_admin = None
+
+    def __init__(self, email, hashed_password=None, is_admin=False, lazy=None):
+        super(User, self).__init__(email=email,
+                                   hashed_password=hashed_password,
+                                   is_admin=is_admin)
+
+        if lazy is None:
+            lazy = {}
+
+        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if value != self._id:
+            self._on_attr_changing(self.FIELD_ID, self._id)
+            self._id = value
+            self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
+
+    @property
+    def email(self):
+        return self._email
+
+    @email.setter
+    def email(self, value):
+        if value != self._email:
+            self._on_attr_changing(self.FIELD_EMAIL, self._email)
+            self._email = value
+            self._on_attr_changed(self.FIELD_EMAIL, self.OP_SET, self._email)
+
+    @property
+    def hashed_password(self):
+        return self._hashed_password
+
+    @hashed_password.setter
+    def hashed_password(self, value):
+        if value != self._hashed_password:
+            self._on_attr_changing(self.FIELD_HASHED_PASSWORD,
+                                   self._hashed_password)
+            self._hashed_password = value
+            self._on_attr_changed(self.FIELD_HASHED_PASSWORD, self.OP_SET,
+                                  self._hashed_password)
+
+    @property
+    def is_admin(self):
+        return self._is_admin
+
+    @is_admin.setter
+    def is_admin(self, value):
+        if value != self._is_admin:
+            self._on_attr_changing(self.FIELD_IS_ADMIN, self._is_admin)
+            self._is_admin = value
+            self._on_attr_changed(self.FIELD_IS_ADMIN, self.OP_SET,
+                                  self._is_admin)
+
+    @property
+    def tasks(self):
+        return self._tasks
+
+    def clear_relationships(self):
+        self.tasks.clear()
+
+
+class InterlinkedTasks(ManyToManySet):
+    __change_field__ = User.FIELD_TASKS
+    __attr_counterpart__ = 'users'

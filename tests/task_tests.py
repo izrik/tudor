@@ -3,24 +3,20 @@
 import unittest
 from datetime import datetime
 
-from tudor import generate_app
+from models.task import Task
 
 
 class TaskTest(unittest.TestCase):
-    def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
-        self.Task = self.pl.Task
 
     def test_constructor_sets_summary(self):
         # when
-        task = self.Task('summary')
+        task = Task('summary')
         # then
         self.assertEqual('summary', task.summary)
 
     def test_constructor_has_sensible_defaults(self):
         # when
-        task = self.Task('summary')
+        task = Task('summary')
         # then
         self.assertEqual('', task.description)
         self.assertFalse(task.is_done)
@@ -31,7 +27,7 @@ class TaskTest(unittest.TestCase):
 
     def test_constructor_sets_fields(self):
         # when
-        task = self.Task(
+        task = Task(
             summary='summary',
             description='description',
             is_done=True,
@@ -49,7 +45,7 @@ class TaskTest(unittest.TestCase):
 
     def test_to_dict_returns_correct_values(self):
         # given
-        task = self.Task(
+        task = Task(
             summary='summary',
             description='description',
             is_done=True,
@@ -77,7 +73,7 @@ class TaskTest(unittest.TestCase):
 
     def test_to_dict_returns_other_values_not_in_the_constructor(self):
         # given
-        task = self.Task(
+        task = Task(
             summary='summary',
             description='description',
             is_done=True,
@@ -88,14 +84,12 @@ class TaskTest(unittest.TestCase):
         # when
         result = task.to_dict()
         # then
-        self.assertEqual(12, len(result))
+        self.assertEqual(19, len(result))
         self.assertIn('id', result)
         self.assertIsNone(result['id'])
         self.assertIn('order_num', result)
-        self.assertIsNone(result['order_num'])
-        self.assertIn('parent_id', result)
-        self.assertIsNone(result['parent_id'])
-        self.assertIn('tag_ids', result)
-        self.assertEqual([], result['tag_ids'])
-        self.assertIn('user_ids', result)
-        self.assertEqual([], result['user_ids'])
+        self.assertEqual(0, result['order_num'])
+        self.assertIn('tags', result)
+        self.assertEqual([], result['tags'])
+        self.assertIn('users', result)
+        self.assertEqual([], result['users'])

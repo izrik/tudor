@@ -7,6 +7,7 @@ from flask import json
 from werkzeug.exceptions import Conflict
 
 from tudor import generate_app
+from models.task import Task
 
 
 class LogicLayerDoImportDataTest(unittest.TestCase):
@@ -79,6 +80,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
         # when
         self.ll.do_import_data(json.loads(src))
+        self.pl.commit()
 
         # then
         self.assertEqual(1, self.pl.count_tasks())
@@ -183,6 +185,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
         # when
         self.ll.do_import_data(json.loads(src))
+        self.pl.commit()
 
         # then
         self.assertEqual(2, self.pl.count_tasks())
@@ -233,7 +236,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_task_conflict_id_already_exists(self):
         # given
-        t0 = self.pl.Task('pre-existing')
+        t0 = Task('pre-existing')
         self.pl.add(t0)
         self.pl.commit()
         src = '{"tasks":[{"id": ' + str(t0.id) + ',"summary":"summary"}]}'

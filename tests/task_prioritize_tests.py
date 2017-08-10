@@ -5,19 +5,15 @@ import unittest
 from werkzeug.exceptions import BadRequest, NotFound, Forbidden
 
 from tudor import generate_app
+from models.task import Task
+from models.user import User
 
 
 class TaskPrioritizeTest(unittest.TestCase):
-    def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
-        self.pl.create_all()
-        self.Task = self.pl.Task
-
     def test_setting_task_as_before_sets_other_task_as_after(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
+        t1 = Task('t1')
+        t2 = Task('t2')
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -38,8 +34,8 @@ class TaskPrioritizeTest(unittest.TestCase):
 
     def test_setting_task_as_after_sets_other_task_as_before(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
+        t1 = Task('t1')
+        t2 = Task('t2')
 
         # precondition
         self.assertEqual(0, len(t1.prioritize_before))
@@ -60,8 +56,8 @@ class TaskPrioritizeTest(unittest.TestCase):
 
     def test_cycle_check_yields_false_for_no_cycles(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
+        t1 = Task('t1')
+        t2 = Task('t2')
         t1.prioritize_before.append(t2)
 
         # expect
@@ -70,8 +66,8 @@ class TaskPrioritizeTest(unittest.TestCase):
 
     def test_cycle_check_yields_true_for_cycles(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
+        t1 = Task('t1')
+        t2 = Task('t2')
         t1.prioritize_before.append(t2)
         t2.prioritize_before.append(t1)
 
@@ -81,12 +77,12 @@ class TaskPrioritizeTest(unittest.TestCase):
 
     def test_cycle_check_yields_true_for_long_cycles(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        t3 = self.Task('t3')
-        t4 = self.Task('t4')
-        t5 = self.Task('t5')
-        t6 = self.Task('t6')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t3 = Task('t3')
+        t4 = Task('t4')
+        t5 = Task('t5')
+        t6 = Task('t6')
         t1.prioritize_before.append(t2)
         t2.prioritize_before.append(t3)
         t3.prioritize_before.append(t4)
@@ -104,10 +100,10 @@ class TaskPrioritizeTest(unittest.TestCase):
 
     def test_cycle_check_yields_false_for_trees(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        t3 = self.Task('t3')
-        t4 = self.Task('t4')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        t3 = Task('t3')
+        t4 = Task('t4')
         t1.prioritize_before.append(t2)
         t1.prioritize_before.append(t3)
         t2.prioritize_before.append(t4)
@@ -126,14 +122,12 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
         self.ll = self.app.ll
-        self.Task = self.pl.Task
-        self.User = self.pl.User
 
     def test_add_prioritize_before_adds_prioritize_before(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -162,10 +156,10 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_if_already_added_still_succeeds(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
+        t1 = Task('t1')
+        t2 = Task('t2')
         t1.prioritize_before.append(t2)
-        user = self.User('name@example.com')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -196,9 +190,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_null_ids_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -232,9 +226,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_null_user_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -260,9 +254,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_user_not_authorized_for_task_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -287,9 +281,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_user_not_authorized_for_prioritize_before_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -314,8 +308,8 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_task_not_found_raises_exception(self):
         # given
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -337,8 +331,8 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_prioritize_before_not_found_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        user = User('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)
@@ -361,9 +355,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def test_remove_prioritize_before_removes_prioritize_before(self):
 
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_before.append(t2)
@@ -395,9 +389,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def test_if_prioritize_before_already_removed_still_succeeds(self):
 
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -425,9 +419,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_before_with_null_ids_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_before.append(t2)
@@ -469,9 +463,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_before_with_null_user_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_before.append(t2)
@@ -503,9 +497,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_before_user_unauthd_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         t1.prioritize_before.append(t2)
         self.pl.add(t1)
@@ -539,9 +533,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_remove_user_not_authd_for_prioritizebefore_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t1.prioritize_before.append(t2)
         self.pl.add(t1)
@@ -575,8 +569,8 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_before_task_not_found_raises_exception(self):
         # given
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -599,8 +593,8 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_before_when_not_found_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        user = User('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)
@@ -629,14 +623,12 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
         self.pl = self.app.pl
         self.pl.create_all()
         self.ll = self.app.ll
-        self.Task = self.pl.Task
-        self.User = self.pl.User
 
     def test_add_prioritize_after_adds_prioritize_after(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -665,10 +657,10 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_if_already_added_still_succeeds(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
+        t1 = Task('t1')
+        t2 = Task('t2')
         t1.prioritize_after.append(t2)
-        user = self.User('name@example.com')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -699,9 +691,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_null_ids_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -735,9 +727,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_null_user_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -763,9 +755,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_user_not_authorized_for_task_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -790,9 +782,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_user_not_authorized_for_prioritize_after_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -817,8 +809,8 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_task_not_found_raises_exception(self):
         # given
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -840,8 +832,8 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_prioritize_after_not_found_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        user = User('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)
@@ -864,9 +856,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
     def test_remove_prioritize_after_removes_prioritize_after(self):
 
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_after.append(t2)
@@ -898,9 +890,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
     def test_if_prioritize_after_already_removed_still_succeeds(self):
 
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -928,9 +920,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_after_with_null_ids_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_after.append(t2)
@@ -972,9 +964,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_after_with_null_user_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.prioritize_after.append(t2)
@@ -1006,9 +998,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_rem_prioritize_after_user_unauthd_for_task_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         t1.prioritize_after.append(t2)
         self.pl.add(t1)
@@ -1042,9 +1034,9 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_remove_user_not_authd_for_prioritize_after_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t1.users.append(user)
         t1.prioritize_after.append(t2)
         self.pl.add(t1)
@@ -1078,8 +1070,8 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_after_task_not_found_raises_exception(self):
         # given
-        t2 = self.Task('t2')
-        user = self.User('name@example.com')
+        t2 = Task('t2')
+        user = User('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -1102,8 +1094,8 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def test_remove_prioritize_after_when_not_found_raises_exception(self):
         # given
-        t1 = self.Task('t1')
-        user = self.User('name@example.com')
+        t1 = Task('t1')
+        user = User('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)

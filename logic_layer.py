@@ -10,6 +10,12 @@ import werkzeug.exceptions
 from werkzeug import secure_filename
 
 from conversions import int_from_str, money_from_str
+from models.task import Task
+from models.tag import Tag
+from models.note import Note
+from models.attachment import Attachment
+from models.option import Option
+from models.user import User
 
 
 class LogicLayer(object):
@@ -97,7 +103,7 @@ class LogicLayer(object):
                         is_done=None, is_deleted=None, deadline=None,
                         expected_duration_minutes=None, expected_cost=None,
                         order_num=None, parent_id=None):
-        task = self.pl.Task(
+        task = Task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,
             expected_duration_minutes=expected_duration_minutes,
@@ -227,7 +233,8 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        note = self.pl.Note(content)
+        timestamp = datetime.utcnow()
+        note = Note(content, timestamp)
         note.task = task
         return note
 
@@ -257,13 +264,16 @@ class LogicLayer(object):
             order_num = 0
 
         if parent_id is None:
-            pass
+            parent = None
         elif parent_id == '':
-            parent_id = None
-        elif self.pl.get_task(parent_id):
-            pass
+            parent = None
         else:
-            parent_id = None
+            parent = self.pl.get_task(parent_id)
+            if parent:
+                pass
+            else:
+                parent_id = None
+                parent = None
 
         task.summary = summary
         task.description = description
@@ -279,7 +289,7 @@ class LogicLayer(object):
 
         task.expected_cost = expected_cost
 
-        task.parent_id = parent_id
+        task.parent = parent
 
         return task
 
@@ -312,7 +322,7 @@ class LogicLayer(object):
         path = secure_filename(f.filename)
         f.save(os.path.join(self.upload_folder, path))
 
-        att = self.pl.Attachment(path, description)
+        att = Attachment(path, description)
         att.task = task
 
         return att
@@ -499,7 +509,7 @@ class LogicLayer(object):
     def get_or_create_tag(self, value):
         tag = self.pl.get_tag_by_value(value)
         if tag is None:
-            tag = self.pl.Tag(value)
+            tag = Tag(value)
             self.pl.add(tag)
         return tag
 
@@ -617,7 +627,7 @@ class LogicLayer(object):
             return werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(
                     email))
-        user = self.pl.User(email=email, is_admin=is_admin)
+        user = User(email=email, is_admin=is_admin)
         self.pl.add(user)
         return user
 
@@ -642,7 +652,7 @@ class LogicLayer(object):
         if option is not None:
             option.value = value
         else:
-            option = self.pl.Option(key, value)
+            option = Option(key, value)
         self.pl.add(option)
         return option
 
@@ -695,7 +705,7 @@ class LogicLayer(object):
                     task_id = tag['id']
                     value = tag['value']
                     description = tag.get('description', '')
-                    t = self.pl.Tag(value=value, description=description)
+                    t = Tag(value=value, description=description)
                     t.id = task_id
                     db_objects.append(t)
 
@@ -709,6 +719,9 @@ class LogicLayer(object):
                         raise werkzeug.exceptions.Conflict(
                             'Some specified task id\'s already exist in the '
                             'database')
+
+                tasks_by_id = {}
+                parent_id_by_task = {}
                 for task in src['tasks']:
                     id = task['id']
                     summary = task['summary']
@@ -722,19 +735,19 @@ class LogicLayer(object):
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])
                     user_ids = task.get('user_ids', [])
-                    t = self.pl.Task(summary=summary, description=description,
-                                     is_done=is_done, is_deleted=is_deleted,
-                                     deadline=deadline,
-                                     expected_duration_minutes=exp_dur_min,
-                                     expected_cost=expected_cost)
+                    t = Task(summary=summary, description=description,
+                             is_done=is_done, is_deleted=is_deleted,
+                             deadline=deadline,
+                             expected_duration_minutes=exp_dur_min,
+                             expected_cost=expected_cost)
                     t.id = id
-                    t.parent_id = parent_id
+                    parent_id_by_task[t] = parent_id
                     t.order_num = order_num
                     for tag_id in tag_ids:
                         tag = self.pl.get_tag(tag_id)
                         if tag is None:
                             tag = next((obj for obj in db_objects
-                                        if isinstance(obj, self.pl.Tag) and
+                                        if isinstance(obj, Tag) and
                                         obj.id == tag_id),
                                        None)
                         if tag is None:
@@ -744,13 +757,17 @@ class LogicLayer(object):
                         user = self.pl.get_user(user_id)
                         if user is None:
                             user = next((obj for obj in db_objects
-                                        if isinstance(obj, self.pl.User) and
+                                        if isinstance(obj, User) and
                                          obj.id == user_id),
                                         None)
                         if user is None:
                             raise Exception('User not found')
                         t.users.append(user)
                     db_objects.append(t)
+                    tasks_by_id[t.id] = t
+                for task, parent_id in parent_id_by_task.iteritems():
+                    if parent_id is not None:
+                        task.parent = tasks_by_id[parent_id]
 
             if 'notes' in src:
                 ids = set()
@@ -766,7 +783,7 @@ class LogicLayer(object):
                     content = note['content']
                     timestamp = note['timestamp']
                     task_id = note['task_id']
-                    n = self.pl.Note(content=content, timestamp=timestamp)
+                    n = Note(content=content, timestamp=timestamp)
                     n.id = id
                     n.task_id = task_id
                     db_objects.append(n)
@@ -788,9 +805,8 @@ class LogicLayer(object):
                     filename = attachment['filename']
                     description = attachment['description']
                     task_id = attachment['task_id']
-                    a = self.pl.Attachment(path=path, description=description,
-                                           timestamp=timestamp,
-                                           filename=filename)
+                    a = Attachment(path=path, description=description,
+                                   timestamp=timestamp, filename=filename)
                     a.id = id
                     a.task_id = task_id
                     db_objects.append(a)
@@ -809,9 +825,8 @@ class LogicLayer(object):
                     email = user['email']
                     hashed_password = user['hashed_password']
                     is_admin = user['is_admin']
-                    u = self.pl.User(email=email,
-                                     hashed_password=hashed_password,
-                                     is_admin=is_admin)
+                    u = User(email=email, hashed_password=hashed_password,
+                             is_admin=is_admin)
                     db_objects.append(u)
 
             if 'options' in src:
@@ -826,7 +841,7 @@ class LogicLayer(object):
                 for option in src['options']:
                     key = option['key']
                     value = option['value']
-                    t = self.pl.Option(key, value)
+                    t = Option(key, value)
                     db_objects.append(t)
         except werkzeug.exceptions.HTTPException:
             raise
@@ -875,7 +890,7 @@ class LogicLayer(object):
             task.order_num = order_num
             task.expected_duration_minutes = duration
             task.expected_cost = cost
-            task.parent_id = parent_id
+            task.parent = self.pl.get_task(parent_id)
 
             self.pl.add(task)
 
@@ -932,10 +947,10 @@ class LogicLayer(object):
                 'A tag already exists with the name "{}"'.format(
                     task.summary))
 
-        tag = self.pl.Tag(task.summary, task.description)
+        tag = Tag(task.summary, task.description)
         self.pl.add(tag)
 
-        for child in task.children:
+        for child in list(task.children):
             child.tags.append(tag)
             child.parent = task.parent
             for tag2 in task.tags:
@@ -943,7 +958,6 @@ class LogicLayer(object):
             self.pl.add(child)
 
         task.parent = None
-        self.pl.add(task)
 
         self.pl.delete(task)
 
@@ -1062,7 +1076,7 @@ class LogicLayer(object):
                 if not tag:
                     raise werkzeug.exceptions.NotFound(
                         'No tag found by the name "{}"'.format(value))
-            elif isinstance(tag, self.pl.Tag):
+            elif isinstance(tag, Tag):
                 pass
             else:
                 raise TypeError(

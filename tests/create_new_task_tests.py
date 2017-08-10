@@ -5,6 +5,8 @@ import unittest
 import werkzeug.exceptions
 
 from tudor import generate_app
+from models.task import Task
+from models.user import User
 
 
 class CreateNewTaskTest(unittest.TestCase):
@@ -15,10 +17,9 @@ class CreateNewTaskTest(unittest.TestCase):
         self.pl.create_all()
         self.app = app
         self.ll = app.ll
-        self.Task = app.pl.Task
-        self.admin = app.pl.User('name@example.org', None, True)
+        self.admin = User('name@example.org', None, True)
         self.pl.add(self.admin)
-        self.user = app.pl.User('name2@example.org', None, False)
+        self.user = User('name2@example.org', None, False)
         self.pl.add(self.user)
 
     def test_admin_adds_first_task(self):
@@ -27,13 +28,13 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, self.Task)
+        self.assertIsInstance(task, Task)
         self.assertEqual('t1', task.summary)
         self.assertIsNone(task.parent)
 
     def test_admin_adds_second_task(self):
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.order_num = 1
 
         self.pl.add(t1)
@@ -43,13 +44,13 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, self.Task)
+        self.assertIsInstance(task, Task)
         self.assertEqual('t2', task.summary)
         self.assertIsNone(task.parent)
 
     def test_admin_adds_child_task_to_parent(self):
         # given
-        p = self.Task('p')
+        p = Task('p')
         p.order_num = 1
 
         self.pl.add(p)
@@ -61,13 +62,13 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, self.Task)
+        self.assertIsInstance(task, Task)
         self.assertEqual('c', task.summary)
         self.assertIs(p, task.parent)
 
     def test_user_adds_task_to_authorized_parent_succeeds(self):
         # given
-        p = self.Task('p')
+        p = Task('p')
         p.order_num = 1
         p.users.append(self.user)
 
@@ -80,13 +81,13 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, self.Task)
+        self.assertIsInstance(task, Task)
         self.assertEqual('c', task.summary)
         self.assertIs(p, task.parent)
 
     def test_user_adds_task_to_non_authorized_parent_raises_403(self):
         # given
-        p = self.Task('p')
+        p = Task('p')
         p.order_num = 1
 
         self.pl.add(p)

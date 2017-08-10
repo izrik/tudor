@@ -5,6 +5,8 @@ import unittest
 import werkzeug.exceptions
 
 from tudor import generate_app
+from models.task import Task
+from models.user import User
 
 
 class TaskSetDoneTest(unittest.TestCase):
@@ -15,15 +17,15 @@ class TaskSetDoneTest(unittest.TestCase):
         self.pl.create_all()
         self.app = app
         self.ll = app.ll
-        self.Task = app.pl.Task
-        self.admin = app.pl.User('name@example.org', None, True)
+
+        self.admin = User('name@example.org', None, True)
         self.pl.add(self.admin)
-        self.user = app.pl.User('name2@example.org', None, False)
+        self.user = User('name2@example.org', None, False)
         self.pl.add(self.user)
 
     def test_task_set_done_sets_is_done(self):
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
 
         self.pl.add(t1)
         self.pl.commit()
@@ -40,7 +42,7 @@ class TaskSetDoneTest(unittest.TestCase):
 
     def test_unauthorized_user_raises(self):
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
 
         self.pl.add(t1)
         self.pl.commit()
@@ -59,7 +61,7 @@ class TaskSetDoneTest(unittest.TestCase):
 
     def test_idempotent(self):
         # given
-        t1 = self.Task('t1')
+        t1 = Task('t1')
         t1.is_done = True
 
         self.pl.add(t1)
