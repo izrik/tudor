@@ -8,7 +8,7 @@ from tudor import generate_app
 
 import tests
 from tests.conversions_tests import *
-from tests.convert_task_to_tag_tests import *
+from tests.logic_layer.convert_task_to_tag_tests import *
 from tests.logic_layer.db_loader_tests import *
 from tests.user_tests import *
 from tests.logic_layer.is_user_authorized_or_admin_tests import *
