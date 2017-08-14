@@ -934,7 +934,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         return task
 
-    def _convert_task_to_tag(self, task_id, current_user):
+    def convert_task_to_tag(self, task_id, current_user):
         task = self.get_task(task_id, current_user)
         if task is None:
             raise werkzeug.exceptions.NotFound(

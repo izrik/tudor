@@ -586,7 +586,7 @@ class ViewLayer(object):
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
 
-            tag = self.ll._convert_task_to_tag(task_id, current_user)
+            tag = self.ll.convert_task_to_tag(task_id, current_user)
 
             return redirect(
                 request.args.get('next') or url_for('view_tag', id=tag.id))
