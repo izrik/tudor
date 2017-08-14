@@ -30,9 +30,11 @@ from tests.task_duration_text_tests import *
 from tests.task_cost_text_tests import *
 from tests.ll_search_tests import *
 from tests.task_dependencies_tests import *
+from tests.ll_task_dependencies_tests import *
 from tests.ll_task_tags_tests import *
 from tests.ll_get_lowest_highest_order_num import *
 from tests.task_prioritize_tests import *
+from tests.ll_task_prioritize_tests import *
 from tests.vl_route_tests import *
 from tests.persistence_layer_tests import *
 from tests.ll_do_import_data_tests import *
