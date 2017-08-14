@@ -157,7 +157,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
     app.ll = ll
-    app._convert_task_to_tag = ll._convert_task_to_tag
 
     if vl is None:
         vl = ViewLayer(ll, app, upload_folder, pl)
