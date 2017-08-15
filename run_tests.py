@@ -10,7 +10,7 @@ import tests
 from tests.conversions_tests import *
 from tests.logic_layer.convert_task_to_tag_tests import *
 from tests.logic_layer.db_loader_tests import *
-from tests.user_tests import *
+from tests.models_t.user_tests import *
 from tests.logic_layer.is_user_authorized_or_admin_tests import *
 from tests.logic_layer.sort_by_hierarchy_tests import *
 from tests.logic_layer.get_index_data_tests import *
