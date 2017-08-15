@@ -36,7 +36,7 @@ from tests.logic_layer.get_lowest_highest_order_num import *
 from tests.models_t.task_prioritize_tests import *
 from tests.logic_layer.task_prioritize_tests import *
 from tests.view_layer.route_tests import *
-from tests.persistence_layer_tests import *
+from tests.persistence_layer.persistence_layer_tests import *
 from tests.logic_layer.do_import_data_tests import *
 from tests.logic_layer.set_task_tests import *
 from tests.models_t.task_interlinking_tests import *
