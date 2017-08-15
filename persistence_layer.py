@@ -712,6 +712,8 @@ class PersistenceLayer(object):
             self._get_db_task(task_id))
 
     def _get_db_task(self, task_id):
+        if task_id is None:
+            return None
         return self.task_query.get(task_id)
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
