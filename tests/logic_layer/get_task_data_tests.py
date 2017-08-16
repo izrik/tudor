@@ -80,3 +80,5 @@ class GetTaskDataTest(unittest.TestCase):
         self.assertIn('pager', result)
         self.assertIsNotNone(result['pager'])
         self.assertIsInstance(result['pager'], Pager)
+
+    # TODO: is_done and is_deleted
