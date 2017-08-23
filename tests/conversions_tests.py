@@ -72,7 +72,7 @@ class TypeConversionFunctionTest(unittest.TestCase):
         self.assertEquals('abcdefgh', str_from_datetime('abcdefgh'))
 
     def test_money_from_str(self):
-        self.assertEquals(123.46, money_from_str('123.4567'))
-        self.assertEquals(12345678901234567890.0,
+        self.assertEquals(Decimal('123.46'), money_from_str('123.4567'))
+        self.assertEquals(Decimal('12345678901234567890.0'),
                           money_from_str('12345678901234567890'))
         self.assertEquals(None, money_from_str(None))

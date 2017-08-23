@@ -5550,23 +5550,23 @@ class DbTaskFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, self.pl.DbTask)
         self.assertIsInstance(result.expected_cost, Decimal)
-        self.assertEqual(Decimal(123.45), result.expected_cost)
+        self.assertEqual(Decimal('123.45'), result.expected_cost)
 
     def test_float_expected_cost_gets_set_as_float(self):
         # when
         result = self.pl.DbTask.from_dict({'expected_cost': 123.45})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertIsInstance(result.expected_cost, float)
-        self.assertEqual(123.45, result.expected_cost)
+        self.assertIsInstance(result.expected_cost, Decimal)
+        self.assertEqual(Decimal('123.45'), result.expected_cost)
 
-    def test_string_expected_cost_gets_set_as_string(self):
+    def test_string_expected_cost_gets_set_as_decimal(self):
         # when
         result = self.pl.DbTask.from_dict({'expected_cost': '123.45'})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertIsInstance(result.expected_cost, basestring)
-        self.assertEqual('123.45', result.expected_cost)
+        self.assertIsInstance(result.expected_cost, Decimal)
+        self.assertEqual(Decimal('123.45'), result.expected_cost)
 
     def test_parent_none_is_ignored(self):
         # when
