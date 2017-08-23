@@ -98,13 +98,6 @@ print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
 print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
 
 
-def create_sqlalchemy_ds_factory(db_uri=DEFAULT_TUDOR_DB_URI):
-    def ds_factory(_app):
-        ds = SqlAlchemyDataSource(db_uri, _app)
-        return ds
-    return ds_factory
-
-
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
