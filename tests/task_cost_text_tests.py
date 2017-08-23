@@ -107,3 +107,23 @@ class TaskCostTextTest(unittest.TestCase):
 
         # then
         self.assertEqual('1.99', result)
+
+    def test_export_str_extra_digits(self):
+        # given
+        t1 = Task('t1', expected_cost='1.1234')
+
+        # when
+        result = t1.get_expected_cost_for_export()
+
+        # then
+        self.assertEqual('1.12', result)
+
+    def test_export_str_extra_digits_round_up(self):
+        # given
+        t1 = Task('t1', expected_cost='1.9876')
+
+        # when
+        result = t1.get_expected_cost_for_export()
+
+        # then
+        self.assertEqual('1.99', result)
