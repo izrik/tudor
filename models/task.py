@@ -1,7 +1,7 @@
 
 from dateutil.parser import parse as dparse
 
-from conversions import str_from_datetime
+from conversions import str_from_datetime, money_from_str
 from changeable import Changeable
 from collections_util import assign
 import logging_util
@@ -42,7 +42,7 @@ class TaskBase(object):
         self.is_deleted = not not is_deleted
         self.deadline = self._clean_deadline(deadline)
         self.expected_duration_minutes = expected_duration_minutes
-        self.expected_cost = expected_cost
+        self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
 
     def __repr__(self):
@@ -193,9 +193,10 @@ class TaskBase(object):
             assign(self.attachments, d['attachments'])
 
     def get_expected_cost_for_export(self):
-        if self.expected_cost is None:
+        value = money_from_str(self.expected_cost)
+        if value is None:
             return None
-        return '{:.2f}'.format(self.expected_cost)
+        return '{:.2f}'.format(value)
 
 
 class Task(Changeable, TaskBase):

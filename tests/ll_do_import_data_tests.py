@@ -3,6 +3,7 @@
 import unittest
 from datetime import datetime
 
+from decimal import Decimal
 from flask import json
 from werkzeug.exceptions import Conflict
 
@@ -147,7 +148,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(12345, task.order_num)
         self.assertEqual(datetime(2017, 1, 1), task.deadline)
         self.assertEqual(6789, task.expected_duration_minutes)
-        self.assertEqual(123.45, task.expected_cost)
+        self.assertEqual(Decimal('123.45'), task.expected_cost)
         self.assertIsNone(task.parent_id)
         self.assertIsNone(task.parent)
         self.assertEqual([], list(task.children))

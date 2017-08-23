@@ -28,8 +28,7 @@ def str_from_datetime(dt):
 
 def money_from_str(s):
     try:
-        d = Decimal(s)
-        d = round(d, 2)
+        d = Decimal(s).quantize(Decimal('.01'))
         return d
     except:
         return None
