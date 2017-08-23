@@ -193,9 +193,10 @@ class TaskBase(object):
             assign(self.attachments, d['attachments'])
 
     def get_expected_cost_for_export(self):
-        if self.expected_cost is None:
+        value = money_from_str(self.expected_cost)
+        if value is None:
             return None
-        return '{:.2f}'.format(self.expected_cost)
+        return '{:.2f}'.format(value)
 
 
 class Task(Changeable, TaskBase):
