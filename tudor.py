@@ -39,6 +39,7 @@ except git.InvalidGitRepositoryError:
 
 
 DEFAULT_TUDOR_DEBUG = False
+DEFAULT_TUDOR_HOST = '127.0.0.1'
 DEFAULT_TUDOR_PORT = 8304
 DEFAULT_TUDOR_DB_URI = 'sqlite:////tmp/test.db'
 DEFAULT_TUDOR_UPLOAD_FOLDER = '/tmp/tudor/uploads'
@@ -47,6 +48,7 @@ DEFAULT_TUDOR_SECRET_KEY = None
 
 
 TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
+TUDOR_HOST = environ.get('TUDOR_HOST', DEFAULT_TUDOR_HOST)
 TUDOR_PORT = environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT)
 try:
     TUDOR_PORT = int(TUDOR_PORT)
@@ -64,6 +66,7 @@ args = None
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true', default=TUDOR_DEBUG)
+    parser.add_argument('--host', action='store', default=TUDOR_HOST)
     parser.add_argument('--port', action='store', default=TUDOR_PORT, type=int)
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
@@ -79,6 +82,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     TUDOR_DEBUG = args.debug
+    TUDOR_HOST = args.host
     TUDOR_PORT = args.port
     TUDOR_DB_URI = args.db_uri
     TUDOR_UPLOAD_FOLDER = args.upload_folder
@@ -87,6 +91,7 @@ if __name__ == '__main__':
 
 print('__revision__: {}'.format(__revision__))
 print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
+print('TUDOR_HOST: {}'.format(TUDOR_HOST))
 print('TUDOR_PORT: {}'.format(TUDOR_PORT))
 print('TUDOR_DB_URI: {}'.format(TUDOR_DB_URI))
 print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
@@ -582,4 +587,4 @@ if __name__ == '__main__':
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
     else:
-        app.run(debug=TUDOR_DEBUG, port=TUDOR_PORT)
+        app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
