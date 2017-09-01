@@ -49,6 +49,7 @@ from tests.logic_layer.task_unset_deleted_tests import *
 from tests.logic_layer.task_unset_done_tests import *
 from tests.logic_layer.get_task_data_tests import *
 from tests.logic_layer.get_task_hierarchy_data_tests import *
+from tests.logic_layer.create_new_note_tests import *
 
 from tests.view_layer.route_tests import *
 
