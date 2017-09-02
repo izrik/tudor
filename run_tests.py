@@ -52,6 +52,7 @@ from tests.logic_layer.get_task_hierarchy_data_tests import *
 from tests.logic_layer.create_new_note_tests import *
 from tests.logic_layer.get_edit_task_data_tests import *
 from tests.logic_layer.allowed_file_tests import *
+from tests.logic_layer.create_new_attachment_tests import *
 
 from tests.view_layer.route_tests import *
 
