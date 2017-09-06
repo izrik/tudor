@@ -387,7 +387,7 @@ class LogicLayer(object):
         }
 
         top_task = list(self.pl.get_tasks(**kwargs))
-        if top_task:
+        if top_task and top_task[0] is not task:
             task.order_num = top_task[0].order_num + 1
 
             self.pl.add(task)
