@@ -85,7 +85,7 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         self.assertIs(t3, result)
         self.assertEqual(15, t1.order_num)
         self.assertEqual(10, t2.order_num)
-        self.assertEqual(16, t3.order_num)
+        self.assertEqual(16, t3.order_num)  #
 
     def test_move_does_not_affect_children(self):
         # given
@@ -152,7 +152,7 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         self.assertEqual(7, p2.order_num)
         self.assertEqual(6, c3.order_num)
         self.assertEqual(5, c4.order_num)
-        self.assertEqual(11, p3.order_num)
+        self.assertEqual(11, p3.order_num)  #
         self.assertEqual(3, c5.order_num)
         self.assertEqual(2, c6.order_num)
 
@@ -201,10 +201,10 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         self.assertIs(c5, result)
         self.assertEqual(7, p1.order_num)
         self.assertEqual(6, c1.order_num)
-        self.assertEqual(5, c2.order_num)  #
-        self.assertEqual(4, c3.order_num)  #
+        self.assertEqual(5, c2.order_num)
+        self.assertEqual(4, c3.order_num)
         self.assertEqual(3, c4.order_num)
-        self.assertEqual(7, c5.order_num)
+        self.assertEqual(7, c5.order_num)  #
 
     def test_move_does_not_affect_other_top_level_tasks(self):
         # given
