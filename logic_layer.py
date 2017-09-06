@@ -418,10 +418,13 @@ class LogicLayer(object):
             if task.order_num == next_task.order_num:
                 self.reorder_tasks(
                     self.pl.get_tasks(parent_id=task.parent_id,
-                                      order_by=self.pl.ORDER_NUM))
-            new_order_num = next_task.order_num
-            task.order_num, next_task.order_num =\
-                new_order_num, task.order_num
+                                      order_by=[[
+                                          self.pl.ORDER_NUM,
+                                          self.pl.DESCENDING]]))
+            if next_task.order_num < task.order_num:
+                new_order_num = next_task.order_num
+                task.order_num, next_task.order_num =\
+                    new_order_num, task.order_num
 
             self.pl.add(task)
             self.pl.add(next_task)
