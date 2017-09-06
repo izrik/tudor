@@ -57,6 +57,7 @@ from tests.logic_layer.reorder_tasks_tests import *
 from tests.logic_layer.do_move_task_up_tests import *
 from tests.logic_layer.do_move_task_down_tests import *
 from tests.logic_layer.do_move_task_to_top_tests import *
+from tests.logic_layer.do_move_task_to_bottom_tests import *
 
 from tests.view_layer.route_tests import *
 
