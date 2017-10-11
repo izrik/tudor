@@ -243,7 +243,7 @@ class LogicLayer(object):
     def set_task(self, task_id, current_user, summary, description,
                  deadline=None, is_done=False, is_deleted=False,
                  order_num=None, duration=None, expected_cost=None,
-                 parent_id=None):
+                 parent_id=None, is_public=False):
 
         task = self.pl.get_task(task_id)
         if task is None:
@@ -292,6 +292,8 @@ class LogicLayer(object):
         task.expected_cost = expected_cost
 
         task.parent = parent
+
+        task.is_public = is_public
 
         return task
 

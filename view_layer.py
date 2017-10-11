@@ -270,13 +270,16 @@ class ViewLayer(object):
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
 
+        is_public = ('is_public' in request.form and
+                     not not request.form['is_public'])
+
         duration = int_from_str(request.form['expected_duration_minutes'])
 
         expected_cost = money_from_str(request.form['expected_cost'])
 
         task = self.ll.set_task(task_id, current_user, summary, description,
                                 deadline, is_done, is_deleted, order_num,
-                                duration, expected_cost, parent_id)
+                                duration, expected_cost, parent_id, is_public)
 
         self.pl.add(task)
         self.pl.commit()
