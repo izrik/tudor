@@ -50,6 +50,18 @@
             </td>
         </tr>
         <tr>
+            <td>Public?</td>
+            <td>{{ task.is_public }}
+                <!--<small>-->
+                    <!--{ % if task.is_public %}-->
+                        <!--<a href="{ { url_for('task_make_private', id=task.id, next=url_for('view_task', id=task.id)) }}">(make private)</a>-->
+                    <!--{ % else %}-->
+                        <!--<a href="{ { url_for('task_make_public', id=task.id, next=url_for('view_task', id=task.id)) }}">(make public)</a>-->
+                    <!--{ % endif %}-->
+                <!--</small>-->
+            </td>
+        </tr>
+        <tr>
             <td>Tags</td>
             <td>
                 {% for tag in task.tags %}
