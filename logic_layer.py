@@ -28,6 +28,8 @@ class LogicLayer(object):
         self.pl = pl
 
     def is_user_authorized_or_admin(self, task, user):
+        if user is None:
+            return False
         if user.is_admin:
             return True
         if task.is_user_authorized(user):
@@ -315,7 +317,8 @@ class LogicLayer(object):
 
         task = self.pl.get_task(task_id)
         if task is None:
-            return (('No task found for the task_id "%s"' % task_id), 404)
+            raise werkzeug.exceptions.NotFound(
+                'No task found for the task_id "{}"'.format(task_id))
         if not self.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
@@ -358,10 +361,13 @@ class LogicLayer(object):
             if task.order_num == next_task.order_num:
                 self.reorder_tasks(
                     self.pl.get_tasks(parent_id=task.parent_id,
-                                      order_by=self.pl.ORDER_NUM))
-            new_order_num = next_task.order_num
-            task.order_num, next_task.order_num =\
-                new_order_num, task.order_num
+                                      order_by=[[
+                                          self.pl.ORDER_NUM,
+                                          self.pl.DESCENDING]]))
+            if next_task.order_num > task.order_num:
+                new_order_num = next_task.order_num
+                task.order_num, next_task.order_num =\
+                    new_order_num, task.order_num
 
             self.pl.add(task)
             self.pl.add(next_task)
@@ -381,7 +387,7 @@ class LogicLayer(object):
         }
 
         top_task = list(self.pl.get_tasks(**kwargs))
-        if top_task:
+        if top_task and top_task[0] is not task:
             task.order_num = top_task[0].order_num + 1
 
             self.pl.add(task)
@@ -412,10 +418,13 @@ class LogicLayer(object):
             if task.order_num == next_task.order_num:
                 self.reorder_tasks(
                     self.pl.get_tasks(parent_id=task.parent_id,
-                                      order_by=self.pl.ORDER_NUM))
-            new_order_num = next_task.order_num
-            task.order_num, next_task.order_num =\
-                new_order_num, task.order_num
+                                      order_by=[[
+                                          self.pl.ORDER_NUM,
+                                          self.pl.DESCENDING]]))
+            if next_task.order_num < task.order_num:
+                new_order_num = next_task.order_num
+                task.order_num, next_task.order_num =\
+                    new_order_num, task.order_num
 
             self.pl.add(task)
             self.pl.add(next_task)
@@ -436,7 +445,7 @@ class LogicLayer(object):
         }
 
         bottom_task = list(self.pl.get_tasks(**kwargs))
-        if bottom_task:
+        if bottom_task and bottom_task[0] is not task:
             task.order_num = bottom_task[0].order_num - 2
 
             self.pl.add(task)
@@ -934,7 +943,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         return task
 
-    def _convert_task_to_tag(self, task_id, current_user):
+    def convert_task_to_tag(self, task_id, current_user):
         task = self.get_task(task_id, current_user)
         if task is None:
             raise werkzeug.exceptions.NotFound(
