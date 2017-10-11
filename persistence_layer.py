@@ -1083,6 +1083,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
         expected_cost = db.Column(db.Numeric)
+        is_public = db.Column(db.Boolean)
         tags = db.relationship('DbTag', secondary=tags_tasks_table,
                                back_populates="tasks")
 
@@ -1116,7 +1117,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         def __init__(self, summary, description='', is_done=False,
                      is_deleted=False, deadline=None,
                      expected_duration_minutes=None, expected_cost=None,
-                     lazy=None):
+                     is_public=False, lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
@@ -1124,7 +1125,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 self, summary=summary, description=description,
                 is_done=is_done, is_deleted=is_deleted, deadline=deadline,
                 expected_duration_minutes=expected_duration_minutes,
-                expected_cost=expected_cost)
+                expected_cost=expected_cost, is_public=is_public)
 
         @classmethod
         def from_dict(cls, d, lazy=None):
@@ -1138,7 +1139,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                          self.FIELD_IS_DELETED, self.FIELD_DEADLINE,
                          self.FIELD_EXPECTED_DURATION_MINUTES,
                          self.FIELD_EXPECTED_COST, self.FIELD_ORDER_NUM,
-                         self.FIELD_PARENT):
+                         self.FIELD_PARENT, self.FIELD_IS_PUBLIC):
                 if operation != Changeable.OP_SET:
                     raise ValueError(
                         'Invalid operation "{}" for field "{}"'.format(
@@ -1175,6 +1176,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 self.order_num = value
             elif field == self.FIELD_PARENT:
                 self.parent = value
+            elif field == self.FIELD_IS_PUBLIC:
+                self.is_public = value
             elif field == self.FIELD_CHILDREN:
                 collection = self.children
             elif field == self.FIELD_DEPENDEES:
