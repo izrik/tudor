@@ -214,7 +214,8 @@ class ViewLayer(object):
                                show_deleted=show_deleted, show_done=show_done,
                                pager=data['pager'],
                                pager_link_page='view_task',
-                               pager_link_args={'id': task_id})
+                               pager_link_args={'id': task_id},
+                               current_user=current_user)
 
     def task_hierarchy(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
