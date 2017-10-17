@@ -6612,6 +6612,35 @@ class DbTaskMakeChangeTest(unittest.TestCase):
         # then
         self.assertEqual([], list(self.task.children))
 
+    def test_setting_is_public_sets_is_public(self):
+        # precondition
+        self.assertFalse(self.task.is_public)
+        # when
+        self.task.make_change(Task.FIELD_IS_PUBLIC, Changeable.OP_SET, True)
+        # then
+        self.assertTrue(self.task.is_public)
+
+    def test_adding_is_public_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.task.make_change,
+            Task.FIELD_IS_PUBLIC, Changeable.OP_ADD, True)
+
+    def test_removing_is_public_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.task.make_change,
+            Task.FIELD_IS_PUBLIC, Changeable.OP_REMOVE, True)
+
+    def test_changing_is_public_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.task.make_change,
+            Task.FIELD_IS_PUBLIC, Changeable.OP_CHANGING, True)
+
 
 class DbTagConstructorTest(unittest.TestCase):
     def setUp(self):
