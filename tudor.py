@@ -79,6 +79,12 @@ if __name__ == '__main__':
                         default=TUDOR_SECRET_KEY)
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
+    parser.add_argument('--make-public', metavar='TASK_ID', action='store',
+                        help='Make a given task public, viewable by anyone.')
+    parser.add_argument('--make-private', metavar='TASK_ID', action='store',
+                        help='Make a given task private, viewable only by '
+                             'authorized users of that task who are logged '
+                             'in.')
 
     args = parser.parse_args()
 
@@ -582,5 +588,23 @@ if __name__ == '__main__':
         print(key)
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
+    elif args.make_public is not None:
+        task_id = args.make_public
+        task = app.pl.get_task(task_id)
+        if not task:
+            print('No task found by the id "{}"'.format(task_id))
+        else:
+            task.is_public = True
+            app.pl.commit()
+            print('Made task {}, "{}", public'.format(task_id, task.summary))
+    elif args.make_private is not None:
+        task_id = args.make_private
+        task = app.pl.get_task(task_id)
+        if not task:
+            print('No task found by the id "{}"'.format(task_id))
+        else:
+            task.is_public = False
+            app.pl.commit()
+            print('Made task {}, "{}", private'.format(task_id, task.summary))
     else:
         app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
