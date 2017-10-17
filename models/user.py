@@ -170,13 +170,7 @@ class GuestUser(UserBase):
     authenticated = False
 
     def __init__(self):
-        super(GuestUser, self).__init__('guest', '', False)
-
-    def is_active(self):
-        return True
-
-    def get_id(self):
-        return 'Guest'
+        super(GuestUser, self).__init__('Guest', '', False)
 
     def is_authenticated(self):
         return False
