@@ -104,12 +104,12 @@ class LogicLayer(object):
     def create_new_task(self, summary, current_user, description=None,
                         is_done=None, is_deleted=None, deadline=None,
                         expected_duration_minutes=None, expected_cost=None,
-                        order_num=None, parent_id=None):
+                        order_num=None, parent_id=None, is_public=None):
         task = Task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,
             expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost)
+            expected_cost=expected_cost, is_public=is_public)
 
         if order_num is None:
             order_num = self.get_lowest_order_num()

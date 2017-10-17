@@ -97,3 +97,10 @@ class CreateNewTaskTest(unittest.TestCase):
         self.assertRaises(werkzeug.exceptions.Forbidden,
                           self.ll.create_new_task,
                           summary='c', parent_id=p.id, current_user=self.user)
+
+    def test_is_public_sets_is_public(self):
+        # when
+        task = self.ll.create_new_task('summary', current_user=self.user,
+                                       is_public=True)
+        # then
+        self.assertTrue(task.is_public)
