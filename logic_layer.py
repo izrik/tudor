@@ -188,8 +188,14 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if self.is_user_authorized_or_admin(task, current_user):
+            pass
+        elif task.is_public:
+            pass
+        elif current_user and current_user.is_authenticated():
             raise werkzeug.exceptions.Forbidden()
+        else:
+            raise werkzeug.exceptions.Unauthorized()
 
         _pager = []
         descendants = self.load_no_hierarchy(current_user=current_user,
