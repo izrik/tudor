@@ -30,6 +30,10 @@ from tests.models_t.user_from_dict_tests import *
 from tests.models_t.user_tests import *
 from tests.models_t.task_user_ops.is_user_authorized_or_admin_tests import \
     IsUserAuthorizedOrAdminTest
+from tests.models_t.task_user_ops.user_can_edit_task_tests import \
+    UserCanEditTaskTest
+from tests.models_t.task_user_ops.user_can_view_task_tests import \
+    UserCanViewTaskTest
 
 from tests.persistence_layer.persistence_layer_tests import *
 
