@@ -2,6 +2,7 @@
 
 import unittest
 
+from models.task_user_ops import TaskUserOps
 from tudor import generate_app
 from models.task import Task
 from models.user import User
@@ -28,7 +29,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         self.pl.commit()
 
         # when
-        result = self.ll.is_user_authorized_or_admin(task, user)
+        result = TaskUserOps.is_user_authorized_or_admin(task, user)
 
         # then
         self.assertFalse(result)
@@ -44,7 +45,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         self.pl.commit()
 
         # when
-        result = self.ll.is_user_authorized_or_admin(task, user)
+        result = TaskUserOps.is_user_authorized_or_admin(task, user)
 
         # then
         self.assertTrue(result)
@@ -59,7 +60,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         self.pl.commit()
 
         # when
-        result = self.ll.is_user_authorized_or_admin(task, user)
+        result = TaskUserOps.is_user_authorized_or_admin(task, user)
 
         # then
         self.assertTrue(result)
@@ -75,7 +76,7 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
         self.pl.commit()
 
         # when
-        result = self.ll.is_user_authorized_or_admin(task, user)
+        result = TaskUserOps.is_user_authorized_or_admin(task, user)
 
         # then
         self.assertTrue(result)

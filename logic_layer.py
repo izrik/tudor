@@ -15,6 +15,7 @@ from models.tag import Tag
 from models.note import Note
 from models.attachment import Attachment
 from models.option import Option
+from models.task_user_ops import TaskUserOps
 from models.user import User
 
 
@@ -26,15 +27,6 @@ class LogicLayer(object):
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
         self.pl = pl
-
-    def is_user_authorized_or_admin(self, task, user):
-        if user is None:
-            return False
-        if user.is_admin:
-            return True
-        if task.is_user_authorized(user):
-            return True
-        return False
 
     def sort_by_hierarchy(self, tasks, root=None):
         tasks_by_parent = {}
@@ -122,7 +114,7 @@ class LogicLayer(object):
 
         if parent_id is not None:
             parent = self.pl.get_task(parent_id)
-            if parent is not None and not self.is_user_authorized_or_admin(
+            if parent is not None and not TaskUserOps.is_user_authorized_or_admin(
                     parent, current_user):
                 raise werkzeug.exceptions.Forbidden()
             task.parent = parent
@@ -151,7 +143,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = True
         return task
@@ -160,7 +152,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = False
         return task
@@ -169,7 +161,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = True
         return task
@@ -178,7 +170,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if not task:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = False
         return task
@@ -188,7 +180,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if self.is_user_authorized_or_admin(task, current_user):
+        if TaskUserOps.is_user_authorized_or_admin(task, current_user):
             pass
         elif task.is_public:
             pass
@@ -221,7 +213,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         descendants = self.load(current_user, root_task_id=task.id,
@@ -239,7 +231,7 @@ class LogicLayer(object):
         task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         timestamp = datetime.utcnow()
         note = Note(content, timestamp)
@@ -254,7 +246,7 @@ class LogicLayer(object):
         task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if deadline is None:
@@ -307,7 +299,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         tag_list = ','.join(task.get_tag_values())
         return {
@@ -327,7 +319,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 'No task found for the task_id "{}"'.format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         path = secure_filename(f.filename)
@@ -349,7 +341,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         kwargs = {
@@ -386,7 +378,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         kwargs = {
             'parent_id': task.parent_id,
@@ -406,7 +398,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         kwargs = {
@@ -443,7 +435,7 @@ class LogicLayer(object):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         kwargs = {
@@ -465,14 +457,14 @@ class LogicLayer(object):
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
-        if not self.is_user_authorized_or_admin(task_to_move, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task_to_move, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         target = self.pl.get_task(target_id)
         if target is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(target_id))
-        if not self.is_user_authorized_or_admin(target, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(target, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if target.parent_id != task_to_move.parent_id:
@@ -512,7 +504,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         tag = self.get_or_create_tag(value)
@@ -538,7 +530,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         tag = self.pl.get_tag(tag_id)
@@ -556,7 +548,7 @@ class LogicLayer(object):
             raise ValueError("No task was specified.")
         if user_to_authorize is None:
             raise ValueError("No user was specified.")
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if user_to_authorize not in task.users:
@@ -575,7 +567,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         user_to_authorize = self.pl.get_user_by_email(user_email)
@@ -596,7 +588,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         user_to_authorize = self.pl.get_user(user_id)
@@ -622,7 +614,7 @@ class LogicLayer(object):
         if user_to_deauthorize is None:
             raise werkzeug.exceptions.NotFound(
                 "No user found for the id '{}'".format(user_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if len(task.users) < 2:
@@ -947,7 +939,7 @@ class LogicLayer(object):
         task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         return task
 
@@ -956,7 +948,7 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '%s'".format(id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if self.pl.count_tags(value=task.summary) > 0:
@@ -989,7 +981,7 @@ class LogicLayer(object):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
-            if not self.is_user_authorized_or_admin(root_task, current_user):
+            if not TaskUserOps.is_user_authorized_or_admin(root_task, current_user):
                 raise werkzeug.exceptions.Forbidden()
 
         kwargs = {}
@@ -1160,14 +1152,14 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         dependee = self.pl.get_task(dependee_id)
         if dependee is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(dependee_id))
-        if not self.is_user_authorized_or_admin(dependee, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(dependee, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if dependee not in task.dependees:
@@ -1187,14 +1179,14 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         dependee = self.pl.get_task(dependee_id)
         if dependee is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(dependee_id))
-        if not self.is_user_authorized_or_admin(dependee, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(dependee, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if dependee in task.dependees:
@@ -1243,14 +1235,14 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         prioritize_before = self.pl.get_task(prioritize_before_id)
         if prioritize_before is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
-        if not self.is_user_authorized_or_admin(prioritize_before,
+        if not TaskUserOps.is_user_authorized_or_admin(prioritize_before,
                                                 current_user):
             raise werkzeug.exceptions.Forbidden()
 
@@ -1273,14 +1265,14 @@ class LogicLayer(object):
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(task_id))
-        if not self.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         prioritize_before = self.pl.get_task(prioritize_before_id)
         if prioritize_before is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
-        if not self.is_user_authorized_or_admin(prioritize_before,
+        if not TaskUserOps.is_user_authorized_or_admin(prioritize_before,
                                                 current_user):
             raise werkzeug.exceptions.Forbidden()
 

@@ -28,6 +28,8 @@ from tests.models_t.task_tags_tests import *
 from tests.models_t.task_tests import *
 from tests.models_t.user_from_dict_tests import *
 from tests.models_t.user_tests import *
+from tests.models_t.task_user_ops.is_user_authorized_or_admin_tests import \
+    IsUserAuthorizedOrAdminTest
 
 from tests.persistence_layer.persistence_layer_tests import *
 
@@ -39,7 +41,6 @@ from tests.logic_layer.do_reset_order_nums_tests import *
 from tests.logic_layer.get_deadlines_data_tests import *
 from tests.logic_layer.get_index_data_tests import *
 from tests.logic_layer.get_lowest_highest_order_num import *
-from tests.logic_layer.is_user_authorized_or_admin_tests import *
 from tests.logic_layer.search_tests import *
 from tests.logic_layer.set_task_tests import *
 from tests.logic_layer.sort_by_hierarchy_tests import *
