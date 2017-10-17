@@ -114,6 +114,7 @@ class ViewLayer(object):
             request, 'expected_duration_minutes') or None
         expected_cost = self.get_form_or_arg(request, 'expected_cost') or None
         parent_id = self.get_form_or_arg(request, 'parent_id') or None
+        is_public = self.get_form_or_arg(request, 'is_public') or None
 
         tags = self.get_form_or_arg(request, 'tags')
         if tags:
@@ -139,7 +140,7 @@ class ViewLayer(object):
             is_deleted=is_deleted, deadline=deadline, order_num=order_num,
             expected_duration_minutes=expected_duration_minutes,
             expected_cost=expected_cost, parent_id=parent_id,
-            current_user=current_user)
+            is_public=is_public, current_user=current_user)
 
         for tag_name in tags:
             tag = self.ll.get_or_create_tag(tag_name)
