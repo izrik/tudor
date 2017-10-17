@@ -163,3 +163,31 @@ class User(Changeable, UserBase):
 class InterlinkedTasks(ManyToManySet):
     __change_field__ = User.FIELD_TASKS
     __attr_counterpart__ = 'users'
+
+
+class GuestUser(UserBase):
+    id = -1
+    authenticated = False
+
+    def __init__(self):
+        super(GuestUser, self).__init__('guest', '', False)
+
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return 'Guest'
+
+    def is_authenticated(self):
+        return False
+
+    def is_anonymous(self):
+        return True
+
+    @property
+    def is_admin(self):
+        return False
+
+    @is_admin.setter
+    def is_admin(self, value):
+        pass
