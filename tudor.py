@@ -27,6 +27,7 @@ import werkzeug.exceptions
 from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
+from models.user import GuestUser
 from view_layer import ViewLayer
 from persistence_layer import PersistenceLayer
 import base64
@@ -149,10 +150,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         @staticmethod
         def get_user():
+            if current_user is None:
+                return GuestUser()
+
             try:
-                return pl.get_user(current_user.id)
+                user_id = current_user.id
+                return pl.get_user(user_id)
             except AttributeError:
-                return None
+                return GuestUser()
 
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
