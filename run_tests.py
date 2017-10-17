@@ -2,6 +2,8 @@
 
 import argparse
 
+# TODO: import by name instead of star
+
 from tests.conversions_tests import *
 
 from tests.models_t.attachment_from_dict_tests import *
