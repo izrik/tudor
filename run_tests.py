@@ -5,6 +5,7 @@ import argparse
 # TODO: import by name instead of star
 
 from tests.conversions_tests import *
+from tests.command_line_tests import CommandLineTests
 
 from tests.models_t.attachment_from_dict_tests import *
 from tests.models_t.attachment_tests import *

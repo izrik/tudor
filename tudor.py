@@ -574,6 +574,31 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     return app
 
+
+def default_printer(*args):
+    print(args)
+
+
+def make_task_public(app, task_id, printer=default_printer):
+    task = app.pl.get_task(task_id)
+    if not task:
+        printer('No task found by the id "{}"'.format(task_id))
+    else:
+        task.is_public = True
+        app.pl.commit()
+        printer('Made task {}, "{}", public'.format(task_id, task.summary))
+
+
+def make_task_private(app, task_id, printer=default_printer):
+    task = app.pl.get_task(task_id)
+    if not task:
+        printer('No task found by the id "{}"'.format(task_id))
+    else:
+        task.is_public = False
+        app.pl.commit()
+        printer('Made task {}, "{}", private'.format(task_id, task.summary))
+
+
 if __name__ == '__main__':
     app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
                        secret_key=TUDOR_SECRET_KEY,
@@ -589,22 +614,8 @@ if __name__ == '__main__':
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
     elif args.make_public is not None:
-        task_id = args.make_public
-        task = app.pl.get_task(task_id)
-        if not task:
-            print('No task found by the id "{}"'.format(task_id))
-        else:
-            task.is_public = True
-            app.pl.commit()
-            print('Made task {}, "{}", public'.format(task_id, task.summary))
+        make_task_public(app, args.make_public)
     elif args.make_private is not None:
-        task_id = args.make_private
-        task = app.pl.get_task(task_id)
-        if not task:
-            print('No task found by the id "{}"'.format(task_id))
-        else:
-            task.is_public = False
-            app.pl.commit()
-            print('Made task {}, "{}", private'.format(task_id, task.summary))
+        make_task_private(app, args.make_private)
     else:
         app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
