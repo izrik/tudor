@@ -270,7 +270,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return vl.purge_all(request, Options.get_user())
 
     @app.route('/task/<int:id>')
-    @login_required
     def view_task(id):
         return vl.task(request, Options.get_user(), id)
 
