@@ -5,7 +5,10 @@
 {% block content %}
 <div class="container">
 <div>
+    {% set can_edit = ops.user_can_edit_task(task, current_user) %}
+    {% if can_edit %}
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
+    {% endif %}
     <p></p>
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
@@ -15,6 +18,7 @@
         <tr>
             <td>Done?</td>
             <td>{{ task.is_done }}
+                {% if can_edit %}
                 <small>
                     {% if task.is_done %}
                         <a href="{{ url_for('task_undo', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as not done)</a>
@@ -22,11 +26,13 @@
                         <a href="{{ url_for('task_done', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as done)</a>
                     {% endif %}
                 </small>
+                {% endif %}
             </td>
         </tr>
         <tr>
             <td>Deleted?</td>
             <td>{{ task.is_deleted }}
+                {% if can_edit %}
                 <small>
                     {% if task.is_deleted %}
                         <a href="{{ url_for('undelete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(undelete)</a>
@@ -34,6 +40,7 @@
                         <a href="{{ url_for('delete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(delete)</a>
                     {% endif %}
                 </small>
+                {% endif %}
             </td>
         </tr>
         <tr><td>Order #</td><td>{{ task.order_num if task.order_num != None }}</td></tr>
@@ -66,15 +73,19 @@
             <td>
                 {% for tag in task.tags %}
                     <a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a>
+                    {% if can_edit %}
                     <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=tag.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
+                    {% endif %}
                 {% endfor %}
+                {% if can_edit %}
                 <form action="{{ url_for('add_tag_to_task', id=task.id) }}" method="post">
                     <input type="text" name="value" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                {% endif %}
             </td>
         </tr>
         <tr>
@@ -82,18 +93,22 @@
             <td>
                 {% for user in task.users %}
                     <a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.email }}</a>
+                    {% if can_edit %}
                     {% if task.users.__len__() > 1 %}
                     <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=user.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
                     {% endif %}
+                    {% endif %}
                 {% endfor %}
+                {% if can_edit %}
                 <form action="{{ url_for('authorize_user_for_task', task_id=task.id) }}" method="post">
                     <input type="text" name="email" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
                 <a href="{{ url_for('pick_user_to_authorize', task_id=task.id) }}">Pick a user</a>
+                {% endif %}
             </td>
         </tr>
         <tr>
@@ -101,16 +116,20 @@
             <td>
                 {% for dependee in task.dependees %}
                     <a href="{{ url_for('view_task', id=dependee.id) }}" {{ dependee.get_css_class_attr()|safe }}>{{ dependee.summary }} ({{ dependee.id }})</a>
+                    {% if can_edit %}
                     <a href="{{ url_for('remove_dependee_from_task', task_id=task.id, dependee_id=dependee.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
+                    {% endif %}
                 {% endfor %}
+                {% if can_edit %}
                 <form action="{{ url_for('add_dependee_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="dependee_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
                 <!--<a href="{ { url_for('pick_dependee_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
             </td>
         </tr>
         <tr>
@@ -118,16 +137,20 @@
             <td>
                 {% for dependant in task.dependants %}
                     <a href="{{ url_for('view_task', id=dependant.id) }}" {{ dependant.get_css_class_attr()|safe }}>{{ dependant.summary }} ({{ dependant.id }})</a>
+                    {% if can_edit %}
                     <a href="{{ url_for('remove_dependant_from_task', task_id=task.id, dependant_id=dependant.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
+                    {% endif %}
                 {% endfor %}
+                {% if can_edit %}
                 <form action="{{ url_for('add_dependant_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="dependant_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
                 <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
             </td>
         </tr>
         <tr>
@@ -135,17 +158,20 @@
             <td>
                 {% for ptask in task.prioritize_after %}
                     <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
+                    {% if can_edit %}
                     <a href="{{ url_for('remove_prioritize_after_from_task', task_id=task.id, prioritize_after_id=ptask.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
-
+                    {% endif %}
                 {% endfor %}
+                {% if can_edit %}
                 <form action="{{ url_for('add_prioritize_after_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="prioritize_after_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
                 <!--<a href="{ { url_for('pick_prioritize_after_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
             </td>
         </tr>
         <tr>
@@ -153,23 +179,29 @@
             <td>
                 {% for ptask in task.prioritize_before %}
                     <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
+                    {% if can_edit %}
                     <a href="{{ url_for('remove_prioritize_before_from_task', task_id=task.id, prioritize_before_id=ptask.id) }}">
                         <img src="{{ url_for('static', filename='delete.png') }}" />
                     </a>
+                    {% endif %}
                 {% endfor %}
+                {% if can_edit %}
                 <form action="{{ url_for('add_prioritize_before_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="prioritize_before_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
                 <!--<a href="{ { url_for('pick_prioritize_before_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
             </td>
         </tr>
     </table>
     <p></p>
+    {% if can_edit %}
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
     <p></p>
     <a class="btn btn-danger btn-xs" href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a>
+    {% endif %}
 </div>
 <div>
     <h4>Child Tasks</h4>
@@ -187,7 +219,9 @@
         {% include 'page_links.fragment.html' %}
     {% endif %}
 
+    {% if can_edit %}
     <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
+    {% endif %}
 
 </div>
 <div>
@@ -224,6 +258,7 @@
             <td class="note_content">{{ note.content|gfm if note.content != None }}</td>
         </tr>
         {% endfor %}
+        {% if can_edit %}
         <tr>
             <td></td>
             <td></td>
@@ -235,6 +270,7 @@
                 </form>
             </td>
         </tr>
+        {% endif %}
     </table>
 
 </div>
@@ -257,6 +293,7 @@
             <td>{{ att.description }}</td>
         </tr>
         {% endfor %}
+        {% if can_edit %}
         <tr>
             <td></td>
             <td></td>
@@ -271,6 +308,7 @@
                 </td>
             </form>
         </tr>
+        {% endif %}
     </table>
 </div>
 </div>

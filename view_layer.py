@@ -11,6 +11,7 @@ from werkzeug.exceptions import NotFound, BadRequest
 from conversions import int_from_str, money_from_str, bool_from_str
 
 # TODO: move all calls tp pl.add, pl.delete, pl.commit, etc., to the LL
+from models.task_user_ops import TaskUserOps
 
 
 class ViewLayer(object):
@@ -215,7 +216,8 @@ class ViewLayer(object):
                                pager=data['pager'],
                                pager_link_page='view_task',
                                pager_link_args={'id': task_id},
-                               current_user=current_user)
+                               current_user=current_user,
+                               ops=TaskUserOps)
 
     def task_hierarchy(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
