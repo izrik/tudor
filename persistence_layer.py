@@ -721,6 +721,7 @@ class PersistenceLayer(object):
                          users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                          task_id_not_in=UNSPECIFIED,
                          deadline_is_not_none=False, tags_contains=UNSPECIFIED,
+                         is_public=UNSPECIFIED,
                          summary_description_search_term=UNSPECIFIED,
                          order_num_greq_than=UNSPECIFIED,
                          order_num_lesseq_than=UNSPECIFIED,
@@ -738,6 +739,9 @@ class PersistenceLayer(object):
 
         if is_deleted is not self.UNSPECIFIED:
             query = query.filter_by(is_deleted=is_deleted)
+
+        if is_public is not self.UNSPECIFIED:
+            query = query.filter_by(is_public=is_public)
 
         if parent_id is not self.UNSPECIFIED:
             if parent_id is None:
@@ -829,7 +833,7 @@ class PersistenceLayer(object):
                   parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                   users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                   task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
-                  tags_contains=UNSPECIFIED,
+                  tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
                   order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
@@ -839,7 +843,7 @@ class PersistenceLayer(object):
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
-            tags_contains=tags_contains,
+            tags_contains=tags_contains, is_public=is_public,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -851,7 +855,7 @@ class PersistenceLayer(object):
                             users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                             task_id_not_in=UNSPECIFIED,
                             deadline_is_not_none=False,
-                            tags_contains=UNSPECIFIED,
+                            tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
                             summary_description_search_term=UNSPECIFIED,
                             order_num_greq_than=UNSPECIFIED,
                             order_num_lesseq_than=UNSPECIFIED,
@@ -867,7 +871,7 @@ class PersistenceLayer(object):
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
-            tags_contains=tags_contains,
+            tags_contains=tags_contains, is_public=is_public,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -883,7 +887,7 @@ class PersistenceLayer(object):
                     parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                     users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                     task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
-                    tags_contains=UNSPECIFIED,
+                    tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
                     summary_description_search_term=UNSPECIFIED,
                     order_num_greq_than=UNSPECIFIED,
                     order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
@@ -893,7 +897,7 @@ class PersistenceLayer(object):
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
-            tags_contains=tags_contains,
+            tags_contains=tags_contains, is_public=is_public,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,

@@ -142,6 +142,35 @@ class PersistenceLayerTest(unittest.TestCase):
         self.assertEqual(set(), set(results))
 
 
+class PersistenceLayerGetTasksIsPublicTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+        self.t1 = Task('t1', is_public=True)
+        self.pl.add(self.t1)
+        self.t2 = Task('t2', is_public=False)
+        self.pl.add(self.t2)
+        self.pl.commit()
+
+    def test_get_tasks_is_public_not_specified_returns_all_tasks(self):
+        # when
+        result = self.pl.get_tasks()
+        # then
+        self.assertEqual({self.t1, self.t2}, set(result))
+
+    def test_get_tasks_is_public_true_returns_only_public_tasks(self):
+        # when
+        result = self.pl.get_tasks(is_public=True)
+        # then
+        self.assertEqual({self.t1}, set(result))
+
+    def test_get_tasks_is_public_false_returns_only_non_public_tasks(self):
+        # when
+        result = self.pl.get_tasks(is_public=False)
+        # then
+        self.assertEqual({self.t2}, set(result))
+
+
 class PersistenceLayerOrderByTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
