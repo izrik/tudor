@@ -46,7 +46,7 @@ class TaskBase(object):
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
-        self.is_public = is_public
+        self.is_public = not not is_public
 
     def __repr__(self):
         cls = type(self).__name__
