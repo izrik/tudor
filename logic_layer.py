@@ -1062,6 +1062,7 @@ class LogicLayer(object):
 
     def load_no_hierarchy(self, current_user, include_done=False,
                           include_deleted=False, exclude_undeadlined=False,
+                          exclude_non_public=False,
                           tag=None, paginate=False, pager=None, page_num=None,
                           tasks_per_page=None, parent_id_is_none=False,
                           parent_id=None, order_by_order_num=False,
@@ -1069,7 +1070,7 @@ class LogicLayer(object):
 
         kwargs = {}
 
-        if not current_user.is_admin:
+        if not (current_user.is_admin or current_user.is_anonymous()):
             kwargs['users_contains'] = current_user
 
         if not include_done:
@@ -1080,6 +1081,9 @@ class LogicLayer(object):
 
         if exclude_undeadlined:
             kwargs['deadline_is_not_none'] = True
+
+        if exclude_non_public:
+            kwargs['is_public'] = True
 
         if parent_id_is_none:
             kwargs['parent_id'] = None

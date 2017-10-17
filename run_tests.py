@@ -60,6 +60,7 @@ from tests.logic_layer.do_move_task_up_tests import *
 from tests.logic_layer.do_move_task_down_tests import *
 from tests.logic_layer.do_move_task_to_top_tests import *
 from tests.logic_layer.do_move_task_to_bottom_tests import *
+from tests.logic_layer.load_no_hierarchy_exclude_non_public import *
 
 from tests.view_layer.route_tests import *
 
