@@ -205,18 +205,26 @@
 </div>
 <div>
     <h4>Child Tasks</h4>
-    {% if pager.pages > 1 %}
-        {% include 'page_links.fragment.html' %}
-    {% endif %}
+    {% if show_hierarchy %}
+        {{ render_task_table(descendants, task, cycle,
+            page_url=url_for('view_task', id=task.id),
+            child_task_view='view_task',
+            show_move_links=True,
+            show_new_task_form=False, new_task_parent=task) }}
+    {% else %}
+        {% if pager.pages > 1 %}
+            {% include 'page_links.fragment.html' %}
+        {% endif %}
 
-    {{ render_task_table(pager.items, task, cycle,
-        page_url=url_for('view_task', id=task.id),
-        child_task_view='view_task',
-        show_move_links=True,
-        show_new_task_form=False, new_task_parent=task, show_order_num=True) }}
+        {{ render_task_table(pager.items, task, cycle,
+            page_url=url_for('view_task', id=task.id),
+            child_task_view='view_task',
+            show_move_links=True,
+            show_new_task_form=False, new_task_parent=task, show_order_num=True) }}
 
-    {% if pager.pages > 1 %}
-        {% include 'page_links.fragment.html' %}
+        {% if pager.pages > 1 %}
+            {% include 'page_links.fragment.html' %}
+        {% endif %}
     {% endif %}
 
     {% if can_edit %}

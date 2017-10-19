@@ -209,15 +209,18 @@ class ViewLayer(object):
                                      include_deleted=show_deleted,
                                      include_done=show_done)
 
-        return render_template('task.t.html', task=data['task'],
+        return render_template('task.t.html',
+                               task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done,
+                               show_deleted=show_deleted,
+                               show_done=show_done,
                                pager=data['pager'],
                                pager_link_page='view_task',
                                pager_link_args={'id': task_id},
                                current_user=current_user,
-                               ops=TaskUserOps)
+                               ops=TaskUserOps,
+                               show_hierarchy=False)
 
     def task_hierarchy(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
@@ -226,10 +229,14 @@ class ViewLayer(object):
                                                include_deleted=show_deleted,
                                                include_done=show_done)
 
-        return render_template('task_hierarchy.t.html', task=data['task'],
+        return render_template('task.t.html',
+                               task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done)
+                               show_deleted=show_deleted,
+                               show_done=show_done,
+                               ops=TaskUserOps,
+                               show_hierarchy=True)
 
     def note_new_post(self, request, current_user):
         if 'task_id' not in request.form:
