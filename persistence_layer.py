@@ -2,6 +2,8 @@
 import collections
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
+
 from models.task import Task, TaskBase
 from models.tag import Tag, TagBase
 from models.note import Note, NoteBase
@@ -108,6 +110,7 @@ class PersistenceLayer(object):
                       primary_key=True),
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
+        self.tags_tasks_table = tags_tasks_table
 
         self.DbTag = generate_tag_class(db, tags_tasks_table)
 
@@ -117,6 +120,7 @@ class PersistenceLayer(object):
                       index=True),
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
                       index=True))
+        self.users_tasks_table = users_tasks_table
 
         task_dependencies_table = db.Table(
             'task_dependencies',
@@ -124,6 +128,7 @@ class PersistenceLayer(object):
                       primary_key=True),
             db.Column('dependant_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
+        self.task_dependencies_table = task_dependencies_table
 
         task_prioritize_table = db.Table(
             'task_prioritize',
@@ -131,6 +136,7 @@ class PersistenceLayer(object):
                       db.ForeignKey('task.id'), primary_key=True),
             db.Column('prioritize_after_id', db.Integer,
                       db.ForeignKey('task.id'), primary_key=True))
+        self.task_prioritize_table = task_prioritize_table
 
         self.DbTask = generate_task_class(self, tags_tasks_table,
                                           users_tasks_table,
@@ -722,6 +728,7 @@ class PersistenceLayer(object):
                          task_id_not_in=UNSPECIFIED,
                          deadline_is_not_none=False, tags_contains=UNSPECIFIED,
                          is_public=UNSPECIFIED,
+                         is_public_or_users_contains=UNSPECIFIED,
                          summary_description_search_term=UNSPECIFIED,
                          order_num_greq_than=UNSPECIFIED,
                          order_num_lesseq_than=UNSPECIFIED,
@@ -760,6 +767,20 @@ class PersistenceLayer(object):
             users_contains2 = self._get_db_object_from_domain_object(
                 users_contains)
             query = query.filter(self.DbTask.users.contains(users_contains2))
+
+        if is_public_or_users_contains is not self.UNSPECIFIED:
+            db_user = self._get_db_object_from_domain_object(
+                is_public_or_users_contains)
+            query_m1 = query.outerjoin(
+                self.users_tasks_table,
+                self.users_tasks_table.c.task_id == self.DbTask.id)
+            query_m2 = query_m1.filter(
+                or_(
+                    self.users_tasks_table.c.user_id == db_user.id,
+                    self.DbTask.is_public
+                )
+            )
+            query = query_m2
 
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
@@ -834,6 +855,7 @@ class PersistenceLayer(object):
                   users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                   task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
                   tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                  is_public_or_users_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
                   order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
@@ -844,6 +866,7 @@ class PersistenceLayer(object):
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
             tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -856,6 +879,7 @@ class PersistenceLayer(object):
                             task_id_not_in=UNSPECIFIED,
                             deadline_is_not_none=False,
                             tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                            is_public_or_users_contains=UNSPECIFIED,
                             summary_description_search_term=UNSPECIFIED,
                             order_num_greq_than=UNSPECIFIED,
                             order_num_lesseq_than=UNSPECIFIED,
@@ -872,6 +896,7 @@ class PersistenceLayer(object):
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
             tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -888,6 +913,7 @@ class PersistenceLayer(object):
                     users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                     task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
                     tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                    is_public_or_users_contains=UNSPECIFIED,
                     summary_description_search_term=UNSPECIFIED,
                     order_num_greq_than=UNSPECIFIED,
                     order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
@@ -898,6 +924,7 @@ class PersistenceLayer(object):
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
             tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
