@@ -2,7 +2,7 @@
 
 import unittest
 
-from werkzeug.exceptions import NotFound, Forbidden
+from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
 from tudor import generate_app
 from models.task import Task
@@ -45,7 +45,7 @@ class GetTaskHierarchyDataTest(unittest.TestCase):
         self.pl.commit()
         # expect
         self.assertRaises(
-            Forbidden,
+            Unauthorized,
             self.ll.get_task_hierarchy_data,
             self.task.id, None)
 

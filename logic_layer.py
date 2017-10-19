@@ -10,6 +10,7 @@ import werkzeug.exceptions
 from werkzeug import secure_filename
 
 from conversions import int_from_str, money_from_str
+from exception import UserCannotViewTaskException
 from models.task import Task
 from models.tag import Tag
 from models.note import Note
@@ -178,6 +179,7 @@ class LogicLayer(object):
     def get_task_data(self, id, current_user, include_deleted=True,
                       include_done=True):
         task = self.pl.get_task(id)
+        # TODO: normalize access restrictions and exceptions in LogicLayer
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if TaskUserOps.is_user_authorized_or_admin(task, current_user):
@@ -211,10 +213,17 @@ class LogicLayer(object):
     def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
                                 include_done=True):
         task = self.pl.get_task(id)
+        # TODO: normalize access restrictions and exceptions in LogicLayer
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
+        if TaskUserOps.is_user_authorized_or_admin(task, current_user):
+            pass
+        elif task.is_public:
+            pass
+        elif current_user and current_user.is_authenticated():
             raise werkzeug.exceptions.Forbidden()
+        else:
+            raise werkzeug.exceptions.Unauthorized()
 
         descendants = self.load(current_user, root_task_id=task.id,
                                 max_depth=None, include_done=include_done,
@@ -937,10 +946,15 @@ class LogicLayer(object):
 
     def get_task(self, task_id, current_user):
         task = self.pl.get_task(task_id)
+        # TODO: normalize access restrictions and exceptions in LogicLayer
         if task is None:
             raise werkzeug.exceptions.NotFound()
-        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
-            raise werkzeug.exceptions.Forbidden()
+        if TaskUserOps.is_user_authorized_or_admin(task, current_user):
+            pass
+        elif task.is_public:
+            pass
+        else:
+            return None
         return task
 
     def convert_task_to_tag(self, task_id, current_user):
@@ -981,13 +995,20 @@ class LogicLayer(object):
 
         if root_task_id is not None:
             root_task = self.get_task(root_task_id, current_user)
-            if not TaskUserOps.is_user_authorized_or_admin(root_task, current_user):
-                raise werkzeug.exceptions.Forbidden()
+            if root_task is None:
+                return []
+            # TODO: normalize access restrictions and exceptions in LogicLayer
+            if TaskUserOps.user_can_view_task(root_task, current_user):
+                pass
+            else:
+                raise UserCannotViewTaskException(current_user, root_task)
 
         kwargs = {}
 
-        if not current_user.is_admin:
-            kwargs['users_contains'] = current_user
+        if current_user is None or current_user.is_anonymous():
+            kwargs['is_public'] = True
+        elif not current_user.is_admin:
+            kwargs['is_public_or_users_contains'] = current_user
 
         if not include_done:
             kwargs['is_done'] = False
@@ -1027,8 +1048,10 @@ class LogicLayer(object):
                 depth += 1
 
                 kwargs = {}
-                if not current_user.is_admin:
-                    kwargs['users_contains'] = current_user
+                if current_user is None or current_user.is_anonymous():
+                    kwargs['is_public'] = True
+                elif not current_user.is_admin:
+                    kwargs['is_public_or_users_contains'] = current_user
                 kwargs['parent_id_in'] = next_ids
                 kwargs['task_id_not_in'] = already_ids
                 if not include_done:
