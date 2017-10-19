@@ -280,7 +280,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return vl.task(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/hierarchy')
-    @login_required
     def view_task_hierarchy(id):
         return vl.task_hierarchy(request, Options.get_user(), id)
 
