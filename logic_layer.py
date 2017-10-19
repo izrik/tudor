@@ -1085,8 +1085,10 @@ class LogicLayer(object):
 
         kwargs = {}
 
-        if not (current_user.is_admin or current_user.is_anonymous()):
-            kwargs['users_contains'] = current_user
+        if current_user is None or current_user.is_anonymous():
+            kwargs['is_public'] = True
+        elif not current_user.is_admin:
+            kwargs['is_public_or_users_contains'] = current_user
 
         if not include_done:
             kwargs['is_done'] = False
