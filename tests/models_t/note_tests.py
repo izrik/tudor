@@ -7,7 +7,7 @@ from models.note import Note, NoteBase
 from models.task import Task
 
 
-class CleanTimestampTest(unittest.TestCase):
+class NoteCleanTimestampTest(unittest.TestCase):
     def test_none_yields_none(self):
         # expect
         self.assertIsNone(NoteBase._clean_timestamp(None))
