@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import unittest
 
 # TODO: import by name instead of star
 

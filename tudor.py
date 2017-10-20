@@ -85,6 +85,10 @@ if __name__ == '__main__':
                         help='Make a given task private, viewable only by '
                              'authorized users of that task who are logged '
                              'in.')
+    parser.add_argument('--descendants', action='store_true',
+                        help='When performing an operation on a given task, '
+                             'also traverse all descendants and perform the '
+                             'operation on them as well.')
 
     args = parser.parse_args()
 
@@ -578,24 +582,45 @@ def default_printer(*args):
     print(args)
 
 
-def make_task_public(app, task_id, printer=default_printer):
+def make_task_public(app, task_id, printer=default_printer, descendants=False):
     task = app.pl.get_task(task_id)
     if not task:
         printer('No task found by the id "{}"'.format(task_id))
     else:
-        task.is_public = True
+        if descendants:
+            def recurse(task):
+                task.is_public = True
+                printer(
+                    'Made task {}, "{}", public'.format(task.id, task.summary))
+                for child in task.children:
+                    recurse(child)
+            recurse(task)
+        else:
+            task.is_public = True
+            printer('Made task {}, "{}", public'.format(task.id, task.summary))
         app.pl.commit()
-        printer('Made task {}, "{}", public'.format(task_id, task.summary))
 
 
-def make_task_private(app, task_id, printer=default_printer):
+def make_task_private(app, task_id, printer=default_printer,
+                      descendants=False):
     task = app.pl.get_task(task_id)
     if not task:
         printer('No task found by the id "{}"'.format(task_id))
     else:
-        task.is_public = False
+        if descendants:
+            def recurse(task):
+                task.is_public = False
+                printer(
+                    'Made task {}, "{}", private'.format(task.id,
+                                                         task.summary))
+                for child in task.children:
+                    recurse(child)
+            recurse(task)
+        else:
+            task.is_public = False
+            printer('Made task {}, "{}", private'.format(task.id,
+                                                         task.summary))
         app.pl.commit()
-        printer('Made task {}, "{}", private'.format(task_id, task.summary))
 
 
 if __name__ == '__main__':
@@ -613,8 +638,8 @@ if __name__ == '__main__':
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
     elif args.make_public is not None:
-        make_task_public(app, args.make_public)
+        make_task_public(app, args.make_public, descendants=args.descendants)
     elif args.make_private is not None:
-        make_task_private(app, args.make_private)
+        make_task_private(app, args.make_private, descendants=args.descendants)
     else:
         app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
