@@ -11,6 +11,7 @@ from werkzeug.exceptions import NotFound, BadRequest
 from conversions import int_from_str, money_from_str, bool_from_str
 
 # TODO: move all calls tp pl.add, pl.delete, pl.commit, etc., to the LL
+from models.task_user_ops import TaskUserOps
 
 
 class ViewLayer(object):
@@ -114,6 +115,7 @@ class ViewLayer(object):
             request, 'expected_duration_minutes') or None
         expected_cost = self.get_form_or_arg(request, 'expected_cost') or None
         parent_id = self.get_form_or_arg(request, 'parent_id') or None
+        is_public = self.get_form_or_arg(request, 'is_public') or None
 
         tags = self.get_form_or_arg(request, 'tags')
         if tags:
@@ -139,7 +141,7 @@ class ViewLayer(object):
             is_deleted=is_deleted, deadline=deadline, order_num=order_num,
             expected_duration_minutes=expected_duration_minutes,
             expected_cost=expected_cost, parent_id=parent_id,
-            current_user=current_user)
+            is_public=is_public, current_user=current_user)
 
         for tag_name in tags:
             tag = self.ll.get_or_create_tag(tag_name)
@@ -207,13 +209,18 @@ class ViewLayer(object):
                                      include_deleted=show_deleted,
                                      include_done=show_done)
 
-        return render_template('task.t.html', task=data['task'],
+        return render_template('task.t.html',
+                               task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done,
+                               show_deleted=show_deleted,
+                               show_done=show_done,
                                pager=data['pager'],
                                pager_link_page='view_task',
-                               pager_link_args={'id': task_id})
+                               pager_link_args={'id': task_id},
+                               current_user=current_user,
+                               ops=TaskUserOps,
+                               show_hierarchy=False)
 
     def task_hierarchy(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
@@ -222,10 +229,14 @@ class ViewLayer(object):
                                                include_deleted=show_deleted,
                                                include_done=show_done)
 
-        return render_template('task_hierarchy.t.html', task=data['task'],
+        return render_template('task.t.html',
+                               task=data['task'],
                                descendants=data['descendants'],
                                cycle=itertools.cycle,
-                               show_deleted=show_deleted, show_done=show_done)
+                               show_deleted=show_deleted,
+                               show_done=show_done,
+                               ops=TaskUserOps,
+                               show_hierarchy=True)
 
     def note_new_post(self, request, current_user):
         if 'task_id' not in request.form:
@@ -270,13 +281,16 @@ class ViewLayer(object):
         if 'parent_id' in request.form:
             parent_id = request.form['parent_id']
 
+        is_public = ('is_public' in request.form and
+                     not not request.form['is_public'])
+
         duration = int_from_str(request.form['expected_duration_minutes'])
 
         expected_cost = money_from_str(request.form['expected_cost'])
 
         task = self.ll.set_task(task_id, current_user, summary, description,
                                 deadline, is_done, is_deleted, order_num,
-                                duration, expected_cost, parent_id)
+                                duration, expected_cost, parent_id, is_public)
 
         self.pl.add(task)
         self.pl.commit()

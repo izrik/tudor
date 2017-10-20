@@ -54,6 +54,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertIsNone(self.task.expected_cost)
         self.assertIsNone(self.task.parent_id)
         self.assertIsNone(self.task.parent)
+        self.assertFalse(self.task.is_public)
         self.assertEqual([], list(self.task.children))
         self.assertEqual([], list(self.task.tags))
         self.assertEqual([], list(self.task.users))
@@ -78,6 +79,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertIsNone(task.expected_cost)
         self.assertIsNone(task.parent_id)
         self.assertIsNone(task.parent)
+        self.assertFalse(self.task.is_public)
         self.assertEqual([], list(task.children))
         self.assertEqual([], list(task.tags))
         self.assertEqual([], list(task.users))
@@ -98,6 +100,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertIsNone(self.task.expected_cost)
         self.assertIsNone(self.task.parent_id)
         self.assertIsNone(self.task.parent)
+        self.assertFalse(self.task.is_public)
         self.assertEqual([], list(self.task.children))
         self.assertEqual([], list(self.task.tags))
         self.assertEqual([], list(self.task.users))
@@ -117,7 +120,8 @@ class LogicLayerSetTaskTest(unittest.TestCase):
             is_deleted=True,
             order_num=123,
             duration=456,
-            expected_cost=789.1)
+            expected_cost=789.1,
+            is_public=True)
 
         # then
         self.assertIsNotNone(task)
@@ -132,6 +136,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertEqual(789.1, task.expected_cost)
         self.assertIsNone(task.parent_id)
         self.assertIsNone(task.parent)
+        self.assertTrue(self.task.is_public)
         self.assertEqual([], list(task.children))
         self.assertEqual([], list(task.tags))
         self.assertEqual([], list(task.users))

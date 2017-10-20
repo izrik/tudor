@@ -142,6 +142,98 @@ class PersistenceLayerTest(unittest.TestCase):
         self.assertEqual(set(), set(results))
 
 
+class PersistenceLayerGetTasksIsPublicTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+        self.t1 = Task('t1', is_public=True)
+        self.pl.add(self.t1)
+        self.t2 = Task('t2', is_public=False)
+        self.pl.add(self.t2)
+        self.pl.commit()
+
+    def test_get_tasks_is_public_not_specified_returns_all_tasks(self):
+        # when
+        result = self.pl.get_tasks()
+        # then
+        self.assertEqual({self.t1, self.t2}, set(result))
+
+    def test_get_tasks_is_public_true_returns_only_public_tasks(self):
+        # when
+        result = self.pl.get_tasks(is_public=True)
+        # then
+        self.assertEqual({self.t1}, set(result))
+
+    def test_get_tasks_is_public_false_returns_only_non_public_tasks(self):
+        # when
+        result = self.pl.get_tasks(is_public=False)
+        # then
+        self.assertEqual({self.t2}, set(result))
+
+
+class GetTasksIsPublicOrUsersContainsTest(unittest.TestCase):
+    def setUp(self):
+        self.pl = generate_pl()
+        self.pl.create_all()
+        self.t1 = Task('t1', is_public=True)
+        self.pl.add(self.t1)
+        self.t2 = Task('t2', is_public=False)
+        self.pl.add(self.t2)
+        self.user = User('email')
+        self.pl.add(self.user)
+        self.pl.commit()
+
+    def test_user_not_authorized_returns_only_public_task(self):
+        # precondition
+        self.assertEqual(set(), set(self.t1.users))
+        self.assertEqual(set(), set(self.t2.users))
+        self.assertEqual(set(), set(self.user.tasks))
+        # when
+        result = self.pl.get_tasks(is_public_or_users_contains=self.user)
+        # then
+        self.assertEqual({self.t1}, set(result))
+
+    def test_user_authorized_on_public_task_returns_only_public_task(self):
+        # given
+        self.t1.users.add(self.user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual({self.user}, set(self.t1.users))
+        self.assertEqual(set(), set(self.t2.users))
+        self.assertEqual({self.t1}, set(self.user.tasks))
+        # when
+        result = self.pl.get_tasks(is_public_or_users_contains=self.user)
+        # then
+        self.assertEqual({self.t1}, set(result))
+
+    def test_user_authorized_on_private_task_returns_both_tasks(self):
+        # given
+        self.t2.users.add(self.user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(set(), set(self.t1.users))
+        self.assertEqual({self.user}, set(self.t2.users))
+        self.assertEqual({self.t2}, set(self.user.tasks))
+        # when
+        result = self.pl.get_tasks(is_public_or_users_contains=self.user)
+        # then
+        self.assertEqual({self.t1, self.t2}, set(result))
+
+    def test_user_authorized_on_both_tasks_returns_both_tasks(self):
+        # given
+        self.t1.users.add(self.user)
+        self.t2.users.add(self.user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual({self.user}, set(self.t1.users))
+        self.assertEqual({self.user}, set(self.t2.users))
+        self.assertEqual({self.t1, self.t2}, set(self.user.tasks))
+        # when
+        result = self.pl.get_tasks(is_public_or_users_contains=self.user)
+        # then
+        self.assertEqual({self.t1, self.t2}, set(result))
+
+
 class PersistenceLayerOrderByTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
@@ -6611,6 +6703,35 @@ class DbTaskMakeChangeTest(unittest.TestCase):
         self.task.make_change(Task.FIELD_CHILDREN, Changeable.OP_REMOVE, child)
         # then
         self.assertEqual([], list(self.task.children))
+
+    def test_setting_is_public_sets_is_public(self):
+        # precondition
+        self.assertFalse(self.task.is_public)
+        # when
+        self.task.make_change(Task.FIELD_IS_PUBLIC, Changeable.OP_SET, True)
+        # then
+        self.assertTrue(self.task.is_public)
+
+    def test_adding_is_public_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.task.make_change,
+            Task.FIELD_IS_PUBLIC, Changeable.OP_ADD, True)
+
+    def test_removing_is_public_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.task.make_change,
+            Task.FIELD_IS_PUBLIC, Changeable.OP_REMOVE, True)
+
+    def test_changing_is_public_raises(self):
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.task.make_change,
+            Task.FIELD_IS_PUBLIC, Changeable.OP_CHANGING, True)
 
 
 class DbTagConstructorTest(unittest.TestCase):

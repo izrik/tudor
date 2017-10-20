@@ -30,10 +30,12 @@ class TaskBase(object):
     FIELD_USERS = 'USERS'
     FIELD_NOTES = 'NOTES'
     FIELD_ATTACHMENTS = 'ATTACHMENTS'
+    FIELD_IS_PUBLIC = 'IS_PUBLIC'
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
-                 expected_duration_minutes=None, expected_cost=None):
+                 expected_duration_minutes=None, expected_cost=None,
+                 is_public=False):
         self._logger.debug('TaskBase.__init__ {}'.format(self))
 
         self.summary = summary
@@ -44,6 +46,7 @@ class TaskBase(object):
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
+        self.is_public = not not is_public
 
     def __repr__(self):
         cls = type(self).__name__
@@ -85,6 +88,8 @@ class TaskBase(object):
             d['order_num'] = self.order_num
         if fields is None or self.FIELD_PARENT in fields:
             d['parent'] = self.parent
+        if fields is None or self.FIELD_IS_PUBLIC in fields:
+            d['is_public'] = self.is_public
 
         if fields is None or self.FIELD_CHILDREN in fields:
             d['children'] = list(self.children)
@@ -119,12 +124,13 @@ class TaskBase(object):
         expected_duration_minutes = d.get('expected_duration_minutes',
                                           None)
         expected_cost = d.get('expected_cost', None)
+        is_public = d.get('is_public', False)
 
         task = cls(summary=summary, description=description,
                    is_done=is_done, is_deleted=is_deleted,
                    deadline=deadline,
                    expected_duration_minutes=expected_duration_minutes,
-                   expected_cost=expected_cost, lazy=lazy)
+                   expected_cost=expected_cost, is_public=is_public, lazy=lazy)
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
@@ -191,6 +197,8 @@ class TaskBase(object):
             assign(self.notes, d['notes'])
         if 'attachments' in d:
             assign(self.attachments, d['attachments'])
+        if 'is_public' in d:
+            self.is_public = d['is_public']
 
     def get_expected_cost_for_export(self):
         value = money_from_str(self.expected_cost)
@@ -212,14 +220,15 @@ class Task(Changeable, TaskBase):
     _expected_duration_minutes = None
     _expected_cost = None
     _parent = None
+    _is_public = None
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,
-                 lazy=None):
+                 is_public=False, lazy=None):
         super(Task, self).__init__(
             summary, description, is_done, is_deleted, deadline,
-            expected_duration_minutes, expected_cost)
+            expected_duration_minutes, expected_cost, is_public)
 
         self._logger.debug('Task.__init__ {}'.format(self))
 
@@ -444,6 +453,21 @@ class Task(Changeable, TaskBase):
     @property
     def attachments(self):
         return self._attachments
+
+    @property
+    def is_public(self):
+        return self._is_public
+
+    @is_public.setter
+    def is_public(self, value):
+        if value != self._is_public:
+            self._logger.debug(
+                '{}: {} -> {}'.format(self, self.is_public, value))
+            self._on_attr_changing(self.FIELD_IS_PUBLIC,
+                                   self._is_public)
+            self._is_public = value
+            self._on_attr_changed(self.FIELD_IS_PUBLIC, self.OP_SET,
+                                  self._is_public)
 
     def get_css_class(self):
         if self.is_deleted and self.is_done:

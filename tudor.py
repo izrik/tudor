@@ -27,6 +27,7 @@ import werkzeug.exceptions
 from conversions import bool_from_str, int_from_str, str_from_datetime
 from conversions import money_from_str
 from logic_layer import LogicLayer
+from models.user import GuestUser
 from view_layer import ViewLayer
 from persistence_layer import PersistenceLayer
 import base64
@@ -78,6 +79,16 @@ if __name__ == '__main__':
                         default=TUDOR_SECRET_KEY)
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
+    parser.add_argument('--make-public', metavar='TASK_ID', action='store',
+                        help='Make a given task public, viewable by anyone.')
+    parser.add_argument('--make-private', metavar='TASK_ID', action='store',
+                        help='Make a given task private, viewable only by '
+                             'authorized users of that task who are logged '
+                             'in.')
+    parser.add_argument('--descendants', action='store_true',
+                        help='When performing an operation on a given task, '
+                             'also traverse all descendants and perform the '
+                             'operation on them as well.')
 
     args = parser.parse_args()
 
@@ -149,10 +160,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
         @staticmethod
         def get_user():
+            if current_user is None:
+                return GuestUser()
+
             try:
-                return pl.get_user(current_user.id)
+                user_id = current_user.id
+                return pl.get_user(user_id)
             except AttributeError:
-                return None
+                return GuestUser()
 
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
@@ -265,12 +280,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
         return vl.purge_all(request, Options.get_user())
 
     @app.route('/task/<int:id>')
-    @login_required
     def view_task(id):
         return vl.task(request, Options.get_user(), id)
 
     @app.route('/task/<int:id>/hierarchy')
-    @login_required
     def view_task_hierarchy(id):
         return vl.task_hierarchy(request, Options.get_user(), id)
 
@@ -564,6 +577,52 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     return app
 
+
+def default_printer(*args):
+    print(args)
+
+
+def make_task_public(app, task_id, printer=default_printer, descendants=False):
+    task = app.pl.get_task(task_id)
+    if not task:
+        printer('No task found by the id "{}"'.format(task_id))
+    else:
+        if descendants:
+            def recurse(task):
+                task.is_public = True
+                printer(
+                    'Made task {}, "{}", public'.format(task.id, task.summary))
+                for child in task.children:
+                    recurse(child)
+            recurse(task)
+        else:
+            task.is_public = True
+            printer('Made task {}, "{}", public'.format(task.id, task.summary))
+        app.pl.commit()
+
+
+def make_task_private(app, task_id, printer=default_printer,
+                      descendants=False):
+    task = app.pl.get_task(task_id)
+    if not task:
+        printer('No task found by the id "{}"'.format(task_id))
+    else:
+        if descendants:
+            def recurse(task):
+                task.is_public = False
+                printer(
+                    'Made task {}, "{}", private'.format(task.id,
+                                                         task.summary))
+                for child in task.children:
+                    recurse(child)
+            recurse(task)
+        else:
+            task.is_public = False
+            printer('Made task {}, "{}", private'.format(task.id,
+                                                         task.summary))
+        app.pl.commit()
+
+
 if __name__ == '__main__':
     app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
                        secret_key=TUDOR_SECRET_KEY,
@@ -578,5 +637,9 @@ if __name__ == '__main__':
         print(key)
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
+    elif args.make_public is not None:
+        make_task_public(app, args.make_public, descendants=args.descendants)
+    elif args.make_private is not None:
+        make_task_private(app, args.make_private, descendants=args.descendants)
     else:
         app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)

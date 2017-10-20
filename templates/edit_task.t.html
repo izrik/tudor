@@ -22,6 +22,7 @@
             <tr><td>Expected duration (in minutes)</td><td><input type="text" name="expected_duration_minutes" value="{{ task.expected_duration_minutes if task.expected_duration_minutes != None }}" /></td></tr>
             <tr><td>Expected cost</td><td><input type="text" name="expected_cost" value="{{ task.get_expected_cost_for_viewing() }}" /></td></tr>
             <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ task.parent_id if task.parent_id != None }}" /></td></tr>
+            <tr><td>Public?</td><td><input type="checkbox" name="is_public" {% if task.is_public %} checked {% endif %} /></td></tr>
             <tr><td>Tags</td><td><input type="text" name="tags" value="{{ tag_list }}" disabled="disabled"/></td></tr>
         </table>
         <p></p>

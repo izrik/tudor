@@ -2,6 +2,8 @@
 import collections
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
+
 from models.task import Task, TaskBase
 from models.tag import Tag, TagBase
 from models.note import Note, NoteBase
@@ -108,6 +110,7 @@ class PersistenceLayer(object):
                       primary_key=True),
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
+        self.tags_tasks_table = tags_tasks_table
 
         self.DbTag = generate_tag_class(db, tags_tasks_table)
 
@@ -117,6 +120,7 @@ class PersistenceLayer(object):
                       index=True),
             db.Column('task_id', db.Integer, db.ForeignKey('task.id'),
                       index=True))
+        self.users_tasks_table = users_tasks_table
 
         task_dependencies_table = db.Table(
             'task_dependencies',
@@ -124,6 +128,7 @@ class PersistenceLayer(object):
                       primary_key=True),
             db.Column('dependant_id', db.Integer, db.ForeignKey('task.id'),
                       primary_key=True))
+        self.task_dependencies_table = task_dependencies_table
 
         task_prioritize_table = db.Table(
             'task_prioritize',
@@ -131,6 +136,7 @@ class PersistenceLayer(object):
                       db.ForeignKey('task.id'), primary_key=True),
             db.Column('prioritize_after_id', db.Integer,
                       db.ForeignKey('task.id'), primary_key=True))
+        self.task_prioritize_table = task_prioritize_table
 
         self.DbTask = generate_task_class(self, tags_tasks_table,
                                           users_tasks_table,
@@ -721,6 +727,8 @@ class PersistenceLayer(object):
                          users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                          task_id_not_in=UNSPECIFIED,
                          deadline_is_not_none=False, tags_contains=UNSPECIFIED,
+                         is_public=UNSPECIFIED,
+                         is_public_or_users_contains=UNSPECIFIED,
                          summary_description_search_term=UNSPECIFIED,
                          order_num_greq_than=UNSPECIFIED,
                          order_num_lesseq_than=UNSPECIFIED,
@@ -739,6 +747,9 @@ class PersistenceLayer(object):
         if is_deleted is not self.UNSPECIFIED:
             query = query.filter_by(is_deleted=is_deleted)
 
+        if is_public is not self.UNSPECIFIED:
+            query = query.filter_by(is_public=is_public)
+
         if parent_id is not self.UNSPECIFIED:
             if parent_id is None:
                 query = query.filter(self.DbTask.parent_id.is_(None))
@@ -756,6 +767,20 @@ class PersistenceLayer(object):
             users_contains2 = self._get_db_object_from_domain_object(
                 users_contains)
             query = query.filter(self.DbTask.users.contains(users_contains2))
+
+        if is_public_or_users_contains is not self.UNSPECIFIED:
+            db_user = self._get_db_object_from_domain_object(
+                is_public_or_users_contains)
+            query_m1 = query.outerjoin(
+                self.users_tasks_table,
+                self.users_tasks_table.c.task_id == self.DbTask.id)
+            query_m2 = query_m1.filter(
+                or_(
+                    self.users_tasks_table.c.user_id == db_user.id,
+                    self.DbTask.is_public
+                )
+            )
+            query = query_m2
 
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
@@ -829,7 +854,8 @@ class PersistenceLayer(object):
                   parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                   users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                   task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
-                  tags_contains=UNSPECIFIED,
+                  tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                  is_public_or_users_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
                   order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
@@ -839,7 +865,8 @@ class PersistenceLayer(object):
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
-            tags_contains=tags_contains,
+            tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -851,7 +878,8 @@ class PersistenceLayer(object):
                             users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                             task_id_not_in=UNSPECIFIED,
                             deadline_is_not_none=False,
-                            tags_contains=UNSPECIFIED,
+                            tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                            is_public_or_users_contains=UNSPECIFIED,
                             summary_description_search_term=UNSPECIFIED,
                             order_num_greq_than=UNSPECIFIED,
                             order_num_lesseq_than=UNSPECIFIED,
@@ -867,7 +895,8 @@ class PersistenceLayer(object):
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
-            tags_contains=tags_contains,
+            tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -883,7 +912,8 @@ class PersistenceLayer(object):
                     parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                     users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                     task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
-                    tags_contains=UNSPECIFIED,
+                    tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                    is_public_or_users_contains=UNSPECIFIED,
                     summary_description_search_term=UNSPECIFIED,
                     order_num_greq_than=UNSPECIFIED,
                     order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
@@ -893,7 +923,8 @@ class PersistenceLayer(object):
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
             deadline_is_not_none=deadline_is_not_none,
-            tags_contains=tags_contains,
+            tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
@@ -1083,6 +1114,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         deadline = db.Column(db.DateTime)
         expected_duration_minutes = db.Column(db.Integer)
         expected_cost = db.Column(db.Numeric)
+        is_public = db.Column(db.Boolean)
         tags = db.relationship('DbTag', secondary=tags_tasks_table,
                                back_populates="tasks")
 
@@ -1116,7 +1148,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
         def __init__(self, summary, description='', is_done=False,
                      is_deleted=False, deadline=None,
                      expected_duration_minutes=None, expected_cost=None,
-                     lazy=None):
+                     is_public=False, lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
@@ -1124,7 +1156,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 self, summary=summary, description=description,
                 is_done=is_done, is_deleted=is_deleted, deadline=deadline,
                 expected_duration_minutes=expected_duration_minutes,
-                expected_cost=expected_cost)
+                expected_cost=expected_cost, is_public=is_public)
 
         @classmethod
         def from_dict(cls, d, lazy=None):
@@ -1138,7 +1170,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                          self.FIELD_IS_DELETED, self.FIELD_DEADLINE,
                          self.FIELD_EXPECTED_DURATION_MINUTES,
                          self.FIELD_EXPECTED_COST, self.FIELD_ORDER_NUM,
-                         self.FIELD_PARENT):
+                         self.FIELD_PARENT, self.FIELD_IS_PUBLIC):
                 if operation != Changeable.OP_SET:
                     raise ValueError(
                         'Invalid operation "{}" for field "{}"'.format(
@@ -1175,6 +1207,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 self.order_num = value
             elif field == self.FIELD_PARENT:
                 self.parent = value
+            elif field == self.FIELD_IS_PUBLIC:
+                self.is_public = value
             elif field == self.FIELD_CHILDREN:
                 collection = self.children
             elif field == self.FIELD_DEPENDEES:

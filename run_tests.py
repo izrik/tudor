@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
 import argparse
+import unittest
+
+# TODO: import by name instead of star
 
 from tests.conversions_tests import *
+from tests.command_line_tests import CommandLineTests
 
 from tests.models_t.attachment_from_dict_tests import *
 from tests.models_t.attachment_tests import *
@@ -25,6 +29,12 @@ from tests.models_t.task_tags_tests import *
 from tests.models_t.task_tests import *
 from tests.models_t.user_from_dict_tests import *
 from tests.models_t.user_tests import *
+from tests.models_t.task_user_ops.is_user_authorized_or_admin_tests import \
+    IsUserAuthorizedOrAdminTest
+from tests.models_t.task_user_ops.user_can_edit_task_tests import \
+    UserCanEditTaskTest
+from tests.models_t.task_user_ops.user_can_view_task_tests import \
+    UserCanViewTaskTest
 
 from tests.persistence_layer.persistence_layer_tests import *
 
@@ -36,7 +46,6 @@ from tests.logic_layer.do_reset_order_nums_tests import *
 from tests.logic_layer.get_deadlines_data_tests import *
 from tests.logic_layer.get_index_data_tests import *
 from tests.logic_layer.get_lowest_highest_order_num import *
-from tests.logic_layer.is_user_authorized_or_admin_tests import *
 from tests.logic_layer.search_tests import *
 from tests.logic_layer.set_task_tests import *
 from tests.logic_layer.sort_by_hierarchy_tests import *
@@ -58,6 +67,9 @@ from tests.logic_layer.do_move_task_up_tests import *
 from tests.logic_layer.do_move_task_down_tests import *
 from tests.logic_layer.do_move_task_to_top_tests import *
 from tests.logic_layer.do_move_task_to_bottom_tests import *
+from tests.logic_layer.load_no_hierarchy_exclude_non_public import *
+from tests.logic_layer.load_is_public_tests import LoadIsPublicTest, \
+    LoadIsPublicRegularUserTest
 
 from tests.view_layer.route_tests import *
 
