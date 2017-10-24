@@ -99,7 +99,7 @@ class Tag(Changeable, TagBase):
     def id(self, value):
         if value != self._id:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self._id, value))
+                u'{}: {} -> {}'.format(self, self._id, value))
             self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
             self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
@@ -112,7 +112,7 @@ class Tag(Changeable, TagBase):
     def value(self, value):
         if value != self._value:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self._value, value))
+                u'{}: {} -> {}'.format(self, self._value, value))
             self._on_attr_changing(self.FIELD_VALUE, self._value)
             self._value = value
             self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
@@ -125,7 +125,7 @@ class Tag(Changeable, TagBase):
     def description(self, value):
         if value != self._description:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self._description, value))
+                u'{}: {} -> {}'.format(self, self._description, value))
             self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,

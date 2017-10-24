@@ -546,7 +546,7 @@ class PersistenceLayer(object):
 
     def _update_domain_object_from_dict(self, domobj, d):
         self._logger.debug(
-            'begin, domobj: {}, d: {}'.format(domobj, d))
+            u'begin, domobj: {}, d: {}'.format(domobj, d))
         domobj.update_from_dict(d)
         self._logger.debug(u'end')
 
@@ -554,17 +554,17 @@ class PersistenceLayer(object):
         if domobj is None:
             raise ValueError('domobj cannot be None')
         self._logger.debug(
-            'begin, domobj: {}, fields: {}'.format(domobj, fields))
+            u'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
-            'got db obj {} -> {}'.format(domobj, dbobj))
+            u'got db obj {} -> {}'.format(domobj, dbobj))
         d = dbobj.to_dict(fields)
         self._logger.debug(u'got db attrs {} -> {}'.format(domobj, d))
         d = self._domain_attrs_from_db_all(d)
         self._logger.debug(u'got dom attrs {} -> {}'.format(domobj, d))
         domobj.update_from_dict(d)
         self._logger.debug(
-            'updated dom obj {} -> {}'.format(domobj, dbobj))
+            u'updated dom obj {} -> {}'.format(domobj, dbobj))
         self._logger.debug(u'end')
 
     _relational_attrs = {'parent', 'children', 'tags', 'tasks', 'users',
@@ -650,30 +650,30 @@ class PersistenceLayer(object):
         if domobj is None:
             raise ValueError('domobj cannot be None')
         self._logger.debug(
-            'begin, domobj: {}, fields: {}'.format(domobj, fields))
+            u'begin, domobj: {}, fields: {}'.format(domobj, fields))
         dbobj = self._get_db_object_from_domain_object(domobj)
         self._logger.debug(
-            'got db obj {} -> {}'.format(domobj, dbobj))
+            u'got db obj {} -> {}'.format(domobj, dbobj))
         d = domobj.to_dict(fields)
         self._logger.debug(u'got dom attrs {} -> {}'.format(domobj, d))
         d = self._db_attrs_from_domain_all(d)
         self._logger.debug(u'got db attrs {} -> {}'.format(domobj, d))
         dbobj.update_from_dict(d)
         self._logger.debug(
-            'updated db obj {} -> {}'.format(domobj, dbobj))
+            u'updated db obj {} -> {}'.format(domobj, dbobj))
         self._logger.debug(u'end')
 
     def _on_domain_object_attr_changing(self, domobj, field, value):
         self._logger.debug(
-            'begin, domobj: {}, field: {}, value: {}'.format(domobj, field,
-                                                             value))
+            u'begin, domobj: {}, field: {}, value: {}'.format(domobj, field,
+                                                              value))
         if domobj not in self._changed_objects_original_values:
             self._changed_objects_original_values[domobj] = domobj.to_dict()
         self._logger.debug(u'end')
 
     def _on_domain_object_attr_changed(self, domobj, field, operation, value):
         self._logger.debug(
-            'begin, domobj: {}, field: {}, op: {}, value: {}'.format(
+            u'begin, domobj: {}, field: {}, op: {}, value: {}'.format(
                 domobj, field, operation, value))
 
         dbobj = self._get_db_object_from_domain_object(domobj)

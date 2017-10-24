@@ -320,7 +320,7 @@ class Task(Changeable, TaskBase):
     def is_deleted(self, value):
         if value != self._is_deleted:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.is_deleted, value))
+                u'{}: {} -> {}'.format(self, self.is_deleted, value))
             self._on_attr_changing(self.FIELD_IS_DELETED, self._is_deleted)
             self._is_deleted = value
             self._on_attr_changed(self.FIELD_IS_DELETED, self.OP_SET,
@@ -334,7 +334,7 @@ class Task(Changeable, TaskBase):
     def order_num(self, value):
         if value != self._order_num:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.order_num, value))
+                u'{}: {} -> {}'.format(self, self.order_num, value))
             self._on_attr_changing(self.FIELD_ORDER_NUM, self._order_num)
             self._order_num = value
             self._on_attr_changed(self.FIELD_ORDER_NUM, self.OP_SET,
@@ -348,7 +348,7 @@ class Task(Changeable, TaskBase):
     def deadline(self, value):
         if value != self._deadline:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.deadline, value))
+                u'{}: {} -> {}'.format(self, self.deadline, value))
             self._on_attr_changing(self.FIELD_DEADLINE, self._deadline)
             self._deadline = value
             self._on_attr_changed(self.FIELD_DEADLINE, self.OP_SET,
@@ -362,8 +362,8 @@ class Task(Changeable, TaskBase):
     def expected_duration_minutes(self, value):
         if value != self._expected_duration_minutes:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.expected_duration_minutes,
-                                      value))
+                u'{}: {} -> {}'.format(self, self.expected_duration_minutes,
+                                       value))
             self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES,
                                    self._expected_duration_minutes)
             self._expected_duration_minutes = value
@@ -378,7 +378,7 @@ class Task(Changeable, TaskBase):
     def expected_cost(self, value):
         if value != self._expected_cost:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.expected_cost, value))
+                u'{}: {} -> {}'.format(self, self.expected_cost, value))
             self._on_attr_changing(self.FIELD_EXPECTED_COST,
                                    self._expected_cost)
             self._expected_cost = value
