@@ -13,7 +13,7 @@ class TagBase(object):
     FIELD_TASKS = 'TASKS'
 
     def __init__(self, value, description=None):
-        self._logger.debug('TagBase.__init__ {}'.format(self))
+        self._logger.debug(u'TagBase.__init__ {}'.format(self))
         self.value = value
         self.description = description
 
@@ -28,7 +28,7 @@ class TagBase(object):
 
     def to_dict(self, fields=None):
 
-        self._logger.debug('{}'.format(self))
+        self._logger.debug(u'{}'.format(self))
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
@@ -46,7 +46,7 @@ class TagBase(object):
     @classmethod
     def from_dict(cls, d, lazy=None):
         logger = cls._logger
-        logger.debug('d: {}'.format(d))
+        logger.debug(u'd: {}'.format(d))
 
         tag_id = d.get('id', None)
         value = d.get('value')
@@ -58,11 +58,11 @@ class TagBase(object):
         if not lazy:
             if 'tasks' in d:
                 assign(tag.tasks, d['tasks'])
-        logger.debug('tag: {}'.format(tag))
+        logger.debug(u'tag: {}'.format(tag))
         return tag
 
     def update_from_dict(self, d):
-        self._logger.debug('{}: {}'.format(self, d))
+        self._logger.debug(u'{}: {}'.format(self, d))
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'value' in d:
@@ -84,7 +84,7 @@ class Tag(Changeable, TagBase):
 
     def __init__(self, value, description=None, lazy=None):
         super(Tag, self).__init__(value=value, description=description)
-        self._logger.debug('Tag.__init__ {}'.format(self))
+        self._logger.debug(u'Tag.__init__ {}'.format(self))
 
         if lazy is None:
             lazy = {}
