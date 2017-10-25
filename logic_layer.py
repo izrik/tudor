@@ -115,8 +115,9 @@ class LogicLayer(object):
 
         if parent_id is not None:
             parent = self.pl.get_task(parent_id)
-            if parent is not None and not TaskUserOps.is_user_authorized_or_admin(
-                    parent, current_user):
+            if (parent is not None and
+                    not TaskUserOps.is_user_authorized_or_admin(parent,
+                                                                current_user)):
                 raise werkzeug.exceptions.Forbidden()
             task.parent = parent
 
@@ -467,7 +468,8 @@ class LogicLayer(object):
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
-        if not TaskUserOps.is_user_authorized_or_admin(task_to_move, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(task_to_move,
+                                                       current_user):
             raise werkzeug.exceptions.Forbidden()
 
         target = self.pl.get_task(target_id)
@@ -1269,7 +1271,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
         if not TaskUserOps.is_user_authorized_or_admin(prioritize_before,
-                                                current_user):
+                                                       current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if prioritize_before not in task.prioritize_before:
@@ -1299,7 +1301,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(prioritize_before_id))
         if not TaskUserOps.is_user_authorized_or_admin(prioritize_before,
-                                                current_user):
+                                                       current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if prioritize_before in task.prioritize_before:
