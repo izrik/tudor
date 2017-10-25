@@ -9,7 +9,7 @@
     </form>
 </div>
 <div>
-{% if results and results.count() > 0 %}
+{% if results %}
     <hr>
 {% for task in results %}
     <p><a href="{{url_for('view_task', id=task.id)}}" {{ task.get_css_class_attr()|safe }}>{{task.summary}} ({{task.id}})</a></p>
