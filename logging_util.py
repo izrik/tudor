@@ -5,9 +5,9 @@ config_was_set = False
 
 logging.basicConfig(
     level=logging.INFO,
-    format='%(relativeCreated)d:%(levelname)s:%(name)s:%(funcName)s:'
-           # '%(pathname)s,%(lineno)d:'
-           ' %(message)s')
+    format=u'%(relativeCreated)d:%(levelname)s:%(name)s:%(funcName)s:'
+           # u'%(pathname)s,%(lineno)d:'
+           u' %(message)s')
 
 
 def get_logger_by_object(module, obj):

@@ -36,7 +36,7 @@ class TaskBase(object):
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,
                  is_public=False):
-        self._logger.debug('TaskBase.__init__ {}'.format(self))
+        self._logger.debug(u'TaskBase.__init__ {}'.format(self))
 
         self.summary = summary
         self.description = description
@@ -65,7 +65,7 @@ class TaskBase(object):
 
     def to_dict(self, fields=None):
 
-        self._logger.debug('{}'.format(self))
+        self._logger.debug(u'{}'.format(self))
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
@@ -158,7 +158,7 @@ class TaskBase(object):
         return task
 
     def update_from_dict(self, d):
-        self._logger.debug('{}: {}'.format(self, d))
+        self._logger.debug(u'{}: {}'.format(self, d))
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'summary' in d:
@@ -230,7 +230,7 @@ class Task(Changeable, TaskBase):
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost, is_public)
 
-        self._logger.debug('Task.__init__ {}'.format(self))
+        self._logger.debug(u'Task.__init__ {}'.format(self))
 
         if lazy is None:
             lazy = {}
@@ -265,7 +265,7 @@ class Task(Changeable, TaskBase):
     @id.setter
     def id(self, value):
         if value != self._id:
-            self._logger.debug('{}: {} -> {}'.format(self, self.id, value))
+            self._logger.debug(u'{}: {} -> {}'.format(self, self.id, value))
             self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
             self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
@@ -277,7 +277,7 @@ class Task(Changeable, TaskBase):
     @summary.setter
     def summary(self, value):
         if value != self._summary:
-            self._logger.debug('{}: {} -> {}'.format(
+            self._logger.debug(u'{}: {} -> {}'.format(
                 self, repr(self.summary), repr(value)))
             self._on_attr_changing(self.FIELD_SUMMARY, self._summary)
             self._summary = value
@@ -292,7 +292,7 @@ class Task(Changeable, TaskBase):
     def description(self, value):
         if value != self._description:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.description, value))
+                u'{}: {} -> {}'.format(self, self.description, value))
             self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,
@@ -305,8 +305,8 @@ class Task(Changeable, TaskBase):
     @is_done.setter
     def is_done(self, value):
         if value != self._is_done:
-            self._logger.debug('{}: {} -> {}'.format(self, self.is_done,
-                                                     value))
+            self._logger.debug(u'{}: {} -> {}'.format(self, self.is_done,
+                                                      value))
             self._on_attr_changing(self.FIELD_IS_DONE, self._is_done)
             self._is_done = value
             self._on_attr_changed(self.FIELD_IS_DONE, self.OP_SET,
@@ -320,7 +320,7 @@ class Task(Changeable, TaskBase):
     def is_deleted(self, value):
         if value != self._is_deleted:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.is_deleted, value))
+                u'{}: {} -> {}'.format(self, self.is_deleted, value))
             self._on_attr_changing(self.FIELD_IS_DELETED, self._is_deleted)
             self._is_deleted = value
             self._on_attr_changed(self.FIELD_IS_DELETED, self.OP_SET,
@@ -334,7 +334,7 @@ class Task(Changeable, TaskBase):
     def order_num(self, value):
         if value != self._order_num:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.order_num, value))
+                u'{}: {} -> {}'.format(self, self.order_num, value))
             self._on_attr_changing(self.FIELD_ORDER_NUM, self._order_num)
             self._order_num = value
             self._on_attr_changed(self.FIELD_ORDER_NUM, self.OP_SET,
@@ -348,7 +348,7 @@ class Task(Changeable, TaskBase):
     def deadline(self, value):
         if value != self._deadline:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.deadline, value))
+                u'{}: {} -> {}'.format(self, self.deadline, value))
             self._on_attr_changing(self.FIELD_DEADLINE, self._deadline)
             self._deadline = value
             self._on_attr_changed(self.FIELD_DEADLINE, self.OP_SET,
@@ -362,8 +362,8 @@ class Task(Changeable, TaskBase):
     def expected_duration_minutes(self, value):
         if value != self._expected_duration_minutes:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.expected_duration_minutes,
-                                      value))
+                u'{}: {} -> {}'.format(self, self.expected_duration_minutes,
+                                       value))
             self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES,
                                    self._expected_duration_minutes)
             self._expected_duration_minutes = value
@@ -378,7 +378,7 @@ class Task(Changeable, TaskBase):
     def expected_cost(self, value):
         if value != self._expected_cost:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.expected_cost, value))
+                u'{}: {} -> {}'.format(self, self.expected_cost, value))
             self._on_attr_changing(self.FIELD_EXPECTED_COST,
                                    self._expected_cost)
             self._expected_cost = value
@@ -393,7 +393,7 @@ class Task(Changeable, TaskBase):
 
     def _populate_parent(self):
         if self._parent_lazy:
-            self._logger.debug('populating parent from lazy {}'.format(self))
+            self._logger.debug(u'populating parent from lazy {}'.format(self))
             value = self._parent_lazy()
             self._parent_lazy = None
             self.parent = value
@@ -405,11 +405,11 @@ class Task(Changeable, TaskBase):
 
     @parent.setter
     def parent(self, value):
-        self._logger.debug('{}'.format(self))
+        self._logger.debug(u'{}'.format(self))
         self._populate_parent()
         if value != self._parent:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self._parent, value))
+                u'{}: {} -> {}'.format(self, self._parent, value))
             self._on_attr_changing(self.FIELD_PARENT, self._parent)
             if self._parent is not None:
                 self._parent.children.discard(self)
@@ -462,7 +462,7 @@ class Task(Changeable, TaskBase):
     def is_public(self, value):
         if value != self._is_public:
             self._logger.debug(
-                '{}: {} -> {}'.format(self, self.is_public, value))
+                u'{}: {} -> {}'.format(self, self.is_public, value))
             self._on_attr_changing(self.FIELD_IS_PUBLIC,
                                    self._is_public)
             self._is_public = value
@@ -471,18 +471,18 @@ class Task(Changeable, TaskBase):
 
     def get_css_class(self):
         if self.is_deleted and self.is_done:
-            return 'done-deleted'
+            return u'done-deleted'
         if self.is_deleted:
-            return 'not-done-deleted'
+            return u'not-done-deleted'
         if self.is_done:
-            return 'done-not-deleted'
+            return u'done-not-deleted'
         return ''
 
     def get_css_class_attr(self):
         cls = self.get_css_class()
         if cls:
-            return ' class="{}" '.format(cls)
-        return ''
+            return u' class="{}" '.format(cls)
+        return u''
 
     def get_tag_values(self):
         for tag in self.tags:
@@ -492,13 +492,13 @@ class Task(Changeable, TaskBase):
         if self.expected_duration_minutes is None:
             return ''
         if self.expected_duration_minutes == 1:
-            return '1 minute'
-        return '{} minutes'.format(self.expected_duration_minutes)
+            return u'1 minute'
+        return u'{} minutes'.format(self.expected_duration_minutes)
 
     def get_expected_cost_for_viewing(self):
         if self.expected_cost is None:
             return ''
-        return '{:.2f}'.format(self.expected_cost)
+        return u'{:.2f}'.format(self.expected_cost)
 
     def is_user_authorized(self, user):
         return user in self.users

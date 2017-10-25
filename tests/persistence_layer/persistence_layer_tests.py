@@ -728,12 +728,12 @@ class PersistenceLayerTagsTest(unittest.TestCase):
 class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
     def setUp(self):
         self._logger = logging.getLogger('test')
-        self._logger.debug('setUp generate_app')
+        self._logger.debug(u'setUp generate_app')
         self.pl = generate_pl()
-        self._logger.debug('setUp create_all')
+        self._logger.debug(u'setUp create_all')
         self.pl.db.drop_all()
         self.pl.create_all()
-        self._logger.debug('setUp create objects')
+        self._logger.debug(u'setUp create objects')
 
         self.t1 = Task('t1')
         self.t1.order_num = 11
@@ -747,12 +747,12 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.t5.order_num = 53
         self.tag1 = Tag('tag1')
         self.tag2 = Tag('tag2')
-        self._logger.debug('setUp connect objects')
+        self._logger.debug(u'setUp connect objects')
         self.t2.tags.add(self.tag1)
         self.t3.tags.add(self.tag1)
         self.t3.tags.add(self.tag2)
         self.t4.tags.add(self.tag1)
-        self._logger.debug('setUp add objects')
+        self._logger.debug(u'setUp add objects')
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)
@@ -760,10 +760,10 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
         self.pl.add(self.t5)
         self.pl.add(self.tag1)
         self.pl.add(self.tag2)
-        self._logger.debug('setUp commit')
+        self._logger.debug(u'setUp commit')
         self.pl.commit()
 
-        self._logger.debug('setUp finished')
+        self._logger.debug(u'setUp finished')
 
     def test_get_paginated_tasks_tasks_per_page_returns_that_number_1(self):
         # when
@@ -868,54 +868,54 @@ class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
 
     def test_get_paginated_tasks_filtered_by_tag_tag1_page_1(self):
         # when
-        self._logger.debug('when')
+        self._logger.debug(u'when')
         tasks = self.pl.get_tasks(tags_contains=self.tag1)
         # then
-        self._logger.debug('then')
+        self._logger.debug(u'then')
         tasks2 = set(tasks)
         self.assertEqual({self.t2, self.t3, self.t4}, tasks2)
         # when
-        self._logger.debug('when')
+        self._logger.debug(u'when')
         count = self.pl.count_tasks(tags_contains=self.tag1)
         # then
-        self._logger.debug('then')
+        self._logger.debug(u'then')
         self.assertEqual(3, count)
         # expect
-        self._logger.debug('expect')
+        self._logger.debug(u'expect')
         self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
         # expect
-        self._logger.debug('expect')
+        self._logger.debug(u'expect')
         self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
         # expect
-        self._logger.debug('expect')
+        self._logger.debug(u'expect')
         self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
 
         # when
-        self._logger.debug('when')
+        self._logger.debug(u'when')
         pager = self.pl.get_paginated_tasks(page_num=1, tasks_per_page=2,
                                             tags_contains=self.tag1)
         # then
-        self._logger.debug('then 1')
+        self._logger.debug(u'then 1')
         self.assertIsNotNone(pager)
-        self._logger.debug('then 2')
+        self._logger.debug(u'then 2')
         self.assertEqual(1, pager.page)
-        self._logger.debug('then 3')
+        self._logger.debug(u'then 3')
         self.assertEqual(2, pager.per_page)
-        self._logger.debug('then 4')
+        self._logger.debug(u'then 4')
         self.assertEqual(3, pager.total)
-        self._logger.debug('then 5')
+        self._logger.debug(u'then 5')
         items = list(pager.items)
-        self._logger.debug('then 6')
+        self._logger.debug(u'then 6')
         self.assertEqual(2, len(items))
-        self._logger.debug('then 7')
+        self._logger.debug(u'then 7')
         self.assertIn(self.tag1, items[0].tags)
-        self._logger.debug('then 8')
+        self._logger.debug(u'then 8')
         self.assertIn(items[0], {self.t2, self.t3, self.t4})
-        self._logger.debug('then 9')
+        self._logger.debug(u'then 9')
         self.assertIn(self.tag1, items[1].tags)
-        self._logger.debug('then 10')
+        self._logger.debug(u'then 10')
         self.assertIn(items[1], {self.t2, self.t3, self.t4})
-        self._logger.debug('when 11')
+        self._logger.debug(u'when 11')
 
     def test_get_paginated_tasks_filtered_by_tag_tag1_page_2(self):
         # when
@@ -3074,21 +3074,21 @@ class PersistenceLayerInternalsTest(unittest.TestCase):
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
         logger = logging_util.get_logger_by_object(__name__, self)
-        logger.debug('before create task')
+        logger.debug(u'before create task')
         task = Task('task')
-        logger.debug('after create task')
-        logger.debug('before create tag')
+        logger.debug(u'after create task')
+        logger.debug(u'before create tag')
         tag = Tag('tag', description='a')
-        logger.debug('after create tag')
-        logger.debug('before add task')
+        logger.debug(u'after create tag')
+        logger.debug(u'before add task')
         self.pl.add(task)
-        logger.debug('after add task')
-        logger.debug('before add tag')
+        logger.debug(u'after add task')
+        logger.debug(u'before add tag')
         self.pl.add(tag)
-        logger.debug('after add tag')
-        logger.debug('before commit')
+        logger.debug(u'after add tag')
+        logger.debug(u'before commit')
         self.pl.commit()
-        logger.debug('after commit')
+        logger.debug(u'after commit')
 
 
 class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
