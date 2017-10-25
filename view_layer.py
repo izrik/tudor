@@ -205,9 +205,19 @@ class ViewLayer(object):
     def task(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
+        try:
+            page_num = int(request.args.get('page', 1))
+        except Exception:
+            page_num = 1
+        try:
+            tasks_per_page = int(request.args.get('per_page', 20))
+        except Exception:
+            tasks_per_page = 20
         data = self.ll.get_task_data(task_id, current_user,
                                      include_deleted=show_deleted,
-                                     include_done=show_done)
+                                     include_done=show_done,
+                                     page_num=page_num,
+                                     tasks_per_page=tasks_per_page)
 
         return render_template('task.t.html',
                                task=data['task'],

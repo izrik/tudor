@@ -177,7 +177,7 @@ class LogicLayer(object):
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
-                      include_done=True):
+                      include_done=True, page_num=1, tasks_per_page=20):
         task = self.pl.get_task(id)
         # TODO: normalize access restrictions and exceptions in LogicLayer
         if task is None:
@@ -197,7 +197,8 @@ class LogicLayer(object):
                                              include_deleted=include_deleted,
                                              order_by_order_num=True,
                                              parent_id=task.id, paginate=True,
-                                             pager=_pager)
+                                             pager=_pager, page_num=page_num,
+                                             tasks_per_page=tasks_per_page)
         pager = _pager[0]
 
         hierarchy_sort = True
