@@ -16,10 +16,7 @@ import logging_util
 from persistence_layer import as_iterable
 from models.changeable import Changeable
 
-
-def generate_pl(db_uri='sqlite://'):
-    app = generate_app(db_uri=db_uri)
-    return app.pl
+from util import generate_pl
 
 
 class PersistenceLayerTest(unittest.TestCase):
