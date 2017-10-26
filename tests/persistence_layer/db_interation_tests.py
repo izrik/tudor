@@ -8,7 +8,7 @@ from models.user import User
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerDatabaseInteractionTest(unittest.TestCase):
+class DatabaseInteractionTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

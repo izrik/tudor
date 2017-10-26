@@ -4,7 +4,7 @@ from models.option import Option
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerGetOptionsTest(unittest.TestCase):
+class GetOptionsTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

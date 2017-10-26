@@ -4,7 +4,7 @@ from models.attachment import Attachment
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerGetAttachmentsTest(unittest.TestCase):
+class GetAttachmentsTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

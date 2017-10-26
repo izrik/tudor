@@ -4,7 +4,7 @@ from models.tag import Tag
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerGetTagsTest(unittest.TestCase):
+class GetTagsTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

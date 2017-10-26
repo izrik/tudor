@@ -9,7 +9,7 @@ from models.user import User
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerBridgeTest(unittest.TestCase):
+class BridgeTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

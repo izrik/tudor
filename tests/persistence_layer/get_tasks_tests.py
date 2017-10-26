@@ -7,7 +7,7 @@ from models.user import User
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerTest(unittest.TestCase):
+class GetTaskTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -127,7 +127,7 @@ class PersistenceLayerTest(unittest.TestCase):
         self.assertEqual(set(), set(results))
 
 
-class PersistenceLayerGetTasksIsPublicTest(unittest.TestCase):
+class GetTasksIsPublicTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -219,7 +219,7 @@ class GetTasksIsPublicOrUsersContainsTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t2}, set(result))
 
 
-class PersistenceLayerOrderByTest(unittest.TestCase):
+class OrderByTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -323,7 +323,7 @@ class PersistenceLayerOrderByTest(unittest.TestCase):
         self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
 
 
-class PersistenceLayerOrderByDeadlineTest(unittest.TestCase):
+class OrderByDeadlineTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -362,7 +362,7 @@ class PersistenceLayerOrderByDeadlineTest(unittest.TestCase):
         self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
 
 
-class PersistenceLayerIdInTest(unittest.TestCase):
+class IdInTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -512,7 +512,7 @@ class PersistenceLayerIdInTest(unittest.TestCase):
         self.assertEqual({self.t1}, set(results))
 
 
-class PersistenceLayerLimitTest(unittest.TestCase):
+class LimitTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -559,7 +559,7 @@ class PersistenceLayerLimitTest(unittest.TestCase):
         self.assertEqual(3, len(list(results)))
 
 
-class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
+class DeadLineIsNotNoneTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -591,7 +591,7 @@ class PersistenceLayerDeadLineIsNotNoneTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t3}, set(results))
 
 
-class PersistenceLayerParentIdInTest(unittest.TestCase):
+class ParentIdInTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -672,7 +672,7 @@ class PersistenceLayerParentIdInTest(unittest.TestCase):
         self.assertEqual([], list(results))
 
 
-class PersistenceLayerTagsTest(unittest.TestCase):
+class TagsTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -710,7 +710,7 @@ class PersistenceLayerTagsTest(unittest.TestCase):
         self.assertEqual({self.t3}, set(results))
 
 
-class PersistenceLayerSearchTermTest(unittest.TestCase):
+class SearchTermTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -740,7 +740,7 @@ class PersistenceLayerSearchTermTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t3}, set(results))
 
 
-class PersistenceLayerOrderNumberGreaterLessEqualTest(unittest.TestCase):
+class OrderNumberGreaterLessEqualTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

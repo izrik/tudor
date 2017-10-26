@@ -4,7 +4,7 @@ from models.user import User
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerGetUsersTest(unittest.TestCase):
+class GetUsersTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

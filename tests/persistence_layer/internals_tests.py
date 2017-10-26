@@ -6,7 +6,7 @@ from models.task import Task
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerInternalsTest(unittest.TestCase):
+class InternalsTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

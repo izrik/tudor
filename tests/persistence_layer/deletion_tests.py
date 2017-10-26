@@ -8,7 +8,7 @@ from models.user import User
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
+class DbOnlyDeletionTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -520,7 +520,7 @@ class PersistenceLayerDbOnlyDeletionTest(unittest.TestCase):
         self.assertIsNone(n3.task_id)
 
 
-class PersistenceLayerDeletionTest(unittest.TestCase):
+class DeletionTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -1032,7 +1032,7 @@ class PersistenceLayerDeletionTest(unittest.TestCase):
         self.assertIsNone(a3.task_id)
 
 
-class PersistenceLayerAddDeleteTest(unittest.TestCase):
+class AddDeleteTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
@@ -1096,7 +1096,7 @@ class PersistenceLayerAddDeleteTest(unittest.TestCase):
         self.assertIn(task, self.pl._deleted_objects)
 
 
-class PersistenceLayerDbDeletionTest(unittest.TestCase):
+class DbDeletionTest(unittest.TestCase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

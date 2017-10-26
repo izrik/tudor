@@ -6,7 +6,7 @@ from models.task import Task
 from tests.persistence_layer.util import generate_pl
 
 
-class PersistenceLayerPaginatedTasksTest(unittest.TestCase):
+class PaginatedTasksTest(unittest.TestCase):
     def setUp(self):
         self._logger = logging.getLogger('test')
         self._logger.debug(u'setUp generate_app')
