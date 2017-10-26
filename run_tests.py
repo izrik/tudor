@@ -71,7 +71,8 @@ from tests.logic_layer.load_no_hierarchy_exclude_non_public import *
 from tests.logic_layer.load_is_public_tests import LoadIsPublicTest, \
     LoadIsPublicRegularUserTest
 
-from tests.view_layer.route_tests import *
+from tests.view_layer.route_tests import RouteTest
+from tests.view_layer.task_tests import TaskTest
 
 
 def run():

@@ -3,7 +3,7 @@ import itertools
 import re
 
 import flask
-from flask import make_response, render_template, url_for, redirect, flash
+from flask import url_for, redirect, flash
 from flask import jsonify, json
 from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound, BadRequest
@@ -14,12 +14,31 @@ from conversions import int_from_str, money_from_str, bool_from_str
 from models.task_user_ops import TaskUserOps
 
 
+class DefaultRenderer(object):
+    def render_template(self, template_name, **kwargs):
+        from flask import render_template
+        return render_template(template_name, **kwargs)
+
+    def make_response(self, *args):
+        from flask import make_response
+        return make_response(*args)
+
+
 class ViewLayer(object):
-    def __init__(self, ll, app, upload_folder, pl):
+    def __init__(self, ll, app, upload_folder, pl, renderer=None):
         self.ll = ll
         self.app = app
         self.upload_folder = upload_folder
         self.pl = pl
+        if renderer is None:
+            renderer = DefaultRenderer()
+        self.renderer = renderer
+
+    def render_template(self, template_name, **kwargs):
+        return self.renderer.render_template(template_name, **kwargs)
+
+    def make_response(self, *args):
+        return self.renderer.make_response(*args)
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -44,17 +63,17 @@ class ViewLayer(object):
                                       page_num=page_num,
                                       tasks_per_page=tasks_per_page)
 
-        resp = make_response(
-            render_template('index.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks=data['tasks'],
-                            tags=data['all_tags'],
-                            pager=data['pager'],
-                            pager_link_page='index',
-                            pager_link_args={}))
+        resp = self.make_response(
+            self.render_template('index.t.html',
+                                 show_deleted=data['show_deleted'],
+                                 show_done=data['show_done'],
+                                 cycle=itertools.cycle,
+                                 user=current_user,
+                                 tasks=data['tasks'],
+                                 tags=data['all_tags'],
+                                 pager=data['pager'],
+                                 pager_link_page='index',
+                                 pager_link_args={}))
         return resp
 
     def hierarchy(self, request, current_user):
@@ -64,20 +83,20 @@ class ViewLayer(object):
         data = self.ll.get_index_hierarchy_data(show_deleted, show_done,
                                                 current_user)
 
-        resp = make_response(
-            render_template('hierarchy.t.html',
-                            show_deleted=data['show_deleted'],
-                            show_done=data['show_done'],
-                            cycle=itertools.cycle,
-                            user=current_user,
-                            tasks_h=data['tasks_h'],
-                            tags=data['all_tags']))
+        resp = self.make_response(
+            self.render_template('hierarchy.t.html',
+                                 show_deleted=data['show_deleted'],
+                                 show_done=data['show_done'],
+                                 cycle=itertools.cycle,
+                                 user=current_user,
+                                 tasks_h=data['tasks_h'],
+                                 tags=data['all_tags']))
         return resp
 
     def deadlines(self, request, current_user):
         data = self.ll.get_deadlines_data(current_user)
-        return make_response(
-            render_template(
+        return self.make_response(
+            self.render_template(
                 'deadlines.t.html',
                 cycle=itertools.cycle,
                 deadline_tasks=data['deadline_tasks']))
@@ -97,7 +116,7 @@ class ViewLayer(object):
 
         prev_url = self.get_form_or_arg(request, 'prev_url')
 
-        return render_template(
+        return self.render_template(
             'new_task.t.html', prev_url=prev_url, summary=summary,
             description=description, deadline=deadline, is_done=is_done,
             is_deleted=is_deleted, order_num=order_num,
@@ -200,27 +219,37 @@ class ViewLayer(object):
                 self.pl.delete(task)
             self.pl.commit()
             return redirect(request.args.get('next') or url_for('index'))
-        return render_template('purge.t.html')
+        return self.render_template('purge.t.html')
 
     def task(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
+        try:
+            page_num = int(request.args.get('page', 1))
+        except Exception:
+            page_num = 1
+        try:
+            tasks_per_page = int(request.args.get('per_page', 20))
+        except Exception:
+            tasks_per_page = 20
         data = self.ll.get_task_data(task_id, current_user,
                                      include_deleted=show_deleted,
-                                     include_done=show_done)
+                                     include_done=show_done,
+                                     page_num=page_num,
+                                     tasks_per_page=tasks_per_page)
 
-        return render_template('task.t.html',
-                               task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted,
-                               show_done=show_done,
-                               pager=data['pager'],
-                               pager_link_page='view_task',
-                               pager_link_args={'id': task_id},
-                               current_user=current_user,
-                               ops=TaskUserOps,
-                               show_hierarchy=False)
+        return self.render_template('task.t.html',
+                                    task=data['task'],
+                                    descendants=data['descendants'],
+                                    cycle=itertools.cycle,
+                                    show_deleted=show_deleted,
+                                    show_done=show_done,
+                                    pager=data['pager'],
+                                    pager_link_page='view_task',
+                                    pager_link_args={'id': task_id},
+                                    current_user=current_user,
+                                    ops=TaskUserOps,
+                                    show_hierarchy=False)
 
     def task_hierarchy(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
@@ -229,14 +258,14 @@ class ViewLayer(object):
                                                include_deleted=show_deleted,
                                                include_done=show_done)
 
-        return render_template('task.t.html',
-                               task=data['task'],
-                               descendants=data['descendants'],
-                               cycle=itertools.cycle,
-                               show_deleted=show_deleted,
-                               show_done=show_done,
-                               ops=TaskUserOps,
-                               show_hierarchy=True)
+        return self.render_template('task.t.html',
+                                    task=data['task'],
+                                    descendants=data['descendants'],
+                                    cycle=itertools.cycle,
+                                    show_deleted=show_deleted,
+                                    show_done=show_done,
+                                    ops=TaskUserOps,
+                                    show_hierarchy=True)
 
     def note_new_post(self, request, current_user):
         if 'task_id' not in request.form:
@@ -255,8 +284,8 @@ class ViewLayer(object):
 
         def render_get_response():
             data = self.ll.get_edit_task_data(task_id, current_user)
-            return render_template("edit_task.t.html", task=data['task'],
-                                   tag_list=data['tag_list'])
+            return self.render_template("edit_task.t.html", task=data['task'],
+                                        tag_list=data['tag_list'])
 
         if request.method == 'GET':
             return render_get_response()
@@ -410,8 +439,8 @@ class ViewLayer(object):
     def task_pick_user(self, request, current_user, task_id):
         task = self.ll.get_task(task_id, current_user)
         users = self.ll.get_users()
-        return render_template('pick_user.t.html', task=task, users=users,
-                               cycle=itertools.cycle)
+        return self.render_template('pick_user.t.html', task=task, users=users,
+                                    cycle=itertools.cycle)
 
     def task_authorize_user_user(self, request, current_user, task_id,
                                  user_id):
@@ -438,7 +467,7 @@ class ViewLayer(object):
 
     def login(self, request, current_user):
         if request.method == 'GET':
-            return render_template('login.t.html')
+            return self.render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
         user = self.pl.get_user_by_email(email)
@@ -465,8 +494,8 @@ class ViewLayer(object):
     def users(self, request, current_user):
         if request.method == 'GET':
             users = self.ll.get_users()
-            return render_template('list_users.t.html', users=users,
-                                   cycle=itertools.cycle)
+            return self.render_template('list_users.t.html', users=users,
+                                        cycle=itertools.cycle)
 
         email = request.form['email']
         is_admin = False
@@ -480,11 +509,11 @@ class ViewLayer(object):
 
     def users_user_get(self, request, current_user, user_id):
         user = self.ll.do_get_user_data(user_id, current_user)
-        return render_template('view_user.t.html', user=user)
+        return self.render_template('view_user.t.html', user=user)
 
     def show_hide_deleted(self, request, current_user):
         show_deleted = request.args.get('show_deleted')
-        resp = make_response(
+        resp = self.make_response(
             redirect(request.args.get('next') or url_for('index')))
         if show_deleted and show_deleted != '0':
             resp.set_cookie('show_deleted', '1')
@@ -494,7 +523,7 @@ class ViewLayer(object):
 
     def show_hide_done(self, request, current_user):
         show_done = request.args.get('show_done')
-        resp = make_response(
+        resp = self.make_response(
             redirect(request.args.get('next') or url_for('index')))
         if show_done and show_done != '0':
             resp.set_cookie('show_done', '1')
@@ -505,7 +534,7 @@ class ViewLayer(object):
     def options(self, request, current_user):
         if request.method == 'GET' or 'key' not in request.form:
             data = self.ll.get_view_options_data()
-            return render_template('options.t.html', options=data)
+            return self.render_template('options.t.html', options=data)
 
         key = request.form['key']
         value = ''
@@ -529,7 +558,7 @@ class ViewLayer(object):
 
     def export(self, request, current_user):
         if request.method == 'GET':
-            return render_template('export.t.html', results=None)
+            return self.render_template('export.t.html', results=None)
         types_to_export = set(k for k in request.form.keys() if
                               k in request.form and request.form[k] == 'all')
         results = self.ll.do_export_data(types_to_export)
@@ -537,7 +566,7 @@ class ViewLayer(object):
 
     def import_(self, request, current_user):
         if request.method == 'GET':
-            return render_template('import.t.html')
+            return self.render_template('import.t.html')
 
         f = request.files['file']
         if f is None or not f:
@@ -554,8 +583,8 @@ class ViewLayer(object):
     def task_crud(self, request, current_user):
         if request.method == 'GET':
             tasks = self.ll.get_task_crud_data(current_user)
-            return render_template('task_crud.t.html', tasks=tasks,
-                                   cycle=itertools.cycle)
+            return self.render_template('task_crud.t.html', tasks=tasks,
+                                        cycle=itertools.cycle)
 
         crud_data = {}
         for key in request.form.keys():
@@ -570,19 +599,19 @@ class ViewLayer(object):
 
     def tags(self, request, current_user):
         tags = self.ll.get_tags()
-        return render_template('list_tags.t.html', tags=tags,
-                               cycle=itertools.cycle)
+        return self.render_template('list_tags.t.html', tags=tags,
+                                    cycle=itertools.cycle)
 
     def tags_id_get(self, request, current_user, tag_id):
         data = self.ll.get_tag_data(tag_id, current_user)
-        return render_template('tag.t.html', tag=data['tag'],
-                               tasks=data['tasks'], cycle=itertools.cycle)
+        return self.render_template('tag.t.html', tag=data['tag'],
+                                    tasks=data['tasks'], cycle=itertools.cycle)
 
     def tags_id_edit(self, request, current_user, tag_id):
 
         def render_get_response():
             tag = self.ll.get_tag(tag_id)
-            return render_template("edit_tag.t.html", tag=tag)
+            return self.render_template("edit_tag.t.html", tag=tag)
 
         if request.method == 'GET':
             return render_get_response()
@@ -606,12 +635,12 @@ class ViewLayer(object):
                 request.args.get('next') or url_for('view_tag', id=tag.id))
 
         task = self.ll.get_task(task_id, current_user)
-        return render_template('convert_task_to_tag.t.html',
-                               task_id=task.id,
-                               tag_value=task.summary,
-                               tag_description=task.description,
-                               cycle=itertools.cycle,
-                               tasks=task.children)
+        return self.render_template('convert_task_to_tag.t.html',
+                                    task_id=task.id,
+                                    tag_value=task.summary,
+                                    tag_description=task.description,
+                                    cycle=itertools.cycle,
+                                    tasks=task.children)
 
     def search(self, request, current_user, search_query):
         if search_query is None and request.method == 'POST':
@@ -619,8 +648,8 @@ class ViewLayer(object):
 
         results = self.ll.search(search_query, current_user)
 
-        return render_template('search.t.html', query=search_query,
-                               results=results)
+        return self.render_template('search.t.html', query=search_query,
+                                    results=results)
 
     def task_id_add_dependee(self, request, current_user, task_id,
                              dependee_id):
