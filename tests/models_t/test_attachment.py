@@ -7,7 +7,7 @@ from models.attachment import Attachment, AttachmentBase
 from models.task import Task
 
 
-class CleanTimestampTest(unittest.TestCase):
+class AttachmentCleanTimestampTest(unittest.TestCase):
     def test_none_yields_none(self):
         # expect
         self.assertIsNone(AttachmentBase._clean_timestamp(None))
