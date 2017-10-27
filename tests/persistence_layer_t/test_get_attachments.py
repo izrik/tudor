@@ -1,10 +1,11 @@
 import unittest
 
 from models.attachment import Attachment
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class GetAttachmentsTest(unittest.TestCase):
+class GetAttachmentsTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

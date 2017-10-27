@@ -1,10 +1,11 @@
 import unittest
 
 from models.tag import Tag
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class GetTagTest(unittest.TestCase):
+class GetTagTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

@@ -1,10 +1,11 @@
 import unittest
 
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class GetUserTest(unittest.TestCase):
+class GetUserTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

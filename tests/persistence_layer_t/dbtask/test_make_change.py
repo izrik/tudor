@@ -5,10 +5,11 @@ from decimal import Decimal
 from models.changeable import Changeable
 from models.tag import Tag
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class DbTaskMakeChangeTest(unittest.TestCase):
+class DbTaskMakeChangeTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

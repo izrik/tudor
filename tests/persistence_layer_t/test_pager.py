@@ -1,10 +1,11 @@
 import unittest
 
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class PagerTest(unittest.TestCase):
+class PagerTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

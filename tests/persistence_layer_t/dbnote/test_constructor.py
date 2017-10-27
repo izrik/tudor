@@ -1,9 +1,10 @@
 import unittest
 
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class DbNoteConstructorTest(unittest.TestCase):
+class DbNoteConstructorTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
 

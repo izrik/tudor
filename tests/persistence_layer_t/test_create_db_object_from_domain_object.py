@@ -1,9 +1,10 @@
 import unittest
 
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class CreateDbFromDomainTest(unittest.TestCase):
+class CreateDbFromDomainTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

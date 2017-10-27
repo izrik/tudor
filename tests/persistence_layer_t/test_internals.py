@@ -3,10 +3,11 @@ import unittest
 import logging_util
 from models.tag import Tag
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class InternalsTest(unittest.TestCase):
+class InternalsTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()

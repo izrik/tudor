@@ -1,10 +1,11 @@
 import unittest
 
 from models.note import Note
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import generate_pl, \
+    PersistenceLayerTestBase
 
 
-class GetNoteTest(unittest.TestCase):
+class GetNoteTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = generate_pl()
         self.pl.create_all()
