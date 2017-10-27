@@ -4,13 +4,12 @@ from datetime import datetime
 from models.changeable import Changeable
 from models.note import Note
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl, \
-    PersistenceLayerTestBase
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
 class DbNoteMakeChangeTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.Note = self.pl.DbNote('Note', datetime(2017, 1, 1))
 

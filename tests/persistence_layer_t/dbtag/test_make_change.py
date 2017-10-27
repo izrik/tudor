@@ -3,13 +3,12 @@ import unittest
 from models.changeable import Changeable
 from models.tag import Tag
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl, \
-    PersistenceLayerTestBase
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
 class DbTagMakeChangeTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.tag = self.pl.DbTag('tag')
 

@@ -5,13 +5,12 @@ from models.note import Note
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl, \
-    PersistenceLayerTestBase
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
 class DbOnlyDeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_db_only_deleting_task_removes_all_children(self):
@@ -523,7 +522,7 @@ class DbOnlyDeletionTest(PersistenceLayerTestBase):
 
 class DeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_deleting_task_removes_all_children(self):
@@ -1035,7 +1034,7 @@ class DeletionTest(PersistenceLayerTestBase):
 
 class AddDeleteTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_add_after_add_silently_ignored(self):
@@ -1099,7 +1098,7 @@ class AddDeleteTest(PersistenceLayerTestBase):
 
 class DbDeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_delete_of_db_only_object_gets_dbobj_from_db(self):

@@ -5,13 +5,12 @@ from models.note import Note
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl, \
-    PersistenceLayerTestBase
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
 class DatabaseInteractionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_adding_task_does_not_create_id(self):

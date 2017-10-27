@@ -3,15 +3,14 @@ import unittest
 
 from models.tag import Tag
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl, \
-    PersistenceLayerTestBase
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
 class PaginatedTasksTest(PersistenceLayerTestBase):
     def setUp(self):
         self._logger = logging.getLogger('test')
         self._logger.debug(u'setUp generate_app')
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self._logger.debug(u'setUp create_all')
         self.pl.db.drop_all()
         self.pl.create_all()
