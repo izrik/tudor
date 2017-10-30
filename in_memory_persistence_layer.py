@@ -1,3 +1,4 @@
+from itertools import islice
 
 import logging_util
 from models.attachment import Attachment
@@ -46,10 +47,23 @@ class InMemoryPersistenceLayer(object):
         return self._tasks_by_id.get(task_id)
 
     def get_tag(self, tag_id):
+        if tag_id is None:
+            raise ValueError('No tag_id provided.')
         return self._tags_by_id.get(tag_id)
 
     def get_tag_by_value(self, value):
         return self._tags_by_value.get(value)
+
+    def get_tags(self, value=UNSPECIFIED, limit=None):
+        query = self._tags
+        if value is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.value == value)
+        if limit is not self.UNSPECIFIED:
+            query = islice(query, limit)
+        return query
+
+    def count_tags(self, value=UNSPECIFIED, limit=None):
+        return len(list(self.get_tags(value=value, limit=limit)))
 
     def get_attachment(self, attachment_id):
         if attachment_id is None:
