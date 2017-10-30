@@ -37,6 +37,8 @@ class InMemoryPersistenceLayer(object):
         self._attachments = []
         self._attachments_by_id = {}
 
+    UNSPECIFIED = object()
+
     def create_all(self):
         pass
 
@@ -48,6 +50,21 @@ class InMemoryPersistenceLayer(object):
 
     def get_tag_by_value(self, value):
         return self._tags_by_value.get(value)
+
+    def get_attachment(self, attachment_id):
+        if attachment_id is None:
+            raise ValueError('No attachment_id provided.')
+        return self._attachments_by_id.get(attachment_id)
+
+    def get_attachments(self, attachment_id_in=UNSPECIFIED):
+        query = (_ for _ in self._attachments)
+        if attachment_id_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.id in attachment_id_in)
+        return query
+
+    def count_attachments(self, attachment_id_in=UNSPECIFIED):
+        return len(
+            list(self.get_attachments(attachment_id_in=attachment_id_in)))
 
     def add(self, obj):
         if obj in self._deleted_objects:
