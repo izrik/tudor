@@ -41,9 +41,6 @@ class InMemoryPersistenceLayer(object):
         self._added_objects.clear()
 
     def _get_next_task_id(self):
-        task_id = 0
-        for t in self._tasks:
-            if t.id is not None:
-                if t.id > task_id:
-                    task_id = t.id
-        return task_id + 1
+        if not self._tasks_by_id:
+            return 1
+        return max(self._tasks_by_id.iterkeys()) + 1
