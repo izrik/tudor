@@ -80,6 +80,20 @@ class InMemoryPersistenceLayer(object):
     def count_notes(self, note_id_in=UNSPECIFIED):
         return len(list(self.get_notes(note_id_in=note_id_in)))
 
+    def get_option(self, key):
+        if key is None:
+            raise ValueError('No option_id provided.')
+        return self._options_by_key.get(key)
+
+    def get_options(self, key_in=UNSPECIFIED):
+        query = self._options
+        if key_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.id in key_in)
+        return query
+
+    def count_options(self, key_in=UNSPECIFIED):
+        return len(list(self.get_options(key_in=key_in)))
+
     def add(self, obj):
         if obj in self._deleted_objects:
             raise Exception(
