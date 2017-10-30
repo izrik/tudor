@@ -66,6 +66,20 @@ class InMemoryPersistenceLayer(object):
         return len(
             list(self.get_attachments(attachment_id_in=attachment_id_in)))
 
+    def get_note(self, note_id):
+        if note_id is None:
+            raise ValueError('No note_id provided.')
+        return self._notes_by_id.get(note_id)
+
+    def get_notes(self, note_id_in=UNSPECIFIED):
+        query = self._notes
+        if note_id_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.id in note_id_in)
+        return query
+
+    def count_notes(self, note_id_in=UNSPECIFIED):
+        return len(list(self.get_notes(note_id_in=note_id_in)))
+
     def add(self, obj):
         if obj in self._deleted_objects:
             raise Exception(
