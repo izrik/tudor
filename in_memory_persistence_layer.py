@@ -50,9 +50,18 @@ class InMemoryPersistenceLayer(object):
         return self._tags_by_value.get(value)
 
     def add(self, obj):
+        if obj in self._deleted_objects:
+            raise Exception(
+                'The object (id={}) has already been deleted.'.format(obj.id))
         d = obj.to_dict()
         self._values_by_object[obj] = d
         self._added_objects.add(obj)
+
+    def delete(self, obj):
+        if obj in self._added_objects:
+            raise Exception(
+                'The object (id={}) has already been added.'.format(obj.id))
+        self._deleted_objects.add(obj)
 
     def commit(self):
         for domobj in list(self._added_objects):
@@ -114,6 +123,22 @@ class InMemoryPersistenceLayer(object):
                 self._users_by_id[domobj.id] = domobj
             self._added_objects.remove(domobj)
         self._added_objects.clear()
+
+        for domobj in list(self._deleted_objects):
+            tt = self._get_object_type(domobj)
+            if tt == Attachment:
+                pass
+            elif tt == Note:
+                pass
+            elif tt == Task:
+                pass
+            elif tt == Tag:
+                pass
+            elif tt == Option:
+                pass
+            elif tt == User:
+                pass
+            domobj.clear_relationships()
 
         for domobj in self._tasks:
             self._values_by_object[domobj] = domobj.to_dict()
