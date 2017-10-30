@@ -13,6 +13,7 @@ class InMemoryPersistenceLayer(object):
         self._changed_objects_original_values = {}
 
         self._tasks = []
+        self._tasks_by_id = {}
 
     def create_all(self):
         pass
@@ -30,7 +31,12 @@ class InMemoryPersistenceLayer(object):
         for t in list(self._added_objects):
             if t.id is None:
                 t.id = self._get_next_task_id()
+            else:
+                if t.id in self._tasks_by_id:
+                    raise Exception(
+                        'There already exists a task with id {}'.format(t.id))
             self._tasks.append(t)
+            self._tasks_by_id[t.id] = t
             self._added_objects.remove(t)
         self._added_objects.clear()
 
