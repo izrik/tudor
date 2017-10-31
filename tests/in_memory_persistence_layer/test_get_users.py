@@ -1,7 +1,6 @@
 
 from models.user import User
-from tests.persistence_layer_t.in_memory_persistence_layer.\
-    in_memory_test_base import InMemoryTestBase
+from tests.in_memory_persistence_layer.in_memory_test_base import InMemoryTestBase
 
 
 # copied from ../test_get_users.py, with removals
