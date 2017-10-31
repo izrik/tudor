@@ -319,44 +319,35 @@ class InMemoryPersistenceLayer(object):
     def commit(self):
         for domobj in list(self._added_objects):
             tt = self._get_object_type(domobj)
+            if tt is not Option and domobj.id is None:
+                domobj.id = self._get_next_id(tt)
+
             if tt == Attachment:
-                if domobj.id is None:
-                    domobj.id = self._get_next_attachment_id()
-                else:
-                    if domobj.id in self._attachments_by_id:
-                        raise Exception(
-                            'There already exists a attachment with id '
-                            '{}'.format(domobj.id))
+                if domobj.id in self._attachments_by_id:
+                    raise Exception(
+                        'There already exists a attachment with id '
+                        '{}'.format(domobj.id))
                 self._attachments.append(domobj)
                 self._attachments_by_id[domobj.id] = domobj
             elif tt == Note:
-                if domobj.id is None:
-                    domobj.id = self._get_next_note_id()
-                else:
-                    if domobj.id in self._notes_by_id:
-                        raise Exception(
-                            'There already exists a note with id {}'.format(
-                                domobj.id))
+                if domobj.id in self._notes_by_id:
+                    raise Exception(
+                        'There already exists a note with id {}'.format(
+                            domobj.id))
                 self._notes.append(domobj)
                 self._notes_by_id[domobj.id] = domobj
             elif tt == Task:
-                if domobj.id is None:
-                    domobj.id = self._get_next_task_id()
-                else:
-                    if domobj.id in self._tasks_by_id:
-                        raise Exception(
-                            'There already exists a task with id {}'.format(
-                                domobj.id))
+                if domobj.id in self._tasks_by_id:
+                    raise Exception(
+                        'There already exists a task with id {}'.format(
+                            domobj.id))
                 self._tasks.append(domobj)
                 self._tasks_by_id[domobj.id] = domobj
             elif tt == Tag:
-                if domobj.id is None:
-                    domobj.id = self._get_next_tag_id()
-                else:
-                    if domobj.id in self._tags_by_id:
-                        raise Exception(
-                            'There already exists a tag with id {}'.format(
-                                domobj.id))
+                if domobj.id in self._tags_by_id:
+                    raise Exception(
+                        'There already exists a tag with id {}'.format(
+                            domobj.id))
                 self._tags.append(domobj)
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
@@ -365,13 +356,10 @@ class InMemoryPersistenceLayer(object):
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
             else:  # tt == User
-                if domobj.id is None:
-                    domobj.id = self._get_next_user_id()
-                else:
-                    if domobj.id in self._users_by_id:
-                        raise Exception(
-                            'There already exists a user with id {}'.format(
-                                domobj.id))
+                if domobj.id in self._users_by_id:
+                    raise Exception(
+                        'There already exists a user with id {}'.format(
+                            domobj.id))
                 self._users.append(domobj)
                 self._users_by_id[domobj.id] = domobj
                 self._users_by_email[domobj.email] = domobj
