@@ -393,18 +393,6 @@ class InMemoryPersistenceLayer(object):
 
         for domobj in list(self._deleted_objects):
             tt = self._get_object_type(domobj)
-            if tt == Attachment:
-                pass
-            elif tt == Note:
-                pass
-            elif tt == Task:
-                pass
-            elif tt == Tag:
-                pass
-            elif tt == Option:
-                pass
-            elif tt == User:
-                pass
             domobj.clear_relationships()
 
         for domobj in self._tasks:
