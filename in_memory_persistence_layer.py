@@ -320,8 +320,6 @@ class InMemoryPersistenceLayer(object):
         for domobj in list(self._added_objects):
             tt = self._get_object_type(domobj)
             if tt == Attachment:
-                if domobj in self._attachments:
-                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_attachment_id()
                 else:
@@ -332,8 +330,6 @@ class InMemoryPersistenceLayer(object):
                 self._attachments.append(domobj)
                 self._attachments_by_id[domobj.id] = domobj
             elif tt == Note:
-                if domobj in self._notes:
-                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_note_id()
                 else:
@@ -344,8 +340,6 @@ class InMemoryPersistenceLayer(object):
                 self._notes.append(domobj)
                 self._notes_by_id[domobj.id] = domobj
             elif tt == Task:
-                if domobj in self._tasks:
-                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_task_id()
                 else:
@@ -356,8 +350,6 @@ class InMemoryPersistenceLayer(object):
                 self._tasks.append(domobj)
                 self._tasks_by_id[domobj.id] = domobj
             elif tt == Tag:
-                if domobj in self._tags:
-                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_tag_id()
                 else:
@@ -369,14 +361,10 @@ class InMemoryPersistenceLayer(object):
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
             elif tt == Option:
-                if domobj in self._options:
-                    continue
                 # TODO: autogenerate key?
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
             elif tt == User:
-                if domobj in self._users:
-                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_user_id()
                 else:
