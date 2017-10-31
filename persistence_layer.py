@@ -103,6 +103,7 @@ class PersistenceLayer(object):
         self._deleted_objects = set()
         self._changed_objects = set()
         self._changed_objects_original_values = {}
+        self._committed_objects = set()
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -159,7 +160,7 @@ class PersistenceLayer(object):
         if domobj in self._added_objects or domobj in self._changed_objects:
             # silently ignore
             return
-        if domobj in self._db_by_domain:
+        if domobj in self._committed_objects:
             # silently ignore
             return
 
@@ -209,6 +210,7 @@ class PersistenceLayer(object):
 
         for domobj in deleted:
             domobj.clear_relationships()
+        self._committed_objects.difference_update(deleted)
 
         ###############
         self._logger.debug(u'committing the db session/transaction')
@@ -218,6 +220,7 @@ class PersistenceLayer(object):
 
         for domobj in added:
             self._update_domain_object_from_db_object(domobj)
+        self._committed_objects.update(added)
 
         self._clear_affected_objects()
 
