@@ -1,6 +1,7 @@
 
 from models.option import Option
-from tests.in_memory_persistence_layer.in_memory_test_base import InMemoryTestBase
+from tests.in_memory_persistence_layer.in_memory_test_base import \
+    InMemoryTestBase
 
 
 # copied from ../test_get_option.py, with removals
