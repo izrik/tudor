@@ -585,3 +585,17 @@ class AddDeleteTest(InMemoryTestBase):
         # and
         self.assertNotIn(task, self.pl._added_objects)
         self.assertIn(task, self.pl._deleted_objects)
+
+    def test_add_an_object_already_committed_silently_ignored(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(task.id)
+        task2 = self.pl.get_task(task.id)
+        self.assertIs(task2, task)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertNotIn(task, self.pl._added_objects)

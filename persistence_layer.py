@@ -159,6 +159,9 @@ class PersistenceLayer(object):
         if domobj in self._added_objects or domobj in self._changed_objects:
             # silently ignore
             return
+        if domobj in self._db_by_domain:
+            # silently ignore
+            return
 
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:

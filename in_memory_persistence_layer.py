@@ -7,6 +7,7 @@ from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
+from persistence_layer import is_iterable
 
 
 class InMemoryPersistenceLayer(object):
@@ -41,11 +42,139 @@ class InMemoryPersistenceLayer(object):
 
     UNSPECIFIED = object()
 
+    ASCENDING = object()
+    DESCENDING = object()
+
+    TASK_ID = object()
+    ORDER_NUM = object()
+    DEADLINE = object()
+
     def create_all(self):
         pass
 
     def get_task(self, task_id):
         return self._tasks_by_id.get(task_id)
+
+    def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+                  parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
+                  users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
+                  task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
+                  tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                  is_public_or_users_contains=UNSPECIFIED,
+                  summary_description_search_term=UNSPECIFIED,
+                  order_num_greq_than=UNSPECIFIED,
+                  order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
+                  limit=UNSPECIFIED):
+
+        query = self._tasks
+
+
+        if is_done is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.is_done == is_done)
+
+        if is_deleted is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.is_deleted == is_deleted)
+
+        if is_public is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.is_public == is_public)
+
+        if parent_id is not self.UNSPECIFIED:
+            if parent_id is None:
+                query = (_ for _ in query if _.parent_id is None)
+            else:
+                query = (_ for _ in query if _.parent_id == parent_id)
+
+        if parent_id_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.parent_id in parent_id_in)
+
+        if users_contains is not self.UNSPECIFIED:
+            query = (_ for _ in query if users_contains in _.users)
+
+        if is_public_or_users_contains is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.is_public or
+                     is_public_or_users_contains in _.users)
+
+        if task_id_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.id in task_id_in)
+
+        if task_id_not_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.id not in task_id_not_in)
+
+        if deadline_is_not_none:
+            query = (_ for _ in query if _.deadline is not None)
+
+        if tags_contains is not self.UNSPECIFIED:
+            query = (_ for _ in query if tags_contains in _.tags)
+
+        if summary_description_search_term is not self.UNSPECIFIED:
+            term = summary_description_search_term
+            query = (_ for _ in query if
+                     term in _.summary or term in _.description)
+
+        if order_num_greq_than is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.order_num >= order_num_greq_than)
+
+        if order_num_lesseq_than is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.order_num <= order_num_lesseq_than)
+
+        if order_by is not self.UNSPECIFIED:
+            if not is_iterable(order_by):
+                sort_key = self._get_sort_key_by_order_field(order_by)
+                query = sorted(query, key=sort_key)
+            else:
+                for ordering in order_by:
+                    direction = self.ASCENDING
+                    if is_iterable(ordering):
+                        order_field = ordering[0]
+                        if len(ordering) > 1:
+                            direction = ordering[1]
+                    else:
+                        order_field = ordering
+                    sort_key = self._get_sort_key_by_order_field(order_field)
+                    if direction is self.ASCENDING:
+                        query = sorted(query, key=sort_key)
+                    elif direction is self.DESCENDING:
+                        query = sorted(query, key=sort_key, reverse=True)
+                    else:
+                        raise Exception(
+                            'Unknown order_by direction: {}'.format(direction))
+
+        if limit is not self.UNSPECIFIED and limit >= 0:
+            query = islice(query, limit)
+
+        return query
+
+    def _get_sort_key_by_order_field(self, order_by):
+        if order_by is self.ORDER_NUM:
+            return lambda task: task.order_num
+        if order_by is self.TASK_ID:
+            return lambda task: task.id
+        if order_by is self.DEADLINE:
+            return lambda task: task.deadline
+        raise Exception('Unhandled order_by field: {}'.format(f))
+
+    def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+                    parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
+                    users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
+                    task_id_not_in=UNSPECIFIED, deadline_is_not_none=False,
+                    tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                    is_public_or_users_contains=UNSPECIFIED,
+                    summary_description_search_term=UNSPECIFIED,
+                    order_num_greq_than=UNSPECIFIED,
+                    order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
+                    limit=UNSPECIFIED):
+
+        return len(list(self.get_tasks(
+            is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
+            parent_id_in=parent_id_in, users_contains=users_contains,
+            task_id_in=task_id_in, task_id_not_in=task_id_not_in,
+            deadline_is_not_none=deadline_is_not_none,
+            tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
+            summary_description_search_term=summary_description_search_term,
+            order_num_greq_than=order_num_greq_than,
+            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+            limit=limit)))
 
     def get_tag(self, tag_id):
         if tag_id is None:
@@ -127,14 +256,22 @@ class InMemoryPersistenceLayer(object):
         return len(list(self.get_users(email_in=email_in)))
 
     def add(self, obj):
+        if obj in self._added_objects:
+            return
         if obj in self._deleted_objects:
             raise Exception(
                 'The object (id={}) has already been deleted.'.format(obj.id))
+        if (obj in self._tasks or obj in self._tags or obj in self._notes or
+                obj in self._attachments or obj in self._users or
+                obj in self._options):
+            return
         d = obj.to_dict()
         self._values_by_object[obj] = d
         self._added_objects.add(obj)
 
     def delete(self, obj):
+        if obj in self._deleted_objects:
+            return
         if obj in self._added_objects:
             raise Exception(
                 'The object (id={}) has already been added.'.format(obj.id))
@@ -144,6 +281,8 @@ class InMemoryPersistenceLayer(object):
         for domobj in list(self._added_objects):
             tt = self._get_object_type(domobj)
             if tt == Attachment:
+                if domobj in self._attachments:
+                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_attachment_id()
                 else:
@@ -154,6 +293,8 @@ class InMemoryPersistenceLayer(object):
                 self._attachments.append(domobj)
                 self._attachments_by_id[domobj.id] = domobj
             elif tt == Note:
+                if domobj in self._notes:
+                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_note_id()
                 else:
@@ -164,6 +305,8 @@ class InMemoryPersistenceLayer(object):
                 self._notes.append(domobj)
                 self._notes_by_id[domobj.id] = domobj
             elif tt == Task:
+                if domobj in self._tasks:
+                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_task_id()
                 else:
@@ -174,6 +317,8 @@ class InMemoryPersistenceLayer(object):
                 self._tasks.append(domobj)
                 self._tasks_by_id[domobj.id] = domobj
             elif tt == Tag:
+                if domobj in self._tags:
+                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_tag_id()
                 else:
@@ -185,10 +330,14 @@ class InMemoryPersistenceLayer(object):
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
             elif tt == Option:
+                if domobj in self._options:
+                    continue
                 # TODO: autogenerate key?
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
             elif tt == User:
+                if domobj in self._users:
+                    continue
                 if domobj.id is None:
                     domobj.id = self._get_next_user_id()
                 else:
