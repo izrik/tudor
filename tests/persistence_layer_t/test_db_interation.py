@@ -266,7 +266,7 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         self.assertIn(task, tag2.tasks)
         self.assertNotIn(task, tag3.tasks)
 
-    def test_rollback_does_not_reverts_changes_on_unadded_new_objects(self):
+    def test_rollback_does_not_revert_changes_on_unadded_new_objects(self):
         tag = Tag('tag', description='a')
         tag.description = 'b'
         # precondition
