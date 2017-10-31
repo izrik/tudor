@@ -387,6 +387,8 @@ class InMemoryPersistenceLayer(object):
         for domobj in self._options:
             self._values_by_object[domobj] = domobj.to_dict()
 
+        self._clear_affected_objects()
+
     def _get_next_task_id(self):
         if not self._tasks_by_id:
             return 1
@@ -429,9 +431,14 @@ class InMemoryPersistenceLayer(object):
     def rollback(self):
         for t in self._added_objects:
             del self._values_by_object[t]
-        self._added_objects.clear()
+        self._clear_affected_objects()
         for t, d in self._values_by_object.iteritems():
             t.update_from_dict(d)
+
+    def _clear_affected_objects(self):
+        self._changed_objects.clear()
+        self._added_objects.clear()
+        self._deleted_objects.clear()
 
     def _get_object_type(self, domobj):
         if isinstance(domobj, Attachment):

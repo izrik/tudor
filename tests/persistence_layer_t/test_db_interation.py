@@ -276,6 +276,21 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         # then
         self.assertEqual('b', tag.description)
 
+    def test_rollback_undeletes_deleted_objects(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        self.pl.delete(task)
+        # precondition
+        self.assertIn(task, self.pl._committed_objects)
+        self.assertIn(task, self.pl._deleted_objects)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertIn(task, self.pl._committed_objects)
+        self.assertNotIn(task, self.pl._deleted_objects)
+
     def test_changes_to_objects_are_tracked_automatically(self):
         tag = Tag('tag', description='a')
         self.pl.add(tag)

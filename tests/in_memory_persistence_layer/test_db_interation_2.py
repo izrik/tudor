@@ -1,4 +1,5 @@
 from models.tag import Tag
+from models.task import Task
 from tests.in_memory_persistence_layer.in_memory_test_base import \
     InMemoryTestBase
 
@@ -33,3 +34,18 @@ class DatabaseInteractionTest(InMemoryTestBase):
         # then
         self.assertEqual('b', tag.description)
         self.assertEqual('b', tag1.description)
+
+    def test_rollback_undeletes_deleted_objects(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        self.pl.delete(task)
+        # precondition
+        self.assertIn(task, self.pl._tasks)
+        self.assertIn(task, self.pl._deleted_objects)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertIn(task, self.pl._tasks)
+        self.assertNotIn(task, self.pl._deleted_objects)
