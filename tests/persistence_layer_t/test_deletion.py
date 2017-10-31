@@ -2,6 +2,7 @@ import unittest
 
 from models.attachment import Attachment
 from models.note import Note
+from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
@@ -1099,15 +1100,62 @@ class AddDeleteTest(PersistenceLayerTestBase):
         # given
         task = Task('task')
         self.pl.add(task)
+        tag = Tag('tag')
+        self.pl.add(tag)
+        attachment = Attachment('attachment')
+        self.pl.add(attachment)
+        note = Note('note')
+        self.pl.add(note)
+        user = User('user')
+        self.pl.add(user)
+        option = Option('key', 'value')
+        self.pl.add(option)
         self.pl.commit()
         # precondition
         self.assertIsNotNone(task.id)
         task2 = self.pl.get_task(task.id)
         self.assertIs(task2, task)
+        self.assertIsNotNone(tag.id)
+        tag2 = self.pl.get_tag(tag.id)
+        self.assertIs(tag2, tag)
+        self.assertIsNotNone(attachment.id)
+        attachment2 = self.pl.get_attachment(attachment.id)
+        self.assertIs(attachment2, attachment)
+        self.assertIsNotNone(note.id)
+        note2 = self.pl.get_note(note.id)
+        self.assertIs(note2, note)
+        self.assertIsNotNone(user.id)
+        user2 = self.pl.get_user(user.id)
+        self.assertIs(user2, user)
+        self.assertIsNotNone(option.id)
+        option2 = self.pl.get_option(option.id)
+        self.assertIs(option2, option)
         # when
         self.pl.add(task)
         # then
         self.assertNotIn(task, self.pl._added_objects)
+        # when
+        self.pl.add(tag)
+        # then
+        self.assertNotIn(tag, self.pl._added_objects)
+        # when
+        self.pl.add(attachment)
+        # then
+        self.assertNotIn(attachment, self.pl._added_objects)
+        # when
+        self.pl.add(note)
+        # then
+        self.assertNotIn(note, self.pl._added_objects)
+        # when
+        self.pl.add(user)
+        # then
+        self.assertNotIn(user, self.pl._added_objects)
+        # when
+        self.pl.add(option)
+        # then
+        self.assertNotIn(option, self.pl._added_objects)
+        # then
+        self.assertEqual(0, len(self.pl._added_objects))
 
 
 class DbDeletionTest(PersistenceLayerTestBase):
