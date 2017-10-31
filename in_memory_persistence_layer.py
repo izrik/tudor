@@ -421,6 +421,20 @@ class InMemoryPersistenceLayer(object):
             return 1
         return max(self._users_by_id.iterkeys()) + 1
 
+    def _get_next_id(self, objtype):
+        if objtype is Task:
+            return self._get_next_task_id()
+        if objtype is Tag:
+            return self._get_next_tag_id()
+        if objtype is Attachment:
+            return self._get_next_attachment_id()
+        if objtype is Note:
+            return self._get_next_note_id()
+        if objtype is User:
+            return self._get_next_user_id()
+        raise Exception(
+            'Unknown object type: {}'.format(objtype.__name__))
+
     def rollback(self):
         for t in self._added_objects:
             del self._values_by_object[t]

@@ -76,7 +76,7 @@ class GetObjectTypeTest(InMemoryTestBase):
                          cm.exception.message)
 
 
-class GetNextObjectIds(InMemoryTestBase):
+class GetNextObjectIdsTest(InMemoryTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
@@ -190,3 +190,62 @@ class GetNextObjectIds(InMemoryTestBase):
         result = self.pl._get_next_user_id()
         # then
         self.assertEqual(4, result)
+
+
+class GetNextIdTest(InMemoryTestBase):
+    def setUp(self):
+        self.pl = self.generate_pl()
+        self.pl.create_all()
+        task = Task('task')
+        task.id = 3
+        self.pl.add(task)
+        tag = Tag('tag')
+        tag.id = 5
+        self.pl.add(tag)
+        attachment = Attachment('attachment')
+        attachment.id = 7
+        self.pl.add(attachment)
+        note = Note('note')
+        note.id = 9
+        self.pl.add(note)
+        user = User('user')
+        user.id = 11
+        self.pl.add(user)
+        self.pl.commit()
+
+    def test_get_next_id_task_returns_max_task_id_plus_one(self):
+        # when
+        result = self.pl._get_next_id(Task)
+        # then
+        self.assertEqual(4, result)
+
+    def test_get_next_id_tag_returns_max_tag_id_plus_one(self):
+        # when
+        result = self.pl._get_next_id(Tag)
+        # then
+        self.assertEqual(6, result)
+
+    def test_get_next_id_attachment_returns_max_attachment_id_plus_one(self):
+        # when
+        result = self.pl._get_next_id(Attachment)
+        # then
+        self.assertEqual(8, result)
+
+    def test_get_next_id_note_returns_max_note_id_plus_one(self):
+        # when
+        result = self.pl._get_next_id(Note)
+        # then
+        self.assertEqual(10, result)
+
+    def test_get_next_id_user_returns_max_user_id_plus_one(self):
+        # when
+        result = self.pl._get_next_id(User)
+        # then
+        self.assertEqual(12, result)
+
+    def test_get_next_id_non_domain_object_raises(self):
+        # expect
+        with self.assertRaises(Exception) as cm:
+            self.pl._get_next_id(str)
+        # then
+        self.assertEqual('Unknown object type: str', cm.exception.message)
