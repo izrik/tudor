@@ -14,6 +14,84 @@ class DbOnlyDeletionTest(PersistenceLayerTestBase):
         self.pl = self.generate_pl()
         self.pl.create_all()
 
+    def test_deleting_task_reduces_count(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_tasks())
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_tasks())
+
+    def test_deleting_tag_reduces_count(self):
+        # given
+        tag = Tag('tag')
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_tags())
+        # when
+        self.pl.delete(tag)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_tags())
+
+    def test_deleting_attachment_reduces_count(self):
+        # given
+        attachment = Attachment('attachment')
+        self.pl.add(attachment)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_attachments())
+        # when
+        self.pl.delete(attachment)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_attachments())
+
+    def test_deleting_note_reduces_count(self):
+        # given
+        note = Note('note')
+        self.pl.add(note)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_notes())
+        # when
+        self.pl.delete(note)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_notes())
+
+    def test_deleting_user_reduces_count(self):
+        # given
+        user = User('user')
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_users())
+        # when
+        self.pl.delete(user)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_users())
+
+    def test_deleting_option_reduces_count(self):
+        # given
+        option = Option('key', 'value')
+        self.pl.add(option)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_options())
+        # when
+        self.pl.delete(option)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_options())
+
     def test_db_only_deleting_task_removes_all_children(self):
         # given
         parent = self.pl.DbTask('parent')

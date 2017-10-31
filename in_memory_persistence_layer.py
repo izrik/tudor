@@ -373,6 +373,27 @@ class InMemoryPersistenceLayer(object):
         for domobj in list(self._deleted_objects):
             tt = self._get_object_type(domobj)
             domobj.clear_relationships()
+            if tt == Attachment:
+                self._attachments.remove(domobj)
+                del self._attachments_by_id[domobj.id]
+            elif tt == Note:
+                self._notes.remove(domobj)
+                del self._notes_by_id[domobj.id]
+            elif tt == Task:
+                self._tasks.remove(domobj)
+                del self._tasks_by_id[domobj.id]
+            elif tt == Tag:
+                self._tags.remove(domobj)
+                del self._tags_by_id[domobj.id]
+            elif tt == Option:
+                self._options.remove(domobj)
+                del self._options_by_key[domobj.key]
+            else:  # tt == User
+                self._users.remove(domobj)
+                del self._users_by_id[domobj.id]
+                del self._users_by_email[domobj.email]
+            self._deleted_objects.remove(domobj)
+        self._deleted_objects.clear()
 
         for domobj in self._tasks:
             self._values_by_object[domobj] = domobj.to_dict()
