@@ -7,7 +7,7 @@ from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from persistence_layer import is_iterable
+from persistence_layer import is_iterable, Pager
 
 
 class InMemoryPersistenceLayer(object):
@@ -152,6 +152,45 @@ class InMemoryPersistenceLayer(object):
         if order_by is self.DEADLINE:
             return lambda task: task.deadline
         raise Exception('Unhandled order_by field: {}'.format(f))
+
+    def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+                            parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
+                            users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
+                            task_id_not_in=UNSPECIFIED,
+                            deadline_is_not_none=False,
+                            tags_contains=UNSPECIFIED, is_public=UNSPECIFIED,
+                            is_public_or_users_contains=UNSPECIFIED,
+                            summary_description_search_term=UNSPECIFIED,
+                            order_num_greq_than=UNSPECIFIED,
+                            order_num_lesseq_than=UNSPECIFIED,
+                            order_by=UNSPECIFIED, limit=UNSPECIFIED,
+                            page_num=None, tasks_per_page=None):
+        if page_num is None:
+            page_num = 1
+        if tasks_per_page is None:
+            tasks_per_page = 20
+
+        query = self.get_tasks(
+            is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
+            parent_id_in=parent_id_in, users_contains=users_contains,
+            task_id_in=task_id_in, task_id_not_in=task_id_not_in,
+            deadline_is_not_none=deadline_is_not_none,
+            tags_contains=tags_contains, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains,
+            summary_description_search_term=summary_description_search_term,
+            order_num_greq_than=order_num_greq_than,
+            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+            limit=limit)
+        tasks = list(query)
+        start_task = (page_num - 1) * tasks_per_page
+        items = list(islice(tasks, start_task, start_task+tasks_per_page))
+        total_tasks = len(tasks)
+        num_pages = total_tasks // tasks_per_page
+        if total_tasks % tasks_per_page > 0:
+            num_pages += 1
+        return Pager(page=page_num, per_page=tasks_per_page,
+                     items=items, total=total_tasks,
+                     num_pages=num_pages, _pager=None)
 
     def count_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                     parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
