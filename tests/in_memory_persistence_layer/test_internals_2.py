@@ -74,3 +74,119 @@ class GetObjectTypeTest(InMemoryTestBase):
         # then
         self.assertEqual('Unknown object type: something, str',
                          cm.exception.message)
+
+
+class GetNextObjectIds(InMemoryTestBase):
+    def setUp(self):
+        self.pl = self.generate_pl()
+        self.pl.create_all()
+
+    def test_get_next_task_id_no_tasks_returns_one(self):
+        # precondition
+        self.assertEqual(0, len(self.pl._tasks))
+        # when
+        result = self.pl._get_next_task_id()
+        # then
+        self.assertEqual(1, result)
+
+    def test_get_next_task_id_some_tasks_returns_max_plus_one(self):
+        # given
+        task = Task('task')
+        task.id = 3
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, len(self.pl._tasks))
+        self.assertEqual(3, self.pl._tasks[0].id)
+        # when
+        result = self.pl._get_next_task_id()
+        # then
+        self.assertEqual(4, result)
+
+    def test_get_next_tag_id_no_tags_returns_one(self):
+        # precondition
+        self.assertEqual(0, len(self.pl._tags))
+        # when
+        result = self.pl._get_next_tag_id()
+        # then
+        self.assertEqual(1, result)
+
+    def test_get_next_tag_id_some_tags_returns_max_plus_one(self):
+        # given
+        tag = Tag('tag')
+        tag.id = 3
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, len(self.pl._tags))
+        self.assertEqual(3, self.pl._tags[0].id)
+        # when
+        result = self.pl._get_next_tag_id()
+        # then
+        self.assertEqual(4, result)
+
+    def test_get_next_attachment_id_no_attachments_returns_one(self):
+        # precondition
+        self.assertEqual(0, len(self.pl._attachments))
+        # when
+        result = self.pl._get_next_attachment_id()
+        # then
+        self.assertEqual(1, result)
+
+    def test_get_next_attachment_id_some_attachments_returns_max_plus_one(self):
+        # given
+        attachment = Attachment('attachment')
+        attachment.id = 3
+        self.pl.add(attachment)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, len(self.pl._attachments))
+        self.assertEqual(3, self.pl._attachments[0].id)
+        # when
+        result = self.pl._get_next_attachment_id()
+        # then
+        self.assertEqual(4, result)
+
+    def test_get_next_note_id_no_notes_returns_one(self):
+        # precondition
+        self.assertEqual(0, len(self.pl._notes))
+        # when
+        result = self.pl._get_next_note_id()
+        # then
+        self.assertEqual(1, result)
+
+    def test_get_next_note_id_some_notes_returns_max_plus_one(self):
+        # given
+        note = Note('note')
+        note.id = 3
+        self.pl.add(note)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, len(self.pl._notes))
+        self.assertEqual(3, self.pl._notes[0].id)
+        # when
+        result = self.pl._get_next_note_id()
+        # then
+        self.assertEqual(4, result)
+
+    def test_get_next_user_id_no_users_returns_one(self):
+        # precondition
+        self.assertEqual(0, len(self.pl._users))
+        # when
+        result = self.pl._get_next_user_id()
+        # then
+        self.assertEqual(1, result)
+
+    def test_get_next_user_id_some_users_returns_max_plus_one(self):
+        # given
+        user = User('user')
+        user.id = 3
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, len(self.pl._users))
+        self.assertEqual(3, self.pl._users[0].id)
+        # when
+        result = self.pl._get_next_user_id()
+        # then
+        self.assertEqual(4, result)
