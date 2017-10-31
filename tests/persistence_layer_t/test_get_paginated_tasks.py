@@ -225,3 +225,39 @@ class PaginatedTasksTest(PersistenceLayerTestBase):
         self.assertEqual(1, len(items))
         self.assertIn(self.tag1, items[0].tags)
         self.assertIs(self.t3, items[0])
+
+
+class PaginatedTasksNullTasksPerPageTest(PersistenceLayerTestBase):
+    def setUp(self):
+        self.pl = self.generate_pl()
+        self.pl.create_all()
+        self.pl.add(Task('t1'))
+        self.pl.add(Task('t2'))
+        self.pl.add(Task('t3'))
+        self.pl.add(Task('t4'))
+        self.pl.add(Task('t5'))
+        self.pl.add(Task('t6'))
+        self.pl.add(Task('t7'))
+        self.pl.add(Task('t8'))
+        self.pl.add(Task('t9'))
+        self.pl.add(Task('t10'))
+        self.pl.add(Task('t11'))
+        self.pl.add(Task('t12'))
+        self.pl.add(Task('t13'))
+        self.pl.add(Task('t14'))
+        self.pl.add(Task('t15'))
+        self.pl.add(Task('t16'))
+        self.pl.add(Task('t17'))
+        self.pl.add(Task('t18'))
+        self.pl.add(Task('t19'))
+        self.pl.add(Task('t20'))
+        self.pl.add(Task('t21'))
+        self.pl.commit()
+
+    def test_test_get_paginated_tasks_none_tasks_per_page_default_twenty(self):
+        # precondition
+        self.assertEqual(21, self.pl.count_tasks())
+        # when
+        result = self.pl.get_paginated_tasks(page_num=1)
+        # then
+        self.assertEqual(20, len(result.items))
