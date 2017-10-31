@@ -429,11 +429,11 @@ class InMemoryPersistenceLayer(object):
             'Unknown object type: {}'.format(objtype.__name__))
 
     def rollback(self):
+        for t, d in self._values_by_object.iteritems():
+            t.update_from_dict(d)
         for t in self._added_objects:
             del self._values_by_object[t]
         self._clear_affected_objects()
-        for t, d in self._values_by_object.iteritems():
-            t.update_from_dict(d)
 
     def _clear_affected_objects(self):
         self._changed_objects.clear()

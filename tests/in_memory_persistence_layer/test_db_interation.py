@@ -279,11 +279,23 @@ class DatabaseInteractionTest(InMemoryTestBase):
         # then
         self.assertEqual('b', tag.description)
 
-    def test_rollback_does_not_revert_changes_on_added_objects(self):
+    def test_rollback_reverts_changes_after_before_object_added(self):
         tag = Tag('tag', description='a')
         self.assertEqual('a', tag.description)
         self.pl.add(tag)
         tag.description = 'b'
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertEqual('a', tag.description)
+
+    def test_rollback_does_not_revert_changes_made_before_object_added(self):
+        tag = Tag('tag', description='a')
+        self.assertEqual('a', tag.description)
+        tag.description = 'b'
+        self.pl.add(tag)
         # precondition
         self.assertEqual('b', tag.description)
         # when
