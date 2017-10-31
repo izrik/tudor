@@ -227,7 +227,7 @@ class InMemoryPersistenceLayer(object):
         query = self._tags
         if value is not self.UNSPECIFIED:
             query = (_ for _ in query if _.value == value)
-        if limit is not self.UNSPECIFIED:
+        if limit is not None:
             query = islice(query, limit)
         return query
 
