@@ -28,6 +28,7 @@ class InMemoryPersistenceLayer(object):
 
         self._users = []
         self._users_by_id = {}
+        self._users_by_email = {}
 
         self._options = []
         self._options_by_key = {}
@@ -108,6 +109,23 @@ class InMemoryPersistenceLayer(object):
     def count_options(self, key_in=UNSPECIFIED):
         return len(list(self.get_options(key_in=key_in)))
 
+    def get_user(self, user_id):
+        if user_id is None:
+            raise ValueError('No user_id provided.')
+        return self._users_by_id.get(user_id)
+
+    def get_user_by_email(self, email):
+        return self._users_by_email.get(email)
+
+    def get_users(self, email_in=UNSPECIFIED):
+        query = self._users
+        if email_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.email in email_in)
+        return query
+
+    def count_users(self, email_in=UNSPECIFIED):
+        return len(list(self.get_users(email_in=email_in)))
+
     def add(self, obj):
         if obj in self._deleted_objects:
             raise Exception(
@@ -180,6 +198,8 @@ class InMemoryPersistenceLayer(object):
                                 domobj.id))
                 self._users.append(domobj)
                 self._users_by_id[domobj.id] = domobj
+                self._users_by_email[domobj.email] = domobj
+                # TODO: update _users_by_email when a user's email changes
             self._added_objects.remove(domobj)
         self._added_objects.clear()
 
