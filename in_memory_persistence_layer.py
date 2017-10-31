@@ -151,7 +151,7 @@ class InMemoryPersistenceLayer(object):
             return lambda task: task.id
         if order_by is self.DEADLINE:
             return lambda task: task.deadline
-        raise Exception('Unhandled order_by field: {}'.format(f))
+        raise Exception('Unhandled order_by field: {}'.format(order_by))
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
