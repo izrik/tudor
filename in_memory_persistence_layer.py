@@ -364,7 +364,7 @@ class InMemoryPersistenceLayer(object):
                 # TODO: autogenerate key?
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
-            elif tt == User:
+            else:  # tt == User
                 if domobj.id is None:
                     domobj.id = self._get_next_user_id()
                 else:
