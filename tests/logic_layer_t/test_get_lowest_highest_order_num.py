@@ -2,20 +2,16 @@
 
 import unittest
 
-from werkzeug.exceptions import NotFound, Forbidden
-
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 from models.task import Task
-from models.tag import Tag
 
 
 class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
-        self.ll = app.ll
 
     def test_no_tasks_lowest_returns_none(self):
         # precondition

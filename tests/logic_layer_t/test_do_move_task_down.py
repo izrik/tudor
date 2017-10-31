@@ -4,14 +4,9 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from tudor import generate_app
 from models.task import Task
 from models.user import User
-
-
-def generate_ll(db_uri='sqlite://'):
-    app = generate_app(db_uri=db_uri)
-    return app.ll
+from util import generate_ll
 
 
 class DoMoveTaskDownTest(unittest.TestCase):

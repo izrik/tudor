@@ -2,18 +2,17 @@
 
 import unittest
 
-from tudor import generate_app
 from models.task import Task
 from models.tag import Tag
 from models.user import User
+from util import generate_ll
 
 
 class ConvertTaskToTagTest(unittest.TestCase):
 
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.ll = self.app.ll
-        self.pl = self.app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
         self.user = User('name@example.org', None, True)
 

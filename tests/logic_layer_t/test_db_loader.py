@@ -2,7 +2,7 @@
 
 import unittest
 
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 from models.task import Task
 from models.user import User
 from models.tag import Tag
@@ -13,11 +13,9 @@ class DbLoaderTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.app = app
-        self.ll = app.ll
+        self.ll = generate_ll(db_uri='sqlite://')
         self.task_ids = {}
-        self.pl = app.pl
+        self.pl = self.ll.pl
         pl = self.pl
         pl.create_all()
         # summary,
@@ -192,11 +190,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         pl = self.pl
-        self.app = app
-        self.ll = app.ll
         self.task_ids = {}
         pl.create_all()
 
@@ -573,11 +569,9 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         pl = self.pl
-        self.app = app
-        self.ll = app.ll
         self.task_ids = {}
         pl.create_all()
 
@@ -719,11 +713,9 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         pl = self.pl
-        self.app = app
-        self.ll = app.ll
         self.task_ids = {}
         pl.create_all()
 

@@ -2,9 +2,9 @@
 
 import unittest
 
-from werkzeug.exceptions import BadRequest, NotFound, Forbidden
+from werkzeug.exceptions import NotFound, Forbidden
 
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 from models.task import Task
 from models.user import User
 
@@ -12,10 +12,9 @@ from models.user import User
 
 class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
-        self.ll = self.app.ll
 
     def test_add_prioritize_before_adds_prioritize_before(self):
         # given
@@ -513,10 +512,9 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
-        self.ll = self.app.ll
 
     def test_add_prioritize_after_adds_prioritize_after(self):
         # given
