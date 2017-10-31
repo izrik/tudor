@@ -325,7 +325,7 @@ class InMemoryPersistenceLayer(object):
             if tt == Attachment:
                 if domobj.id in self._attachments_by_id:
                     raise Exception(
-                        'There already exists a attachment with id '
+                        'There already exists an attachment with id '
                         '{}'.format(domobj.id))
                 self._attachments.append(domobj)
                 self._attachments_by_id[domobj.id] = domobj
@@ -352,7 +352,10 @@ class InMemoryPersistenceLayer(object):
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
             elif tt == Option:
-                # TODO: autogenerate key?
+                if domobj.key in self._options_by_key:
+                    raise Exception(
+                        'There already exists an option with key {}'.format(
+                            domobj.id))
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
             else:  # tt == User

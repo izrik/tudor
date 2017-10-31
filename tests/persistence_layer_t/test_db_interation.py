@@ -2,6 +2,7 @@ import unittest
 
 from models.attachment import Attachment
 from models.note import Note
+from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
@@ -34,6 +35,21 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         # then
         self.assertIsNotNone(task.id)
 
+    def test_committing_task_with_same_id_raises(self):
+        # given
+        task = Task('summary')
+        task.id = 1
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, task.id)
+        # when
+        task2 = Task('task2')
+        task2.id = 1
+        self.pl.add(task2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_tag_does_not_create_id(self):
         # given
         tag = Tag('value')
@@ -54,6 +70,21 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         self.pl.commit()
         # then
         self.assertIsNotNone(tag.id)
+
+    def test_committing_tag_with_same_id_raises(self):
+        # given
+        tag = Tag('summary')
+        tag.id = 1
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, tag.id)
+        # when
+        tag2 = Tag('tag2')
+        tag2.id = 1
+        self.pl.add(tag2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
 
     def test_adding_note_does_not_create_id(self):
         # given
@@ -76,6 +107,21 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         # then
         self.assertIsNotNone(note.id)
 
+    def test_committing_note_with_same_id_raises(self):
+        # given
+        note = Note('summary')
+        note.id = 1
+        self.pl.add(note)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, note.id)
+        # when
+        note2 = Note('note2')
+        note2.id = 1
+        self.pl.add(note2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_attachment_does_not_create_id(self):
         # given
         attachment = Attachment('attachment')
@@ -97,6 +143,21 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         # then
         self.assertIsNotNone(attachment.id)
 
+    def test_committing_attachment_with_same_id_raises(self):
+        # given
+        attachment = Attachment('summary')
+        attachment.id = 1
+        self.pl.add(attachment)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, attachment.id)
+        # when
+        attachment2 = Attachment('attachment2')
+        attachment2.id = 1
+        self.pl.add(attachment2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_user_does_not_create_id(self):
         # given
         user = User('name@example.com')
@@ -117,6 +178,34 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         self.pl.commit()
         # then
         self.assertIsNotNone(user.id)
+
+    def test_committing_user_with_same_id_raises(self):
+        # given
+        user = User('summary')
+        user.id = 1
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, user.id)
+        # when
+        user2 = User('user2')
+        user2.id = 1
+        self.pl.add(user2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_committing_option_with_same_key_raises(self):
+        # given
+        option = Option('key', 'value')
+        self.pl.add(option)
+        self.pl.commit()
+        # precondition
+        self.assertEqual('key', option.key)
+        # when
+        option2 = Option('key', 'value2')
+        self.pl.add(option2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
 
     def test_rollback_reverts_changes(self):
         tag = Tag('tag', description='a')
