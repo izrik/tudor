@@ -66,8 +66,6 @@ class GetObjectTypeTest(InMemoryTestBase):
         self.assertEqual(Option, result)
 
     def test_get_object_type_non_domain_object_raises(self):
-        # given
-        option = Option('key', 'value')
         # expect
         with self.assertRaises(Exception) as cm:
             self.pl._get_object_type('something')
@@ -133,7 +131,7 @@ class GetNextObjectIdsTest(InMemoryTestBase):
         # then
         self.assertEqual(1, result)
 
-    def test_get_next_attachment_id_some_attachments_returns_max_plus_one(self):
+    def test_get_next_attachment_id_some_attachments_return_max_plus_one(self):
         # given
         attachment = Attachment('attachment')
         attachment.id = 3
