@@ -348,6 +348,10 @@ class InMemoryPersistenceLayer(object):
                     raise Exception(
                         'There already exists a tag with id {}'.format(
                             domobj.id))
+                if domobj.value in self._tags_by_value:
+                    raise Exception(
+                        'There already exists a tag with value "{}"'.format(
+                            domobj.value))
                 self._tags.append(domobj)
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
@@ -363,10 +367,14 @@ class InMemoryPersistenceLayer(object):
                     raise Exception(
                         'There already exists a user with id {}'.format(
                             domobj.id))
+                if domobj.email in self._users_by_email:
+                    raise Exception(
+                        'There already exists a user with email "{}"'.format(
+                            domobj.email))
                 self._users.append(domobj)
                 self._users_by_id[domobj.id] = domobj
                 self._users_by_email[domobj.email] = domobj
-                # TODO: update _users_by_email when a user's email changes
+            self._values_by_object[domobj] = domobj.to_dict()
             self._added_objects.remove(domobj)
         self._added_objects.clear()
 
@@ -395,18 +403,52 @@ class InMemoryPersistenceLayer(object):
             self._deleted_objects.remove(domobj)
         self._deleted_objects.clear()
 
+        def _process_changed_attr(domobj, new_values, type_name, attr_name,
+                                  collection):
+            old_value = self._values_by_object[domobj][attr_name]
+            new_value = new_values[attr_name]
+            if old_value != new_value:
+                if new_value in collection:
+                    raise Exception(
+                        'There already exists a {} with {} "{}"'.format(
+                            type_name, attr_name, new_value))
+                del collection[old_value]
+                collection[new_value] = domobj
+
         for domobj in self._tasks:
-            self._values_by_object[domobj] = domobj.to_dict()
+            new_values = domobj.to_dict()
+            _process_changed_attr(domobj, new_values, 'task', 'id',
+                                  self._tasks_by_id)
+            self._values_by_object[domobj] = new_values
         for domobj in self._tags:
-            self._values_by_object[domobj] = domobj.to_dict()
+            new_values = domobj.to_dict()
+            _process_changed_attr(domobj, new_values, 'tag', 'id',
+                                  self._tags_by_id)
+            _process_changed_attr(domobj, new_values, 'tag', 'value',
+                                  self._tags_by_value)
+            self._values_by_object[domobj] = new_values
         for domobj in self._notes:
-            self._values_by_object[domobj] = domobj.to_dict()
+            new_values = domobj.to_dict()
+            _process_changed_attr(domobj, new_values, 'note', 'id',
+                                  self._notes_by_id)
+            self._values_by_object[domobj] = new_values
         for domobj in self._attachments:
-            self._values_by_object[domobj] = domobj.to_dict()
+            new_values = domobj.to_dict()
+            _process_changed_attr(domobj, new_values, 'attachment', 'id',
+                                  self._attachments_by_id)
+            self._values_by_object[domobj] = new_values
         for domobj in self._users:
-            self._values_by_object[domobj] = domobj.to_dict()
+            new_values = domobj.to_dict()
+            _process_changed_attr(domobj, new_values, 'user', 'id',
+                                  self._users_by_id)
+            _process_changed_attr(domobj, new_values, 'user', 'email',
+                                  self._users_by_email)
+            self._values_by_object[domobj] = new_values
         for domobj in self._options:
-            self._values_by_object[domobj] = domobj.to_dict()
+            new_values = domobj.to_dict()
+            _process_changed_attr(domobj, new_values, 'option', 'key',
+                                  self._options_by_key)
+            self._values_by_object[domobj] = new_values
 
         self._clear_affected_objects()
 

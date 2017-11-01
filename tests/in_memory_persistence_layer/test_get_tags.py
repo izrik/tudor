@@ -114,3 +114,33 @@ class GetTagsTest(InMemoryTestBase):
         results = self.pl.get_tag_by_value('x')
         # then
         self.assertIsNone(results)
+
+    def test_get_tag_by_value_returns_none_after_value_changes(self):
+        # given
+        self.t1.value = 'asdf'
+        self.pl.commit()
+        # precondition
+        self.assertEqual('asdf', self.t1.value)
+        # when
+        result = self.pl.get_tag_by_value('t1')
+        # then
+        self.assertIsNone(result)
+
+    def test_get_tag_by_value_returns_tag_after_value_changes(self):
+        # given
+        self.t1.value = 'asdf'
+        self.pl.commit()
+        # precondition
+        self.assertEqual('asdf', self.t1.value)
+        # when
+        result = self.pl.get_tag_by_value('asdf')
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, Tag)
+        self.assertIs(self.t1, result)
+
+    def test_get_tag_by_value_values_conflict_raises(self):
+        # given
+        self.t2.value = 't1'
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
