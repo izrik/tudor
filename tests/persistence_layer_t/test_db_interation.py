@@ -1145,3 +1145,24 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
         self.assertEqual(1, t2.id)
         # expect
         self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_changed_tag_values_conflict_raises(self):
+        # given
+        self.t1 = Tag('t1')
+        self.pl.add(self.t1)
+        self.t2 = Tag('t2')
+        self.pl.add(self.t2)
+        self.pl.commit()
+        self.t2.value = 't1'
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_new_tag_values_conflict_raises(self):
+        # given
+        self.t1 = Tag('t1')
+        self.pl.add(self.t1)
+        self.pl.commit()
+        t3 = Tag('t1')
+        self.pl.add(t3)
+        # expect
+        self.assertRaises(Exception, self.pl.commit)

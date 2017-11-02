@@ -135,9 +135,3 @@ class GetTagsTest(PersistenceLayerTestBase):
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Tag)
         self.assertIs(self.t1, result)
-
-    def test_get_tag_by_value_values_conflict_raises(self):
-        # given
-        self.t2.value = 't1'
-        # expect
-        self.assertRaises(Exception, self.pl.commit)
