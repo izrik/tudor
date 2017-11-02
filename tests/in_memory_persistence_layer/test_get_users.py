@@ -33,6 +33,30 @@ class GetUsersTest(InMemoryTestBase):
         # then
         self.assertIsNone(results)
 
+    def test_get_user_by_email_returns_none_after_email_changes(self):
+        # given
+        self.user1.email = 'asdf'
+        self.pl.commit()
+        # precondition
+        self.assertEqual('asdf', self.user1.email)
+        # when
+        result = self.pl.get_user_by_email('user1')
+        # then
+        self.assertIsNone(result)
+
+    def test_get_user_by_email_returns_user_after_email_changes(self):
+        # given
+        self.user1.email = 'asdf'
+        self.pl.commit()
+        # precondition
+        self.assertEqual('asdf', self.user1.email)
+        # when
+        result = self.pl.get_user_by_email('asdf')
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, User)
+        self.assertIs(self.user1, result)
+
     def test_get_users_without_params_returns_all_users(self):
         # when
         results = self.pl.get_users()
