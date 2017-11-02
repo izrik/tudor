@@ -690,3 +690,24 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.pl.add(t3)
         # expect
         self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_changed_user_emails_conflict_raises(self):
+        # given
+        self.user1 = User('user1')
+        self.pl.add(self.user1)
+        self.user2 = User('user2')
+        self.pl.add(self.user2)
+        self.pl.commit()
+        self.user2.email = 'user1'
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_new_user_emails_conflict_raises(self):
+        # given
+        self.user1 = User('user1')
+        self.pl.add(self.user1)
+        self.pl.commit()
+        user3 = User('user1')
+        self.pl.add(user3)
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
