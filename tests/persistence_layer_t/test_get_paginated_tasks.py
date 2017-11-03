@@ -1,5 +1,4 @@
 import logging
-import unittest
 
 from models.tag import Tag
 from models.task import Task

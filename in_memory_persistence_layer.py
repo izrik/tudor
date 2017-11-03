@@ -68,7 +68,6 @@ class InMemoryPersistenceLayer(object):
 
         query = self._tasks
 
-
         if is_done is not self.UNSPECIFIED:
             query = (_ for _ in query if _.is_done == is_done)
 

@@ -10,7 +10,6 @@ from models.note import Note, NoteBase
 from models.attachment import Attachment, AttachmentBase
 from models.user import User, UserBase
 from models.option import Option, OptionBase
-from collections_util import assign
 import logging_util
 from models.changeable import Changeable
 
