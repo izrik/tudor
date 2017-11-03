@@ -260,3 +260,33 @@ class PaginatedTasksNullTasksPerPageTest(PersistenceLayerTestBase):
         result = self.pl.get_paginated_tasks(page_num=1)
         # then
         self.assertEqual(20, len(result.items))
+
+    def test_get_paginate_tasks_non_number_page_num_raises(self):
+        # expect
+        self.assertRaises(TypeError, self.pl.get_paginated_tasks,
+                          page_num='asdf')
+
+    def test_get_paginate_tasks_zero_page_num_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          page_num=0)
+
+    def test_get_paginate_tasks_negative_page_num_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          page_num=-1)
+
+    def test_get_paginate_tasks_non_number_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(TypeError, self.pl.get_paginated_tasks,
+                          tasks_per_page='asdf')
+
+    def test_get_paginate_tasks_zero_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          tasks_per_page=0)
+
+    def test_get_paginate_tasks_negative_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          tasks_per_page=-1)
