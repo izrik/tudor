@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+import traceback
 
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask import make_response, Markup, jsonify, json
@@ -89,6 +90,9 @@ if __name__ == '__main__':
                         help='When performing an operation on a given task, '
                              'also traverse all descendants and perform the '
                              'operation on them as well.')
+    parser.add_argument('--test-db-conn', action='store_true',
+                        help='Try to make a connection to the database. '
+                             'Useful for diagnosing connection problems.')
 
     args = parser.parse_args()
 
@@ -623,6 +627,18 @@ def make_task_private(app, task_id, printer=default_printer,
         app.pl.commit()
 
 
+def test_db_conn(app, debug):
+    try:
+        count = app.pl.count_tasks()
+    except Exception as e:
+        print('Caught {}: "{}"'.format(type(e).__name__, e))
+        if debug:
+            print(traceback.format_exc())
+    else:
+        print('Test was successful. There are {} '
+              'tasks in the DB.'.format(count))
+
+
 if __name__ == '__main__':
     app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
                        secret_key=TUDOR_SECRET_KEY,
@@ -641,5 +657,7 @@ if __name__ == '__main__':
         make_task_public(app, args.make_public, descendants=args.descendants)
     elif args.make_private is not None:
         make_task_private(app, args.make_private, descendants=args.descendants)
+    elif args.test_db_conn:
+        test_db_conn(app, args.debug)
     else:
         app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
