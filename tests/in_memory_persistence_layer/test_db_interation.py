@@ -53,6 +53,102 @@ class DatabaseInteractionTest(InMemoryTestBase):
         # then
         self.assertRaises(Exception, self.pl.commit)
 
+    def test_adding_task_does_not_affect_order_num(self):
+        # given
+        task = Task('summary')
+        # precondition
+        self.assertEqual(0, task.order_num)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertEqual(0, task.order_num)
+
+    def test_committing_task_does_not_affect_order_num(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        # precondition
+        self.assertEqual(0, task.order_num)
+        # when
+        self.pl.commit()
+        # then
+        self.assertEqual(0, task.order_num)
+
+    def test_committing_task_with_same_order_num_is_allowed(self):
+        # given
+        task = Task('summary')
+        task.order_num = 1
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, task.order_num)
+        # when
+        task2 = Task('task2')
+        task2.order_num = 1
+        self.pl.add(task2)
+        self.pl.commit()
+        # then
+        self.assertEqual(1, task.order_num)
+        self.assertEqual(1, task2.order_num)
+
+    def test_adding_task_with_null_order_num_does_not_affect_order_num(self):
+        # given
+        task = Task('summary')
+        task.order_num = None
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertIsNone(task.order_num)
+
+    def test_committing_task_with_null_order_num_makes_non_null(self):
+        # given
+        task = Task('summary')
+        task.order_num = None
+        self.pl.add(task)
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(task.order_num)
+
+    def test_committing_task_with_null_order_num_makes_non_null_2(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        task.order_num = None
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(task.order_num)
+
+    def test_changing_order_num_of_already_committed_task_doesnt_affect(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(task.order_num)
+        # when
+        task.order_num = None
+        # then
+        self.assertIsNone(task.order_num)
+
+    def test_changing_commit_null_order_num_of_commed_task_raises(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        self.pl.commit()
+        task.order_num = None
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_tag_does_not_create_id(self):
         # given
         tag = Tag('value')

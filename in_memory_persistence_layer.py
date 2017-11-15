@@ -332,6 +332,8 @@ class InMemoryPersistenceLayer(object):
             tt = self._get_object_type(domobj)
             if tt is not Option and domobj.id is None:
                 domobj.id = self._get_next_id(tt)
+            if tt is Task and domobj.order_num is None:
+                domobj.order_num = 0
 
             if tt == Attachment:
                 if domobj.id in self._attachments_by_id:
@@ -430,6 +432,10 @@ class InMemoryPersistenceLayer(object):
             new_values = domobj.to_dict()
             _process_changed_attr(domobj, new_values, 'task', 'id',
                                   self._tasks_by_id)
+            if 'order_num' in new_values and new_values['order_num'] is None:
+                raise ValueError(
+                    'order_num cannot be None, Task "{}" ({})'.format(
+                        domobj.summary, domobj.id))
             self._values_by_object[domobj] = new_values
         for domobj in self._tags:
             new_values = domobj.to_dict()
