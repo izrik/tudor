@@ -268,7 +268,7 @@ class GetTaskDataTest(unittest.TestCase):
         result = None
         # expect
         self.assertRaises(
-            NotFound,
+            ValueError,
             self.ll.get_task_data,
             self.task.id, self.user, page_num=0)
 
@@ -347,7 +347,7 @@ class GetTaskDataTest(unittest.TestCase):
         self.assertEqual(1, pager.per_page)
         self.assertEqual([t6], pager.items)
 
-    def test_tasks_per_page_zero_yields_empty(self):
+    def test_tasks_per_page_zero_raises(self):
         # given
         self.pl.add(self.user)
         t1 = self.create_and_add_task('t1', 1, self.task, self.user)
@@ -358,15 +358,11 @@ class GetTaskDataTest(unittest.TestCase):
         t6 = self.create_and_add_task('t6', 6, self.task, self.user)
         self.task.users.add(self.user)
         self.pl.commit()
-        # when
-        result = self.ll.get_task_data(self.task.id, self.user,
-                                       tasks_per_page=0)
-        # then
-        pager = result['pager']
-        self.assertEqual(1, pager.page)
-        self.assertEqual(0, pager.pages)
-        self.assertEqual(0, pager.per_page)
-        self.assertEqual([], pager.items)
+        # expect
+        self.assertRaises(
+            ValueError,
+            self.ll.get_task_data,
+            self.task.id, self.user, tasks_per_page=0)
 
     def test_tasks_per_page_not_integer_raises(self):
         # given
@@ -381,6 +377,6 @@ class GetTaskDataTest(unittest.TestCase):
         self.pl.commit()
         # expect
         self.assertRaises(
-            ValueError,
+            TypeError,
             self.ll.get_task_data,
             self.task.id, self.user, tasks_per_page='20')

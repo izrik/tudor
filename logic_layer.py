@@ -4,6 +4,7 @@ import re
 import itertools
 import os
 from datetime import datetime
+from numbers import Number
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
@@ -179,6 +180,17 @@ class LogicLayer(object):
 
     def get_task_data(self, id, current_user, include_deleted=True,
                       include_done=True, page_num=1, tasks_per_page=20):
+
+        if page_num is not None and not isinstance(page_num, Number):
+            raise TypeError('page_num must be a number')
+        if page_num is not None and page_num < 1:
+            raise ValueError('page_num must be greater than zero')
+        if tasks_per_page is not None and not isinstance(tasks_per_page,
+                                                         Number):
+            raise TypeError('tasks_per_page must be a number')
+        if tasks_per_page is not None and tasks_per_page < 1:
+            raise ValueError('tasks_per_page must be greater than zero')
+
         task = self.pl.get_task(id)
         # TODO: normalize access restrictions and exceptions in LogicLayer
         if task is None:
