@@ -7,7 +7,7 @@ from tests.in_memory_persistence_layer.in_memory_test_base import \
 # copied from ../test_db_interaction.py, with modifications
 
 
-class DatabaseInteractionTest(InMemoryTestBase):
+class DatabaseInteraction2Test(InMemoryTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
