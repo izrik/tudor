@@ -891,6 +891,7 @@ class PersistenceLayer(object):
                             order_num_lesseq_than=UNSPECIFIED,
                             order_by=UNSPECIFIED, limit=UNSPECIFIED,
                             page_num=None, tasks_per_page=None):
+
         if page_num is not None and not isinstance(page_num, Number):
             raise TypeError('page_num must be a number')
         if page_num is not None and page_num < 1:
@@ -900,6 +901,7 @@ class PersistenceLayer(object):
             raise TypeError('tasks_per_page must be a number')
         if tasks_per_page is not None and tasks_per_page < 1:
             raise ValueError('tasks_per_page must be greater than zero')
+
         if page_num is None:
             page_num = 1
         if tasks_per_page is None:
