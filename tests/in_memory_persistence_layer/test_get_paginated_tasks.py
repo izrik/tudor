@@ -263,6 +263,14 @@ class PaginatedTasksNullTasksPerPageTest(InMemoryTestBase):
         result = self.pl.get_paginated_tasks(page_num=1)
         # then
         self.assertEqual(20, len(result.items))
+        self.assertEqual(1, result.page)
+
+    def test_get_paginate_tasks_string_page_num_raises(self):
+        # expect
+        self.assertRaises(
+            TypeError,
+            self.pl.get_paginated_tasks,
+            page_num='1')
 
     def test_get_paginate_tasks_non_number_page_num_raises(self):
         # expect
@@ -278,6 +286,13 @@ class PaginatedTasksNullTasksPerPageTest(InMemoryTestBase):
         # expect
         self.assertRaises(ValueError, self.pl.get_paginated_tasks,
                           page_num=-1)
+
+    def test_get_paginate_tasks_string_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(
+            TypeError,
+            self.pl.get_paginated_tasks,
+            tasks_per_page='1')
 
     def test_get_paginate_tasks_non_number_tasks_per_page_raises(self):
         # expect
