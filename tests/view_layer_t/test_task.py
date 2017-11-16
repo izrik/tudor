@@ -34,6 +34,7 @@ class TaskTest(unittest.TestCase):
         with self.app.app_context():
             result = self.vl.task(request, user, TASK_ID)
         # then
+        self.assertIsNotNone(result)
         self.ll.get_task_data.assert_called_with(TASK_ID, user,
                                                  include_deleted=None,
                                                  include_done=None,
@@ -51,6 +52,7 @@ class TaskTest(unittest.TestCase):
         with self.app.app_context():
             result = self.vl.task(request, user, TASK_ID)
         # then
+        self.assertIsNotNone(result)
         self.ll.get_task_data.assert_called_with(TASK_ID, user,
                                                  include_deleted=None,
                                                  include_done=None,
@@ -68,6 +70,7 @@ class TaskTest(unittest.TestCase):
         with self.app.app_context():
             result = self.vl.task(request, user, TASK_ID)
         # then
+        self.assertIsNotNone(result)
         self.ll.get_task_data.assert_called_with(TASK_ID, user,
                                                  include_deleted=None,
                                                  include_done=None,
