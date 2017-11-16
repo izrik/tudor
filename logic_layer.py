@@ -26,7 +26,6 @@ class LogicLayer(object):
 
     def __init__(self, upload_folder, allowed_extensions, pl):
         self.pl = pl
-        self.db = self.pl.db
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
         self.pl = pl
