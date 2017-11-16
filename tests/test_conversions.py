@@ -61,6 +61,16 @@ class TypeConversionFunctionTest(unittest.TestCase):
         self.assertIsNone(int_from_str([1]))
         self.assertEquals(1, int_from_str(True))
 
+    def test_int_from_str_with_default(self):
+        self.assertEquals(1, int_from_str('1', 555))
+        self.assertEquals(123, int_from_str('123', 555))
+        self.assertEquals(-123, int_from_str('-123', 555))
+        self.assertEquals(555, int_from_str(None, 555))
+        self.assertEquals(555, int_from_str('', 555))
+        self.assertEquals(555, int_from_str([], 555))
+        self.assertEquals(555, int_from_str([1], 555))
+        self.assertEquals(1, int_from_str(True, 555))
+
     def test_str_from_datetime(self):
         self.assertIsNone(None, str_from_datetime(None))
         self.assertEquals('2016-02-03 00:00:00',
