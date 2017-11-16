@@ -122,6 +122,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     if configs:
         for k, v in configs.iteritems():
             app.config[k] = v
