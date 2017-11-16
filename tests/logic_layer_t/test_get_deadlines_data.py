@@ -27,6 +27,7 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
         self.pl.add(t1)
         self.pl.add(t2)
+        self.pl.commit()
 
         # when
         result = self.ll.get_deadlines_data(self.admin)
@@ -45,6 +46,7 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
         self.pl.add(t1)
         self.pl.add(t2)
+        self.pl.commit()
 
         # when
         result = self.ll.get_deadlines_data(self.admin)

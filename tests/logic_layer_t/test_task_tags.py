@@ -38,6 +38,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # given
         tag1 = Tag('def')
         self.pl.add(tag1)
+        self.pl.commit()
 
         # precondition
         self.assertEqual(1, self.pl.count_tags())

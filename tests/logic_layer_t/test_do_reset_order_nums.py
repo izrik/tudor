@@ -48,6 +48,7 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         results = self.ll.do_reset_order_nums(self.admin)
@@ -68,6 +69,7 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         results = self.ll.do_reset_order_nums(self.admin)
@@ -90,6 +92,7 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         results = self.ll.do_reset_order_nums(self.admin)

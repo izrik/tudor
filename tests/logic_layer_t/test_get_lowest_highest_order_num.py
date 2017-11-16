@@ -38,6 +38,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         task = Task('task')
         task.order_num = 10
         self.pl.add(task)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -50,6 +51,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         task = Task('task')
         task.order_num = 10
         self.pl.add(task)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_highest_order_num()
@@ -68,6 +70,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -86,6 +89,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_highest_order_num()
