@@ -76,4 +76,3 @@ class TaskTest(unittest.TestCase):
                                                  include_done=None,
                                                  page_num=1, tasks_per_page=20)
         self.r.render_template.assert_called()
-

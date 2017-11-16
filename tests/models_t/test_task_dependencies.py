@@ -111,4 +111,3 @@ class TaskDependenciesTest(unittest.TestCase):
         self.assertFalse(t2.contains_dependency_cycle())
         self.assertFalse(t3.contains_dependency_cycle())
         self.assertFalse(t4.contains_dependency_cycle())
-
