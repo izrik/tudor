@@ -2,14 +2,13 @@
 
 import unittest
 
-from tudor import generate_app
+from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.task import Task
 
 
 class TaskIdTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.pl = self.app.pl
+        self.pl = InMemoryPersistenceLayer()
         self.pl.create_all()
 
     def test_constructor_default_id_is_none(self):

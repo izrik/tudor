@@ -4,19 +4,16 @@ import unittest
 
 from flask_login import AnonymousUserMixin
 
+from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.task_user_ops import TaskUserOps
-from tudor import generate_app
 from models.task import Task
 from models.user import User, GuestUser
 
 
 class UserCanEditTaskTest(unittest.TestCase):
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.pl = InMemoryPersistenceLayer()
         self.pl.create_all()
-        self.app = app
-        self.ll = app.ll
 
     def test_unauthorized_nonadmin_cannot_edit_private_task(self):
         # given
