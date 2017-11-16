@@ -4,12 +4,12 @@ from datetime import datetime
 from models.attachment import Attachment
 from models.changeable import Changeable
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class DbAttachmentMakeChangeTest(unittest.TestCase):
+class DbAttachmentMakeChangeTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.attachment = self.pl.DbAttachment('attachment')
 

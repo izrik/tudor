@@ -1,5 +1,6 @@
 
 import collections
+from numbers import Number
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
@@ -10,7 +11,6 @@ from models.note import Note, NoteBase
 from models.attachment import Attachment, AttachmentBase
 from models.user import User, UserBase
 from models.option import Option, OptionBase
-from collections_util import assign
 import logging_util
 from models.changeable import Changeable
 
@@ -103,6 +103,7 @@ class PersistenceLayer(object):
         self._deleted_objects = set()
         self._changed_objects = set()
         self._changed_objects_original_values = {}
+        self._committed_objects = set()
 
         tags_tasks_table = db.Table(
             'tags_tasks',
@@ -159,6 +160,9 @@ class PersistenceLayer(object):
         if domobj in self._added_objects or domobj in self._changed_objects:
             # silently ignore
             return
+        if domobj in self._committed_objects:
+            # silently ignore
+            return
 
         dbobj = self._get_db_object_from_domain_object_in_cache(domobj)
         if dbobj is None:
@@ -206,6 +210,7 @@ class PersistenceLayer(object):
 
         for domobj in deleted:
             domobj.clear_relationships()
+        self._committed_objects.difference_update(deleted)
 
         ###############
         self._logger.debug(u'committing the db session/transaction')
@@ -215,6 +220,7 @@ class PersistenceLayer(object):
 
         for domobj in added:
             self._update_domain_object_from_db_object(domobj)
+        self._committed_objects.update(added)
 
         self._clear_affected_objects()
 
@@ -885,6 +891,17 @@ class PersistenceLayer(object):
                             order_num_lesseq_than=UNSPECIFIED,
                             order_by=UNSPECIFIED, limit=UNSPECIFIED,
                             page_num=None, tasks_per_page=None):
+
+        if page_num is not None and not isinstance(page_num, Number):
+            raise TypeError('page_num must be a number')
+        if page_num is not None and page_num < 1:
+            raise ValueError('page_num must be greater than zero')
+        if tasks_per_page is not None and not isinstance(tasks_per_page,
+                                                         Number):
+            raise TypeError('tasks_per_page must be a number')
+        if tasks_per_page is not None and tasks_per_page < 1:
+            raise ValueError('tasks_per_page must be greater than zero')
+
         if page_num is None:
             page_num = 1
         if tasks_per_page is None:

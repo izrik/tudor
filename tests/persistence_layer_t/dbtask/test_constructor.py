@@ -1,11 +1,11 @@
 import unittest
 
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class DbTaskConstructorTest(unittest.TestCase):
+class DbTaskConstructorTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
 
     def test_none_lazy_is_allowed(self):
         # when

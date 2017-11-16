@@ -3,12 +3,12 @@ import unittest
 from models.changeable import Changeable
 from models.task import Task
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class DbUserMakeChangeTest(unittest.TestCase):
+class DbUserMakeChangeTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.user = self.pl.DbUser('name@example.com')
 

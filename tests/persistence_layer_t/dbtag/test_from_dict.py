@@ -1,11 +1,11 @@
 import unittest
 
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class DbTagFromDictTest(unittest.TestCase):
+class DbTagFromDictTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_empty_yields_empty_dbtag(self):

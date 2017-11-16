@@ -4,12 +4,12 @@ from datetime import datetime
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class GetTaskTest(unittest.TestCase):
+class GetTaskTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.pl.add(self.t1)
@@ -127,9 +127,9 @@ class GetTaskTest(unittest.TestCase):
         self.assertEqual(set(), set(results))
 
 
-class GetTasksIsPublicTest(unittest.TestCase):
+class GetTasksIsPublicTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1', is_public=True)
         self.pl.add(self.t1)
@@ -156,9 +156,9 @@ class GetTasksIsPublicTest(unittest.TestCase):
         self.assertEqual({self.t2}, set(result))
 
 
-class GetTasksIsPublicOrUsersContainsTest(unittest.TestCase):
+class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1', is_public=True)
         self.pl.add(self.t1)
@@ -219,9 +219,9 @@ class GetTasksIsPublicOrUsersContainsTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t2}, set(result))
 
 
-class OrderByTest(unittest.TestCase):
+class OrderByTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t1.id = 5
@@ -323,9 +323,9 @@ class OrderByTest(unittest.TestCase):
         self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
 
 
-class OrderByDeadlineTest(unittest.TestCase):
+class OrderByDeadlineTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1', deadline='2017-01-01')
         self.t2 = Task('t2', deadline='2017-01-02')
@@ -362,9 +362,9 @@ class OrderByDeadlineTest(unittest.TestCase):
         self.assertEqual([self.t4, self.t3, self.t2, self.t1], list(results))
 
 
-class IdInTest(unittest.TestCase):
+class IdInTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.pl.add(self.t1)
@@ -512,9 +512,9 @@ class IdInTest(unittest.TestCase):
         self.assertEqual({self.t1}, set(results))
 
 
-class LimitTest(unittest.TestCase):
+class LimitTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t1.order_num = 1
@@ -559,9 +559,9 @@ class LimitTest(unittest.TestCase):
         self.assertEqual(3, len(list(results)))
 
 
-class DeadLineIsNotNoneTest(unittest.TestCase):
+class DeadLineIsNotNoneTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1', deadline=datetime(2017, 1, 1))
         self.pl.add(self.t1)
@@ -591,9 +591,9 @@ class DeadLineIsNotNoneTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t3}, set(results))
 
 
-class ParentIdInTest(unittest.TestCase):
+class ParentIdInTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.pl.add(self.t1)
@@ -672,9 +672,9 @@ class ParentIdInTest(unittest.TestCase):
         self.assertEqual([], list(results))
 
 
-class TagsTest(unittest.TestCase):
+class TagsTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.t1 = Task('t1')
         self.t2 = Task('t2')
@@ -710,9 +710,9 @@ class TagsTest(unittest.TestCase):
         self.assertEqual({self.t3}, set(results))
 
 
-class SearchTermTest(unittest.TestCase):
+class SearchTermTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
         self.t1 = Task('t1', description='qwerty')
@@ -740,9 +740,9 @@ class SearchTermTest(unittest.TestCase):
         self.assertEqual({self.t1, self.t3}, set(results))
 
 
-class OrderNumberGreaterLessEqualTest(unittest.TestCase):
+class OrderNumberGreaterLessEqualTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
         self.t1 = Task('t1')

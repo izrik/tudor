@@ -1,16 +1,15 @@
 import logging
-import unittest
 
 from models.tag import Tag
 from models.task import Task
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class PaginatedTasksTest(unittest.TestCase):
+class PaginatedTasksTest(PersistenceLayerTestBase):
     def setUp(self):
         self._logger = logging.getLogger('test')
         self._logger.debug(u'setUp generate_app')
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self._logger.debug(u'setUp create_all')
         self.pl.db.drop_all()
         self.pl.create_all()
@@ -225,3 +224,84 @@ class PaginatedTasksTest(unittest.TestCase):
         self.assertEqual(1, len(items))
         self.assertIn(self.tag1, items[0].tags)
         self.assertIs(self.t3, items[0])
+
+
+class PaginatedTasksNullTasksPerPageTest(PersistenceLayerTestBase):
+    def setUp(self):
+        self.pl = self.generate_pl()
+        self.pl.create_all()
+        self.pl.add(Task('t1'))
+        self.pl.add(Task('t2'))
+        self.pl.add(Task('t3'))
+        self.pl.add(Task('t4'))
+        self.pl.add(Task('t5'))
+        self.pl.add(Task('t6'))
+        self.pl.add(Task('t7'))
+        self.pl.add(Task('t8'))
+        self.pl.add(Task('t9'))
+        self.pl.add(Task('t10'))
+        self.pl.add(Task('t11'))
+        self.pl.add(Task('t12'))
+        self.pl.add(Task('t13'))
+        self.pl.add(Task('t14'))
+        self.pl.add(Task('t15'))
+        self.pl.add(Task('t16'))
+        self.pl.add(Task('t17'))
+        self.pl.add(Task('t18'))
+        self.pl.add(Task('t19'))
+        self.pl.add(Task('t20'))
+        self.pl.add(Task('t21'))
+        self.pl.commit()
+
+    def test_test_get_paginated_tasks_none_tasks_per_page_default_twenty(self):
+        # precondition
+        self.assertEqual(21, self.pl.count_tasks())
+        # when
+        result = self.pl.get_paginated_tasks(page_num=1)
+        # then
+        self.assertEqual(20, len(result.items))
+        self.assertEqual(1, result.page)
+
+    def test_get_paginate_tasks_string_page_num_raises(self):
+        # expect
+        self.assertRaises(
+            TypeError,
+            self.pl.get_paginated_tasks,
+            page_num='1')
+
+    def test_get_paginate_tasks_non_number_page_num_raises(self):
+        # expect
+        self.assertRaises(TypeError, self.pl.get_paginated_tasks,
+                          page_num='asdf')
+
+    def test_get_paginate_tasks_zero_page_num_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          page_num=0)
+
+    def test_get_paginate_tasks_negative_page_num_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          page_num=-1)
+
+    def test_get_paginate_tasks_string_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(
+            TypeError,
+            self.pl.get_paginated_tasks,
+            tasks_per_page='1')
+
+    def test_get_paginate_tasks_non_number_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(TypeError, self.pl.get_paginated_tasks,
+                          tasks_per_page='asdf')
+
+    def test_get_paginate_tasks_zero_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          tasks_per_page=0)
+
+    def test_get_paginate_tasks_negative_tasks_per_page_raises(self):
+        # expect
+        self.assertRaises(ValueError, self.pl.get_paginated_tasks,
+                          tasks_per_page=-1)

@@ -1,12 +1,12 @@
 import unittest
 
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class GetUsersTest(unittest.TestCase):
+class GetUsersTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
         self.user1 = User('admin@example.com', is_admin=True)
         self.pl.add(self.user1)
@@ -29,6 +29,30 @@ class GetUsersTest(unittest.TestCase):
         results = self.pl.get_user_by_email('someone@example.org')
         # then
         self.assertIsNone(results)
+
+    def test_get_user_by_email_returns_none_after_email_changes(self):
+        # given
+        self.user1.email = 'asdf'
+        self.pl.commit()
+        # precondition
+        self.assertEqual('asdf', self.user1.email)
+        # when
+        result = self.pl.get_user_by_email('user1')
+        # then
+        self.assertIsNone(result)
+
+    def test_get_user_by_email_returns_user_after_email_changes(self):
+        # given
+        self.user1.email = 'asdf'
+        self.pl.commit()
+        # precondition
+        self.assertEqual('asdf', self.user1.email)
+        # when
+        result = self.pl.get_user_by_email('asdf')
+        # then
+        self.assertIsNotNone(result)
+        self.assertIsInstance(result, User)
+        self.assertIs(self.user1, result)
 
     def test_get_users_without_params_returns_all_users(self):
         # when

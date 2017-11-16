@@ -2,16 +2,95 @@ import unittest
 
 from models.attachment import Attachment
 from models.note import Note
+from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class DbOnlyDeletionTest(unittest.TestCase):
+class DbOnlyDeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
+
+    def test_deleting_task_reduces_count(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_tasks())
+        # when
+        self.pl.delete(task)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_tasks())
+
+    def test_deleting_tag_reduces_count(self):
+        # given
+        tag = Tag('tag')
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_tags())
+        # when
+        self.pl.delete(tag)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_tags())
+
+    def test_deleting_attachment_reduces_count(self):
+        # given
+        attachment = Attachment('attachment')
+        self.pl.add(attachment)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_attachments())
+        # when
+        self.pl.delete(attachment)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_attachments())
+
+    def test_deleting_note_reduces_count(self):
+        # given
+        note = Note('note')
+        self.pl.add(note)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_notes())
+        # when
+        self.pl.delete(note)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_notes())
+
+    def test_deleting_user_reduces_count(self):
+        # given
+        user = User('user')
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_users())
+        # when
+        self.pl.delete(user)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_users())
+
+    def test_deleting_option_reduces_count(self):
+        # given
+        option = Option('key', 'value')
+        self.pl.add(option)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, self.pl.count_options())
+        # when
+        self.pl.delete(option)
+        self.pl.commit()
+        # then
+        self.assertEqual(0, self.pl.count_options())
 
     def test_db_only_deleting_task_removes_all_children(self):
         # given
@@ -520,9 +599,9 @@ class DbOnlyDeletionTest(unittest.TestCase):
         self.assertIsNone(n3.task_id)
 
 
-class DeletionTest(unittest.TestCase):
+class DeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_deleting_task_removes_all_children(self):
@@ -1032,9 +1111,9 @@ class DeletionTest(unittest.TestCase):
         self.assertIsNone(a3.task_id)
 
 
-class AddDeleteTest(unittest.TestCase):
+class AddDeleteTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_add_after_add_silently_ignored(self):
@@ -1095,10 +1174,71 @@ class AddDeleteTest(unittest.TestCase):
         self.assertNotIn(task, self.pl._added_objects)
         self.assertIn(task, self.pl._deleted_objects)
 
+    def test_add_an_object_already_committed_silently_ignored(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        tag = Tag('tag')
+        self.pl.add(tag)
+        attachment = Attachment('attachment')
+        self.pl.add(attachment)
+        note = Note('note')
+        self.pl.add(note)
+        user = User('user')
+        self.pl.add(user)
+        option = Option('key', 'value')
+        self.pl.add(option)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(task.id)
+        task2 = self.pl.get_task(task.id)
+        self.assertIs(task2, task)
+        self.assertIsNotNone(tag.id)
+        tag2 = self.pl.get_tag(tag.id)
+        self.assertIs(tag2, tag)
+        self.assertIsNotNone(attachment.id)
+        attachment2 = self.pl.get_attachment(attachment.id)
+        self.assertIs(attachment2, attachment)
+        self.assertIsNotNone(note.id)
+        note2 = self.pl.get_note(note.id)
+        self.assertIs(note2, note)
+        self.assertIsNotNone(user.id)
+        user2 = self.pl.get_user(user.id)
+        self.assertIs(user2, user)
+        self.assertIsNotNone(option.id)
+        option2 = self.pl.get_option(option.id)
+        self.assertIs(option2, option)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertNotIn(task, self.pl._added_objects)
+        # when
+        self.pl.add(tag)
+        # then
+        self.assertNotIn(tag, self.pl._added_objects)
+        # when
+        self.pl.add(attachment)
+        # then
+        self.assertNotIn(attachment, self.pl._added_objects)
+        # when
+        self.pl.add(note)
+        # then
+        self.assertNotIn(note, self.pl._added_objects)
+        # when
+        self.pl.add(user)
+        # then
+        self.assertNotIn(user, self.pl._added_objects)
+        # when
+        self.pl.add(option)
+        # then
+        self.assertNotIn(option, self.pl._added_objects)
+        # then
+        self.assertEqual(0, len(self.pl._added_objects))
 
-class DbDeletionTest(unittest.TestCase):
+
+class DbDeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_delete_of_db_only_object_gets_dbobj_from_db(self):

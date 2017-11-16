@@ -1,16 +1,19 @@
 import unittest
 
+from decimal import Decimal
+
 from models.attachment import Attachment
 from models.note import Note
+from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from tests.persistence_layer_t.util import generate_pl
+from tests.persistence_layer_t.util import PersistenceLayerTestBase
 
 
-class DatabaseInteractionTest(unittest.TestCase):
+class DatabaseInteractionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = generate_pl()
+        self.pl = self.generate_pl()
         self.pl.create_all()
 
     def test_adding_task_does_not_create_id(self):
@@ -34,6 +37,117 @@ class DatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertIsNotNone(task.id)
 
+    def test_committing_task_with_same_id_raises(self):
+        # given
+        task = Task('summary')
+        task.id = 1
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, task.id)
+        # when
+        task2 = Task('task2')
+        task2.id = 1
+        self.pl.add(task2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_adding_task_does_not_affect_order_num(self):
+        # given
+        task = Task('summary')
+        # precondition
+        self.assertEqual(0, task.order_num)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertEqual(0, task.order_num)
+
+    def test_committing_task_does_not_affect_order_num(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        # precondition
+        self.assertEqual(0, task.order_num)
+        # when
+        self.pl.commit()
+        # then
+        self.assertEqual(0, task.order_num)
+
+    def test_committing_task_with_same_order_num_is_allowed(self):
+        # given
+        task = Task('summary')
+        task.order_num = 1
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, task.order_num)
+        # when
+        task2 = Task('task2')
+        task2.order_num = 1
+        self.pl.add(task2)
+        self.pl.commit()
+        # then
+        self.assertEqual(1, task.order_num)
+        self.assertEqual(1, task2.order_num)
+
+    def test_adding_task_with_null_order_num_does_not_affect_order_num(self):
+        # given
+        task = Task('summary')
+        task.order_num = None
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.pl.add(task)
+        # then
+        self.assertIsNone(task.order_num)
+
+    def test_committing_task_with_null_order_num_makes_non_null(self):
+        # given
+        task = Task('summary')
+        task.order_num = None
+        self.pl.add(task)
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(task.order_num)
+
+    def test_committing_task_with_null_order_num_makes_non_null_2(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        task.order_num = None
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.pl.commit()
+        # then
+        self.assertIsNotNone(task.order_num)
+
+    def test_changing_order_num_of_already_committed_task_doesnt_affect(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        self.pl.commit()
+        # precondition
+        self.assertIsNotNone(task.order_num)
+        # when
+        task.order_num = None
+        # then
+        self.assertIsNone(task.order_num)
+
+    def test_changing_commit_null_order_num_of_commed_task_raises(self):
+        # given
+        task = Task('summary')
+        self.pl.add(task)
+        self.pl.commit()
+        task.order_num = None
+        # precondition
+        self.assertIsNone(task.order_num)
+        # when
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_tag_does_not_create_id(self):
         # given
         tag = Tag('value')
@@ -54,6 +168,21 @@ class DatabaseInteractionTest(unittest.TestCase):
         self.pl.commit()
         # then
         self.assertIsNotNone(tag.id)
+
+    def test_committing_tag_with_same_id_raises(self):
+        # given
+        tag = Tag('summary')
+        tag.id = 1
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, tag.id)
+        # when
+        tag2 = Tag('tag2')
+        tag2.id = 1
+        self.pl.add(tag2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
 
     def test_adding_note_does_not_create_id(self):
         # given
@@ -76,6 +205,21 @@ class DatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertIsNotNone(note.id)
 
+    def test_committing_note_with_same_id_raises(self):
+        # given
+        note = Note('summary')
+        note.id = 1
+        self.pl.add(note)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, note.id)
+        # when
+        note2 = Note('note2')
+        note2.id = 1
+        self.pl.add(note2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_attachment_does_not_create_id(self):
         # given
         attachment = Attachment('attachment')
@@ -97,6 +241,21 @@ class DatabaseInteractionTest(unittest.TestCase):
         # then
         self.assertIsNotNone(attachment.id)
 
+    def test_committing_attachment_with_same_id_raises(self):
+        # given
+        attachment = Attachment('summary')
+        attachment.id = 1
+        self.pl.add(attachment)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, attachment.id)
+        # when
+        attachment2 = Attachment('attachment2')
+        attachment2.id = 1
+        self.pl.add(attachment2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
     def test_adding_user_does_not_create_id(self):
         # given
         user = User('name@example.com')
@@ -117,6 +276,34 @@ class DatabaseInteractionTest(unittest.TestCase):
         self.pl.commit()
         # then
         self.assertIsNotNone(user.id)
+
+    def test_committing_user_with_same_id_raises(self):
+        # given
+        user = User('summary')
+        user.id = 1
+        self.pl.add(user)
+        self.pl.commit()
+        # precondition
+        self.assertEqual(1, user.id)
+        # when
+        user2 = User('user2')
+        user2.id = 1
+        self.pl.add(user2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_committing_option_with_same_key_raises(self):
+        # given
+        option = Option('key', 'value')
+        self.pl.add(option)
+        self.pl.commit()
+        # precondition
+        self.assertEqual('key', option.key)
+        # when
+        option2 = Option('key', 'value2')
+        self.pl.add(option2)
+        # then
+        self.assertRaises(Exception, self.pl.commit)
 
     def test_rollback_reverts_changes(self):
         tag = Tag('tag', description='a')
@@ -177,7 +364,7 @@ class DatabaseInteractionTest(unittest.TestCase):
         self.assertIn(task, tag2.tasks)
         self.assertNotIn(task, tag3.tasks)
 
-    def test_rollback_does_not_reverts_changes_on_unadded_new_objects(self):
+    def test_rollback_does_not_revert_changes_on_unadded_new_objects(self):
         tag = Tag('tag', description='a')
         tag.description = 'b'
         # precondition
@@ -186,6 +373,45 @@ class DatabaseInteractionTest(unittest.TestCase):
         self.pl.rollback()
         # then
         self.assertEqual('b', tag.description)
+
+    def test_rollback_reverts_changes_after_before_object_added(self):
+        tag = Tag('tag', description='a')
+        self.assertEqual('a', tag.description)
+        self.pl.add(tag)
+        tag.description = 'b'
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertEqual('a', tag.description)
+
+    def test_rollback_does_not_revert_changes_made_before_object_added(self):
+        tag = Tag('tag', description='a')
+        self.assertEqual('a', tag.description)
+        tag.description = 'b'
+        self.pl.add(tag)
+        # precondition
+        self.assertEqual('b', tag.description)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertEqual('b', tag.description)
+
+    def test_rollback_undeletes_deleted_objects(self):
+        # given
+        task = Task('task')
+        self.pl.add(task)
+        self.pl.commit()
+        self.pl.delete(task)
+        # precondition
+        self.assertIn(task, self.pl._committed_objects)
+        self.assertIn(task, self.pl._deleted_objects)
+        # when
+        self.pl.rollback()
+        # then
+        self.assertIn(task, self.pl._committed_objects)
+        self.assertNotIn(task, self.pl._deleted_objects)
 
     def test_changes_to_objects_are_tracked_automatically(self):
         tag = Tag('tag', description='a')
@@ -887,6 +1113,24 @@ class DatabaseInteractionTest(unittest.TestCase):
         self.assertIs(p3, child.parent)
         self.assertEqual(p3.id, child.parent_id)
 
+    def test_db_only_decimal_expected_cost_not_converted_to_str(self):
+        # given
+        task = self.pl.DbTask('task', expected_cost=Decimal('123.45'))
+        self.assertIsInstance(task.expected_cost, Decimal)
+        self.pl.db.session.add(task)
+        self.assertIsInstance(task.expected_cost, Decimal)
+        self.pl.db.session.commit()
+        self.assertIsInstance(task.expected_cost, Decimal)
+
+    def test_decimal_expected_cost_not_converted_to_str(self):
+        # given
+        task = Task('task', expected_cost=Decimal('123.45'))
+        self.assertIsInstance(task.expected_cost, Decimal)
+        self.pl.add(task)
+        self.assertIsInstance(task.expected_cost, Decimal)
+        self.pl.commit()
+        self.assertIsInstance(task.expected_cost, Decimal)
+
     def test_adding_task_dependee_also_adds_other_task_dependant(self):
         # given
         t1 = Task('t1')
@@ -1015,5 +1259,47 @@ class DatabaseInteractionTest(unittest.TestCase):
         # precondition
         self.assertEqual(1, t1.id)
         self.assertEqual(1, t2.id)
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_changed_tag_values_conflict_raises(self):
+        # given
+        self.t1 = Tag('t1')
+        self.pl.add(self.t1)
+        self.t2 = Tag('t2')
+        self.pl.add(self.t2)
+        self.pl.commit()
+        self.t2.value = 't1'
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_new_tag_values_conflict_raises(self):
+        # given
+        self.t1 = Tag('t1')
+        self.pl.add(self.t1)
+        self.pl.commit()
+        t3 = Tag('t1')
+        self.pl.add(t3)
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_changed_user_emails_conflict_raises(self):
+        # given
+        self.user1 = User('user1')
+        self.pl.add(self.user1)
+        self.user2 = User('user2')
+        self.pl.add(self.user2)
+        self.pl.commit()
+        self.user2.email = 'user1'
+        # expect
+        self.assertRaises(Exception, self.pl.commit)
+
+    def test_commit_new_user_emails_conflict_raises(self):
+        # given
+        self.user1 = User('user1')
+        self.pl.add(self.user1)
+        self.pl.commit()
+        user3 = User('user1')
+        self.pl.add(user3)
         # expect
         self.assertRaises(Exception, self.pl.commit)

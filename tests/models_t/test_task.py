@@ -3,6 +3,8 @@
 import unittest
 from datetime import datetime
 
+from decimal import Decimal
+
 from models.task import Task
 
 
@@ -73,7 +75,7 @@ class TaskTest(unittest.TestCase):
         self.assertIn('expected_duration_minutes', result)
         self.assertEqual(5, result['expected_duration_minutes'])
         self.assertIn('expected_cost', result)
-        self.assertEqual('7.00', result['expected_cost'])
+        self.assertEqual(Decimal('7.00'), result['expected_cost'])
         self.assertIn('is_public', result)
         self.assertTrue(result['is_public'])
 
