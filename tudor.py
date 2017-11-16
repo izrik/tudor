@@ -13,7 +13,7 @@ import re
 import markdown
 from functools import wraps
 import git
-from conversions import bool_from_str
+from conversions import bool_from_str, int_from_str
 from logic_layer import LogicLayer
 from models.user import GuestUser
 from view_layer import ViewLayer
@@ -36,35 +36,53 @@ DEFAULT_TUDOR_ALLOWED_EXTENSIONS = 'txt,pdf,png,jpg,jpeg,gif'
 DEFAULT_TUDOR_SECRET_KEY = None
 
 
-TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
-TUDOR_HOST = environ.get('TUDOR_HOST', DEFAULT_TUDOR_HOST)
-TUDOR_PORT = environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT)
-try:
-    TUDOR_PORT = int(TUDOR_PORT)
-except:
-    TUDOR_PORT = DEFAULT_TUDOR_PORT
-TUDOR_DB_URI = environ.get('TUDOR_DB_URI', DEFAULT_TUDOR_DB_URI)
-TUDOR_UPLOAD_FOLDER = environ.get('TUDOR_UPLOAD_FOLDER',
-                                  DEFAULT_TUDOR_UPLOAD_FOLDER)
-TUDOR_ALLOWED_EXTENSIONS = environ.get('TUDOR_ALLOWED_EXTENSIONS',
-                                       DEFAULT_TUDOR_ALLOWED_EXTENSIONS)
-TUDOR_SECRET_KEY = environ.get('TUDOR_SECRET_KEY')
+class Config(object):
+    def __init__(self, debug=DEFAULT_TUDOR_DEBUG, host=DEFAULT_TUDOR_HOST,
+                 port=DEFAULT_TUDOR_PORT, db_uri=DEFAULT_TUDOR_DB_URI,
+                 upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
+                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+                 secret_key=DEFAULT_TUDOR_SECRET_KEY):
+        self.DEBUG = debug
+        self.HOST = host
+        self.PORT = port
+        self.DB_URI = db_uri
+        self.UPLOAD_FOLDER = upload_folder
+        self.ALLOWED_EXTENSIONS = allowed_extensions
+        self.SECRET_KEY = secret_key
 
 
+default_config = Config()
+
+env_config = Config(
+    debug=bool_from_str(environ.get('TUDOR_DEBUG', default_config.DEBUG)),
+    host=environ.get('TUDOR_HOST', default_config.HOST),
+    port=int_from_str(environ.get('TUDOR_PORT', default_config.PORT),
+                      default_config.PORT),
+    db_uri=environ.get('TUDOR_DB_URI', default_config.DB_URI),
+    upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
+                              default_config.UPLOAD_FOLDER),
+    allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
+                                   default_config.ALLOWED_EXTENSIONS),
+    secret_key=environ.get('TUDOR_SECRET_KEY'))
+
+
+arg_config = env_config
 args = None
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true', default=TUDOR_DEBUG)
-    parser.add_argument('--host', action='store', default=TUDOR_HOST)
-    parser.add_argument('--port', action='store', default=TUDOR_PORT, type=int)
+    parser.add_argument('--debug', action='store_true',
+                        default=env_config.DEBUG)
+    parser.add_argument('--host', action='store', default=env_config.HOST)
+    parser.add_argument('--port', action='store', default=env_config.PORT,
+                        type=int)
     parser.add_argument('--create-db', action='store_true')
-    parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
+    parser.add_argument('--db-uri', action='store', default=env_config.DB_URI)
     parser.add_argument('--upload-folder', action='store',
-                        default=TUDOR_UPLOAD_FOLDER)
+                        default=env_config.UPLOAD_FOLDER)
     parser.add_argument('--allowed-extensions', action='store',
-                        default=TUDOR_ALLOWED_EXTENSIONS)
+                        default=env_config.ALLOWED_EXTENSIONS)
     parser.add_argument('--secret-key', action='store',
-                        default=TUDOR_SECRET_KEY)
+                        default=env_config.SECRET_KEY)
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
@@ -83,21 +101,23 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    TUDOR_DEBUG = args.debug
-    TUDOR_HOST = args.host
-    TUDOR_PORT = args.port
-    TUDOR_DB_URI = args.db_uri
-    TUDOR_UPLOAD_FOLDER = args.upload_folder
-    TUDOR_SECRET_KEY = args.secret_key
-    TUDOR_ALLOWED_EXTENSIONS = args.allowed_extensions
+    # global arg_config
+    arg_config = Config(
+        debug=args.debug,
+        host=args.host,
+        port=args.port,
+        db_uri=args.db_uri,
+        upload_folder=args.upload_folder,
+        secret_key=args.secret_key,
+        allowed_extensions=args.allowed_extensions)
 
 print('__revision__: {}'.format(__revision__))
-print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
-print('TUDOR_HOST: {}'.format(TUDOR_HOST))
-print('TUDOR_PORT: {}'.format(TUDOR_PORT))
-print('TUDOR_DB_URI: {}'.format(TUDOR_DB_URI))
-print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
-print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
+print('DEBUG: {}'.format(arg_config.DEBUG))
+print('HOST: {}'.format(arg_config.HOST))
+print('PORT: {}'.format(arg_config.PORT))
+print('DB_URI: {}'.format(arg_config.DB_URI))
+print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
+print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
 
 
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
@@ -628,9 +648,10 @@ def test_db_conn(app, debug):
 
 
 if __name__ == '__main__':
-    app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
-                       secret_key=TUDOR_SECRET_KEY,
-                       allowed_extensions=TUDOR_ALLOWED_EXTENSIONS)
+    app = generate_app(db_uri=arg_config.DB_URI,
+                       upload_folder=arg_config.UPLOAD_FOLDER,
+                       secret_key=arg_config.SECRET_KEY,
+                       allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
 
     if args.create_db:
         print('Setting up the database')
@@ -648,4 +669,5 @@ if __name__ == '__main__':
     elif args.test_db_conn:
         test_db_conn(app, args.debug)
     else:
-        app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
+        app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
+                port=arg_config.PORT)
