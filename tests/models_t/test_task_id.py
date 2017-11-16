@@ -17,7 +17,7 @@ class TaskIdTest(unittest.TestCase):
         # then
         self.assertIsNone(task.id)
 
-    def test_db_add_does_not_assign_id(self):
+    def test_pl_add_does_not_assign_id(self):
         # given
         task = Task('summary')
         # when
@@ -25,7 +25,7 @@ class TaskIdTest(unittest.TestCase):
         # then
         self.assertIsNone(task.id)
 
-    def test_db_commit_assigns_non_null_id(self):
+    def test_pl_commit_assigns_non_null_id(self):
         # given
         task = Task('summary')
         self.pl.add(task)
