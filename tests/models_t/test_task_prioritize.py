@@ -2,11 +2,7 @@
 
 import unittest
 
-from werkzeug.exceptions import BadRequest, NotFound, Forbidden
-
-from tudor import generate_app
 from models.task import Task
-from models.user import User
 
 
 class TaskPrioritizeTest(unittest.TestCase):

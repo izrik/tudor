@@ -1,7 +1,6 @@
 
 import unittest
 from mock import Mock
-from werkzeug.exceptions import NotFound
 
 from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
