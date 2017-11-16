@@ -1,32 +1,19 @@
 #!/usr/bin/env python2
 import traceback
 
-from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response, Markup, jsonify, json
-import flask
+from flask import Flask, request
+from flask import Markup
 import argparse
-from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
-import datetime
-import os.path
-from werkzeug import secure_filename
 import random
 from flask.ext.login import LoginManager, login_user, login_required
 from flask.ext.login import logout_user, current_user
 from flask.ext.bcrypt import Bcrypt
 import re
-import itertools
-import gfm
 import markdown
-import dateutil.parser
-from dateutil.parser import parse as dparse
 from functools import wraps
 import git
-import os
-from decimal import Decimal
-import werkzeug.exceptions
-from conversions import bool_from_str, int_from_str, str_from_datetime
-from conversions import money_from_str
+from conversions import bool_from_str
 from logic_layer import LogicLayer
 from models.user import GuestUser
 from view_layer import ViewLayer
