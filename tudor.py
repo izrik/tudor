@@ -89,11 +89,13 @@ def get_config_from_command_line(args, defaults):
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
-                        help='Make a given task public, viewable by anyone.')
+                        help='Make a given task public, viewable by anyone.',
+                        type=int)
     parser.add_argument('--make-private', metavar='TASK_ID', action='store',
                         help='Make a given task private, viewable only by '
                              'authorized users of that task who are logged '
-                             'in.')
+                             'in.',
+                        type=int)
     parser.add_argument('--descendants', action='store_true',
                         help='When performing an operation on a given task, '
                              'also traverse all descendants and perform the '
@@ -102,17 +104,17 @@ def get_config_from_command_line(args, defaults):
                         help='Try to make a connection to the database. '
                              'Useful for diagnosing connection problems.')
 
-    args = parser.parse_args(args=args)
+    args2 = parser.parse_args(args=args)
 
     return Config(
-        debug=args.debug,
-        host=args.host,
-        port=args.port,
-        db_uri=args.db_uri,
-        upload_folder=args.upload_folder,
-        secret_key=args.secret_key,
-        allowed_extensions=args.allowed_extensions,
-        args=args)
+        debug=args2.debug,
+        host=args2.host,
+        port=args2.port,
+        db_uri=args2.db_uri,
+        upload_folder=args2.upload_folder,
+        secret_key=args2.secret_key,
+        allowed_extensions=args2.allowed_extensions,
+        args=args2)
 
 
 if __name__ == '__main__':
