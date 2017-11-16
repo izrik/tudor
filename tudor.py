@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 import traceback
 
+import sys
 from flask import Flask, request
 from flask import Markup
 import argparse
@@ -41,7 +42,7 @@ class Config(object):
                  port=DEFAULT_TUDOR_PORT, db_uri=DEFAULT_TUDOR_DB_URI,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 secret_key=DEFAULT_TUDOR_SECRET_KEY):
+                 secret_key=DEFAULT_TUDOR_SECRET_KEY, args=None):
         self.DEBUG = debug
         self.HOST = host
         self.PORT = port
@@ -49,6 +50,7 @@ class Config(object):
         self.UPLOAD_FOLDER = upload_folder
         self.ALLOWED_EXTENSIONS = allowed_extensions
         self.SECRET_KEY = secret_key
+        self.args = args
 
 
 default_config = Config()
@@ -67,22 +69,23 @@ env_config = Config(
 
 
 arg_config = env_config
-args = None
-if __name__ == '__main__':
+
+
+def get_config_from_command_line(args, defaults):
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
-                        default=env_config.DEBUG)
-    parser.add_argument('--host', action='store', default=env_config.HOST)
-    parser.add_argument('--port', action='store', default=env_config.PORT,
+                        default=defaults.DEBUG)
+    parser.add_argument('--host', action='store', default=defaults.HOST)
+    parser.add_argument('--port', action='store', default=defaults.PORT,
                         type=int)
     parser.add_argument('--create-db', action='store_true')
-    parser.add_argument('--db-uri', action='store', default=env_config.DB_URI)
+    parser.add_argument('--db-uri', action='store', default=defaults.DB_URI)
     parser.add_argument('--upload-folder', action='store',
-                        default=env_config.UPLOAD_FOLDER)
+                        default=defaults.UPLOAD_FOLDER)
     parser.add_argument('--allowed-extensions', action='store',
-                        default=env_config.ALLOWED_EXTENSIONS)
+                        default=defaults.ALLOWED_EXTENSIONS)
     parser.add_argument('--secret-key', action='store',
-                        default=env_config.SECRET_KEY)
+                        default=defaults.SECRET_KEY)
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
@@ -99,17 +102,21 @@ if __name__ == '__main__':
                         help='Try to make a connection to the database. '
                              'Useful for diagnosing connection problems.')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=args)
 
-    # global arg_config
-    arg_config = Config(
+    return Config(
         debug=args.debug,
         host=args.host,
         port=args.port,
         db_uri=args.db_uri,
         upload_folder=args.upload_folder,
         secret_key=args.secret_key,
-        allowed_extensions=args.allowed_extensions)
+        allowed_extensions=args.allowed_extensions,
+        args=args)
+
+
+if __name__ == '__main__':
+    arg_config = get_config_from_command_line(sys.argv[1:], env_config)
 
 print('__revision__: {}'.format(__revision__))
 print('DEBUG: {}'.format(arg_config.DEBUG))
@@ -652,6 +659,8 @@ if __name__ == '__main__':
                        upload_folder=arg_config.UPLOAD_FOLDER,
                        secret_key=arg_config.SECRET_KEY,
                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
+
+    args = arg_config.args
 
     if args.create_db:
         print('Setting up the database')
