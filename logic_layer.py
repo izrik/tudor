@@ -8,6 +8,7 @@ from numbers import Number
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
+from decimal import Decimal
 from werkzeug import secure_filename
 
 from conversions import int_from_str, money_from_str
@@ -764,6 +765,7 @@ class LogicLayer(object):
                     deadline = task.get('deadline', None)
                     exp_dur_min = task.get('expected_duration_minutes')
                     expected_cost = task.get('expected_cost')
+                    expected_cost = money_from_str(expected_cost)
                     parent_id = task.get('parent_id', None)
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])

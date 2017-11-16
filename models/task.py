@@ -83,7 +83,7 @@ class TaskBase(object):
         if fields is None or self.FIELD_EXPECTED_DURATION_MINUTES in fields:
             d['expected_duration_minutes'] = self.expected_duration_minutes
         if fields is None or self.FIELD_EXPECTED_COST in fields:
-            d['expected_cost'] = self.get_expected_cost_for_export()
+            d['expected_cost'] = self.expected_cost
         if fields is None or self.FIELD_ORDER_NUM in fields:
             d['order_num'] = self.order_num
         if fields is None or self.FIELD_PARENT in fields:

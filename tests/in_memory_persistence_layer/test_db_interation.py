@@ -1,4 +1,6 @@
 
+from decimal import Decimal
+
 from models.attachment import Attachment
 from models.note import Note
 from models.option import Option
@@ -634,6 +636,15 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.assertIsNotNone(child.parent_id)
         self.assertIs(p3, child.parent)
         self.assertEqual(p3.id, child.parent_id)
+
+    def test_decimal_expected_cost_not_converted_to_str(self):
+        # given
+        task = Task('task', expected_cost=Decimal('123.45'))
+        self.assertIsInstance(task.expected_cost, Decimal)
+        self.pl.add(task)
+        self.assertIsInstance(task.expected_cost, Decimal)
+        self.pl.commit()
+        self.assertIsInstance(task.expected_cost, Decimal)
 
     def test_adding_task_dependee_also_adds_other_task_dependant(self):
         # given
