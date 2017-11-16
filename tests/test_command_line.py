@@ -1,12 +1,14 @@
 import unittest
 
+from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.task import Task
 from tudor import generate_app, make_task_public, make_task_private
 
 
 class CommandLineTests(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
+        pl = InMemoryPersistenceLayer()
+        self.app = generate_app(pl=pl)
         self.app.pl.create_all()
 
     def test_make_task_public(self):
