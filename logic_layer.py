@@ -573,6 +573,8 @@ class LogicLayer(object):
             raise ValueError("No task was specified.")
         if user_to_authorize is None:
             raise ValueError("No user was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
