@@ -2,7 +2,7 @@
 
 import unittest
 
-from werkzeug.exceptions import Conflict, Forbidden
+from werkzeug.exceptions import Forbidden
 
 from models.task import Task
 from models.user import User
