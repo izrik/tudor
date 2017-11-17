@@ -1,32 +1,20 @@
 #!/usr/bin/env python2
 import traceback
 
-from flask import Flask, render_template, redirect, url_for, request, flash
-from flask import make_response, Markup, jsonify, json
-import flask
+import sys
+from flask import Flask, request
+from flask import Markup
 import argparse
-from flask.ext.sqlalchemy import SQLAlchemy
 from os import environ
-import datetime
-import os.path
-from werkzeug import secure_filename
 import random
 from flask.ext.login import LoginManager, login_user, login_required
 from flask.ext.login import logout_user, current_user
 from flask.ext.bcrypt import Bcrypt
 import re
-import itertools
-import gfm
 import markdown
-import dateutil.parser
-from dateutil.parser import parse as dparse
 from functools import wraps
 import git
-import os
-from decimal import Decimal
-import werkzeug.exceptions
-from conversions import bool_from_str, int_from_str, str_from_datetime
-from conversions import money_from_str
+from conversions import bool_from_str, int_from_str
 from logic_layer import LogicLayer
 from models.user import GuestUser
 from view_layer import ViewLayer
@@ -49,43 +37,47 @@ DEFAULT_TUDOR_ALLOWED_EXTENSIONS = 'txt,pdf,png,jpg,jpeg,gif'
 DEFAULT_TUDOR_SECRET_KEY = None
 
 
-TUDOR_DEBUG = bool_from_str(environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG))
-TUDOR_HOST = environ.get('TUDOR_HOST', DEFAULT_TUDOR_HOST)
-TUDOR_PORT = environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT)
-try:
-    TUDOR_PORT = int(TUDOR_PORT)
-except:
-    TUDOR_PORT = DEFAULT_TUDOR_PORT
-TUDOR_DB_URI = environ.get('TUDOR_DB_URI', DEFAULT_TUDOR_DB_URI)
-TUDOR_UPLOAD_FOLDER = environ.get('TUDOR_UPLOAD_FOLDER',
-                                  DEFAULT_TUDOR_UPLOAD_FOLDER)
-TUDOR_ALLOWED_EXTENSIONS = environ.get('TUDOR_ALLOWED_EXTENSIONS',
-                                       DEFAULT_TUDOR_ALLOWED_EXTENSIONS)
-TUDOR_SECRET_KEY = environ.get('TUDOR_SECRET_KEY')
+class Config(object):
+    def __init__(self, debug=DEFAULT_TUDOR_DEBUG, host=DEFAULT_TUDOR_HOST,
+                 port=DEFAULT_TUDOR_PORT, db_uri=DEFAULT_TUDOR_DB_URI,
+                 upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
+                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+                 secret_key=DEFAULT_TUDOR_SECRET_KEY, args=None):
+        self.DEBUG = debug
+        self.HOST = host
+        self.PORT = port
+        self.DB_URI = db_uri
+        self.UPLOAD_FOLDER = upload_folder
+        self.ALLOWED_EXTENSIONS = allowed_extensions
+        self.SECRET_KEY = secret_key
+        self.args = args
 
 
-args = None
-if __name__ == '__main__':
+def get_config_from_command_line(args, defaults):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true', default=TUDOR_DEBUG)
-    parser.add_argument('--host', action='store', default=TUDOR_HOST)
-    parser.add_argument('--port', action='store', default=TUDOR_PORT, type=int)
+    parser.add_argument('--debug', action='store_true',
+                        default=defaults.DEBUG)
+    parser.add_argument('--host', action='store', default=defaults.HOST)
+    parser.add_argument('--port', action='store', default=defaults.PORT,
+                        type=int)
     parser.add_argument('--create-db', action='store_true')
-    parser.add_argument('--db-uri', action='store', default=TUDOR_DB_URI)
+    parser.add_argument('--db-uri', action='store', default=defaults.DB_URI)
     parser.add_argument('--upload-folder', action='store',
-                        default=TUDOR_UPLOAD_FOLDER)
+                        default=defaults.UPLOAD_FOLDER)
     parser.add_argument('--allowed-extensions', action='store',
-                        default=TUDOR_ALLOWED_EXTENSIONS)
+                        default=defaults.ALLOWED_EXTENSIONS)
     parser.add_argument('--secret-key', action='store',
-                        default=TUDOR_SECRET_KEY)
+                        default=defaults.SECRET_KEY)
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
-                        help='Make a given task public, viewable by anyone.')
+                        help='Make a given task public, viewable by anyone.',
+                        type=int)
     parser.add_argument('--make-private', metavar='TASK_ID', action='store',
                         help='Make a given task private, viewable only by '
                              'authorized users of that task who are logged '
-                             'in.')
+                             'in.',
+                        type=int)
     parser.add_argument('--descendants', action='store_true',
                         help='When performing an operation on a given task, '
                              'also traverse all descendants and perform the '
@@ -94,36 +86,31 @@ if __name__ == '__main__':
                         help='Try to make a connection to the database. '
                              'Useful for diagnosing connection problems.')
 
-    args = parser.parse_args()
+    args2 = parser.parse_args(args=args)
 
-    TUDOR_DEBUG = args.debug
-    TUDOR_HOST = args.host
-    TUDOR_PORT = args.port
-    TUDOR_DB_URI = args.db_uri
-    TUDOR_UPLOAD_FOLDER = args.upload_folder
-    TUDOR_SECRET_KEY = args.secret_key
-    TUDOR_ALLOWED_EXTENSIONS = args.allowed_extensions
-
-print('__revision__: {}'.format(__revision__))
-print('TUDOR_DEBUG: {}'.format(TUDOR_DEBUG))
-print('TUDOR_HOST: {}'.format(TUDOR_HOST))
-print('TUDOR_PORT: {}'.format(TUDOR_PORT))
-print('TUDOR_DB_URI: {}'.format(TUDOR_DB_URI))
-print('TUDOR_UPLOAD_FOLDER: {}'.format(TUDOR_UPLOAD_FOLDER))
-print('TUDOR_ALLOWED_EXTENSIONS: {}'.format(TUDOR_ALLOWED_EXTENSIONS))
+    return Config(
+        debug=args2.debug,
+        host=args2.host,
+        port=args2.port,
+        db_uri=args2.db_uri,
+        upload_folder=args2.upload_folder,
+        secret_key=args2.secret_key,
+        allowed_extensions=args2.allowed_extensions,
+        args=args2)
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
+def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 ll=None, vl=None, pl=None, configs=None,
+                 ll=None, vl=None, pl=None, flask_configs=None,
                  disable_admin_check=False):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
-    if configs:
-        for k, v in configs.iteritems():
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    if flask_configs:
+        for k, v in flask_configs.iteritems():
             app.config[k] = v
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
@@ -640,9 +627,37 @@ def test_db_conn(app, debug):
 
 
 if __name__ == '__main__':
-    app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
-                       secret_key=TUDOR_SECRET_KEY,
-                       allowed_extensions=TUDOR_ALLOWED_EXTENSIONS)
+
+    default_config = Config()
+
+    env_config = Config(
+        debug=bool_from_str(environ.get('TUDOR_DEBUG', default_config.DEBUG)),
+        host=environ.get('TUDOR_HOST', default_config.HOST),
+        port=int_from_str(environ.get('TUDOR_PORT', default_config.PORT),
+                          default_config.PORT),
+        db_uri=environ.get('TUDOR_DB_URI', default_config.DB_URI),
+        upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
+                                  default_config.UPLOAD_FOLDER),
+        allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
+                                       default_config.ALLOWED_EXTENSIONS),
+        secret_key=environ.get('TUDOR_SECRET_KEY'))
+
+    arg_config = get_config_from_command_line(sys.argv[1:], env_config)
+
+    print('__revision__: {}'.format(__revision__))
+    print('DEBUG: {}'.format(arg_config.DEBUG))
+    print('HOST: {}'.format(arg_config.HOST))
+    print('PORT: {}'.format(arg_config.PORT))
+    print('DB_URI: {}'.format(arg_config.DB_URI))
+    print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
+    print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
+
+    app = generate_app(db_uri=arg_config.DB_URI,
+                       upload_folder=arg_config.UPLOAD_FOLDER,
+                       secret_key=arg_config.SECRET_KEY,
+                       allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
+
+    args = arg_config.args
 
     if args.create_db:
         print('Setting up the database')
@@ -660,4 +675,5 @@ if __name__ == '__main__':
     elif args.test_db_conn:
         test_db_conn(app, args.debug)
     else:
-        app.run(debug=TUDOR_DEBUG, host=TUDOR_HOST, port=TUDOR_PORT)
+        app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
+                port=arg_config.PORT)

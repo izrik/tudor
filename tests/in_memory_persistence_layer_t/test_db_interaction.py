@@ -7,7 +7,7 @@ from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
-from tests.in_memory_persistence_layer.in_memory_test_base import \
+from tests.in_memory_persistence_layer_t.in_memory_test_base import \
     InMemoryTestBase
 
 

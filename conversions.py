@@ -13,11 +13,11 @@ def bool_from_str(s):
     return bool(s)
 
 
-def int_from_str(s):
+def int_from_str(s, default=None):
     try:
         return int(s)
     except:
-        return None
+        return default
 
 
 def str_from_datetime(dt):

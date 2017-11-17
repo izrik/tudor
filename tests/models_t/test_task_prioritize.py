@@ -2,11 +2,7 @@
 
 import unittest
 
-from werkzeug.exceptions import BadRequest, NotFound, Forbidden
-
-from tudor import generate_app
 from models.task import Task
-from models.user import User
 
 
 class TaskPrioritizeTest(unittest.TestCase):
@@ -114,4 +110,3 @@ class TaskPrioritizeTest(unittest.TestCase):
         self.assertFalse(t2.contains_priority_cycle())
         self.assertFalse(t3.contains_priority_cycle())
         self.assertFalse(t4.contains_priority_cycle())
-

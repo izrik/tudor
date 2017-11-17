@@ -3,19 +3,17 @@
 import unittest
 from datetime import datetime
 
-from flask import json
-from werkzeug.exceptions import Conflict, NotFound, Forbidden
+from werkzeug.exceptions import NotFound, Forbidden
 
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 from models.task import Task
 from models.user import User
 
 
 class LogicLayerSetTaskTest(unittest.TestCase):
     def setUp(self):
-        self.app = generate_app(db_uri='sqlite://')
-        self.ll = self.app.ll
-        self.pl = self.app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
         self.admin = User('admin@example.com', is_admin=True)
         self.user = User('user@example.com', is_admin=False)

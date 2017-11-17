@@ -4,14 +4,13 @@ import unittest
 
 from models.task import Task
 from models.user import User
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 
 
 class DbLoadNoHierarchyExcludeNonPublicTest(unittest.TestCase):
     def setUp(self):
         # given
-        self.app = generate_app(db_uri='sqlite://')
-        self.ll = self.app.ll
+        self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
         self.pl.create_all()
         self.t1 = Task('t1', is_public=True)

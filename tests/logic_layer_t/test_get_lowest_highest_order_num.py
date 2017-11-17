@@ -2,20 +2,16 @@
 
 import unittest
 
-from werkzeug.exceptions import NotFound, Forbidden
-
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 from models.task import Task
-from models.tag import Tag
 
 
 class GetLowestHighestOrderNumTest(unittest.TestCase):
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
-        self.ll = app.ll
 
     def test_no_tasks_lowest_returns_none(self):
         # precondition
@@ -42,6 +38,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         task = Task('task')
         task.order_num = 10
         self.pl.add(task)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -54,6 +51,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         task = Task('task')
         task.order_num = 10
         self.pl.add(task)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_highest_order_num()
@@ -72,6 +70,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_lowest_order_num()
@@ -90,6 +89,7 @@ class GetLowestHighestOrderNumTest(unittest.TestCase):
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
+        self.pl.commit()
 
         # when
         order_num = self.ll.get_highest_order_num()

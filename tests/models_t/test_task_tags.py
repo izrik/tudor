@@ -2,7 +2,7 @@
 
 import unittest
 
-from tudor import generate_app
+from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.task import Task
 from models.tag import Tag
 
@@ -10,8 +10,7 @@ from models.tag import Tag
 class TaskTagsTest(unittest.TestCase):
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.pl = InMemoryPersistenceLayer()
 
     def test_no_tags_yields_no_tags(self):
         # given

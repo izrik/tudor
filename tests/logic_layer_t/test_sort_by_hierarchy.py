@@ -2,18 +2,16 @@
 
 import unittest
 
-from tudor import generate_app
+from tests.logic_layer_t.util import generate_ll
 from models.task import Task
 
 
 class SortByHierarchyTest(unittest.TestCase):
 
     def setUp(self):
-        app = generate_app(db_uri='sqlite://')
-        self.pl = app.pl
+        self.ll = generate_ll(db_uri='sqlite://')
+        self.pl = self.ll.pl
         self.pl.create_all()
-        self.app = app
-        self.ll = app.ll
 
     def test_errant_leading_none_when_no_root_specified(self):
         # TODO: Fix this. The None should not be there. Only return tasks.

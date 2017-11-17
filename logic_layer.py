@@ -26,7 +26,6 @@ class LogicLayer(object):
 
     def __init__(self, upload_folder, allowed_extensions, pl):
         self.pl = pl
-        self.db = self.pl.db
         self.upload_folder = upload_folder
         self.allowed_extensions = allowed_extensions
         self.pl = pl
@@ -545,6 +544,7 @@ class LogicLayer(object):
         if tag is None:
             tag = Tag(value)
             self.pl.add(tag)
+            self.pl.commit()
         return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
@@ -885,6 +885,7 @@ class LogicLayer(object):
 
         for dbo in db_objects:
             self.pl.add(dbo)
+        self.pl.commit()
 
     def get_task_crud_data(self, current_user):
         return self.load_no_hierarchy(current_user, include_done=True,

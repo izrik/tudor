@@ -1,6 +1,6 @@
 
 from models.note import Note
-from tests.in_memory_persistence_layer.in_memory_test_base import \
+from tests.in_memory_persistence_layer_t.in_memory_test_base import \
     InMemoryTestBase
 
 
