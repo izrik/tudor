@@ -53,24 +53,6 @@ class Config(object):
         self.args = args
 
 
-default_config = Config()
-
-env_config = Config(
-    debug=bool_from_str(environ.get('TUDOR_DEBUG', default_config.DEBUG)),
-    host=environ.get('TUDOR_HOST', default_config.HOST),
-    port=int_from_str(environ.get('TUDOR_PORT', default_config.PORT),
-                      default_config.PORT),
-    db_uri=environ.get('TUDOR_DB_URI', default_config.DB_URI),
-    upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
-                              default_config.UPLOAD_FOLDER),
-    allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
-                                   default_config.ALLOWED_EXTENSIONS),
-    secret_key=environ.get('TUDOR_SECRET_KEY'))
-
-
-arg_config = env_config
-
-
 def get_config_from_command_line(args, defaults):
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
@@ -115,18 +97,6 @@ def get_config_from_command_line(args, defaults):
         secret_key=args2.secret_key,
         allowed_extensions=args2.allowed_extensions,
         args=args2)
-
-
-if __name__ == '__main__':
-    arg_config = get_config_from_command_line(sys.argv[1:], env_config)
-
-    print('__revision__: {}'.format(__revision__))
-    print('DEBUG: {}'.format(arg_config.DEBUG))
-    print('HOST: {}'.format(arg_config.HOST))
-    print('PORT: {}'.format(arg_config.PORT))
-    print('DB_URI: {}'.format(arg_config.DB_URI))
-    print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
-    print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
 
 
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
@@ -657,6 +627,31 @@ def test_db_conn(app, debug):
 
 
 if __name__ == '__main__':
+
+    default_config = Config()
+
+    env_config = Config(
+        debug=bool_from_str(environ.get('TUDOR_DEBUG', default_config.DEBUG)),
+        host=environ.get('TUDOR_HOST', default_config.HOST),
+        port=int_from_str(environ.get('TUDOR_PORT', default_config.PORT),
+                          default_config.PORT),
+        db_uri=environ.get('TUDOR_DB_URI', default_config.DB_URI),
+        upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
+                                  default_config.UPLOAD_FOLDER),
+        allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
+                                       default_config.ALLOWED_EXTENSIONS),
+        secret_key=environ.get('TUDOR_SECRET_KEY'))
+
+    arg_config = get_config_from_command_line(sys.argv[1:], env_config)
+
+    print('__revision__: {}'.format(__revision__))
+    print('DEBUG: {}'.format(arg_config.DEBUG))
+    print('HOST: {}'.format(arg_config.HOST))
+    print('PORT: {}'.format(arg_config.PORT))
+    print('DB_URI: {}'.format(arg_config.DB_URI))
+    print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
+    print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
+
     app = generate_app(db_uri=arg_config.DB_URI,
                        upload_folder=arg_config.UPLOAD_FOLDER,
                        secret_key=arg_config.SECRET_KEY,
