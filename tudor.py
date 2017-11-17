@@ -103,14 +103,14 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 ll=None, vl=None, pl=None, configs=None,
+                 ll=None, vl=None, pl=None, flask_configs=None,
                  disable_admin_check=False):
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    if configs:
-        for k, v in configs.iteritems():
+    if flask_configs:
+        for k, v in flask_configs.iteritems():
             app.config[k] = v
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
