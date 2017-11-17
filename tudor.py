@@ -99,7 +99,7 @@ def get_config_from_command_line(args, defaults):
         args=args2)
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
+def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
