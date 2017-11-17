@@ -655,10 +655,10 @@ class LogicLayer(object):
 
         return task
 
-    def do_add_new_user(self, email, is_admin):
+    def do_add_new_user(self, email, is_admin=False):
         user = self.pl.get_user_by_email(email)
         if user is not None:
-            return werkzeug.exceptions.Conflict(
+            raise werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(
                     email))
         user = User(email=email, is_admin=is_admin)
