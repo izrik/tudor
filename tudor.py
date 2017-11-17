@@ -120,13 +120,13 @@ def get_config_from_command_line(args, defaults):
 if __name__ == '__main__':
     arg_config = get_config_from_command_line(sys.argv[1:], env_config)
 
-print('__revision__: {}'.format(__revision__))
-print('DEBUG: {}'.format(arg_config.DEBUG))
-print('HOST: {}'.format(arg_config.HOST))
-print('PORT: {}'.format(arg_config.PORT))
-print('DB_URI: {}'.format(arg_config.DB_URI))
-print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
-print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
+    print('__revision__: {}'.format(__revision__))
+    print('DEBUG: {}'.format(arg_config.DEBUG))
+    print('HOST: {}'.format(arg_config.HOST))
+    print('PORT: {}'.format(arg_config.PORT))
+    print('DB_URI: {}'.format(arg_config.DB_URI))
+    print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
+    print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
 
 
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI, ds_factory=None,
