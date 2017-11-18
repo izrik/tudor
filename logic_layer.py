@@ -631,6 +631,8 @@ class LogicLayer(object):
             raise ValueError("No task_id was specified.")
         if user_id is None:
             raise ValueError("No user_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
 
         task = self.pl.get_task(task_id)
         if task is None:
@@ -644,16 +646,20 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
+        if user_to_deauthorize not in task.users:
+            return task
+
         if len(task.users) < 2:
+            # TODO: maybe re-think this. the task is never inaccessible to
+            # admins, after all.
             raise werkzeug.exceptions.Conflict(
                 "The user cannot be de-authorized. It is the last authorized "
                 "user for the task. De-authorizing the user would make the "
                 "task inaccessible.")
 
-        if user_to_deauthorize in task.users:
-            task.users.remove(user_to_deauthorize)
-            self.pl.add(task)
-            self.pl.add(user_to_deauthorize)
+        task.users.remove(user_to_deauthorize)
+        self.pl.add(task)
+        self.pl.add(user_to_deauthorize)
 
         return task
 
