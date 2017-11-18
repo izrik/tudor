@@ -180,7 +180,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         self.assertNotIn(user, task.users)
         self.assertNotIn(task, user.tasks)
         # when
-        result = self.ll.do_deauthorize_user_for_task(task.id, user.id, admin)  # see?
+        result = self.ll.do_deauthorize_user_for_task(task.id, user.id, admin)
         self.pl.commit()
         # then
         self.assertIs(result, task)
