@@ -961,7 +961,7 @@ class LogicLayer(object):
         return tag
 
     def do_edit_tag(self, tag_id, value, description):
-        tag = self.get_tag(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
