@@ -480,14 +480,14 @@ class LogicLayer(object):
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
-        if not TaskUserOps.is_user_authorized_or_admin(task_to_move,
-                                                       current_user):
-            raise werkzeug.exceptions.Forbidden()
-
         target = self.pl.get_task(target_id)
         if target is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(target_id))
+
+        if not TaskUserOps.is_user_authorized_or_admin(task_to_move,
+                                                       current_user):
+            raise werkzeug.exceptions.Forbidden()
         if not TaskUserOps.is_user_authorized_or_admin(target, current_user):
             raise werkzeug.exceptions.Forbidden()
 
