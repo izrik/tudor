@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Conflict
 
-from models.tag import Tag
 from models.task import Task
 from models.user import User
 from tests.logic_layer_t.util import generate_ll
@@ -31,7 +30,8 @@ class LongOrderChangeTest(unittest.TestCase):
         self.assertEqual(1, task_to_move.order_num)
         self.assertEqual(2, target.order_num)
         # when
-        result = self.ll.do_long_order_change(task_to_move.id, target.id, admin)
+        result = self.ll.do_long_order_change(task_to_move.id, target.id,
+                                              admin)
         self.pl.commit()
         # then
         self.assertEqual(4, task_to_move.order_num)
@@ -231,8 +231,8 @@ class LongOrderChangeTest(unittest.TestCase):
         self.pl.add(s7)
         s8 = Task('s8')
         s8.order_num = 50
-        self.pl.add(s8)        
-        
+        self.pl.add(s8)
+
         admin = User('user@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
