@@ -23,7 +23,7 @@ class GetTagTest(unittest.TestCase):
 
     def test_tag_not_found_raises(self):
         # precondition
-        self.assertEqual(0, len(self.pl.get_tags()))
+        self.assertEqual(0, self.pl.count_tags())
         self.assertIsNone(self.pl.get_tag(1))
         # expect
         self.assertRaises(
@@ -37,7 +37,7 @@ class GetTagTest(unittest.TestCase):
         self.pl.add(tag)
         self.pl.commit()
         # precondition
-        self.assertEqual(1, len(self.pl.get_tags()))
+        self.assertEqual(1, self.pl.count_tags())
         # when
         result = self.ll.get_tag(tag.id)
         # then

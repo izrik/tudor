@@ -162,7 +162,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(admin)
         self.pl.commit()
         # precondition
-        self.assertEqual(0, len(self.pl.get_tasks()))
+        self.assertEqual(0, self.pl.count_tasks())
         self.assertIsNone(self.pl.get_task(1))
         # when
         self.assertRaises(
@@ -178,7 +178,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(admin)
         self.pl.commit()
         # precondition
-        self.assertEqual(0, len(self.pl.get_tags()))
+        self.assertEqual(0, self.pl.count_tags())
         self.assertIsNone(self.pl.get_tag(1))
         self.assertEqual(0, len(task.tags))
         # when
