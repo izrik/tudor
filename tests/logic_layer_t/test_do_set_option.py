@@ -2,8 +2,6 @@
 
 import unittest
 
-from werkzeug.exceptions import NotFound
-
 from models.option import Option
 from tests.logic_layer_t.util import generate_ll
 
