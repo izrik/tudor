@@ -32,6 +32,7 @@ class LongOrderChangeTest(unittest.TestCase):
         self.assertEqual(2, target.order_num)
         # when
         result = self.ll.do_long_order_change(task_to_move.id, target.id, admin)
+        self.pl.commit()
         # then
         self.assertEqual(4, task_to_move.order_num)
         self.assertEqual(2, target.order_num)
@@ -248,6 +249,7 @@ class LongOrderChangeTest(unittest.TestCase):
         self.assertEqual(50, s8.order_num)
         # when
         self.ll.do_long_order_change(task_to_move.id, target.id, admin)
+        self.pl.commit()
         # then
         self.assertEqual(2, s1.order_num)
         self.assertEqual(4, s2.order_num)
