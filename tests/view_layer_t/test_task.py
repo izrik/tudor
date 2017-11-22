@@ -2,6 +2,7 @@
 import unittest
 from mock import Mock
 
+from tests.view_layer_t.util import generate_request
 from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
 from logic_layer import LogicLayer
@@ -25,9 +26,7 @@ class TaskTest(unittest.TestCase):
 
     def test_gets_task_data_from_logic_layer(self):
         # given
-        request = Mock()
-        request.args = {}
-        request.cookies = {}
+        request = generate_request(args={}, cookies={})
         user = Mock()
         TASK_ID = 1
         # when
@@ -43,9 +42,7 @@ class TaskTest(unittest.TestCase):
 
     def test_page_num_not_int_defaults_to_one(self):
         # given
-        request = Mock()
-        request.args = {'page': 'asdf'}
-        request.cookies = {}
+        request = generate_request(args={'page': 'asdf'}, cookies={})
         user = Mock()
         TASK_ID = 1
         # when
@@ -61,9 +58,7 @@ class TaskTest(unittest.TestCase):
 
     def test_task_per_page_not_int_default_to_twenty(self):
         # given
-        request = Mock()
-        request.args = {'per_page': 'asdf'}
-        request.cookies = {}
+        request = generate_request(args={'per_page': 'asdf'}, cookies={})
         user = Mock()
         TASK_ID = 1
         # when
