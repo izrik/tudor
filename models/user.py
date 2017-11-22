@@ -168,6 +168,7 @@ class InterlinkedTasks(ManyToManySet):
 class GuestUser(UserBase):
     id = -1
     authenticated = False
+    tasks = ()
 
     def __init__(self):
         super(GuestUser, self).__init__('Guest', '', False)
