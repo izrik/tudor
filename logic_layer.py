@@ -947,7 +947,8 @@ class LogicLayer(object):
             task.deadline = deadline
             task.is_done = is_done
             task.is_deleted = is_deleted
-            task.order_num = order_num
+            if order_num is not None:
+                task.order_num = order_num
             task.expected_duration_minutes = duration
             task.expected_cost = cost
             task.parent = self.pl.get_task(parent_id)
