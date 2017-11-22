@@ -909,10 +909,13 @@ class LogicLayer(object):
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')
 
+        # TODO: only load tasks that are specified in crud_data
         tasks = self.load_no_hierarchy(current_user, include_done=True,
                                        include_deleted=True)
 
         for task in tasks:
+            # TODO: re-arrange so that alll statements related to a given
+            # attribute are together
             summary = crud_data.get('task_{}_summary'.format(task.id))
             deadline = crud_data.get('task_{}_deadline'.format(task.id))
             is_done = crud_data.get('task_{}_is_done'.format(task.id))
@@ -923,6 +926,9 @@ class LogicLayer(object):
             cost = crud_data.get('task_{}_cost'.format(task.id))
             parent_id = crud_data.get('task_{}_parent_id'.format(task.id))
 
+            # TODO: Normalize the values the same way the class would, e.g. use
+            # Task._clean_deadline to normalize the deadline. Alternately,
+            # maybe just use make_change.
             if deadline:
                 deadline = dparse(deadline)
             else:
@@ -934,6 +940,8 @@ class LogicLayer(object):
             cost = money_from_str(cost)
             parent_id = int_from_str(parent_id)
 
+            # TODO: clarify when None means "None" and when it means "Don't set
+            # this value".
             if summary is not None:
                 task.summary = summary
             task.deadline = deadline
