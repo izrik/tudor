@@ -25,10 +25,9 @@ class DefaultRenderer(object):
 
 
 class ViewLayer(object):
-    def __init__(self, ll, app, upload_folder, pl, renderer=None):
+    def __init__(self, ll, app, pl, renderer=None):
         self.ll = ll
         self.app = app
-        self.upload_folder = upload_folder
         self.pl = pl
         if renderer is None:
             renderer = DefaultRenderer()
@@ -354,7 +353,7 @@ class ViewLayer(object):
             return (('No attachment found for the id "%s"' % attachment_id),
                     404)
 
-        return flask.send_from_directory(self.upload_folder, att.path)
+        return flask.send_from_directory(self.ll.upload_folder, att.path)
 
     def task_up(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')

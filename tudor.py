@@ -165,7 +165,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.ll = ll
 
     if vl is None:
-        vl = ViewLayer(ll, app, upload_folder, pl)
+        vl = ViewLayer(ll, app, pl)
     app.vl = vl
 
     # Flask setup functions
