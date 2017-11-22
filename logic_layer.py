@@ -901,6 +901,14 @@ class LogicLayer(object):
 
     def do_submit_task_crud(self, crud_data, current_user):
 
+        if current_user is None:
+            # guest users not allowed
+            raise ValueError('current_user cannot be None.')
+        if not isinstance(current_user, User):
+            # guest users not allowed
+            # TODO: use a better exception type for unauthorized operations
+            raise TypeError('Invalid user type.')
+
         tasks = self.load_no_hierarchy(current_user, include_done=True,
                                        include_deleted=True)
 
