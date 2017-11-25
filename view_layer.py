@@ -327,12 +327,12 @@ class ViewLayer(object):
 
     def attachment_new(self, request, current_user):
         if 'task_id' not in request.form:
-            return ('No task_id specified', 400)
+            raise BadRequest('No task_id specified')
         task_id = request.form['task_id']
 
         f = request.files['filename']
-        if f is None or not f or not self.ll.allowed_file(f.filename):
-            return 'Invalid file', 400
+        if f is None or not f.filename or not self.ll.allowed_file(f.filename):
+            raise BadRequest('Invalid file')
 
         if 'description' in request.form:
             description = request.form['description']
