@@ -1,10 +1,13 @@
 from mock import Mock
 
 
-def generate_request(args=None, cookies=None, form=None, files=None):
+def generate_request(method=None, args=None, cookies=None, form=None,
+                     files=None):
 
     request = Mock()
 
+    if method is None:
+        method = 'POST'
     if args is None:
         args = {}
     if cookies is None:
@@ -14,6 +17,7 @@ def generate_request(args=None, cookies=None, form=None, files=None):
     if files is None:
         files = {}
 
+    request.method = method
     request.args = args
     request.cookies = cookies
     request.form = form

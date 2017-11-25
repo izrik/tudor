@@ -567,7 +567,7 @@ class ViewLayer(object):
         if request.method == 'GET':
             return self.render_template('import.t.html')
 
-        f = request.files['file']
+        f = request.files.get('file')
         if f is None or not f:
             r = request.form['raw']
             src = json.loads(r)
