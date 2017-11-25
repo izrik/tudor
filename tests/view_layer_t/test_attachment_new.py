@@ -4,8 +4,8 @@ from werkzeug.exceptions import BadRequest
 
 from models.task import Task
 from models.user import User
-from tests.logic_layer_t.test_create_new_attachment import MockFileObject
 from tests.logic_layer_t.util import generate_ll
+from tests.util import MockFileObject
 from tests.view_layer_t.util import generate_request
 from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
