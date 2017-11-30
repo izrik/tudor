@@ -8,6 +8,7 @@ from numbers import Number
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
+from werkzeug.exceptions import Forbidden
 from decimal import Decimal
 from werkzeug import secure_filename
 
@@ -1390,3 +1391,15 @@ class LogicLayer(object):
         prioritize_after, task = self.do_remove_prioritize_before_from_task(
             prioritize_after_id, task_id, current_user)
         return task, prioritize_after
+
+    def purge_task(self, task, current_user):
+        if not current_user.is_admin:
+            raise Forbidden('Current user is not authorized to purge tasks.')
+        if task is None:
+            raise ValueError('task cannot be None.')
+        if not task.is_deleted:
+            raise Exception(
+                "Task (id {}) has not been deleted.".format(task.id))
+
+        self.pl.delete(task)
+        self.pl.commit()

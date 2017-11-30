@@ -193,8 +193,7 @@ class ViewLayer(object):
         if not task.is_deleted:
             raise BadRequest(
                 "Indicated task (id {}) has not been deleted.".format(task_id))
-        self.pl.delete(task)
-        self.pl.commit()
+        self.ll.purge_task(task, current_user)
         return redirect(request.args.get('next') or url_for('index'))
 
     def purge_all(self, request, current_user):
