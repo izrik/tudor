@@ -162,12 +162,7 @@ class ViewLayer(object):
             is_public=is_public, current_user=current_user)
 
         for tag_name in tags:
-            tag = self.ll.get_or_create_tag(tag_name)
-            task.tags.append(tag)
-            self.pl.add(tag)
-
-        self.pl.add(task)
-        self.pl.commit()
+            self.ll.do_add_tag_to_task(task, tag_name, current_user)
 
         next_url = self.get_form_or_arg(request, 'next_url')
         if not next_url:
