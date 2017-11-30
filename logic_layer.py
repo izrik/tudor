@@ -1037,7 +1037,6 @@ class LogicLayer(object):
 
         self.pl.delete(task)
 
-        # TODO: commit in a non-view function
         self.pl.commit()
 
         return tag
