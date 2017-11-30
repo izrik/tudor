@@ -9,7 +9,7 @@ from models.user import User
 from util import generate_ll
 
 
-class PurgeTest(unittest.TestCase):
+class PurgeTaskTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
