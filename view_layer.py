@@ -171,27 +171,19 @@ class ViewLayer(object):
         return redirect(next_url)
 
     def task_mark_done(self, request, current_user, task_id):
-        task = self.ll.task_set_done(task_id, current_user)
-        self.pl.add(task)
-        self.pl.commit()
+        self.ll.task_set_done(task_id, current_user)
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_mark_undone(self, request, current_user, task_id):
-        task = self.ll.task_unset_done(task_id, current_user)
-        self.pl.add(task)
-        self.pl.commit()
+        self.ll.task_unset_done(task_id, current_user)
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_delete(self, request, current_user, task_id):
-        task = self.ll.task_set_deleted(task_id, current_user)
-        self.pl.add(task)
-        self.pl.commit()
+        self.ll.task_set_deleted(task_id, current_user)
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_undelete(self, request, current_user, task_id):
-        task = self.ll.task_unset_deleted(task_id, current_user)
-        self.pl.add(task)
-        self.pl.commit()
+        self.ll.task_unset_deleted(task_id, current_user)
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_purge(self, request, current_user, task_id):

@@ -152,6 +152,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = True
+        self.pl.commit()
         return task
 
     def task_unset_done(self, id, current_user):
@@ -161,6 +162,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = False
+        self.pl.commit()
         return task
 
     def task_set_deleted(self, id, current_user):
@@ -170,6 +172,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = True
+        self.pl.commit()
         return task
 
     def task_unset_deleted(self, id, current_user):
@@ -179,6 +182,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = False
+        self.pl.commit()
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
