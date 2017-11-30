@@ -124,6 +124,9 @@ class LogicLayer(object):
 
         task.users.append(current_user)
 
+        self.pl.add(task)
+        self.pl.commit()
+
         return task
 
     def get_lowest_order_num(self):
