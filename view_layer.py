@@ -404,7 +404,7 @@ class ViewLayer(object):
             return (redirect(request.args.get('next') or
                              url_for('view_task', id=task_id)))
 
-        self.ll.do_add_tag_to_task(task_id, value, current_user)
+        self.ll.do_add_tag_to_task_by_id(task_id, value, current_user)
         self.pl.commit()
 
         return (redirect(request.args.get('next') or

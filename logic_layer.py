@@ -523,11 +523,16 @@ class LogicLayer(object):
 
         return task_to_move, target
 
-    def do_add_tag_to_task(self, id, value, current_user):
+    def do_add_tag_to_task_by_id(self, id, value, current_user):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(id))
+        return self.do_add_tag_to_task(task, value, current_user)
+
+    def do_add_tag_to_task(self, task, value, current_user):
+        if task is None:
+            raise ValueError('No task specified')
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
@@ -536,6 +541,8 @@ class LogicLayer(object):
         if tag not in task.tags:
             task.tags.append(tag)
             self.pl.add(task)
+
+        self.pl.commit()
 
         return tag
 
