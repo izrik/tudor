@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import re
-import itertools
 import os
 from datetime import datetime
 from numbers import Number
@@ -9,7 +7,6 @@ from numbers import Number
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
 from werkzeug.exceptions import Forbidden
-from decimal import Decimal
 from werkzeug import secure_filename
 
 from conversions import int_from_str, money_from_str
@@ -507,9 +504,6 @@ class LogicLayer(object):
                     task_to_move_id, target_id, task_to_move.parent_id,
                     target.parent_id))
 
-        kwargs = {
-            'parent_id': target.parent_id,
-        }
         siblings = list(self.pl.get_tasks(parent_id=target.parent_id))
         siblings2 = sorted(siblings, key=lambda t: t.order_num,
                            reverse=True)
