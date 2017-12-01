@@ -264,6 +264,8 @@ class LogicLayer(object):
         timestamp = datetime.utcnow()
         note = Note(content, timestamp)
         note.task = task
+        self.pl.add(note)
+        self.pl.commit()
         return note
 
     def set_task(self, task_id, current_user, summary, description,
@@ -321,6 +323,8 @@ class LogicLayer(object):
 
         task.is_public = is_public
 
+        self.pl.commit()
+
         return task
 
     def get_edit_task_data(self, id, current_user):
@@ -355,6 +359,9 @@ class LogicLayer(object):
 
         att = Attachment(path, description)
         att.task = task
+
+        self.pl.add(att)
+        self.pl.commit()
 
         return att
 
@@ -400,6 +407,8 @@ class LogicLayer(object):
             self.pl.add(task)
             self.pl.add(next_task)
 
+        self.pl.commit()
+
         return task
 
     def do_move_task_to_top(self, id, current_user):
@@ -419,6 +428,8 @@ class LogicLayer(object):
             task.order_num = top_task[0].order_num + 1
 
             self.pl.add(task)
+
+        self.pl.commit()
 
         return task
 
@@ -457,6 +468,8 @@ class LogicLayer(object):
             self.pl.add(task)
             self.pl.add(next_task)
 
+        self.pl.commit()
+
         return task
 
     def do_move_task_to_bottom(self, id, current_user):
@@ -477,6 +490,8 @@ class LogicLayer(object):
             task.order_num = bottom_task[0].order_num - 2
 
             self.pl.add(task)
+
+        self.pl.commit()
 
         return task
 

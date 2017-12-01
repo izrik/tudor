@@ -257,9 +257,6 @@ class ViewLayer(object):
 
         note = self.ll.create_new_note(task_id, content, current_user)
 
-        self.pl.add(note)
-        self.pl.commit()
-
         return redirect(url_for('view_task', id=task_id))
 
     def task_edit(self, request, current_user, task_id):
@@ -303,9 +300,6 @@ class ViewLayer(object):
                                 deadline, is_done, is_deleted, order_num,
                                 duration, expected_cost, parent_id, is_public)
 
-        self.pl.add(task)
-        self.pl.commit()
-
         return redirect(url_for('view_task', id=task.id))
 
     def attachment_new(self, request, current_user):
@@ -325,9 +319,6 @@ class ViewLayer(object):
         att = self.ll.create_new_attachment(task_id, f, description,
                                             current_user)
 
-        self.pl.add(att)
-        self.pl.commit()
-
         return redirect(url_for('view_task', id=task_id))
 
     def attachment(self, request, current_user, attachment_id, name):
@@ -341,26 +332,19 @@ class ViewLayer(object):
     def task_up(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
         self.ll.do_move_task_up(task_id, show_deleted, current_user)
-        self.pl.commit()
-
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_top(self, request, current_user, task_id):
         self.ll.do_move_task_to_top(task_id, current_user)
-        self.pl.commit()
-
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_down(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
         self.ll.do_move_task_down(task_id, show_deleted, current_user)
-        self.pl.commit()
-
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_bottom(self, request, current_user, task_id):
         self.ll.do_move_task_to_bottom(task_id, current_user)
-        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('index'))
 
