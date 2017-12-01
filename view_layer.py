@@ -613,7 +613,6 @@ class ViewLayer(object):
                              url_for('view_task', id=task_id)))
 
         self.ll.do_add_dependee_to_task(task_id, dependee_id, current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -627,7 +626,6 @@ class ViewLayer(object):
 
         self.ll.do_remove_dependee_from_task(task_id, dependee_id,
                                              current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -644,7 +642,6 @@ class ViewLayer(object):
                              url_for('view_task', id=task_id)))
 
         self.ll.do_add_dependant_to_task(task_id, dependant_id, current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -658,7 +655,6 @@ class ViewLayer(object):
 
         self.ll.do_remove_dependant_from_task(task_id, dependant_id,
                                               current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -677,7 +673,6 @@ class ViewLayer(object):
 
         self.ll.do_add_prioritize_before_to_task(task_id, prioritize_before_id,
                                                  current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -693,7 +688,6 @@ class ViewLayer(object):
         self.ll.do_remove_prioritize_before_from_task(task_id,
                                                       prioritize_before_id,
                                                       current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -712,7 +706,6 @@ class ViewLayer(object):
 
         self.ll.do_add_prioritize_after_to_task(task_id, prioritize_after_id,
                                                 current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or
@@ -728,7 +721,6 @@ class ViewLayer(object):
         self.ll.do_remove_prioritize_after_from_task(task_id,
                                                      prioritize_after_id,
                                                      current_user)
-        self.pl.commit()
 
         return (redirect(
             request.args.get('next') or

@@ -1275,6 +1275,8 @@ class LogicLayer(object):
         if dependee not in task.dependees:
             task.dependees.append(dependee)
 
+        self.pl.commit()
+
         return task, dependee
 
     def do_remove_dependee_from_task(self, task_id, dependee_id, current_user):
@@ -1303,6 +1305,8 @@ class LogicLayer(object):
             task.dependees.remove(dependee)
             self.pl.add(task)
             self.pl.add(dependee)
+
+        self.pl.commit()
 
         return task, dependee
 
@@ -1359,6 +1363,8 @@ class LogicLayer(object):
         if prioritize_before not in task.prioritize_before:
             task.prioritize_before.append(prioritize_before)
 
+        self.pl.commit()
+
         return task, prioritize_before
 
     def do_remove_prioritize_before_from_task(self, task_id,
@@ -1390,6 +1396,8 @@ class LogicLayer(object):
             task.prioritize_before.remove(prioritize_before)
             self.pl.add(task)
             self.pl.add(prioritize_before)
+
+        self.pl.commit()
 
         return task, prioritize_before
 
