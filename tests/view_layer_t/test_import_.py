@@ -38,11 +38,9 @@ class ImportTest(unittest.TestCase):
             result = self.vl.import_(request, admin)
         # then
         self.assertIsNotNone(result)
-        self.assertEqual(302, result.status_code)
-        self.assertIsNotNone(result.headers)
-        self.assertIsNotNone(result.headers.get('Location'))
-        self.assertEqual('http://example.com/', result.headers.get('Location'))
         self.assertEqual(1, self.pl.count_tasks())
+        self.r.redirect.assert_called()
+        self.r.render_template.assert_not_called()
 
     def test_imports_data_from_form(self):
         # given
@@ -61,11 +59,9 @@ class ImportTest(unittest.TestCase):
             result = self.vl.import_(request, admin)
         # then
         self.assertIsNotNone(result)
-        self.assertEqual(302, result.status_code)
-        self.assertIsNotNone(result.headers)
-        self.assertIsNotNone(result.headers.get('Location'))
-        self.assertEqual('http://example.com/', result.headers.get('Location'))
         self.assertEqual(1, self.pl.count_tasks())
+        self.r.redirect.assert_called()
+        self.r.render_template.assert_not_called()
 
     def test_get_request_returns_content(self):
         # given
@@ -81,3 +77,5 @@ class ImportTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.r.render_template.assert_called()
         self.assertEqual(0, self.pl.count_tasks())
+        self.r.redirect.assert_not_called()
+        self.r.render_template.assert_called()

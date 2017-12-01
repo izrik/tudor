@@ -39,15 +39,12 @@ class AttachmentNewTest(unittest.TestCase):
             result = self.vl.attachment_new(request, admin)
         # then
         self.assertIsNotNone(result)
-        self.assertIsNotNone(result.headers)
-        self.assertIsNotNone(result.headers.get('Location'))
-        self.assertEqual('http://example.com/task/1',
-                         result.headers.get('Location'))
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
         self.assertEqual('', att.description)
         self.assertIsNone(att.filename)
         self.assertEqual('filename.txt', att.path)
+        self.r.redirect.assert_called()
 
     def test_description_none_yields_none(self):
         # given
@@ -68,6 +65,7 @@ class AttachmentNewTest(unittest.TestCase):
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
         self.assertIsNone(att.description)
+        self.r.redirect.assert_called()
 
     def test_empty_description_yields_empty_description(self):
         # given
@@ -88,6 +86,7 @@ class AttachmentNewTest(unittest.TestCase):
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
         self.assertEqual('', att.description)
+        self.r.redirect.assert_called()
 
     def test_description_sets_description(self):
         # given
@@ -108,6 +107,7 @@ class AttachmentNewTest(unittest.TestCase):
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
         self.assertEqual('asdf', att.description)
+        self.r.redirect.assert_called()
 
     def test_null_file_object_raises(self):
         # given
@@ -121,12 +121,14 @@ class AttachmentNewTest(unittest.TestCase):
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
-        # when
+        # expect
         with self.app.app_context():
             self.assertRaises(
                 BadRequest,
                 self.vl.attachment_new,
                 request, admin)
+        # and
+        self.r.redirect.assert_not_called()
 
     def test_null_filename_raises(self):
         # given
@@ -140,12 +142,14 @@ class AttachmentNewTest(unittest.TestCase):
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
-        # when
+        # expect
         with self.app.app_context():
             self.assertRaises(
                 BadRequest,
                 self.vl.attachment_new,
                 request, admin)
+        # and
+        self.r.redirect.assert_not_called()
 
     def test_empty_filename_raises(self):
         # given
@@ -159,12 +163,14 @@ class AttachmentNewTest(unittest.TestCase):
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
-        # when
+        # expect
         with self.app.app_context():
             self.assertRaises(
                 BadRequest,
                 self.vl.attachment_new,
                 request, admin)
+        # and
+        self.r.redirect.assert_not_called()
 
     def test_extension_not_allowed_raises(self):
         # given
@@ -178,12 +184,14 @@ class AttachmentNewTest(unittest.TestCase):
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
-        # when
+        # expect
         with self.app.app_context():
             self.assertRaises(
                 BadRequest,
                 self.vl.attachment_new,
                 request, admin)
+        # and
+        self.r.redirect.assert_not_called()
 
     def test_task_id_not_sepcified_raises(self):
         # given
@@ -196,9 +204,11 @@ class AttachmentNewTest(unittest.TestCase):
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
-        # when
+        # expect
         with self.app.app_context():
             self.assertRaises(
                 BadRequest,
                 self.vl.attachment_new,
                 request, admin)
+        # and
+        self.r.redirect.assert_not_called()
