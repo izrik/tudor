@@ -12,7 +12,6 @@ class LoadIsPublicTest(unittest.TestCase):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
         pl = self.pl
-        pl.create_all()
 
         self.tp = Task('tp', is_public=True)
         self.tpp = Task('tpp', is_public=True)
@@ -108,7 +107,6 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_regular_user_sees_own_and_public_tasks_1(self):
         # given

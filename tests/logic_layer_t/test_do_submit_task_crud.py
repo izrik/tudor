@@ -13,7 +13,6 @@ class SubmitTaskCrudTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_do_data_does_not_modify_tasks(self):
         # given

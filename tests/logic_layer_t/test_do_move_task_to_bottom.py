@@ -13,7 +13,6 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.pl.create_all()
         self.user = User('name@example.com')
         self.task = Task('task')
         self.task.id = 1

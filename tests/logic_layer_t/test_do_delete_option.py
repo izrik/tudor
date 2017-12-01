@@ -10,7 +10,6 @@ class DeleteOptionTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_no_option_found_returns_none(self):
         # precondition

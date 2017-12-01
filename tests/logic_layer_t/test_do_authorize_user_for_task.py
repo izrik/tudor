@@ -13,7 +13,6 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_null_task_raises(self):
         # given

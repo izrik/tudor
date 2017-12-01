@@ -13,7 +13,6 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_null_task_id_raises(self):
         # given

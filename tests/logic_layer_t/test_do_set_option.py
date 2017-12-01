@@ -10,7 +10,6 @@ class SetOptionTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_option_key_none_raises(self):
         # expect

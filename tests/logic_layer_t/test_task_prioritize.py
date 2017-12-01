@@ -14,7 +14,6 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_add_prioritize_before_adds_prioritize_before(self):
         # given
@@ -514,7 +513,6 @@ class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_add_prioritize_after_adds_prioritize_after(self):
         # given

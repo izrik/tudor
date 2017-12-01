@@ -12,7 +12,6 @@ class DbLoadNoHierarchyExcludeNonPublicTest(unittest.TestCase):
         # given
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
         self.t1 = Task('t1', is_public=True)
         self.t2 = Task('t2', is_public=False)
         self.pl.add(self.t1)
