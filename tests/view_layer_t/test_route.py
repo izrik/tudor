@@ -67,7 +67,8 @@ class RouteTest(unittest.TestCase):
         vl.task_deauthorize_user = Mock(return_value=('', 606))
 
         ll = Mock()
-        self.app = generate_app(vl=vl, ll=ll,
+        pl = Mock()
+        self.app = generate_app(vl=vl, ll=ll, pl=pl,
                                 flask_configs={'LOGIN_DISABLED': True},
                                 secret_key='12345', disable_admin_check=True)
         self.client = self.app.test_client()
