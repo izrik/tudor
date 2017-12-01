@@ -32,7 +32,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Attachment)
-        self.assertIsNone(result.id)
+        self.assertIsNotNone(result.id)
         self.assertIsNone(result.timestamp)
         self.assertEqual('filename.txt', result.path)
         # self.assertEqual('filename.txt', result.filename)

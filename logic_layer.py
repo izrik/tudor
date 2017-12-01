@@ -539,6 +539,8 @@ class LogicLayer(object):
             k -= 2
             self.pl.add(s)
 
+        self.pl.commit()
+
         return task_to_move, target
 
     def do_add_tag_to_task_by_id(self, id, value, current_user):
@@ -590,6 +592,8 @@ class LogicLayer(object):
                 self.pl.add(task)
                 self.pl.add(tag)
 
+        self.pl.commit()
+
         return tag
 
     def do_authorize_user_for_task(self, task, user_to_authorize,
@@ -605,6 +609,8 @@ class LogicLayer(object):
 
         if user_to_authorize not in task.users:
             task.users.append(user_to_authorize)
+
+        self.pl.commit()
 
         return task
 
@@ -686,6 +692,8 @@ class LogicLayer(object):
         self.pl.add(task)
         self.pl.add(user_to_deauthorize)
 
+        self.pl.commit()
+
         return task
 
     def do_add_new_user(self, email, is_admin=False):
@@ -696,6 +704,7 @@ class LogicLayer(object):
                     email))
         user = User(email=email, is_admin=is_admin)
         self.pl.add(user)
+        self.pl.commit()
         return user
 
     def do_get_user_data(self, user_id, current_user):
@@ -721,12 +730,15 @@ class LogicLayer(object):
         else:
             option = Option(key, value)
         self.pl.add(option)
+        self.pl.commit()
         return option
 
     def do_delete_option(self, key):
         option = self.pl.get_option(key)
-        if option is not None:
-            self.pl.delete(option)
+        if option is None:
+            return None
+        self.pl.delete(option)
+        self.pl.commit()
         return option
 
     def do_reset_order_nums(self, current_user):

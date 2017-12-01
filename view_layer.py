@@ -360,8 +360,6 @@ class ViewLayer(object):
 
         self.ll.do_long_order_change(task_to_move_id, target_id, current_user)
 
-        self.pl.commit()
-
         return redirect(request.args.get('next') or url_for('index'))
 
     def task_add_tag(self, request, current_user, task_id):
@@ -372,7 +370,6 @@ class ViewLayer(object):
                              url_for('view_task', id=task_id)))
 
         self.ll.do_add_tag_to_task_by_id(task_id, value, current_user)
-        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -383,7 +380,6 @@ class ViewLayer(object):
             tag_id = self.get_form_or_arg(request, 'tag_id')
 
         self.ll.do_delete_tag_from_task(task_id, tag_id, current_user)
-        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -397,7 +393,6 @@ class ViewLayer(object):
 
         self.ll.do_authorize_user_for_task_by_email(task_id, email,
                                                     current_user)
-        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -416,7 +411,6 @@ class ViewLayer(object):
 
         self.ll.do_authorize_user_for_task_by_id(task_id, user_id,
                                                  current_user)
-        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -426,7 +420,6 @@ class ViewLayer(object):
             user_id = self.get_form_or_arg(request, 'user_id')
 
         self.ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
-        self.pl.commit()
 
         return (redirect(request.args.get('next') or
                          url_for('view_task', id=task_id)))
@@ -469,7 +462,6 @@ class ViewLayer(object):
             is_admin = bool_from_str(request.form['is_admin'])
 
         self.ll.do_add_new_user(email, is_admin)
-        self.pl.commit()
 
         return redirect(url_for('list_users'))
 
@@ -508,13 +500,11 @@ class ViewLayer(object):
             value = request.form['value']
 
         self.ll.do_set_option(key, value)
-        self.pl.commit()
 
         return redirect(request.args.get('next') or url_for('view_options'))
 
     def option_delete(self, request, current_user, key):
         self.ll.do_delete_option(key)
-        self.pl.commit()
         return redirect(request.args.get('next') or url_for('view_options'))
 
     def reset_order_nums(self, request, current_user):
