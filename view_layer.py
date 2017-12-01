@@ -509,7 +509,6 @@ class ViewLayer(object):
 
     def reset_order_nums(self, request, current_user):
         self.ll.do_reset_order_nums(current_user)
-        self.pl.commit()
         return redirect(request.args.get('next') or url_for('index'))
 
     def export(self, request, current_user):
@@ -532,7 +531,6 @@ class ViewLayer(object):
             src = json.load(f)
 
         self.ll.do_import_data(src)
-        self.pl.commit()
 
         return redirect(url_for('index'))
 
@@ -549,7 +547,6 @@ class ViewLayer(object):
                 crud_data[key] = request.form[key]
 
         self.ll.do_submit_task_crud(crud_data, current_user)
-        self.pl.commit()
 
         return redirect(url_for('task_crud'))
 
@@ -577,7 +574,6 @@ class ViewLayer(object):
         value = request.form['value']
         description = request.form['description']
         self.ll.do_edit_tag(tag_id, value, description)
-        self.pl.commit()
 
         return redirect(url_for('view_tag', id=tag_id))
 

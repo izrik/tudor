@@ -753,6 +753,9 @@ class LogicLayer(object):
             task.order_num = 2 * k
             self.pl.add(task)
             k -= 1
+
+        self.pl.commit()
+
         return tasks_h
 
     def do_export_data(self, types_to_export):
@@ -992,6 +995,8 @@ class LogicLayer(object):
 
             self.pl.add(task)
 
+        self.pl.commit()
+
     def get_tags(self):
         return list(self.pl.get_tags())
 
@@ -1022,6 +1027,7 @@ class LogicLayer(object):
         tag.value = value
         tag.description = description
         self.pl.add(tag)
+        self.pl.commit()
         return tag
 
     def get_task(self, task_id, current_user):
