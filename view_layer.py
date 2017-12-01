@@ -199,10 +199,7 @@ class ViewLayer(object):
     def purge_all(self, request, current_user):
         are_you_sure = request.args.get('are_you_sure')
         if are_you_sure:
-            deleted_tasks = self.pl.get_tasks(is_deleted=True)
-            for task in deleted_tasks:
-                self.pl.delete(task)
-            self.pl.commit()
+            self.ll.purge_all_deleted_tasks(current_user)
             return redirect(request.args.get('next') or url_for('index'))
         return self.render_template('purge.t.html')
 

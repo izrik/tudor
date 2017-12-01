@@ -1397,3 +1397,14 @@ class LogicLayer(object):
 
         self.pl.delete(task)
         self.pl.commit()
+
+    def purge_all_deleted_tasks(self, current_user):
+        if not current_user.is_admin:
+            raise Forbidden('Current user is not authorized to purge tasks.')
+        n = 0
+        deleted_tasks = list(self.pl.get_tasks(is_deleted=True))
+        for task in deleted_tasks:
+            self.purge_task(task, current_user)
+            n += 1
+        self.pl.commit()
+        return n
