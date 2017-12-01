@@ -3,7 +3,7 @@ import itertools
 import re
 
 import flask
-from flask import url_for, redirect, flash
+from flask import url_for, flash
 from flask import jsonify, json
 from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound, BadRequest
@@ -261,7 +261,7 @@ class ViewLayer(object):
         task_id = request.form['task_id']
         content = request.form['content']
 
-        note = self.ll.create_new_note(task_id, content, current_user)
+        self.ll.create_new_note(task_id, content, current_user)
 
         return self.redirect(url_for('view_task', id=task_id))
 
@@ -322,8 +322,7 @@ class ViewLayer(object):
         else:
             description = ''
 
-        att = self.ll.create_new_attachment(task_id, f, description,
-                                            current_user)
+        self.ll.create_new_attachment(task_id, f, description, current_user)
 
         return self.redirect(url_for('view_task', id=task_id))
 
@@ -358,11 +357,11 @@ class ViewLayer(object):
         task_to_move_id = self.get_form_or_arg(request,
                                                'long_order_task_to_move')
         if task_to_move_id is None:
-            redirect(request.args.get('next') or url_for('index'))
+            return self.redirect(request.args.get('next') or url_for('index'))
 
         target_id = self.get_form_or_arg(request, 'long_order_target')
         if target_id is None:
-            redirect(request.args.get('next') or url_for('index'))
+            return self.redirect(request.args.get('next') or url_for('index'))
 
         self.ll.do_long_order_change(task_to_move_id, target_id, current_user)
 
@@ -372,13 +371,13 @@ class ViewLayer(object):
 
         value = self.get_form_or_arg(request, 'value')
         if value is None or value == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_add_tag_to_task_by_id(task_id, value, current_user)
 
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return (self.redirect(request.args.get('next') or
+                              url_for('view_task', id=task_id)))
 
     def task_delete_tag(self, request, current_user, task_id, tag_id):
 
@@ -387,21 +386,21 @@ class ViewLayer(object):
 
         self.ll.do_delete_tag_from_task(task_id, tag_id, current_user)
 
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return (self.redirect(request.args.get('next') or
+                              url_for('view_task', id=task_id)))
 
     def task_authorize_user(self, request, current_user, task_id):
 
         email = self.get_form_or_arg(request, 'email')
         if email is None or email == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_authorize_user_for_task_by_email(task_id, email,
                                                     current_user)
 
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return (self.redirect(request.args.get('next') or
+                              url_for('view_task', id=task_id)))
 
     def task_pick_user(self, request, current_user, task_id):
         task = self.ll.get_task(task_id, current_user)
@@ -412,14 +411,14 @@ class ViewLayer(object):
     def task_authorize_user_user(self, request, current_user, task_id,
                                  user_id):
         if user_id is None or user_id == '':
-            return (redirect(request.args.get('next') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_authorize_user_for_task_by_id(task_id, user_id,
                                                  current_user)
 
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return (self.redirect(request.args.get('next') or
+                              url_for('view_task', id=task_id)))
 
     def task_deauthorize_user(self, request, current_user, task_id, user_id):
         if user_id is None:
@@ -427,8 +426,8 @@ class ViewLayer(object):
 
         self.ll.do_deauthorize_user_for_task(task_id, user_id, current_user)
 
-        return (redirect(request.args.get('next') or
-                         url_for('view_task', id=task_id)))
+        return (self.redirect(request.args.get('next') or
+                              url_for('view_task', id=task_id)))
 
     def login(self, request, current_user):
         if request.method == 'GET':
@@ -478,7 +477,7 @@ class ViewLayer(object):
     def show_hide_deleted(self, request, current_user):
         show_deleted = request.args.get('show_deleted')
         resp = self.make_response(
-            redirect(request.args.get('next') or url_for('index')))
+            self.redirect(request.args.get('next') or url_for('index')))
         if show_deleted and show_deleted != '0':
             resp.set_cookie('show_deleted', '1')
         else:
@@ -488,7 +487,7 @@ class ViewLayer(object):
     def show_hide_done(self, request, current_user):
         show_done = request.args.get('show_done')
         resp = self.make_response(
-            redirect(request.args.get('next') or url_for('index')))
+            self.redirect(request.args.get('next') or url_for('index')))
         if show_done and show_done != '0':
             resp.set_cookie('show_done', '1')
         else:
@@ -507,11 +506,13 @@ class ViewLayer(object):
 
         self.ll.do_set_option(key, value)
 
-        return self.redirect(request.args.get('next') or url_for('view_options'))
+        return self.redirect(request.args.get('next') or
+                             url_for('view_options'))
 
     def option_delete(self, request, current_user, key):
         self.ll.do_delete_option(key)
-        return self.redirect(request.args.get('next') or url_for('view_options'))
+        return self.redirect(request.args.get('next') or
+                             url_for('view_options'))
 
     def reset_order_nums(self, request, current_user):
         self.ll.do_reset_order_nums(current_user)
@@ -614,13 +615,13 @@ class ViewLayer(object):
         if dependee_id is None or dependee_id == '':
             dependee_id = self.get_form_or_arg(request, 'dependee_id')
         if dependee_id is None or dependee_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  request.args.get('next_url') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_add_dependee_to_task(task_id, dependee_id, current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -633,7 +634,7 @@ class ViewLayer(object):
         self.ll.do_remove_dependee_from_task(task_id, dependee_id,
                                              current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -643,13 +644,13 @@ class ViewLayer(object):
         if dependant_id is None or dependant_id == '':
             dependant_id = self.get_form_or_arg(request, 'dependant_id')
         if dependant_id is None or dependant_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  request.args.get('next_url') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_add_dependant_to_task(task_id, dependant_id, current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -662,7 +663,7 @@ class ViewLayer(object):
         self.ll.do_remove_dependant_from_task(task_id, dependant_id,
                                               current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -673,14 +674,14 @@ class ViewLayer(object):
             prioritize_before_id = self.get_form_or_arg(request,
                                                         'prioritize_before_id')
         if prioritize_before_id is None or prioritize_before_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  request.args.get('next_url') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_add_prioritize_before_to_task(task_id, prioritize_before_id,
                                                  current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -695,7 +696,7 @@ class ViewLayer(object):
                                                       prioritize_before_id,
                                                       current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -706,14 +707,14 @@ class ViewLayer(object):
             prioritize_after_id = self.get_form_or_arg(request,
                                                        'prioritize_after_id')
         if prioritize_after_id is None or prioritize_after_id == '':
-            return (redirect(request.args.get('next') or
-                             request.args.get('next_url') or
-                             url_for('view_task', id=task_id)))
+            return (self.redirect(request.args.get('next') or
+                                  request.args.get('next_url') or
+                                  url_for('view_task', id=task_id)))
 
         self.ll.do_add_prioritize_after_to_task(task_id, prioritize_after_id,
                                                 current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
@@ -728,7 +729,7 @@ class ViewLayer(object):
                                                      prioritize_after_id,
                                                      current_user)
 
-        return (redirect(
+        return (self.redirect(
             request.args.get('next') or
             request.args.get('next_url') or
             url_for('view_task', id=task_id)))
