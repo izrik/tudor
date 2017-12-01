@@ -404,6 +404,7 @@ class LogicLayer(object):
                 task.order_num, next_task.order_num =\
                     new_order_num, task.order_num
 
+            # TODO: remove all redundant add()'s everywhere
             self.pl.add(task)
             self.pl.add(next_task)
 
