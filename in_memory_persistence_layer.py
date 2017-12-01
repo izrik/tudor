@@ -21,7 +21,7 @@ class InMemoryPersistenceLayer(object):
         self._changed_objects = set()
         self._values_by_object = {}
 
-        self._tasks = []
+        self._tasks = []  # TODO: change these to sets
         self._tasks_by_id = {}
 
         self._tags = []
