@@ -174,8 +174,9 @@ class ViewLayer(object):
             expected_cost=expected_cost, parent_id=parent_id,
             is_public=is_public, current_user=current_user)
 
-        for tag_name in tags:
-            self.ll.do_add_tag_to_task(task, tag_name, current_user)
+        if tags:
+            for tag_name in tags:
+                self.ll.do_add_tag_to_task(task, tag_name, current_user)
 
         next_url = self.get_form_or_arg(request, 'next_url')
         if not next_url:
