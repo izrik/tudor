@@ -6,7 +6,7 @@ from models.task import Task
 from models.user import User
 from tests.logic_layer_t.util import generate_ll
 from tests.util import MockFileObject
-from tests.view_layer_t.util import generate_request
+from tests.view_layer_t.util import generate_mock_request
 from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
 
@@ -30,7 +30,7 @@ class AttachmentNewTest(unittest.TestCase):
         self.pl.commit()
         form = {'task_id': task.id}
         files = {'filename': MockFileObject('/filename.txt')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -54,7 +54,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': None}
         files = {'filename': MockFileObject('/filename.txt')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -75,7 +75,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': ''}
         files = {'filename': MockFileObject('/filename.txt')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -96,7 +96,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': 'asdf'}
         files = {'filename': MockFileObject('/filename.txt')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -117,7 +117,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': 'asdf'}
         files = {'filename': None}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -138,7 +138,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': 'asdf'}
         files = {'filename': MockFileObject(None)}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -159,7 +159,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': 'asdf'}
         files = {'filename': MockFileObject('')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -180,7 +180,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {'task_id': task.id,
                 'description': 'asdf'}
         files = {'filename': MockFileObject('/filename.exe')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))
@@ -200,7 +200,7 @@ class AttachmentNewTest(unittest.TestCase):
         self.pl.commit()
         form = {}
         files = {'filename': MockFileObject('/filename.exe')}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, len(task.attachments))

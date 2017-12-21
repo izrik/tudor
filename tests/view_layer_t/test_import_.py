@@ -4,7 +4,7 @@ from mock import Mock
 from models.user import User
 from tests.logic_layer_t.util import generate_ll
 from tests.util import MockFileObject
-from tests.view_layer_t.util import generate_request
+from tests.view_layer_t.util import generate_mock_request
 from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
 
@@ -29,7 +29,7 @@ class ImportTest(unittest.TestCase):
         }]}'''
         form = {}
         files = {'file': MockFileObject(filename='', content=src)}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -50,7 +50,7 @@ class ImportTest(unittest.TestCase):
         }]}'''
         form = {'raw': src}
         files = {}
-        request = generate_request(form=form, files=files)
+        request = generate_mock_request(form=form, files=files)
         admin = User('admin', is_admin=True)
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -65,7 +65,7 @@ class ImportTest(unittest.TestCase):
 
     def test_get_request_returns_content(self):
         # given
-        request = generate_request(method='GET')
+        request = generate_mock_request(method='GET')
         admin = User('admin', is_admin=True)
         # self.r.render_template
         # precondition

@@ -1,8 +1,8 @@
 from mock import Mock
 
 
-def generate_request(method=None, args=None, cookies=None, form=None,
-                     files=None):
+def generate_mock_request(method=None, args=None, cookies=None, form=None,
+                          files=None):
 
     request = Mock()
 

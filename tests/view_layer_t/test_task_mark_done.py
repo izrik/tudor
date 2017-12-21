@@ -4,7 +4,7 @@ from mock import Mock
 
 from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.user import User
-from tests.view_layer_t.util import generate_request
+from tests.view_layer_t.util import generate_mock_request
 from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
 from logic_layer import LogicLayer
@@ -26,7 +26,7 @@ class TaskMarkDoneTest(unittest.TestCase):
         # given
         task_id = 1
         user = User('admin@example.com', is_admin=True)
-        req = generate_request(method='GET', args={})
+        req = generate_mock_request(method='GET', args={})
         self.r.url_for.return_value = 'http://example.com/'
         # when
         self.vl.task_mark_done(req, current_user=user, task_id=task_id)
@@ -39,8 +39,8 @@ class TaskMarkDoneTest(unittest.TestCase):
         # given
         task_id = 1
         user = User('admin@example.com', is_admin=True)
-        req = generate_request(method='GET',
-                               args={'next': 'http://example2.org/'})
+        req = generate_mock_request(method='GET',
+                                    args={'next': 'http://example2.org/'})
         self.r.url_for.return_value = 'http://example.com/'
         # when
         self.vl.task_mark_done(req, current_user=user, task_id=task_id)
