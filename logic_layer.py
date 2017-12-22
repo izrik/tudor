@@ -1453,3 +1453,6 @@ class LogicLayer(object):
 
     def pl_get_task(self, task_id):
         return self.pl.get_task(task_id)
+
+    def pl_get_attachment(self, attachment_id):
+        return self.pl.get_attachment(attachment_id)
