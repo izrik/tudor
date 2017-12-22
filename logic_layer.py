@@ -1456,3 +1456,6 @@ class LogicLayer(object):
 
     def pl_get_attachment(self, attachment_id):
         return self.pl.get_attachment(attachment_id)
+
+    def pl_get_user_by_email(self, email):
+        return self.pl.get_user_by_email(email)

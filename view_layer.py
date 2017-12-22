@@ -487,7 +487,7 @@ class ViewLayer(object):
             return self.render_template('login.t.html')
         email = request.form['email']
         password = request.form['password']
-        user = self.pl.get_user_by_email(email)
+        user = self.ll.pl_get_user_by_email(email)
 
         if user is None:
             self.flash('Username or Password is invalid', 'error')

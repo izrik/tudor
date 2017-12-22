@@ -34,6 +34,7 @@ class LoginTest(unittest.TestCase):
         self.ls.login_user.assert_not_called()
         self.assertIs(self.r.render_template.return_value, result)
         # and
+        self.ll.pl_get_user_by_email.assert_not_called()
         self.pl.get_user_by_email.assert_not_called()
         self.r.flash.assert_not_called()
         self.r.redirect.assert_not_called()
@@ -48,7 +49,7 @@ class LoginTest(unittest.TestCase):
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = True
-        self.pl.get_user_by_email.return_value = user
+        self.ll.pl_get_user_by_email.return_value = user
         request = generate_mock_request(method="POST",
                                         form={'email': email,
                                               'password': password})
@@ -61,7 +62,8 @@ class LoginTest(unittest.TestCase):
         self.assertIs(self.r.redirect.return_value, result)
         # and
         self.r.flash.assert_called_once_with('Logged in successfully')
-        self.pl.get_user_by_email.assert_called_once_with(email)
+        self.ll.pl_get_user_by_email.assert_called_once_with(email)
+        self.pl.get_user_by_email.assert_not_called()
         self.ls.check_password_hash.assert_called_once_with(hashed_password,
                                                             password)
         self.r.render_template.assert_not_called()
@@ -71,7 +73,7 @@ class LoginTest(unittest.TestCase):
         email = 'name@example.com'
         password = '12345'
         self.ls.check_password_hash.return_value = True
-        self.pl.get_user_by_email.return_value = None  #
+        self.ll.pl_get_user_by_email.return_value = None  #
         request = generate_mock_request(method="POST",
                                         form={'email': email,
                                               'password': password})
@@ -79,7 +81,8 @@ class LoginTest(unittest.TestCase):
         result = self.vl.login(request, self.admin)
         # then
         self.ls.login_user.assert_not_called()
-        self.pl.get_user_by_email.assert_called_once_with(email)
+        self.ll.pl_get_user_by_email.assert_called_once_with(email)
+        self.pl.get_user_by_email.assert_not_called()
         self.r.flash.assert_called_once_with('Username or Password is invalid',
                                              'error')
         self.r.url_for.assert_called_once_with('login')
@@ -98,7 +101,7 @@ class LoginTest(unittest.TestCase):
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = True
-        self.pl.get_user_by_email.return_value = user
+        self.ll.pl_get_user_by_email.return_value = user
         request = generate_mock_request(method="POST",
                                         form={'email': email,
                                               'password': password})
@@ -106,7 +109,8 @@ class LoginTest(unittest.TestCase):
         result = self.vl.login(request, self.admin)
         # then
         self.ls.login_user.assert_not_called()
-        self.pl.get_user_by_email.assert_called_once_with(email)
+        self.ll.pl_get_user_by_email.assert_called_once_with(email)
+        self.pl.get_user_by_email.assert_not_called()
         self.r.flash.assert_called_once_with('Username or Password is invalid',
                                              'error')
         self.r.url_for.assert_called_once_with('login')
@@ -125,7 +129,7 @@ class LoginTest(unittest.TestCase):
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = True
-        self.pl.get_user_by_email.return_value = user
+        self.ll.pl_get_user_by_email.return_value = user
         request = generate_mock_request(method="POST",
                                         form={'email': email,
                                               'password': password})
@@ -133,7 +137,8 @@ class LoginTest(unittest.TestCase):
         result = self.vl.login(request, self.admin)
         # then
         self.ls.login_user.assert_not_called()
-        self.pl.get_user_by_email.assert_called_once_with(email)
+        self.ll.pl_get_user_by_email.assert_called_once_with(email)
+        self.pl.get_user_by_email.assert_not_called()
         self.r.flash.assert_called_once_with('Username or Password is invalid',
                                              'error')
         self.r.url_for.assert_called_once_with('login')
@@ -152,7 +157,7 @@ class LoginTest(unittest.TestCase):
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = False  #
-        self.pl.get_user_by_email.return_value = user
+        self.ll.pl_get_user_by_email.return_value = user
         request = generate_mock_request(method="POST",
                                         form={'email': email,
                                               'password': password})
@@ -160,7 +165,8 @@ class LoginTest(unittest.TestCase):
         result = self.vl.login(request, self.admin)
         # then
         self.ls.login_user.assert_not_called()
-        self.pl.get_user_by_email.assert_called_once_with(email)
+        self.ll.pl_get_user_by_email.assert_called_once_with(email)
+        self.pl.get_user_by_email.assert_not_called()
         self.r.flash.assert_called_once_with('Username or Password is invalid',
                                              'error')
         self.r.url_for.assert_called_once_with('login')
