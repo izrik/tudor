@@ -3,7 +3,6 @@ import itertools
 import re
 
 from flask import jsonify, json
-from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound, BadRequest
 
 from conversions import int_from_str, money_from_str, bool_from_str
@@ -37,14 +36,27 @@ class DefaultRenderer(object):
         return flash(*args, **kwargs)
 
 
+class DefaultLoginSource(object):
+    def login_user(self, *args, **kwargs):
+        from flask_login import login_user
+        return login_user(*args, **kwargs)
+
+    def logout_user(self, *args, **kwargs):
+        from flask_login import logout_user
+        return logout_user(*args, **kwargs)
+
+
 class ViewLayer(object):
-    def __init__(self, ll, app, pl, renderer=None):
+    def __init__(self, ll, app, pl, renderer=None, login_src=None):
         self.ll = ll
         self.app = app
         self.pl = pl
         if renderer is None:
             renderer = DefaultRenderer()
         self.renderer = renderer
+        if login_src is None:
+            login_src = DefaultLoginSource()
+        self.login_src = login_src
 
     def render_template(self, template_name, **kwargs):
         return self.renderer.render_template(template_name, **kwargs)
@@ -63,6 +75,12 @@ class ViewLayer(object):
 
     def flash(self, *args, **kwargs):
         return self.renderer.flash(*args, **kwargs)
+
+    def login_user(self, *args, **kwargs):
+        return self.login_src.login_user(*args, **kwargs)
+
+    def logout_user(self, *args, **kwargs):
+        return self.login_src.logout_user(*args, **kwargs)
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -470,12 +488,12 @@ class ViewLayer(object):
             self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
 
-        login_user(user)
+        self.login_user(user)
         self.flash('Logged in successfully')
         return self.redirect(request.args.get('next') or self.url_for('index'))
 
     def logout(self, request, current_user):
-        logout_user()
+        self.logout_user()
         return self.redirect(self.url_for('index'))
 
     def users(self, request, current_user):
