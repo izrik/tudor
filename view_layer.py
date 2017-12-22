@@ -203,7 +203,7 @@ class ViewLayer(object):
     def task_purge(self, request, current_user, task_id):
         task = self.pl.get_task(task_id)
         if not task:
-            raise NotFound("No task found for the id '%s'".format(task_id))
+            raise NotFound("No task found for the id '{}'".format(task_id))
         if not task.is_deleted:
             raise BadRequest(
                 "Indicated task (id {}) has not been deleted.".format(task_id))
