@@ -2,7 +2,6 @@
 import itertools
 import re
 
-from flask import flash
 from flask import jsonify, json
 from flask_login import login_user, logout_user
 from werkzeug.exceptions import NotFound, BadRequest
@@ -33,6 +32,10 @@ class DefaultRenderer(object):
         from flask import send_from_directory
         return send_from_directory(*args, **kwargs)
 
+    def flash(self, *args, **kwargs):
+        from flask import flash
+        return flash(*args, **kwargs)
+
 
 class ViewLayer(object):
     def __init__(self, ll, app, pl, renderer=None):
@@ -57,6 +60,9 @@ class ViewLayer(object):
 
     def send_from_directory(self, *args, **kwargs):
         return self.renderer.send_from_directory(*args, **kwargs)
+
+    def flash(self, *args, **kwargs):
+        return self.renderer.flash(*args, **kwargs)
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -454,18 +460,18 @@ class ViewLayer(object):
         user = self.pl.get_user_by_email(email)
 
         if user is None:
-            flash('Username or Password is invalid', 'error')
+            self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
         if user.hashed_password is None or user.hashed_password == '':
-            flash('Username or Password is invalid', 'error')
+            self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
         if not self.app.bcrypt.check_password_hash(user.hashed_password,
                                                    password):
-            flash('Username or Password is invalid', 'error')
+            self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
 
         login_user(user)
-        flash('Logged in successfully')
+        self.flash('Logged in successfully')
         return self.redirect(request.args.get('next') or self.url_for('index'))
 
     def logout(self, request, current_user):
