@@ -18,7 +18,7 @@ class TaskTest(unittest.TestCase):
         }
         self.ll.get_task_data = Mock(return_value=self.return_value)
         self.r = Mock(spec=DefaultRenderer)
-        self.vl = ViewLayer(self.ll, None, None, renderer=self.r)
+        self.vl = ViewLayer(self.ll, None, renderer=self.r)
         self.app = generate_app(vl=self.vl, ll=self.ll, pl=None,
                                 flask_configs={'LOGIN_DISABLED': True},
                                 secret_key='12345', disable_admin_check=True)

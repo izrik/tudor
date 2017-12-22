@@ -16,7 +16,7 @@ class TaskUndeleteTest(unittest.TestCase):
         self.ll = Mock(spec=LogicLayer)
         self.ll.task_unset_deleted = Mock()
         self.r = Mock(spec=DefaultRenderer)
-        self.vl = ViewLayer(self.ll, None, self.pl, renderer=self.r)
+        self.vl = ViewLayer(self.ll, None, renderer=self.r)
         self.app = generate_app(vl=self.vl, ll=self.ll, pl=self.pl,
                                 flask_configs={'LOGIN_DISABLED': True},
                                 secret_key='12345', disable_admin_check=True)
