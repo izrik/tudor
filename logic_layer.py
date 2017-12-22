@@ -1450,3 +1450,6 @@ class LogicLayer(object):
             n += 1
         self.pl.commit()
         return n
+
+    def pl_get_task(self, task_id):
+        return self.pl.get_task(task_id)

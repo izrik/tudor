@@ -243,7 +243,7 @@ class ViewLayer(object):
         return self.redirect(request.args.get('next') or self.url_for('index'))
 
     def task_purge(self, request, current_user, task_id):
-        task = self.pl.get_task(task_id)
+        task = self.ll.pl_get_task(task_id)
         if not task:
             raise NotFound("No task found for the id '{}'".format(task_id))
         if not task.is_deleted:

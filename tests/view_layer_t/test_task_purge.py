@@ -28,7 +28,7 @@ class TaskPurgeTest(unittest.TestCase):
         # given
         task = Mock(spec=Task)
         task.is_deleted = True
-        self.pl.get_task.return_value = task
+        self.ll.pl_get_task.return_value = task
         request = generate_mock_request(method="GET")
         task_id = 123
         # when
@@ -36,14 +36,15 @@ class TaskPurgeTest(unittest.TestCase):
         # then
         self.ll.purge_task.assert_called_once_with(task, self.admin)
         # and
-        self.pl.get_task.assert_called_once_with(task_id)
+        self.ll.pl_get_task.assert_called_once_with(task_id)
+        self.pl.get_task.assert_not_called()
         self.r.url_for.assert_called_once_with('index')
         self.r.redirect.assert_called_once_with(self.r.url_for.return_value)
         self.assertIs(self.r.redirect.return_value, result)
 
     def test_task_not_found_raises(self):
         # given
-        self.pl.get_task.return_value = None
+        self.ll.pl_get_task.return_value = None
         request = generate_mock_request(method="GET")
         task_id = 123
         # expect
@@ -54,7 +55,8 @@ class TaskPurgeTest(unittest.TestCase):
                          cm.exception.description)
         self.ll.purge_task.assert_not_called()
         # and
-        self.pl.get_task.assert_called_once_with(task_id)
+        self.ll.pl_get_task.assert_called_once_with(task_id)
+        self.pl.get_task.assert_not_called()
         self.r.url_for.assert_not_called()
         self.r.redirect.assert_not_called()
 
@@ -62,7 +64,7 @@ class TaskPurgeTest(unittest.TestCase):
         # given
         task = Mock(spec=Task)
         task.is_deleted = False
-        self.pl.get_task.return_value = task
+        self.ll.pl_get_task.return_value = task
         request = generate_mock_request(method="GET")
         task_id = 123
         # expect
@@ -73,6 +75,7 @@ class TaskPurgeTest(unittest.TestCase):
                          cm.exception.description)
         self.ll.purge_task.assert_not_called()
         # and
-        self.pl.get_task.assert_called_once_with(task_id)
+        self.ll.pl_get_task.assert_called_once_with(task_id)
+        self.pl.get_task.assert_not_called()
         self.r.url_for.assert_not_called()
         self.r.redirect.assert_not_called()
