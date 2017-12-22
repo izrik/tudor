@@ -2,7 +2,6 @@
 import itertools
 import re
 
-import flask
 from flask import flash
 from flask import jsonify, json
 from flask_login import login_user, logout_user
@@ -30,6 +29,10 @@ class DefaultRenderer(object):
         from flask import url_for
         return url_for(*args, **kwargs)
 
+    def send_from_directory(self, *args, **kwargs):
+        from flask import send_from_directory
+        return send_from_directory(*args, **kwargs)
+
 
 class ViewLayer(object):
     def __init__(self, ll, app, pl, renderer=None):
@@ -51,6 +54,9 @@ class ViewLayer(object):
 
     def url_for(self, *args, **kwargs):
         return self.renderer.url_for(*args, **kwargs)
+
+    def send_from_directory(self, *args, **kwargs):
+        return self.renderer.send_from_directory(*args, **kwargs)
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -338,10 +344,10 @@ class ViewLayer(object):
     def attachment(self, request, current_user, attachment_id, name):
         att = self.pl.get_attachment(attachment_id)
         if att is None:
-            return (('No attachment found for the id "%s"' % attachment_id),
-                    404)
+            raise NotFound(
+                "No attachment found for the id '{}'".format(attachment_id))
 
-        return flask.send_from_directory(self.ll.upload_folder, att.path)
+        return self.send_from_directory(self.ll.upload_folder, att.path)
 
     def task_up(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
