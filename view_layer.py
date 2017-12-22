@@ -37,6 +37,9 @@ class DefaultRenderer(object):
 
 
 class DefaultLoginSource(object):
+    def __init__(self, bcrypt):
+        self.bcrypt = bcrypt
+
     def login_user(self, *args, **kwargs):
         from flask_login import login_user
         return login_user(*args, **kwargs)
@@ -44,6 +47,9 @@ class DefaultLoginSource(object):
     def logout_user(self, *args, **kwargs):
         from flask_login import logout_user
         return logout_user(*args, **kwargs)
+
+    def check_password_hash(self, *args, **kwargs):
+        return self.bcrypt.check_password_hash(*args, **kwargs)
 
 
 class ViewLayer(object):
@@ -55,7 +61,10 @@ class ViewLayer(object):
             renderer = DefaultRenderer()
         self.renderer = renderer
         if login_src is None:
-            login_src = DefaultLoginSource()
+            bcrypt = None
+            if app:
+                bcrypt = app.bcrypt
+            login_src = DefaultLoginSource(bcrypt)
         self.login_src = login_src
 
     def render_template(self, template_name, **kwargs):
@@ -81,6 +90,9 @@ class ViewLayer(object):
 
     def logout_user(self, *args, **kwargs):
         return self.login_src.logout_user(*args, **kwargs)
+
+    def check_password_hash(self, *args, **kwargs):
+        return self.login_src.check_password_hash(*args, **kwargs)
 
     def get_form_or_arg(self, request, name):
         if name in request.form:
@@ -483,8 +495,7 @@ class ViewLayer(object):
         if user.hashed_password is None or user.hashed_password == '':
             self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
-        if not self.app.bcrypt.check_password_hash(user.hashed_password,
-                                                   password):
+        if not self.check_password_hash(user.hashed_password, password):
             self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
 
