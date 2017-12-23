@@ -5,7 +5,6 @@ from in_memory_persistence_layer import InMemoryPersistenceLayer
 from logic_layer import LogicLayer
 from models.user import User
 from tests.view_layer_t.util import generate_mock_request
-from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
 
 
@@ -14,12 +13,7 @@ class TaskNewPostTest(unittest.TestCase):
         self.pl = Mock(spec=InMemoryPersistenceLayer)
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
-        self.vl = ViewLayer(self.ll, None, None, renderer=self.r)
-        self.app = generate_app(vl=self.vl, ll=self.ll, pl=self.pl,
-                                flask_configs={'LOGIN_DISABLED': True,
-                                               'SERVER_NAME': 'example.com'},
-                                secret_key='12345', disable_admin_check=True)
-        self.vl.app = self.app
+        self.vl = ViewLayer(self.ll, None, renderer=self.r)
         self.admin = Mock(spec=User)
 
     def test_creates_new_task(self):

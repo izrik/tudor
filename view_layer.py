@@ -53,9 +53,8 @@ class DefaultLoginSource(object):
 
 
 class ViewLayer(object):
-    def __init__(self, ll, app, bcrypt, renderer=None, login_src=None):
+    def __init__(self, ll, bcrypt, renderer=None, login_src=None):
         self.ll = ll
-        self.app = app
         if renderer is None:
             renderer = DefaultRenderer()
         self.renderer = renderer

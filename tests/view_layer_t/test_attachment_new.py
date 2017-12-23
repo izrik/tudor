@@ -7,7 +7,6 @@ from models.user import User
 from tests.logic_layer_t.util import generate_ll
 from tests.util import MockFileObject
 from tests.view_layer_t.util import generate_mock_request
-from tudor import generate_app
 from view_layer import ViewLayer, DefaultRenderer
 
 
@@ -16,12 +15,7 @@ class AttachmentNewTest(unittest.TestCase):
         self.ll = generate_ll()
         self.pl = self.ll.pl
         self.r = Mock(spec=DefaultRenderer)
-        self.vl = ViewLayer(self.ll, None, None, renderer=self.r)
-        self.app = generate_app(vl=self.vl, ll=self.ll, pl=self.pl,
-                                flask_configs={'LOGIN_DISABLED': True,
-                                               'SERVER_NAME': 'example.com'},
-                                secret_key='12345', disable_admin_check=True)
-        self.vl.app = self.app
+        self.vl = ViewLayer(self.ll, None, renderer=self.r)
 
     def test_creates_new_attachment(self):
         # given
@@ -35,8 +29,7 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # when
-        with self.app.app_context():
-            result = self.vl.attachment_new(request, admin)
+        result = self.vl.attachment_new(request, admin)
         # then
         self.assertIsNotNone(result)
         self.assertEqual(1, len(task.attachments))
@@ -59,8 +52,7 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # when
-        with self.app.app_context():
-            self.vl.attachment_new(request, admin)
+        self.vl.attachment_new(request, admin)
         # then
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
@@ -80,8 +72,7 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # when
-        with self.app.app_context():
-            self.vl.attachment_new(request, admin)
+        self.vl.attachment_new(request, admin)
         # then
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
@@ -101,8 +92,7 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # when
-        with self.app.app_context():
-            self.vl.attachment_new(request, admin)
+        self.vl.attachment_new(request, admin)
         # then
         self.assertEqual(1, len(task.attachments))
         att = list(task.attachments)[0]
@@ -122,11 +112,10 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # expect
-        with self.app.app_context():
-            self.assertRaises(
-                BadRequest,
-                self.vl.attachment_new,
-                request, admin)
+        self.assertRaises(
+            BadRequest,
+            self.vl.attachment_new,
+            request, admin)
         # and
         self.r.redirect.assert_not_called()
 
@@ -143,11 +132,10 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # expect
-        with self.app.app_context():
-            self.assertRaises(
-                BadRequest,
-                self.vl.attachment_new,
-                request, admin)
+        self.assertRaises(
+            BadRequest,
+            self.vl.attachment_new,
+            request, admin)
         # and
         self.r.redirect.assert_not_called()
 
@@ -164,11 +152,10 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # expect
-        with self.app.app_context():
-            self.assertRaises(
-                BadRequest,
-                self.vl.attachment_new,
-                request, admin)
+        self.assertRaises(
+            BadRequest,
+            self.vl.attachment_new,
+            request, admin)
         # and
         self.r.redirect.assert_not_called()
 
@@ -185,11 +172,10 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # expect
-        with self.app.app_context():
-            self.assertRaises(
-                BadRequest,
-                self.vl.attachment_new,
-                request, admin)
+        self.assertRaises(
+            BadRequest,
+            self.vl.attachment_new,
+            request, admin)
         # and
         self.r.redirect.assert_not_called()
 
@@ -205,10 +191,9 @@ class AttachmentNewTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, len(task.attachments))
         # expect
-        with self.app.app_context():
-            self.assertRaises(
-                BadRequest,
-                self.vl.attachment_new,
-                request, admin)
+        self.assertRaises(
+            BadRequest,
+            self.vl.attachment_new,
+            request, admin)
         # and
         self.r.redirect.assert_not_called()
