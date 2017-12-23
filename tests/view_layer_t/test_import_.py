@@ -14,7 +14,7 @@ class ImportTest(unittest.TestCase):
         self.ll = generate_ll()
         self.pl = self.ll.pl
         self.r = Mock(spec=DefaultRenderer)
-        self.vl = ViewLayer(self.ll, None, renderer=self.r)
+        self.vl = ViewLayer(self.ll, None, None, renderer=self.r)
         self.app = generate_app(vl=self.vl, ll=self.ll, pl=self.pl,
                                 flask_configs={'LOGIN_DISABLED': True,
                                                'SERVER_NAME': 'example.com'},
