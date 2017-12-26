@@ -7,8 +7,7 @@ from flask import Markup
 import argparse
 from os import environ
 import random
-from flask.ext.login import LoginManager, login_user, login_required
-from flask.ext.login import logout_user, current_user
+from flask.ext.login import LoginManager, login_required, current_user
 from flask.ext.bcrypt import Bcrypt
 import re
 import markdown
