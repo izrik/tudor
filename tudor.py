@@ -125,7 +125,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.bcrypt = bcrypt
 
     if pl is None:
-        pl = PersistenceLayer(app, db_uri, bcrypt)
+        pl = PersistenceLayer(app, db_uri)
     app.pl = pl
 
     class Options(object):
