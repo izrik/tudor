@@ -11,7 +11,6 @@ class LoadIsPublicTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        pl = self.pl
 
         self.tp = Task('tp', is_public=True)
         self.tpp = Task('tpp', is_public=True)
