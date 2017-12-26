@@ -2,22 +2,21 @@ import unittest
 
 from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.task import Task
-from tudor import generate_app, make_task_public, make_task_private, Config, \
+from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line
 
 
 class CommandLineTests(unittest.TestCase):
     def setUp(self):
-        pl = InMemoryPersistenceLayer()
-        self.app = generate_app(pl=pl)
-        self.app.pl.create_all()
+        self.pl = InMemoryPersistenceLayer()
+        self.pl.create_all()
 
     def test_make_task_public(self):
         # given
         task = Task('task')
         task.id = 1
-        self.app.pl.add(task)
-        self.app.pl.commit()
+        self.pl.add(task)
+        self.pl.commit()
         output = [None]
 
         def printer(*args):
@@ -26,7 +25,7 @@ class CommandLineTests(unittest.TestCase):
         # precondition
         self.assertFalse(task.is_public)
         # when
-        make_task_public(self.app, task.id, printer=printer)
+        make_task_public(self.pl, task.id, printer=printer)
         # then
         self.assertTrue(task.is_public)
         # and
@@ -40,9 +39,9 @@ class CommandLineTests(unittest.TestCase):
             output[0] = args[0]
 
         # precondition
-        self.assertEqual(0, self.app.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tasks())
         # when
-        make_task_public(self.app, 1, printer=printer)
+        make_task_public(self.pl, 1, printer=printer)
         # then
         self.assertEqual(['No task found by the id "1"'], output)
 
@@ -50,23 +49,23 @@ class CommandLineTests(unittest.TestCase):
         # given
         t1 = Task('t1', is_public=False)
         t1.id = 1
-        self.app.pl.add(t1)
+        self.pl.add(t1)
         t2 = Task('t2', is_public=False)
         t2.id = 2
-        self.app.pl.add(t2)
+        self.pl.add(t2)
         t2.parent = t1
         t3 = Task('t3', is_public=False)
         t3.id = 3
-        self.app.pl.add(t3)
+        self.pl.add(t3)
         t3.parent = t2
         t4 = Task('t4', is_public=False)
         t4.id = 4
-        self.app.pl.add(t4)
+        self.pl.add(t4)
         t4.parent = t1
         t5 = Task('t5', is_public=False)
         t5.id = 5
-        self.app.pl.add(t5)
-        self.app.pl.commit()
+        self.pl.add(t5)
+        self.pl.commit()
         output = set()
 
         def printer(*args):
@@ -79,7 +78,7 @@ class CommandLineTests(unittest.TestCase):
         self.assertFalse(t4.is_public)
         self.assertFalse(t5.is_public)
         # when
-        make_task_public(self.app, t1.id, printer=printer, descendants=True)
+        make_task_public(self.pl, t1.id, printer=printer, descendants=True)
         # then
         self.assertTrue(t1.is_public)
         self.assertTrue(t2.is_public)
@@ -96,8 +95,8 @@ class CommandLineTests(unittest.TestCase):
         # given
         task = Task('task', is_public=True)
         task.id = 1
-        self.app.pl.add(task)
-        self.app.pl.commit()
+        self.pl.add(task)
+        self.pl.commit()
         output = [None]
 
         def printer(*args):
@@ -106,7 +105,7 @@ class CommandLineTests(unittest.TestCase):
         # precondition
         self.assertTrue(task.is_public)
         # when
-        make_task_private(self.app, task.id, printer=printer)
+        make_task_private(self.pl, task.id, printer=printer)
         # then
         self.assertFalse(task.is_public)
         # and
@@ -120,9 +119,9 @@ class CommandLineTests(unittest.TestCase):
             output[0] = args[0]
 
         # precondition
-        self.assertEqual(0, self.app.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tasks())
         # when
-        make_task_private(self.app, 1, printer=printer)
+        make_task_private(self.pl, 1, printer=printer)
         # then
         self.assertEqual(['No task found by the id "1"'], output)
 
@@ -130,23 +129,23 @@ class CommandLineTests(unittest.TestCase):
         # given
         t1 = Task('t1', is_public=True)
         t1.id = 1
-        self.app.pl.add(t1)
+        self.pl.add(t1)
         t2 = Task('t2', is_public=True)
         t2.id = 2
-        self.app.pl.add(t2)
+        self.pl.add(t2)
         t2.parent = t1
         t3 = Task('t3', is_public=True)
         t3.id = 3
-        self.app.pl.add(t3)
+        self.pl.add(t3)
         t3.parent = t2
         t4 = Task('t4', is_public=True)
         t4.id = 4
-        self.app.pl.add(t4)
+        self.pl.add(t4)
         t4.parent = t1
         t5 = Task('t5', is_public=True)
         t5.id = 5
-        self.app.pl.add(t5)
-        self.app.pl.commit()
+        self.pl.add(t5)
+        self.pl.commit()
         output = set()
 
         def printer(*args):
@@ -159,7 +158,7 @@ class CommandLineTests(unittest.TestCase):
         self.assertTrue(t4.is_public)
         self.assertTrue(t5.is_public)
         # when
-        make_task_private(self.app, t1.id, printer=printer, descendants=True)
+        make_task_private(self.pl, t1.id, printer=printer, descendants=True)
         # then
         self.assertFalse(t1.is_public)
         self.assertFalse(t2.is_public)
