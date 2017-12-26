@@ -145,7 +145,7 @@ class PersistenceLayer(object):
                                           task_prioritize_table)
         self.DbNote = generate_note_class(db)
         self.DbAttachment = generate_attachment_class(db)
-        self.DbUser = generate_user_class(db, bcrypt, users_tasks_table)
+        self.DbUser = generate_user_class(db, users_tasks_table)
         self.DbOption = generate_option_class(db)
 
         self._db_by_domain = {}
@@ -1423,7 +1423,7 @@ def generate_attachment_class(db):
     return DbAttachment
 
 
-def generate_user_class(db, bcrypt, users_tasks_table):
+def generate_user_class(db, users_tasks_table):
     class DbUser(db.Model, UserBase):
         _logger = logging_util.get_logger_by_name(__name__, 'DbUser')
 
