@@ -94,9 +94,8 @@ class PersistenceLayer(object):
     _logger = logging_util.get_logger_by_name(__name__, 'PersistenceLayer')
 
     def __init__(self, app, db_uri):
-        self.app = app
-        self.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-        self.db = SQLAlchemy(self.app)
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+        self.db = SQLAlchemy(app)
 
         db = self.db
         self._added_objects = set()
