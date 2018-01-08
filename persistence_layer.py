@@ -2,7 +2,6 @@
 import collections
 from numbers import Number
 
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 
 from models.task import Task, TaskBase
@@ -93,11 +92,9 @@ class Pager(object):
 class PersistenceLayer(object):
     _logger = logging_util.get_logger_by_name(__name__, 'PersistenceLayer')
 
-    def __init__(self, app, db_uri):
-        app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-        self.db = SQLAlchemy(app)
+    def __init__(self, db):
+        self.db = db
 
-        db = self.db
         self._added_objects = set()
         self._deleted_objects = set()
         self._changed_objects = set()

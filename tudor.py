@@ -13,6 +13,8 @@ import re
 import markdown
 from functools import wraps
 import git
+from flask_sqlalchemy import SQLAlchemy
+
 from conversions import bool_from_str, int_from_str
 from logic_layer import LogicLayer
 from models.user import GuestUser
@@ -125,7 +127,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.bcrypt = bcrypt
 
     if pl is None:
-        pl = PersistenceLayer(app, db_uri)
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+        db = SQLAlchemy(app)
+        pl = PersistenceLayer(db)
     app.pl = pl
 
     class Options(object):
