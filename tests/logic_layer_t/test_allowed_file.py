@@ -5,14 +5,9 @@ import unittest
 from logic_layer import LogicLayer
 
 
-class MockPersistenceLayer(object):
-    db = None
-
-
 class AllowedFileTest(unittest.TestCase):
     def setUp(self):
-        self.ll = LogicLayer('/tmp', ['txt', 'jpg', 'png', 'gif'],
-                             MockPersistenceLayer())
+        self.ll = LogicLayer('/tmp', ['txt', 'jpg', 'png', 'gif'], None)
 
     def test_no_dot_returns_false(self):
         # expect

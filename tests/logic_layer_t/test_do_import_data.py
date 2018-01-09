@@ -15,7 +15,6 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
 
     def test_do_import_data_empty(self):
         # given

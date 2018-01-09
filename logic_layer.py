@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
-import re
-import itertools
 import os
 from datetime import datetime
 from numbers import Number
 
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
-from decimal import Decimal
+from werkzeug.exceptions import Forbidden
 from werkzeug import secure_filename
 
 from conversions import int_from_str, money_from_str
@@ -124,6 +122,9 @@ class LogicLayer(object):
 
         task.users.append(current_user)
 
+        self.pl.add(task)
+        self.pl.commit()
+
         return task
 
     def get_lowest_order_num(self):
@@ -149,6 +150,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = True
+        self.pl.commit()
         return task
 
     def task_unset_done(self, id, current_user):
@@ -158,6 +160,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = False
+        self.pl.commit()
         return task
 
     def task_set_deleted(self, id, current_user):
@@ -167,6 +170,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = True
+        self.pl.commit()
         return task
 
     def task_unset_deleted(self, id, current_user):
@@ -176,6 +180,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = False
+        self.pl.commit()
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
@@ -259,6 +264,8 @@ class LogicLayer(object):
         timestamp = datetime.utcnow()
         note = Note(content, timestamp)
         note.task = task
+        self.pl.add(note)
+        self.pl.commit()
         return note
 
     def set_task(self, task_id, current_user, summary, description,
@@ -316,6 +323,8 @@ class LogicLayer(object):
 
         task.is_public = is_public
 
+        self.pl.commit()
+
         return task
 
     def get_edit_task_data(self, id, current_user):
@@ -350,6 +359,9 @@ class LogicLayer(object):
 
         att = Attachment(path, description)
         att.task = task
+
+        self.pl.add(att)
+        self.pl.commit()
 
         return att
 
@@ -392,8 +404,11 @@ class LogicLayer(object):
                 task.order_num, next_task.order_num =\
                     new_order_num, task.order_num
 
+            # TODO: remove all redundant add()'s everywhere
             self.pl.add(task)
             self.pl.add(next_task)
+
+        self.pl.commit()
 
         return task
 
@@ -414,6 +429,8 @@ class LogicLayer(object):
             task.order_num = top_task[0].order_num + 1
 
             self.pl.add(task)
+
+        self.pl.commit()
 
         return task
 
@@ -452,6 +469,8 @@ class LogicLayer(object):
             self.pl.add(task)
             self.pl.add(next_task)
 
+        self.pl.commit()
+
         return task
 
     def do_move_task_to_bottom(self, id, current_user):
@@ -473,6 +492,8 @@ class LogicLayer(object):
 
             self.pl.add(task)
 
+        self.pl.commit()
+
         return task
 
     def do_long_order_change(self, task_to_move_id, target_id, current_user):
@@ -480,14 +501,14 @@ class LogicLayer(object):
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(task_to_move_id))
-        if not TaskUserOps.is_user_authorized_or_admin(task_to_move,
-                                                       current_user):
-            raise werkzeug.exceptions.Forbidden()
-
         target = self.pl.get_task(target_id)
         if target is None:
             raise werkzeug.exceptions.NotFound(
                 "No task object found for id '{}'".format(target_id))
+
+        if not TaskUserOps.is_user_authorized_or_admin(task_to_move,
+                                                       current_user):
+            raise werkzeug.exceptions.Forbidden()
         if not TaskUserOps.is_user_authorized_or_admin(target, current_user):
             raise werkzeug.exceptions.Forbidden()
 
@@ -499,9 +520,6 @@ class LogicLayer(object):
                     task_to_move_id, target_id, task_to_move.parent_id,
                     target.parent_id))
 
-        kwargs = {
-            'parent_id': target.parent_id,
-        }
         siblings = list(self.pl.get_tasks(parent_id=target.parent_id))
         siblings2 = sorted(siblings, key=lambda t: t.order_num,
                            reverse=True)
@@ -521,13 +539,20 @@ class LogicLayer(object):
             k -= 2
             self.pl.add(s)
 
+        self.pl.commit()
+
         return task_to_move, target
 
-    def do_add_tag_to_task(self, id, value, current_user):
+    def do_add_tag_to_task_by_id(self, id, value, current_user):
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound(
                 "No task found for the id '{}'".format(id))
+        return self.do_add_tag_to_task(task, value, current_user)
+
+    def do_add_tag_to_task(self, task, value, current_user):
+        if task is None:
+            raise ValueError('No task specified')
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
@@ -536,6 +561,8 @@ class LogicLayer(object):
         if tag not in task.tags:
             task.tags.append(tag)
             self.pl.add(task)
+
+        self.pl.commit()
 
         return tag
 
@@ -565,6 +592,8 @@ class LogicLayer(object):
                 self.pl.add(task)
                 self.pl.add(tag)
 
+        self.pl.commit()
+
         return tag
 
     def do_authorize_user_for_task(self, task, user_to_authorize,
@@ -573,11 +602,15 @@ class LogicLayer(object):
             raise ValueError("No task was specified.")
         if user_to_authorize is None:
             raise ValueError("No user was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if user_to_authorize not in task.users:
             task.users.append(user_to_authorize)
+
+        self.pl.commit()
 
         return task
 
@@ -629,6 +662,8 @@ class LogicLayer(object):
             raise ValueError("No task_id was specified.")
         if user_id is None:
             raise ValueError("No user_id was specified.")
+        if current_user is None:
+            raise ValueError("No current_user was specified.")
 
         task = self.pl.get_task(task_id)
         if task is None:
@@ -642,27 +677,34 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
+        if user_to_deauthorize not in task.users:
+            return task
+
         if len(task.users) < 2:
+            # TODO: maybe re-think this. the task is never inaccessible to
+            # admins, after all.
             raise werkzeug.exceptions.Conflict(
                 "The user cannot be de-authorized. It is the last authorized "
                 "user for the task. De-authorizing the user would make the "
                 "task inaccessible.")
 
-        if user_to_deauthorize in task.users:
-            task.users.remove(user_to_deauthorize)
-            self.pl.add(task)
-            self.pl.add(user_to_deauthorize)
+        task.users.remove(user_to_deauthorize)
+        self.pl.add(task)
+        self.pl.add(user_to_deauthorize)
+
+        self.pl.commit()
 
         return task
 
-    def do_add_new_user(self, email, is_admin):
+    def do_add_new_user(self, email, is_admin=False):
         user = self.pl.get_user_by_email(email)
         if user is not None:
-            return werkzeug.exceptions.Conflict(
+            raise werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(
                     email))
         user = User(email=email, is_admin=is_admin)
         self.pl.add(user)
+        self.pl.commit()
         return user
 
     def do_get_user_data(self, user_id, current_user):
@@ -688,12 +730,15 @@ class LogicLayer(object):
         else:
             option = Option(key, value)
         self.pl.add(option)
+        self.pl.commit()
         return option
 
     def do_delete_option(self, key):
         option = self.pl.get_option(key)
-        if option is not None:
-            self.pl.delete(option)
+        if option is None:
+            return None
+        self.pl.delete(option)
+        self.pl.commit()
         return option
 
     def do_reset_order_nums(self, current_user):
@@ -708,6 +753,9 @@ class LogicLayer(object):
             task.order_num = 2 * k
             self.pl.add(task)
             k -= 1
+
+        self.pl.commit()
+
         return tasks_h
 
     def do_export_data(self, types_to_export):
@@ -893,10 +941,21 @@ class LogicLayer(object):
 
     def do_submit_task_crud(self, crud_data, current_user):
 
+        if current_user is None:
+            # guest users not allowed
+            raise ValueError('current_user cannot be None.')
+        if not isinstance(current_user, User):
+            # guest users not allowed
+            # TODO: use a better exception type for unauthorized operations
+            raise TypeError('Invalid user type.')
+
+        # TODO: only load tasks that are specified in crud_data
         tasks = self.load_no_hierarchy(current_user, include_done=True,
                                        include_deleted=True)
 
         for task in tasks:
+            # TODO: re-arrange so that alll statements related to a given
+            # attribute are together
             summary = crud_data.get('task_{}_summary'.format(task.id))
             deadline = crud_data.get('task_{}_deadline'.format(task.id))
             is_done = crud_data.get('task_{}_is_done'.format(task.id))
@@ -907,6 +966,9 @@ class LogicLayer(object):
             cost = crud_data.get('task_{}_cost'.format(task.id))
             parent_id = crud_data.get('task_{}_parent_id'.format(task.id))
 
+            # TODO: Normalize the values the same way the class would, e.g. use
+            # Task._clean_deadline to normalize the deadline. Alternately,
+            # maybe just use make_change.
             if deadline:
                 deadline = dparse(deadline)
             else:
@@ -918,17 +980,22 @@ class LogicLayer(object):
             cost = money_from_str(cost)
             parent_id = int_from_str(parent_id)
 
+            # TODO: clarify when None means "None" and when it means "Don't set
+            # this value".
             if summary is not None:
                 task.summary = summary
             task.deadline = deadline
             task.is_done = is_done
             task.is_deleted = is_deleted
-            task.order_num = order_num
+            if order_num is not None:
+                task.order_num = order_num
             task.expected_duration_minutes = duration
             task.expected_cost = cost
             task.parent = self.pl.get_task(parent_id)
 
             self.pl.add(task)
+
+        self.pl.commit()
 
     def get_tags(self):
         return list(self.pl.get_tags())
@@ -953,13 +1020,14 @@ class LogicLayer(object):
         return tag
 
     def do_edit_tag(self, tag_id, value, description):
-        tag = self.get_tag(tag_id)
+        tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
         tag.value = value
         tag.description = description
         self.pl.add(tag)
+        self.pl.commit()
         return tag
 
     def get_task(self, task_id, current_user):
@@ -1002,7 +1070,6 @@ class LogicLayer(object):
 
         self.pl.delete(task)
 
-        # TODO: commit in a non-view function
         self.pl.commit()
 
         return tag
@@ -1208,6 +1275,8 @@ class LogicLayer(object):
         if dependee not in task.dependees:
             task.dependees.append(dependee)
 
+        self.pl.commit()
+
         return task, dependee
 
     def do_remove_dependee_from_task(self, task_id, dependee_id, current_user):
@@ -1236,6 +1305,8 @@ class LogicLayer(object):
             task.dependees.remove(dependee)
             self.pl.add(task)
             self.pl.add(dependee)
+
+        self.pl.commit()
 
         return task, dependee
 
@@ -1292,6 +1363,8 @@ class LogicLayer(object):
         if prioritize_before not in task.prioritize_before:
             task.prioritize_before.append(prioritize_before)
 
+        self.pl.commit()
+
         return task, prioritize_before
 
     def do_remove_prioritize_before_from_task(self, task_id,
@@ -1324,6 +1397,8 @@ class LogicLayer(object):
             self.pl.add(task)
             self.pl.add(prioritize_before)
 
+        self.pl.commit()
+
         return task, prioritize_before
 
     def do_add_prioritize_after_to_task(self, task_id, prioritize_after_id,
@@ -1352,3 +1427,35 @@ class LogicLayer(object):
         prioritize_after, task = self.do_remove_prioritize_before_from_task(
             prioritize_after_id, task_id, current_user)
         return task, prioritize_after
+
+    def purge_task(self, task, current_user):
+        if not current_user.is_admin:
+            raise Forbidden('Current user is not authorized to purge tasks.')
+        if task is None:
+            raise ValueError('task cannot be None.')
+        if not task.is_deleted:
+            raise Exception(
+                "Task (id {}) has not been deleted.".format(task.id))
+
+        self.pl.delete(task)
+        self.pl.commit()
+
+    def purge_all_deleted_tasks(self, current_user):
+        if not current_user.is_admin:
+            raise Forbidden('Current user is not authorized to purge tasks.')
+        n = 0
+        deleted_tasks = list(self.pl.get_tasks(is_deleted=True))
+        for task in deleted_tasks:
+            self.purge_task(task, current_user)
+            n += 1
+        self.pl.commit()
+        return n
+
+    def pl_get_task(self, task_id):
+        return self.pl.get_task(task_id)
+
+    def pl_get_attachment(self, attachment_id):
+        return self.pl.get_attachment(attachment_id)
+
+    def pl_get_user_by_email(self, email):
+        return self.pl.get_user_by_email(email)

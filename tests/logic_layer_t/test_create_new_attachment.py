@@ -7,23 +7,14 @@ from werkzeug.exceptions import NotFound, Forbidden
 from models.attachment import Attachment
 from models.task import Task
 from models.user import User
+from tests.util import MockFileObject
 from util import generate_ll
-
-
-class MockFileObject(object):
-    def __init__(self, filename):
-        self.filename = filename
-        self.save_calls = []
-
-    def save(self, filepath):
-        self.save_calls.append(filepath)
 
 
 class CreateNewAttachmentTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.pl.create_all()
         self.user = User('name@example.com')
         self.task = Task('task')
         self.task.id = 1
@@ -41,7 +32,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
         # then
         self.assertIsNotNone(result)
         self.assertIsInstance(result, Attachment)
-        self.assertIsNone(result.id)
+        self.assertIsNotNone(result.id)
         self.assertIsNone(result.timestamp)
         self.assertEqual('filename.txt', result.path)
         # self.assertEqual('filename.txt', result.filename)

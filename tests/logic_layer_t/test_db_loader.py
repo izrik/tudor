@@ -17,7 +17,6 @@ class DbLoaderTest(unittest.TestCase):
         self.task_ids = {}
         self.pl = self.ll.pl
         pl = self.pl
-        pl.create_all()
         # summary,
         # description='',
         # is_done=False,
@@ -194,7 +193,6 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.pl = self.ll.pl
         pl = self.pl
         self.task_ids = {}
-        pl.create_all()
 
         self.user = User('name@example.org', None, True)
         pl.add(self.user)
@@ -573,7 +571,6 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         self.pl = self.ll.pl
         pl = self.pl
         self.task_ids = {}
-        pl.create_all()
 
         self.user = User('name@example.org', None, True)
         pl.add(self.user)
@@ -717,7 +714,6 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         self.pl = self.ll.pl
         pl = self.pl
         self.task_ids = {}
-        pl.create_all()
 
         self.user = User('name@example.org', None, True)
         pl.add(self.user)

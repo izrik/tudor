@@ -13,7 +13,6 @@ class ConvertTaskToTagTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.pl.create_all()
         self.user = User('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):

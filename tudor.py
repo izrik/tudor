@@ -7,13 +7,14 @@ from flask import Markup
 import argparse
 from os import environ
 import random
-from flask.ext.login import LoginManager, login_user, login_required
-from flask.ext.login import logout_user, current_user
+from flask.ext.login import LoginManager, login_required, current_user
 from flask.ext.bcrypt import Bcrypt
 import re
 import markdown
 from functools import wraps
 import git
+from flask_sqlalchemy import SQLAlchemy
+
 from conversions import bool_from_str, int_from_str
 from logic_layer import LogicLayer
 from models.user import GuestUser
@@ -126,7 +127,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.bcrypt = bcrypt
 
     if pl is None:
-        pl = PersistenceLayer(app, db_uri, bcrypt)
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+        db = SQLAlchemy(app)
+        pl = PersistenceLayer(db)
     app.pl = pl
 
     class Options(object):
@@ -165,7 +168,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.ll = ll
 
     if vl is None:
-        vl = ViewLayer(ll, app, upload_folder, pl)
+        vl = ViewLayer(ll, app.bcrypt)
     app.vl = vl
 
     # Flask setup functions
@@ -573,8 +576,8 @@ def default_printer(*args):
     print(args)
 
 
-def make_task_public(app, task_id, printer=default_printer, descendants=False):
-    task = app.pl.get_task(task_id)
+def make_task_public(pl, task_id, printer=default_printer, descendants=False):
+    task = pl.get_task(task_id)
     if not task:
         printer('No task found by the id "{}"'.format(task_id))
     else:
@@ -589,12 +592,12 @@ def make_task_public(app, task_id, printer=default_printer, descendants=False):
         else:
             task.is_public = True
             printer('Made task {}, "{}", public'.format(task.id, task.summary))
-        app.pl.commit()
+        pl.commit()
 
 
-def make_task_private(app, task_id, printer=default_printer,
+def make_task_private(pl, task_id, printer=default_printer,
                       descendants=False):
-    task = app.pl.get_task(task_id)
+    task = pl.get_task(task_id)
     if not task:
         printer('No task found by the id "{}"'.format(task_id))
     else:
@@ -611,12 +614,12 @@ def make_task_private(app, task_id, printer=default_printer,
             task.is_public = False
             printer('Made task {}, "{}", private'.format(task.id,
                                                          task.summary))
-        app.pl.commit()
+        pl.commit()
 
 
-def test_db_conn(app, debug):
+def test_db_conn(pl, debug):
     try:
-        count = app.pl.count_tasks()
+        count = pl.count_tasks()
     except Exception as e:
         print('Caught {}: "{}"'.format(type(e).__name__, e))
         if debug:
@@ -669,11 +672,11 @@ if __name__ == '__main__':
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
     elif args.make_public is not None:
-        make_task_public(app, args.make_public, descendants=args.descendants)
+        make_task_public(app.pl, args.make_public, descendants=args.descendants)
     elif args.make_private is not None:
-        make_task_private(app, args.make_private, descendants=args.descendants)
+        make_task_private(app.pl, args.make_private, descendants=args.descendants)
     elif args.test_db_conn:
-        test_db_conn(app, args.debug)
+        test_db_conn(app.pl, args.debug)
     else:
         app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
                 port=arg_config.PORT)
