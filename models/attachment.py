@@ -104,7 +104,7 @@ class Attachment(Changeable, AttachmentBase):
                  lazy=None):
         super(Attachment, self).__init__(path, description, timestamp,
                                          filename)
-        self._logger.debug(u'Note.__init__ {}'.format(self))
+        self._logger.debug(u'Attachment.__init__ %s', self)
 
         if lazy is None:
             lazy = {}
@@ -177,7 +177,7 @@ class Attachment(Changeable, AttachmentBase):
 
     def _populate_task(self):
         if self._task_lazy:
-            self._logger.debug(u'populating task from lazy {}'.format(self))
+            self._logger.debug(u'populating task from lazy %s', self)
             value = self._task_lazy()
             self._task_lazy = None
             self.task = value
