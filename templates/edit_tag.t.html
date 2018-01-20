@@ -8,17 +8,19 @@
 <div class="container">
 <div>
     <form action="edit" method="post" enctype="multipart/form-data">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-info" href="{{ url_for('view_tag', id=tag.id) }}">Back</a>
+        <p></p>
         <table>
             <tr><td>ID</td><td>{{ tag.id }}</td></tr>
             <tr><td>Value</td><td><input type="text" name="value" value="{{ tag.value }}" /></td></tr>
             <tr><td>Description:</td></tr>
         </table>
         <textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ tag.description if tag.description != None }}</textarea>
-        <input type="submit" value="Save"/>
+        <p></p>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-info" href="{{ url_for('view_tag', id=tag.id) }}">Back</a>
     </form>
-</div>
-<div>
-    <p><a href="{{ url_for('view_tag', id=tag.id) }}">back</a></p>
 </div>
 </div>
 {% endblock %}
