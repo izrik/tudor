@@ -2,8 +2,8 @@
 .task_description
 {
     border-color: #000000;
-    padding: 10px;
-    width: 870px;
+    padding: 10px; /* csslint allow: box-model */
+    width: 870px; /* csslint allow: box-model */
 }
 
 table {
