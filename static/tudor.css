@@ -1,9 +1,9 @@
 
 .task_description
 {
-    width: 870px;
     border-color: #000000;
     padding: 10px;
+    width: 870px;
 }
 
 table {
@@ -55,6 +55,6 @@ thead {
 }
 
 .radio-label {
-    margin-bottom: 0;
     font-weight: 400;
+    margin-bottom: 0;
 }
