@@ -53,6 +53,21 @@ class Config(object):
         self.SECRET_KEY = secret_key
         self.args = args
 
+    @staticmethod
+    def from_environ():
+        return Config(
+            debug=bool_from_str(
+                environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG)),
+            host=environ.get('TUDOR_HOST', DEFAULT_TUDOR_HOST),
+            port=int_from_str(environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT),
+                              DEFAULT_TUDOR_PORT),
+            db_uri=environ.get('TUDOR_DB_URI', DEFAULT_TUDOR_DB_URI),
+            upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
+                                      DEFAULT_TUDOR_UPLOAD_FOLDER),
+            allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
+                                           DEFAULT_TUDOR_ALLOWED_EXTENSIONS),
+            secret_key=environ.get('TUDOR_SECRET_KEY'))
+
 
 def get_config_from_command_line(args, defaults):
     parser = argparse.ArgumentParser()
@@ -633,17 +648,7 @@ if __name__ == '__main__':
 
     default_config = Config()
 
-    env_config = Config(
-        debug=bool_from_str(environ.get('TUDOR_DEBUG', default_config.DEBUG)),
-        host=environ.get('TUDOR_HOST', default_config.HOST),
-        port=int_from_str(environ.get('TUDOR_PORT', default_config.PORT),
-                          default_config.PORT),
-        db_uri=environ.get('TUDOR_DB_URI', default_config.DB_URI),
-        upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
-                                  default_config.UPLOAD_FOLDER),
-        allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
-                                       default_config.ALLOWED_EXTENSIONS),
-        secret_key=environ.get('TUDOR_SECRET_KEY'))
+    env_config = Config.from_environ()
 
     arg_config = get_config_from_command_line(sys.argv[1:], env_config)
 
