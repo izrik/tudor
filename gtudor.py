@@ -1,6 +1,6 @@
-from tudor import generate_app, TUDOR_DB_URI, TUDOR_UPLOAD_FOLDER, \
-    TUDOR_SECRET_KEY, TUDOR_ALLOWED_EXTENSIONS
+from tudor import generate_app, Config
 
-app = generate_app(db_uri=TUDOR_DB_URI, upload_folder=TUDOR_UPLOAD_FOLDER,
-                   secret_key=TUDOR_SECRET_KEY,
-                   allowed_extensions=TUDOR_ALLOWED_EXTENSIONS)
+config = Config.from_environ()
+app = generate_app(db_uri=config.DB_URI, upload_folder=config.UPLOAD_FOLDER,
+                   secret_key=config.SECRET_KEY,
+                   allowed_extensions=config.ALLOWED_EXTENSIONS)
