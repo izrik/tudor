@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from in_memory_persistence_layer import InMemoryPersistenceLayer
@@ -235,6 +236,74 @@ class ConfigTest(unittest.TestCase):
         result = Config(args=expected_result)
         # then
         self.assertIs(expected_result, result.args)
+
+
+class ConfigFromEnvironTest(unittest.TestCase):
+    def setUp(self):
+        if 'TUDOR_DEBUG' in os.environ:
+            os.environ.pop('TUDOR_DEBUG')
+        if 'TUDOR_HOST' in os.environ:
+            os.environ.pop('TUDOR_HOST')
+        if 'TUDOR_PORT' in os.environ:
+            os.environ.pop('TUDOR_PORT')
+        if 'TUDOR_DB_URI' in os.environ:
+            os.environ.pop('TUDOR_DB_URI')
+        if 'TUDOR_UPLOAD_FOLDER' in os.environ:
+            os.environ.pop('TUDOR_UPLOAD_FOLDER')
+        if 'TUDOR_ALLOWED_EXTENSIONS' in os.environ:
+            os.environ.pop('TUDOR_ALLOWED_EXTENSIONS')
+        if 'TUDOR_SECRET_KEY' in os.environ:
+            os.environ.pop('TUDOR_SECRET_KEY')
+
+    def tearDown(self):
+        if 'TUDOR_DEBUG' in os.environ:
+            os.environ.pop('TUDOR_DEBUG')
+        if 'TUDOR_HOST' in os.environ:
+            os.environ.pop('TUDOR_HOST')
+        if 'TUDOR_PORT' in os.environ:
+            os.environ.pop('TUDOR_PORT')
+        if 'TUDOR_DB_URI' in os.environ:
+            os.environ.pop('TUDOR_DB_URI')
+        if 'TUDOR_UPLOAD_FOLDER' in os.environ:
+            os.environ.pop('TUDOR_UPLOAD_FOLDER')
+        if 'TUDOR_ALLOWED_EXTENSIONS' in os.environ:
+            os.environ.pop('TUDOR_ALLOWED_EXTENSIONS')
+        if 'TUDOR_SECRET_KEY' in os.environ:
+            os.environ.pop('TUDOR_SECRET_KEY')
+
+    def test_from_environ_no_envvars_returns_defaults(self):
+        # when
+        result = Config.from_environ()
+        # then
+        self.assertIs(False, result.DEBUG)
+        self.assertEqual('127.0.0.1', result.HOST)
+        self.assertEqual(8304, result.PORT)
+        self.assertEqual('sqlite:////tmp/test.db', result.DB_URI)
+        self.assertEqual('/tmp/tudor/uploads', result.UPLOAD_FOLDER)
+        self.assertEqual('txt,pdf,png,jpg,jpeg,gif', result.ALLOWED_EXTENSIONS)
+        self.assertIsNone(result.SECRET_KEY)
+        self.assertIsNone(result.args)
+
+    def test_from_environ_with_envvars_returns_args(self):
+        # given
+
+        os.environ['TUDOR_DEBUG'] = str(True)
+        os.environ['TUDOR_HOST'] = '1.2.3.4'
+        os.environ['TUDOR_PORT'] = str(12345)
+        os.environ['TUDOR_DB_URI'] = 'sqlite://'
+        os.environ['TUDOR_UPLOAD_FOLDER'] = '/tmp/folder2'
+        os.environ['TUDOR_ALLOWED_EXTENSIONS'] = 'zip,exe'
+        os.environ['TUDOR_SECRET_KEY'] = '12345'
+        # when
+        result = Config.from_environ()
+        # then
+        self.assertIs(True, result.DEBUG)
+        self.assertEqual('1.2.3.4', result.HOST)
+        self.assertEqual(12345, result.PORT)
+        self.assertEqual('sqlite://', result.DB_URI)
+        self.assertEqual('/tmp/folder2', result.UPLOAD_FOLDER)
+        self.assertEqual('zip,exe', result.ALLOWED_EXTENSIONS)
+        self.assertEqual('12345', result.SECRET_KEY)
 
 
 class GetConfigFromCommandLineTest(unittest.TestCase):
