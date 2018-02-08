@@ -287,9 +287,9 @@ class ConfigFromEnvironTest(unittest.TestCase):
     def test_from_environ_with_envvars_returns_args(self):
         # given
 
-        os.environ['TUDOR_DEBUG'] = True
+        os.environ['TUDOR_DEBUG'] = str(True)
         os.environ['TUDOR_HOST'] = '1.2.3.4'
-        os.environ['TUDOR_PORT'] = 12345
+        os.environ['TUDOR_PORT'] = str(12345)
         os.environ['TUDOR_DB_URI'] = 'sqlite://'
         os.environ['TUDOR_UPLOAD_FOLDER'] = '/tmp/folder2'
         os.environ['TUDOR_ALLOWED_EXTENSIONS'] = 'zip,exe'
