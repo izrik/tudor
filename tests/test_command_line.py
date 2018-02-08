@@ -240,22 +240,36 @@ class ConfigTest(unittest.TestCase):
 
 class ConfigFromEnvironTest(unittest.TestCase):
     def setUp(self):
-        os.environ.clear('TUDOR_DEBUG')
-        os.environ.clear('TUDOR_HOST')
-        os.environ.clear('TUDOR_PORT')
-        os.environ.clear('TUDOR_DB_URI')
-        os.environ.clear('TUDOR_UPLOAD_FOLDER')
-        os.environ.clear('TUDOR_ALLOWED_EXTENSIONS')
-        os.environ.clear('TUDOR_SECRET_KEY')
+        if 'TUDOR_DEBUG' in os.environ:
+            os.environ.pop('TUDOR_DEBUG')
+        if 'TUDOR_HOST' in os.environ:
+            os.environ.pop('TUDOR_HOST')
+        if 'TUDOR_PORT' in os.environ:
+            os.environ.pop('TUDOR_PORT')
+        if 'TUDOR_DB_URI' in os.environ:
+            os.environ.pop('TUDOR_DB_URI')
+        if 'TUDOR_UPLOAD_FOLDER' in os.environ:
+            os.environ.pop('TUDOR_UPLOAD_FOLDER')
+        if 'TUDOR_ALLOWED_EXTENSIONS' in os.environ:
+            os.environ.pop('TUDOR_ALLOWED_EXTENSIONS')
+        if 'TUDOR_SECRET_KEY' in os.environ:
+            os.environ.pop('TUDOR_SECRET_KEY')
 
     def tearDown(self):
-        os.environ.clear('TUDOR_DEBUG')
-        os.environ.clear('TUDOR_HOST')
-        os.environ.clear('TUDOR_PORT')
-        os.environ.clear('TUDOR_DB_URI')
-        os.environ.clear('TUDOR_UPLOAD_FOLDER')
-        os.environ.clear('TUDOR_ALLOWED_EXTENSIONS')
-        os.environ.clear('TUDOR_SECRET_KEY')
+        if 'TUDOR_DEBUG' in os.environ:
+            os.environ.pop('TUDOR_DEBUG')
+        if 'TUDOR_HOST' in os.environ:
+            os.environ.pop('TUDOR_HOST')
+        if 'TUDOR_PORT' in os.environ:
+            os.environ.pop('TUDOR_PORT')
+        if 'TUDOR_DB_URI' in os.environ:
+            os.environ.pop('TUDOR_DB_URI')
+        if 'TUDOR_UPLOAD_FOLDER' in os.environ:
+            os.environ.pop('TUDOR_UPLOAD_FOLDER')
+        if 'TUDOR_ALLOWED_EXTENSIONS' in os.environ:
+            os.environ.pop('TUDOR_ALLOWED_EXTENSIONS')
+        if 'TUDOR_SECRET_KEY' in os.environ:
+            os.environ.pop('TUDOR_SECRET_KEY')
 
     def from_environ_no_envvars_returns_defaults(self):
         # when
