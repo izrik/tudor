@@ -280,7 +280,7 @@ class ConfigFromEnvironTest(unittest.TestCase):
         self.assertEqual(8304, result.PORT)
         self.assertEqual('sqlite:////tmp/test.db', result.DB_URI)
         self.assertEqual('/tmp/tudor/uploads', result.UPLOAD_FOLDER)
-        self.assertEqual('txt,pdf,png,jpg,jpeg,gif', result.ALLsOWED_EXTENSIONS)
+        self.assertEqual('txt,pdf,png,jpg,jpeg,gif', result.ALLOWED_EXTENSIONS)
         self.assertIsNone(result.SECRET_KEY)
         self.assertIsNone(result.args)
 
