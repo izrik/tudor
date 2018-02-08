@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from in_memory_persistence_layer import InMemoryPersistenceLayer
@@ -235,6 +236,60 @@ class ConfigTest(unittest.TestCase):
         result = Config(args=expected_result)
         # then
         self.assertIs(expected_result, result.args)
+
+
+class ConfigFromEnvironTest(unittest.TestCase):
+    def setUp(self):
+        os.environ.clear('TUDOR_DEBUG')
+        os.environ.clear('TUDOR_HOST')
+        os.environ.clear('TUDOR_PORT')
+        os.environ.clear('TUDOR_DB_URI')
+        os.environ.clear('TUDOR_UPLOAD_FOLDER')
+        os.environ.clear('TUDOR_ALLOWED_EXTENSIONS')
+        os.environ.clear('TUDOR_SECRET_KEY')
+
+    def tearDown(self):
+        os.environ.clear('TUDOR_DEBUG')
+        os.environ.clear('TUDOR_HOST')
+        os.environ.clear('TUDOR_PORT')
+        os.environ.clear('TUDOR_DB_URI')
+        os.environ.clear('TUDOR_UPLOAD_FOLDER')
+        os.environ.clear('TUDOR_ALLOWED_EXTENSIONS')
+        os.environ.clear('TUDOR_SECRET_KEY')
+
+    def from_environ_no_envvars_returns_defaults(self):
+        # when
+        result = Config.from_environ()
+        # then
+        self.assertIs(False, result.DEBUG)
+        self.assertEqual('127.0.0.1', result.HOST)
+        self.assertEqual(8304, result.PORT)
+        self.assertEqual('sqlite:////tmp/test.db', result.DB_URI)
+        self.assertEqual('/tmp/tudor/uploads', result.UPLOAD_FOLDER)
+        self.assertEqual('txt,pdf,png,jpg,jpeg,gif', result.ALLsOWED_EXTENSIONS)
+        self.assertIsNone(result.SECRET_KEY)
+        self.assertIsNone(result.args)
+
+    def from_environ_with_envvars_returns_args(self):
+        # given
+
+        os.environ['TUDOR_DEBUG'] = True
+        os.environ['TUDOR_HOST'] = '1.2.3.4'
+        os.environ['TUDOR_PORT'] = 12345
+        os.environ['TUDOR_DB_URI'] = 'sqlite://'
+        os.environ['TUDOR_UPLOAD_FOLDER'] = '/tmp/folder2'
+        os.environ['TUDOR_ALLOWED_EXTENSIONS'] = 'zip,exe'
+        os.environ['TUDOR_SECRET_KEY'] = '12345'
+        # when
+        result = Config.from_environ()
+        # then
+        self.assertIs(True, result.DEBUG)
+        self.assertEqual('1.2.3.4', result.HOST)
+        self.assertEqual(12345, result.PORT)
+        self.assertEqual('sqlite://', result.DB_URI)
+        self.assertEqual('/tmp/folder2', result.UPLOAD_FOLDER)
+        self.assertEqual('zip,exe', result.ALLOWED_EXTENSIONS)
+        self.assertEqual('12345', result.SECRET_KEY)
 
 
 class GetConfigFromCommandLineTest(unittest.TestCase):
