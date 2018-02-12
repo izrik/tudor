@@ -14,6 +14,7 @@ import markdown
 from functools import wraps
 import git
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.contrib.profiler import ProfilerMiddleware
 
 from conversions import bool_from_str, int_from_str
 from logic_layer import LogicLayer
@@ -101,6 +102,10 @@ def get_config_from_command_line(args, defaults):
     parser.add_argument('--test-db-conn', action='store_true',
                         help='Try to make a connection to the database. '
                              'Useful for diagnosing connection problems.')
+    parser.add_argument('--profile', action='store_true',
+                        help='Measure run time and print a table on STDOUT of '
+                             'how much time each function call took, at the '
+                             'end of each request.')
 
     args2 = parser.parse_args(args=args)
 
@@ -666,6 +671,10 @@ if __name__ == '__main__':
                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
 
     args = arg_config.args
+
+    if args.profile:
+        app.config['PROFILE'] = True
+        app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[30])
 
     if args.create_db:
         print('Setting up the database')
