@@ -387,6 +387,11 @@ class PersistenceLayer(object):
 
     def _get_domain_object_from_db_object(self, dbobj):
         self._logger.debug(u'begin, dbobj: %s', dbobj)
+        if isinstance(dbobj, self.DbTask):
+            import traceback
+            self._logger.debug(u'Got a DbTask. Current call stack is:')
+            for line in traceback.format_stack():
+                self._logger.debug('    ' + line)
         if dbobj is None:
             return None
         if not self._is_db_object(dbobj):
