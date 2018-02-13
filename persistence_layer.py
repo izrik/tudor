@@ -398,9 +398,9 @@ class PersistenceLayer(object):
         self._logger.debug(u'begin, dbobj: %s', dbobj)
         if isinstance(dbobj, self.DbTask):
             import traceback
-            self._logger.debug(u'Got a DbTask. Current call stack is:')
-            for line in traceback.format_stack():
-                self._logger.debug('    ' + line)
+            call_stack = '    '.join(traceback.format_stack())
+            self._logger.debug(u'Got a DbTask. Current call stack is:\n    ' +
+                               call_stack)
         if dbobj is None:
             return None
         if not self._is_db_object(dbobj):
