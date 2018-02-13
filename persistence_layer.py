@@ -383,7 +383,7 @@ class PersistenceLayer(object):
         return self._domain_by_db[dbobj]
 
     def _create_domain_object_from_db_object(self, dbobj):
-        self._logger.debug(u'begin, dbobj: %2', dbobj)
+        self._logger.debug(u'begin, dbobj: %s', dbobj)
         if dbobj is None:
             raise ValueError('dbobj cannot be None')
         if not self._is_db_object(dbobj):
