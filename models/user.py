@@ -154,6 +154,7 @@ class User(Changeable, UserBase):
 
     @property
     def tasks(self):
+        self._logger.debug('%s', self)
         return self._tasks
 
     def clear_relationships(self):
@@ -163,6 +164,8 @@ class User(Changeable, UserBase):
 class InterlinkedTasks(ManyToManySet):
     __change_field__ = User.FIELD_TASKS
     __attr_counterpart__ = 'users'
+    _logger = logging_util.get_logger_by_name(__name__,
+                                              'InterlinkedTasks')
 
 
 class GuestUser(UserBase):
