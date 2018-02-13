@@ -9,6 +9,7 @@ import werkzeug.exceptions
 from werkzeug.exceptions import Forbidden
 from werkzeug import secure_filename
 
+import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
 from models.task import Task
@@ -21,6 +22,7 @@ from models.user import User
 
 
 class LogicLayer(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'LogicLayer')
 
     def __init__(self, upload_folder, allowed_extensions, pl):
         self.pl = pl
@@ -128,11 +130,18 @@ class LogicLayer(object):
         return task
 
     def get_lowest_order_num(self):
+        self._logger.debug('getting lowest order task')
+        # self.pl._get_tasks_query(order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
         tasks = self.pl.get_tasks(
             order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
+        self._logger.debug('rendering list')
         lowest_order_num_tasks = list(tasks)
+        self._logger.debug('checking list size')
         if len(lowest_order_num_tasks) > 0:
+            self._logger.debug('list size > 0, lowest order_num == %d',
+                               lowest_order_num_tasks[0].order_num)
             return lowest_order_num_tasks[0].order_num
+        self._logger.debug('list size == 0')
         return None
 
     def get_highest_order_num(self):
