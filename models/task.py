@@ -573,7 +573,7 @@ class InterlinkedPrioritizeBefore(ManyToManySet):
     __attr_counterpart__ = 'prioritize_after'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedPrioritizeBefore')
-∂
+
 
 class InterlinkedPrioritizeAfter(ManyToManySet):
     __change_field__ = Task.FIELD_PRIORITIZE_AFTER
