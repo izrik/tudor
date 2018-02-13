@@ -493,9 +493,11 @@ class Task(Changeable, TaskBase):
         return u'{:.2f}'.format(self.expected_cost)
 
     def is_user_authorized(self, user):
+        self._logger.debug(u'%s', self)
         return user in self.users
 
     def contains_dependency_cycle(self, visited=None):
+        self._logger.debug(u'%s', self)
         if visited is None:
             visited = set()
         if self in visited:
@@ -509,6 +511,7 @@ class Task(Changeable, TaskBase):
         return False
 
     def contains_priority_cycle(self, visited=None):
+        self._logger.debug(u'%s', self)
         if visited is None:
             visited = set()
         if self in visited:
@@ -521,6 +524,7 @@ class Task(Changeable, TaskBase):
         return False
 
     def clear_relationships(self):
+        self._logger.debug(u'%s', self)
         self.parent = None
         self.children.clear()
         self.tags.clear()
