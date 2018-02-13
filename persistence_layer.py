@@ -55,6 +55,15 @@ class QueryWrapper(object):
     def limit(self, *args, **kwargs):
         return QueryWrapper(self.query.limit(*args, **kwargs), parent=self)
 
+    def paginate(self, *args, **kwargs):
+        return self.query.paginate(*args, **kwargs)
+
+    def __call__(self, *args, **kwargs):
+        return QueryWrapper(self.query(*args, **kwargs), parent=self)
+
+    def count(self, *args, **kwargs):
+        return self.query.count(*args, **kwargs)
+
 
 class Pager(object):
     page = None
@@ -756,7 +765,7 @@ class PersistenceLayer(object):
             return None
         return self.task_query.get(task_id)
 
-    def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
+    def _get_tasks_query(self, entities=None, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                          parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
                          users_contains=UNSPECIFIED, task_id_in=UNSPECIFIED,
                          task_id_not_in=UNSPECIFIED,
@@ -774,6 +783,9 @@ class PersistenceLayer(object):
            specified."""
 
         query = self.task_query
+
+        if entities:
+            query = query(entities)
 
         if is_done is not self.UNSPECIFIED:
             query = query.filter_by(is_done=is_done)
