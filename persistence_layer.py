@@ -24,38 +24,6 @@ def as_iterable(x):
     return (x,)
 
 
-class QueryWrapper(object):
-    def __init__(self, query, parent=None):
-        self.query = query
-        self.parent = parent
-
-    def all(self):
-        return self.query.all()
-
-    def get(self, *args, **kwargs):
-        return self.query.get(*args, **kwargs)
-
-    def filter(self, *args, **kwargs):
-        return QueryWrapper(self.query.filter(*args, **kwargs), parent=self)
-
-    def filter_by(self, *args, **kwargs):
-        return QueryWrapper(self.query.filter_by(*args, **kwargs), parent=self)
-
-    def __iter__(self, *args, **kwargs):
-        import logging
-        logging.getLogger(__name__).debug('QueryWrapper.__iter__: ',)
-        return self.query.__iter__(*args, **kwargs)
-
-    def outerjoin(self, *args, **kwargs):
-        return QueryWrapper(self.query.outerjoin(*args, **kwargs), parent=self)
-
-    def order_by(self, *args, **kwargs):
-        return QueryWrapper(self.query.order_by(*args, **kwargs), parent=self)
-
-    def limit(self, *args, **kwargs):
-        return QueryWrapper(self.query.limit(*args, **kwargs), parent=self)
-
-
 class Pager(object):
     page = None
     per_page = None
@@ -171,7 +139,6 @@ class PersistenceLayer(object):
                                           users_tasks_table,
                                           task_dependencies_table,
                                           task_prioritize_table)
-        self.db_task_query_wrapper = None
         self.DbNote = generate_note_class(db)
         self.DbAttachment = generate_attachment_class(db)
         self.DbUser = generate_user_class(db, users_tasks_table)
@@ -737,10 +704,7 @@ class PersistenceLayer(object):
 
     @property
     def task_query(self):
-        # return self.DbTask.query
-        if not self.db_task_query_wrapper:
-            self.db_task_query_wrapper = QueryWrapper(self.DbTask.query)
-        return self.db_task_query_wrapper
+        return self.DbTask.query
 
     def get_task(self, task_id):
         return self._get_domain_object_from_db_object(
