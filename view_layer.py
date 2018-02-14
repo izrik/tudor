@@ -5,6 +5,7 @@ import re
 from flask import jsonify, json
 from werkzeug.exceptions import NotFound, BadRequest
 
+import logging_util
 from conversions import int_from_str, money_from_str, bool_from_str
 
 from models.task_user_ops import TaskUserOps
@@ -53,6 +54,8 @@ class DefaultLoginSource(object):
 
 
 class ViewLayer(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'ViewLayer')
+
     def __init__(self, ll, bcrypt, renderer=None, login_src=None):
         self.ll = ll
         if renderer is None:
@@ -173,6 +176,7 @@ class ViewLayer(object):
             expected_cost=expected_cost, parent_id=parent_id, tags=tags)
 
     def task_new_post(self, request, current_user):
+        self._logger.debug('begin')
         summary = self.get_form_or_arg(request, 'summary')
         description = self.get_form_or_arg(request, 'description')
         deadline = self.get_form_or_arg(request, 'deadline') or None
@@ -189,6 +193,7 @@ class ViewLayer(object):
         if tags:
             tags = [s.strip() for s in tags.split(',')]
 
+        self._logger.debug('calculating order_num')
         if order_type == 'top':
             order_num = self.ll.get_highest_order_num()
             if order_num is not None:
@@ -203,7 +208,9 @@ class ViewLayer(object):
                 order_num -= 2
             else:
                 order_num = 0
+        self._logger.debug('calculated order_num: %d', order_num)
 
+        self._logger.debug('creating the new task object via LL')
         task = self.ll.create_new_task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline, order_num=order_num,
@@ -213,12 +220,16 @@ class ViewLayer(object):
 
         if tags:
             for tag_name in tags:
+                self._logger.debug('adding tag "%s"', tag_name)
                 self.ll.do_add_tag_to_task(task, tag_name, current_user)
 
+        self._logger.debug('getting next_url')
         next_url = self.get_form_or_arg(request, 'next_url')
         if not next_url:
+            self._logger.debug('next_url not defined')
             next_url = self.url_for('view_task', id=task.id)
 
+        self._logger.debug('end')
         return self.redirect(next_url)
 
     def task_mark_done(self, request, current_user, task_id):
