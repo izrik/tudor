@@ -145,11 +145,17 @@ class LogicLayer(object):
         return None
 
     def get_highest_order_num(self):
+        self._logger.debug('getting highest order task')
         tasks = self.pl.get_tasks(
             order_by=[[self.pl.ORDER_NUM, self.pl.DESCENDING]], limit=1)
+        self._logger.debug('rendering list')
         highest_order_num_tasks = list(tasks)
+        self._logger.debug('checking list size')
         if len(highest_order_num_tasks) > 0:
+            self._logger.debug('list size > 0, highest order_num == %d',
+                               highest_order_num_tasks[0].order_num)
             return highest_order_num_tasks[0].order_num
+        self._logger.debug('list size == 0')
         return None
 
     def task_set_done(self, id, current_user):
