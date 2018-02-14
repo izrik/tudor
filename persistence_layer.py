@@ -383,7 +383,7 @@ class PersistenceLayer(object):
         return self._domain_by_db[dbobj]
 
     def _create_domain_object_from_db_object(self, dbobj):
-        self._logger.debug(u'begin, dbobj: %2', dbobj)
+        self._logger.debug(u'begin, dbobj: %s', dbobj)
         if dbobj is None:
             raise ValueError('dbobj cannot be None')
         if not self._is_db_object(dbobj):
@@ -667,7 +667,7 @@ class PersistenceLayer(object):
 
     def _on_domain_object_attr_changed(self, domobj, field, operation, value):
         self._logger.debug(u'begin, domobj: %s, field: %s, op: %s, value: %s',
-                domobj, field, operation, value)
+                           domobj, field, operation, value)
 
         dbobj = self._get_db_object_from_domain_object(domobj)
         value2 = self._db_value_from_domain(field, value)
