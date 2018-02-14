@@ -667,7 +667,7 @@ class PersistenceLayer(object):
 
     def _on_domain_object_attr_changed(self, domobj, field, operation, value):
         self._logger.debug(u'begin, domobj: %s, field: %s, op: %s, value: %s',
-                domobj, field, operation, value)
+                           domobj, field, operation, value)
 
         dbobj = self._get_db_object_from_domain_object(domobj)
         value2 = self._db_value_from_domain(field, value)

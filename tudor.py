@@ -677,9 +677,11 @@ if __name__ == '__main__':
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
     elif args.make_public is not None:
-        make_task_public(app.pl, args.make_public, descendants=args.descendants)
+        make_task_public(app.pl, args.make_public,
+                         descendants=args.descendants)
     elif args.make_private is not None:
-        make_task_private(app.pl, args.make_private, descendants=args.descendants)
+        make_task_private(app.pl, args.make_private,
+                          descendants=args.descendants)
     elif args.test_db_conn:
         test_db_conn(app.pl, args.debug)
     else:
