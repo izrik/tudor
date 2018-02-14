@@ -99,6 +99,8 @@ class LogicLayer(object):
                         is_done=None, is_deleted=None, deadline=None,
                         expected_duration_minutes=None, expected_cost=None,
                         order_num=None, parent_id=None, is_public=None):
+        self._logger.debug('begin')
+        self._logger.debug('creating the new task')
         task = Task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,
@@ -106,6 +108,7 @@ class LogicLayer(object):
             expected_cost=expected_cost, is_public=is_public)
 
         if order_num is None:
+            self._logger.debug('order_num not set, calculating')
             order_num = self.get_lowest_order_num()
             if order_num is not None:
                 order_num -= 2
@@ -115,23 +118,30 @@ class LogicLayer(object):
         task.order_num = order_num
 
         if parent_id is not None:
+            self._logger.debug('parent_id specified. looking it up (%d)',
+                               parent_id)
             parent = self.pl.get_task(parent_id)
             if (parent is not None and
                     not TaskUserOps.is_user_authorized_or_admin(parent,
                                                                 current_user)):
+                self._logger.error('User (%d) not authorized for parent (%d)',
+                                   current_user.id, parent_id)
                 raise werkzeug.exceptions.Forbidden()
             task.parent = parent
 
+        self._logger.debug('authorizing the current user for this task')
         task.users.append(current_user)
 
+        self._logger.debug('adding the task to the session')
         self.pl.add(task)
+        self._logger.debug('committing')
         self.pl.commit()
 
+        self._logger.debug('end')
         return task
 
     def get_lowest_order_num(self):
         self._logger.debug('getting lowest order task')
-        # self.pl._get_tasks_query(order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
         tasks = self.pl.get_tasks(
             order_by=[[self.pl.ORDER_NUM, self.pl.ASCENDING]], limit=1)
         self._logger.debug('rendering list')
