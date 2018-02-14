@@ -124,7 +124,7 @@ class LogicLayer(object):
             if (parent is not None and
                     not TaskUserOps.is_user_authorized_or_admin(parent,
                                                                 current_user)):
-                self._logger.error('User (%d) not authorized for parent (%d)',
+                self._logger.debug('User (%d) not authorized for parent (%d)',
                                    current_user.id, parent_id)
                 raise werkzeug.exceptions.Forbidden()
             task.parent = parent
