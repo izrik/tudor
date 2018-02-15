@@ -18,6 +18,7 @@ from persistence.sqlalchemy.models.option import generate_option_class
 from persistence.sqlalchemy.models.tag import generate_tag_class
 from persistence.sqlalchemy.models.task import generate_task_class
 from persistence.sqlalchemy.models.user import generate_user_class
+from persistence.sqlalchemy.pager import Pager
 
 import logging_util
 
@@ -30,71 +31,6 @@ def as_iterable(x):
     if is_iterable(x):
         return x
     return (x,)
-
-
-class Pager(object):
-    page = None
-    per_page = None
-    items = None
-    total = None
-
-    def __init__(self, page, per_page, items, total, num_pages, _pager):
-        self.page = page
-        self.per_page = per_page
-        self.items = list(items)
-        self.total = total
-        self.num_pages = num_pages
-        self._pager = _pager
-
-    def iter_pages(self, left_edge=2, left_current=2, right_current=5,
-                   right_edge=2):
-
-        if (left_edge < 1 or left_current < 1 or right_current < 1 or
-                right_edge < 1):
-            raise ValueError('Parameter must be positive')
-
-        total_pages = self.total / self.per_page
-        if self.total % self.per_page > 0:
-            total_pages += 1
-
-        left_of_current = max(self.page - left_current, left_edge + 1)
-        right_of_current = min(self.page + right_current,
-                               total_pages - right_edge + 1)
-
-        for i in xrange(left_edge):
-            yield i + 1
-
-        if left_of_current > left_edge + 1:
-            yield None
-
-        for i in xrange(left_of_current, right_of_current):
-            yield i
-
-        if right_of_current < total_pages - right_edge + 1:
-            yield None
-
-        for i in xrange(right_edge):
-            yield total_pages - right_edge + i + 1
-
-    @property
-    def pages(self):
-        return self.num_pages
-
-    @property
-    def has_prev(self):
-        return self.page > 1
-
-    @property
-    def prev_num(self):
-        return self.page - 1
-
-    @property
-    def has_next(self):
-        return self.page < self.num_pages
-
-    @property
-    def next_num(self):
-        return self.page + 1
 
 
 class SqlAlchemyPersistenceLayer(object):
