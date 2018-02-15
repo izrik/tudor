@@ -89,8 +89,9 @@ class Pager(object):
         return self.page + 1
 
 
-class PersistenceLayer(object):
-    _logger = logging_util.get_logger_by_name(__name__, 'PersistenceLayer')
+class SqlAlchemyPersistenceLayer(object):
+    _logger = logging_util.get_logger_by_name(__name__,
+                                              'SqlAlchemyPersistenceLayer')
 
     def __init__(self, db):
         self.db = db

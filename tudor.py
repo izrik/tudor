@@ -19,7 +19,7 @@ from flask_sqlalchemy import SQLAlchemy
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
 from models.user import GuestUser
-from persistence.persistence_layer import PersistenceLayer
+from persistence.persistence_layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
 try:
@@ -144,7 +144,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     if pl is None:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
         db = SQLAlchemy(app)
-        pl = PersistenceLayer(db)
+        pl = SqlAlchemyPersistenceLayer(db)
     app.pl = pl
 
     class Options(object):
