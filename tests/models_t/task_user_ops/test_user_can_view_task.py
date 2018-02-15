@@ -4,10 +4,10 @@ import unittest
 
 from flask_login import AnonymousUserMixin
 
-from in_memory_persistence_layer import InMemoryPersistenceLayer
-from models.task_user_ops import TaskUserOps
 from models.task import Task
+from models.task_user_ops import TaskUserOps
 from models.user import User, GuestUser
+from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
 
 
 class UserCanViewTaskTest(unittest.TestCase):

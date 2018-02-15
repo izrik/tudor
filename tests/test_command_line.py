@@ -1,8 +1,8 @@
 import os
 import unittest
 
-from in_memory_persistence_layer import InMemoryPersistenceLayer
 from models.task import Task
+from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line
 

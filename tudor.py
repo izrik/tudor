@@ -1,26 +1,26 @@
 #!/usr/bin/env python2
-import traceback
-
+import argparse
+import base64
+import random
+import re
 import sys
+import traceback
+from functools import wraps
+from os import environ
+
+import git
+import markdown
 from flask import Flask, request
 from flask import Markup
-import argparse
-from os import environ
-import random
-from flask.ext.login import LoginManager, login_required, current_user
 from flask.ext.bcrypt import Bcrypt
-import re
-import markdown
-from functools import wraps
-import git
+from flask.ext.login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 
 from conversions import bool_from_str, int_from_str
-from logic_layer import LogicLayer
+from logic.layer import LogicLayer
 from models.user import GuestUser
-from view_layer import ViewLayer
-from persistence_layer import PersistenceLayer
-import base64
+from persistence.persistence_layer import PersistenceLayer
+from view.layer import ViewLayer
 
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,

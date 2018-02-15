@@ -2,9 +2,9 @@
 
 import unittest
 
-from in_memory_persistence_layer import InMemoryPersistenceLayer
-from models.task import Task
 from models.tag import Tag
+from models.task import Task
+from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
 
 
 class TaskTagsTest(unittest.TestCase):
