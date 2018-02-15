@@ -1,6 +1,6 @@
 import unittest
 
-from persistence.persistence_layer import as_iterable
+from persistence.sqlalchemy.layer import as_iterable
 
 
 class AsIterableTest(unittest.TestCase):

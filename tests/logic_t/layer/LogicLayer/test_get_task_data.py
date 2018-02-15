@@ -6,7 +6,7 @@ from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
 from models.task import Task
 from models.user import User, GuestUser
-from persistence.persistence_layer import Pager
+from persistence.sqlalchemy.layer import Pager
 from util import generate_ll
 
 

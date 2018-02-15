@@ -6,7 +6,7 @@ from werkzeug.exceptions import NotFound, BadRequest
 from logic.layer import LogicLayer
 from models.task import Task
 from models.user import User
-from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
+from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
 

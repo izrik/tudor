@@ -5,7 +5,7 @@ import unittest
 from models.task import Task
 from models.task_user_ops import TaskUserOps
 from models.user import User
-from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
+from persistence.in_memory.layer import InMemoryPersistenceLayer
 
 
 class IsUserAuthorizedOrAdminTest(unittest.TestCase):

@@ -7,7 +7,7 @@ from flask_login import AnonymousUserMixin
 from models.task import Task
 from models.task_user_ops import TaskUserOps
 from models.user import User, GuestUser
-from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
+from persistence.in_memory.layer import InMemoryPersistenceLayer
 
 
 class UserCanViewTaskTest(unittest.TestCase):

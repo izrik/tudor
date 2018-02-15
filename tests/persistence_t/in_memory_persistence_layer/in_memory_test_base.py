@@ -1,6 +1,6 @@
 import unittest
 
-from persistence.in_memory_persistence_layer import InMemoryPersistenceLayer
+from persistence.in_memory.layer import InMemoryPersistenceLayer
 
 
 class InMemoryTestBase(unittest.TestCase):
