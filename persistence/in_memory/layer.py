@@ -8,7 +8,8 @@ from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
-from persistence.sqlalchemy.layer import is_iterable, Pager
+from persistence.sqlalchemy.layer import is_iterable
+from persistence import Pager
 
 
 class InMemoryPersistenceLayer(object):

@@ -18,7 +18,7 @@ from persistence.sqlalchemy.models.option import generate_option_class
 from persistence.sqlalchemy.models.tag import generate_tag_class
 from persistence.sqlalchemy.models.task import generate_task_class
 from persistence.sqlalchemy.models.user import generate_user_class
-from persistence.sqlalchemy.pager import Pager
+from persistence.pager import Pager
 
 import logging_util
 
