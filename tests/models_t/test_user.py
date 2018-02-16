@@ -2,7 +2,7 @@
 
 import unittest
 
-from models.user import User, GuestUser
+from persistence.in_memory.models.user import User, GuestUser
 
 
 class UserTest(unittest.TestCase):

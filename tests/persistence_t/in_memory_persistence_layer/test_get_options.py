@@ -1,5 +1,5 @@
 
-from models.option import Option
+from persistence.in_memory.models.option import Option
 from tests.persistence_t.in_memory_persistence_layer.in_memory_test_base \
     import InMemoryTestBase
 

@@ -2,7 +2,7 @@
 
 import unittest
 
-from models.user import User
+from persistence.in_memory.models.user import User
 
 
 class UserStrTest(unittest.TestCase):

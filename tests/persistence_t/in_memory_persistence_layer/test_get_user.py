@@ -1,5 +1,5 @@
 
-from models.user import User
+from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory_persistence_layer.in_memory_test_base \
     import InMemoryTestBase
 

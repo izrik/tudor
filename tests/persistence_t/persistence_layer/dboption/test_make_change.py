@@ -1,6 +1,6 @@
 from models.changeable import Changeable
-from models.option import Option
-from models.task import Task
+from persistence.in_memory.models.option import Option
+from persistence.in_memory.models.task import Task
 from tests.persistence_t.persistence_layer.util import PersistenceLayerTestBase
 
 

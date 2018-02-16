@@ -1,8 +1,8 @@
 
 import unittest
 
-from models.task import Task
-from models.user import User
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User
 
 
 class UserFromDictTest(unittest.TestCase):

@@ -1,5 +1,5 @@
 
-from models.task import Task
+from persistence.in_memory.models.task import Task
 from tests.persistence_t.in_memory_persistence_layer.in_memory_test_base \
     import InMemoryTestBase
 

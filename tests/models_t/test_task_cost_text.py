@@ -3,7 +3,7 @@
 import unittest
 from decimal import Decimal
 
-from models.task import Task
+from persistence.in_memory.models.task import Task
 
 
 class TaskCostTextTest(unittest.TestCase):

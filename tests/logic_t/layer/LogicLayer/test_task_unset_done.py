@@ -4,8 +4,8 @@ import unittest
 
 import werkzeug.exceptions
 
-from models.task import Task
-from models.user import User
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 

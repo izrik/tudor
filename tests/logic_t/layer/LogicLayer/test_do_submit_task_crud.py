@@ -3,8 +3,8 @@
 import unittest
 from datetime import datetime
 
-from models.task import Task
-from models.user import User, GuestUser
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User, GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 

@@ -3,8 +3,8 @@
 import unittest
 from datetime import datetime
 
-from models.attachment import Attachment, AttachmentBase
-from models.task import Task
+from persistence.in_memory.models.attachment import Attachment, AttachmentBase
+from persistence.in_memory.models.task import Task
 
 
 class AttachmentCleanTimestampTest(unittest.TestCase):

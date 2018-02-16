@@ -1,5 +1,5 @@
 
-from models.attachment import Attachment
+from persistence.in_memory.models.attachment import Attachment
 from tests.persistence_t.in_memory_persistence_layer.in_memory_test_base \
     import InMemoryTestBase
 

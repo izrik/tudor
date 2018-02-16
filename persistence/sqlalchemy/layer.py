@@ -6,12 +6,12 @@ from numbers import Number
 
 from sqlalchemy import or_
 
-from models.task import Task
-from models.tag import Tag
-from models.note import Note
-from models.attachment import Attachment
-from models.user import User
-from models.option import Option
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.user import User
+from persistence.in_memory.models.option import Option
 from persistence.sqlalchemy.models.attachment import generate_attachment_class
 from persistence.sqlalchemy.models.note import generate_note_class
 from persistence.sqlalchemy.models.option import generate_option_class

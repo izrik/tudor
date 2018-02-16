@@ -4,7 +4,7 @@ import unittest
 
 from werkzeug.exceptions import Conflict
 
-from models.user import User
+from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 

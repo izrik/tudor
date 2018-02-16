@@ -2,11 +2,11 @@
 
 import unittest
 
-from models.task import Task
-from models.tag import Tag
-from models.user import User
-from models.note import Note
-from models.attachment import Attachment
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.user import User
+from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.attachment import Attachment
 
 
 class ChildrenInterlinkingTest(unittest.TestCase):

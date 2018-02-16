@@ -2,9 +2,9 @@
 
 import unittest
 
-from models.task import Task
-from models.tag import Tag
-from models.user import User
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.user import User
 from util import generate_ll
 
 

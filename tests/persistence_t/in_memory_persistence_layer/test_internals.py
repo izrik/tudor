@@ -1,7 +1,7 @@
 
 import logging_util
-from models.tag import Tag
-from models.task import Task
+from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.task import Task
 from tests.persistence_t.in_memory_persistence_layer.in_memory_test_base \
     import InMemoryTestBase
 

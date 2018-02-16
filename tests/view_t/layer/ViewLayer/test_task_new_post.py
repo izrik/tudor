@@ -3,7 +3,7 @@ import unittest
 from mock import Mock
 
 from logic.layer import LogicLayer
-from models.user import User
+from persistence.in_memory.models.user import User
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer

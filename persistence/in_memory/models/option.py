@@ -1,6 +1,9 @@
+
+from __future__ import absolute_import
+
 import logging_util
-from changeable import Changeable
-from option_base import OptionBase
+from models.changeable import Changeable
+from models.option_base import OptionBase
 
 
 class Option(Changeable, OptionBase):

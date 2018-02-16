@@ -2,7 +2,7 @@
 
 import unittest
 
-from models.tag import Tag
+from persistence.in_memory.models.tag import Tag
 
 
 class TagReprTest(unittest.TestCase):

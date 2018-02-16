@@ -18,7 +18,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
-from models.user import GuestUser
+from persistence.in_memory.models.user import GuestUser
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 

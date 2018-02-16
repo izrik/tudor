@@ -1,7 +1,7 @@
 
 import unittest
 
-from models.option import Option
+from persistence.in_memory.models.option import Option
 
 
 class OptionFromDictTest(unittest.TestCase):

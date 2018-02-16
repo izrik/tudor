@@ -7,7 +7,7 @@ from decimal import Decimal
 from flask import json
 from werkzeug.exceptions import Conflict
 
-from models.task import Task
+from persistence.in_memory.models.task import Task
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 

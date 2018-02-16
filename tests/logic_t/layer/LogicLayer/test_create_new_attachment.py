@@ -4,9 +4,9 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from models.attachment import Attachment
-from models.task import Task
-from models.user import User
+from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User
 from tests.util import MockFileObject
 from util import generate_ll
 

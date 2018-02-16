@@ -1,6 +1,8 @@
 
+from __future__ import absolute_import
+
 import logging_util
-from changeable import Changeable
+from models.changeable import Changeable
 from models.attachment_base import AttachmentBase
 
 

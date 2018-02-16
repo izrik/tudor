@@ -2,7 +2,7 @@
 
 import unittest
 
-from models.option import Option
+from persistence.in_memory.models.option import Option
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 

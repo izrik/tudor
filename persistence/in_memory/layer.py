@@ -2,12 +2,12 @@ from itertools import islice
 from numbers import Number
 
 import logging_util
-from models.attachment import Attachment
-from models.note import Note
-from models.option import Option
-from models.tag import Tag
-from models.task import Task
-from models.user import User
+from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.option import Option
+from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User
 from persistence.sqlalchemy.layer import is_iterable, Pager
 
 

@@ -1,5 +1,7 @@
 
-from changeable import Changeable
+from __future__ import absolute_import
+
+from models.changeable import Changeable
 import logging_util
 from models.interlinking import OneToManySet, ManyToManySet
 from models.task_base import TaskBase

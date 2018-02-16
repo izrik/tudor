@@ -4,8 +4,8 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
-from models.task import Task
-from models.user import User, GuestUser
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User, GuestUser
 from persistence.sqlalchemy.layer import Pager
 from util import generate_ll
 

@@ -1,6 +1,6 @@
 import unittest
 
-from models.attachment import Attachment
+from persistence.in_memory.models.attachment import Attachment
 from tests.persistence_t.persistence_layer.util import PersistenceLayerTestBase
 
 

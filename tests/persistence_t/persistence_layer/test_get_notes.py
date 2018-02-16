@@ -1,4 +1,4 @@
-from models.note import Note
+from persistence.in_memory.models.note import Note
 from tests.persistence_t.persistence_layer.util import PersistenceLayerTestBase
 
 

@@ -12,13 +12,13 @@ from werkzeug import secure_filename
 import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
-from models.task import Task
-from models.tag import Tag
-from models.note import Note
-from models.attachment import Attachment
-from models.option import Option
+from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.option import Option
 from models.task_user_ops import TaskUserOps
-from models.user import User
+from persistence.in_memory.models.user import User
 
 
 class LogicLayer(object):

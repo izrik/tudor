@@ -1,4 +1,4 @@
-from models.option import Option
+from persistence.in_memory.models.option import Option
 from tests.persistence_t.persistence_layer.util import PersistenceLayerTestBase
 
 

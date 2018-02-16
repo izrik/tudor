@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from models.changeable import Changeable
-from models.note import Note
-from models.task import Task
+from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.task import Task
 from tests.persistence_t.persistence_layer.util import \
     PersistenceLayerTestBase
 

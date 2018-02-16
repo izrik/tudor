@@ -1,7 +1,9 @@
 
-from changeable import Changeable
+from __future__ import absolute_import
+
+from models.changeable import Changeable
 import logging_util
-from interlinking import ManyToManySet
+from models.interlinking import ManyToManySet
 from models.tag_base import TagBase
 
 
