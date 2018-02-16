@@ -651,6 +651,16 @@ class SqlAlchemyPersistenceLayer(object):
     def task_query(self):
         return self.DbTask.query
 
+    def create_task(self, summary, description='', is_done=False,
+                    is_deleted=False, deadline=None,
+                    expected_duration_minutes=None, expected_cost=None,
+                    is_public=False, lazy=None):
+        return Task(summary=summary, description=description, is_done=is_done,
+                    is_deleted=is_deleted, deadline=deadline,
+                    expected_duration_minutes=expected_duration_minutes,
+                    expected_cost=expected_cost, is_public=is_public,
+                    lazy=lazy)
+
     def get_task(self, task_id):
         return self._get_domain_object_from_db_object(
             self._get_db_task(task_id))
