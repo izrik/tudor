@@ -3,8 +3,7 @@ from datetime import datetime
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
-from tests.persistence_t.in_memory.in_memory_test_base \
-    import InMemoryTestBase
+from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
 # copied from ../test_get_tasks.py

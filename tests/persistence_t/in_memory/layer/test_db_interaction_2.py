@@ -1,7 +1,6 @@
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
-from tests.persistence_t.in_memory.in_memory_test_base \
-    import InMemoryTestBase
+from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
 # copied from ../test_db_interaction.py, with modifications

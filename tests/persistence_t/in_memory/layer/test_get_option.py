@@ -1,7 +1,6 @@
 
 from persistence.in_memory.models.option import Option
-from tests.persistence_t.in_memory.in_memory_test_base \
-    import InMemoryTestBase
+from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
 # copied from ../test_get_option.py, with removals
