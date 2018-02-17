@@ -1,4 +1,3 @@
-import unittest
 
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
@@ -31,7 +30,7 @@ class CreateDomainFromDbTest(PersistenceLayerTestBase):
         self.assertRaises(
             Exception,
             self.pl._create_domain_object_from_db_object,
-            Task('task'))
+            self.pl.create_task('task'))
 
     def test_already_cached_raises(self):
         # given

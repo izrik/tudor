@@ -4,7 +4,6 @@ import unittest
 
 import werkzeug.exceptions
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -22,7 +21,7 @@ class TaskUnsetDoneTest(unittest.TestCase):
 
     def test_task_unset_done_unsets_is_done(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.is_done = True
 
         self.pl.add(t1)
@@ -40,7 +39,7 @@ class TaskUnsetDoneTest(unittest.TestCase):
 
     def test_unauthorized_user_raises(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.is_done = True
 
         self.pl.add(t1)
@@ -60,7 +59,7 @@ class TaskUnsetDoneTest(unittest.TestCase):
 
     def test_idempotent(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.is_done = False
 
         self.pl.add(t1)

@@ -3,7 +3,6 @@
 import unittest
 from datetime import datetime
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User, GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -15,7 +14,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_do_data_does_not_modify_tasks(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -30,7 +29,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_summary(self):
         # given
-        task = Task(summary='task')
+        task = self.pl.create_task(summary='task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -47,7 +46,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_deadline(self):
         # given
-        task = Task('task', deadline='2017-01-01')
+        task = self.pl.create_task('task', deadline='2017-01-01')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -64,7 +63,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_is_done(self):
         # given
-        task = Task('task', is_done=True)
+        task = self.pl.create_task('task', is_done=True)
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -81,7 +80,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_is_deleted(self):
         # given
-        task = Task('task', is_deleted=True)
+        task = self.pl.create_task('task', is_deleted=True)
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -98,7 +97,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_order_num(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         task.order_num = 123
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
@@ -116,7 +115,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_duration(self):
         # given
-        task = Task('task', expected_duration_minutes=123)
+        task = self.pl.create_task('task', expected_duration_minutes=123)
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -133,7 +132,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_cost(self):
         # given
-        task = Task('task', expected_cost=123)
+        task = self.pl.create_task('task', expected_cost=123)
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -150,12 +149,12 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_parent_id(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
-        p1 = Task('p1')
+        p1 = self.pl.create_task('p1')
         self.pl.add(p1)
         task.parent = p1
-        p2 = Task('p2')
+        p2 = self.pl.create_task('p2')
         self.pl.add(p2)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -172,11 +171,11 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_modifies_multiple_tasks(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         self.pl.add(t1)
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         self.pl.add(t2)
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         self.pl.add(t3)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -198,7 +197,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_authorized_user_can_modify_task(self):
         # given
-        task = Task(summary='task')
+        task = self.pl.create_task(summary='task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -218,7 +217,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_non_authorized_user_cannot_modify_task(self):
         # given
-        task = Task(summary='task')
+        task = self.pl.create_task(summary='task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -237,11 +236,11 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_only_modifies_tasks_user_can_see(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         self.pl.add(t1)
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         self.pl.add(t2)
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         self.pl.add(t3)
         user = User('user@example.com')
         self.pl.add(user)
@@ -271,7 +270,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_non_authorized_user_can_modify_public_tasks(self):
         # given
-        task = Task(summary='task', is_public=True)
+        task = self.pl.create_task(summary='task', is_public=True)
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)

@@ -7,7 +7,6 @@ from decimal import Decimal
 from flask import json
 from werkzeug.exceptions import Conflict
 
-from persistence.in_memory.models.task import Task
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -235,7 +234,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_task_conflict_id_already_exists(self):
         # given
-        t0 = Task('pre-existing')
+        t0 = self.pl.create_task('pre-existing')
         self.pl.add(t0)
         self.pl.commit()
         src = '{"tasks":[{"id": ' + str(t0.id) + ',"summary":"summary"}]}'

@@ -26,13 +26,13 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_domain_task_is_not_db_object(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         # expect
         self.assertFalse(self.pl._is_db_object(task))
 
     def test_domain_task_is_domain_object(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         # expect
         self.assertTrue(self.pl._is_domain_object(task))
 
@@ -55,7 +55,7 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_get_domain_object_domain_task_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_domain_object_from_db_object,
@@ -63,7 +63,7 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_get_db_object_domain_task_returns_db_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         # when
         result = self.pl._get_db_object_from_domain_object(task)
         # then

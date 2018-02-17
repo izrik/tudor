@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import Forbidden
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from util import generate_ll
 
@@ -18,7 +17,7 @@ class PurgeTaskTest(unittest.TestCase):
         # given
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         task.is_deleted = True
         self.pl.commit()
@@ -35,7 +34,7 @@ class PurgeTaskTest(unittest.TestCase):
         # given
         user = User('user@example.com', is_admin=False)
         self.pl.add(user)
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         # precondition
@@ -61,7 +60,7 @@ class PurgeTaskTest(unittest.TestCase):
         # given
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         # precondition

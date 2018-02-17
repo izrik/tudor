@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
 from util import generate_ll
 
 
@@ -13,11 +12,11 @@ class ReorderTasksTest(unittest.TestCase):
 
     def test_tasks_in_order_order_nums_change(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         t3.order_num = 3
         # when
         self.ll.reorder_tasks([t1, t2, t3])
@@ -28,11 +27,11 @@ class ReorderTasksTest(unittest.TestCase):
 
     def test_tasks_in_different_order_order_nums_change(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         t3.order_num = 3
         # when
         self.ll.reorder_tasks([t2, t3, t1])

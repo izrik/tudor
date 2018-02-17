@@ -5,7 +5,6 @@ import unittest
 from werkzeug.exceptions import Forbidden
 
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -22,7 +21,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_admin_nonexistent_adds_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
 
@@ -40,7 +39,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_admin_existent_adds_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag1 = Tag('jkl')
         self.pl.add(task)
         self.pl.add(tag1)
@@ -61,7 +60,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_user_nonexistent_adds_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         task.users.append(self.user)
         self.pl.add(task)
         self.pl.commit()
@@ -80,7 +79,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
 
     def test_add_tag_to_task_user_existent_adds_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag1 = Tag('pqr')
         task.users.append(self.user)
         self.pl.add(task)
@@ -113,7 +112,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # given
         other_user = User('name3@example.org', None, False)
         self.pl.add(other_user)
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
 

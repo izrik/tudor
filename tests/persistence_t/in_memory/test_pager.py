@@ -1,5 +1,4 @@
 
-from persistence.in_memory.models.task import Task
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -10,35 +9,35 @@ class PagerTest(InMemoryTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        self.t1 = Task('t1')
+        self.t1 = self.pl.create_task('t1')
         self.t1.order_num = 11
-        self.t2 = Task('t2')
+        self.t2 = self.pl.create_task('t2')
         self.t2.order_num = 23
-        self.t3 = Task('t3')
+        self.t3 = self.pl.create_task('t3')
         self.t3.order_num = 37
-        self.t4 = Task('t4')
+        self.t4 = self.pl.create_task('t4')
         self.t4.order_num = 47
-        self.t5 = Task('t5')
+        self.t5 = self.pl.create_task('t5')
         self.t5.order_num = 53
-        self.t6 = Task('t6')
+        self.t6 = self.pl.create_task('t6')
         self.t5.order_num = 67
-        self.t7 = Task('t7')
+        self.t7 = self.pl.create_task('t7')
         self.t5.order_num = 71
-        self.t8 = Task('t8')
+        self.t8 = self.pl.create_task('t8')
         self.t5.order_num = 83
-        self.t9 = Task('t9')
+        self.t9 = self.pl.create_task('t9')
         self.t5.order_num = 97
-        self.t10 = Task('t10')
+        self.t10 = self.pl.create_task('t10')
         self.t5.order_num = 101
-        self.t11 = Task('t11')
+        self.t11 = self.pl.create_task('t11')
         self.t5.order_num = 113
-        self.t12 = Task('t12')
+        self.t12 = self.pl.create_task('t12')
         self.t12.order_num = 127
-        self.t13 = Task('t13')
+        self.t13 = self.pl.create_task('t13')
         self.t13.order_num = 131
-        self.t14 = Task('t14')
+        self.t14 = self.pl.create_task('t14')
         self.t14.order_num = 149
-        self.t15 = Task('t15')
+        self.t15 = self.pl.create_task('t15')
         self.t15.order_num = 151
         self.pl.add(self.t1)
         self.pl.add(self.t2)

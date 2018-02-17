@@ -18,7 +18,7 @@ class GetObjectTypeTest(InMemoryTestBase):
 
     def test_get_object_type_task_returns_task(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         # when
         result = self.pl._get_object_type(task)
         # then
@@ -88,7 +88,7 @@ class GetNextObjectIdsTest(InMemoryTestBase):
 
     def test_get_next_task_id_some_tasks_returns_max_plus_one(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         task.id = 3
         self.pl.add(task)
         self.pl.commit()
@@ -193,7 +193,7 @@ class GetNextIdTest(InMemoryTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        task = Task('task')
+        task = self.pl.create_task('task')
         task.id = 3
         self.pl.add(task)
         tag = Tag('tag')

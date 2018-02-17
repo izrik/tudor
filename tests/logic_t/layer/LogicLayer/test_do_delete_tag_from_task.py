@@ -5,7 +5,6 @@ import unittest
 from werkzeug.exceptions import NotFound, Forbidden
 
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -17,7 +16,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_tag_id_none_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -43,7 +42,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_tag_not_in_task_silently_ignored(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         tag = Tag('tag')
         self.pl.add(tag)
@@ -63,7 +62,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_non_authorized_admin_removes_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         tag = Tag('tag')
         self.pl.add(tag)
@@ -86,7 +85,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_authorized_admin_removes_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         tag = Tag('tag')
         self.pl.add(tag)
@@ -110,7 +109,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_authorized_user_removes_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         tag = Tag('tag')
         self.pl.add(tag)
@@ -134,7 +133,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_non_authorized_user_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         tag = Tag('tag')
         self.pl.add(tag)
@@ -171,7 +170,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_tag_not_found_silently_ignored(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)

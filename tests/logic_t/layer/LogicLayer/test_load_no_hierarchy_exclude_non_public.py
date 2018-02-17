@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -12,8 +11,8 @@ class DbLoadNoHierarchyExcludeNonPublicTest(unittest.TestCase):
         # given
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.t1 = Task('t1', is_public=True)
-        self.t2 = Task('t2', is_public=False)
+        self.t1 = self.pl.create_task('t1', is_public=True)
+        self.t2 = self.pl.create_task('t2', is_public=False)
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.user = User('name@example.org', None, True)

@@ -1,4 +1,4 @@
-from persistence.in_memory.models.task import Task
+
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -28,7 +28,7 @@ class GetDomainFromDbTest(PersistenceLayerTestBase):
         self.assertRaises(
             Exception,
             self.pl._get_domain_object_from_db_object,
-            Task('task'))
+            self.pl.create_task('task'))
 
     def test_cached_not_db_object_raises(self):
         # expect
@@ -40,4 +40,4 @@ class GetDomainFromDbTest(PersistenceLayerTestBase):
         self.assertRaises(
             Exception,
             self.pl._get_domain_object_from_db_object_in_cache,
-            Task('task'))
+            self.pl.create_task('task'))

@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -25,7 +24,7 @@ class SearchTest(unittest.TestCase):
 
     def test_matching_summary_yields_task(self):
         # given
-        task = Task('one two three')
+        task = self.pl.create_task('one two three')
         self.pl.add(task)
         self.pl.commit()
         # when
@@ -37,7 +36,7 @@ class SearchTest(unittest.TestCase):
 
     def test_no_matching_summary_yields_nothing(self):
         # given
-        task = Task('one two three')
+        task = self.pl.create_task('one two three')
         self.pl.add(task)
         self.pl.commit()
         # when
@@ -51,7 +50,7 @@ class SearchTest(unittest.TestCase):
         # given
         user1 = User('user1@example.org', None, False)
         self.pl.add(user1)
-        task = Task('one two three')
+        task = self.pl.create_task('one two three')
         task.users.append(user1)
         self.pl.add(task)
         self.pl.commit()
@@ -68,7 +67,7 @@ class SearchTest(unittest.TestCase):
         self.pl.add(user1)
         user2 = User('user2@example.org', None, False)
         self.pl.add(user2)
-        task = Task('one two three')
+        task = self.pl.create_task('one two three')
         task.users.append(user1)
         self.pl.add(task)
         self.pl.commit()

@@ -3,7 +3,6 @@
 import unittest
 
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -21,14 +20,14 @@ class GetIndexDataTest(unittest.TestCase):
     def test_get_index_data_returns_tasks_and_tags(self):
 
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = Task('t4')
+        t4 = self.pl.create_task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
@@ -76,9 +75,9 @@ class GetIndexDataTest(unittest.TestCase):
     def test_get_index_data_only_yields_tasks_the_user_is_authorized_for(self):
 
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -97,14 +96,14 @@ class GetIndexDataTest(unittest.TestCase):
     def test_get_index_hierarchy_data_returns_tasks_and_tags(self):
 
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = Task('t4')
+        t4 = self.pl.create_task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
@@ -152,9 +151,9 @@ class GetIndexDataTest(unittest.TestCase):
     def test_hierarchy_only_yields_tasks_user_is_authorized_for(self):
 
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -173,14 +172,14 @@ class GetIndexDataTest(unittest.TestCase):
     def test_hierarchy_returns_descendants(self):
 
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = Task('t4')
+        t4 = self.pl.create_task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)
@@ -208,14 +207,14 @@ class GetIndexDataTest(unittest.TestCase):
     def test_non_hierarchy_returns_only_top_level_tasks(self):
 
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2')
+        t2 = self.pl.create_task('t2')
         t2.order_num = 2
-        t3 = Task('t3')
+        t3 = self.pl.create_task('t3')
         t3.parent = t2
         t3.order_num = 3
-        t4 = Task('t4')
+        t4 = self.pl.create_task('t4')
         t4.order_num = 4
 
         self.pl.add(t1)

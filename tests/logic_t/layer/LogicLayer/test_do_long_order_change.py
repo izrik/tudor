@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Conflict
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -16,10 +15,10 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_reorders_tasks(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         task_to_move.order_num = 1
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         target.order_num = 2
         self.pl.add(target)
         admin = User('user@example.com', is_admin=True)
@@ -43,7 +42,7 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_task_to_move_id_is_none_raises(self):
         # given
-        target = Task('target')
+        target = self.pl.create_task('target')
         self.pl.add(target)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -56,7 +55,7 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_task_to_move_not_found_raises(self):
         # given
-        target = Task('target')
+        target = self.pl.create_task('target')
         self.pl.add(target)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -71,7 +70,7 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_target_id_is_none_raises(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -84,7 +83,7 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_target_not_found_raises(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -99,9 +98,9 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_current_user_is_none_raises(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         self.pl.add(target)
         self.pl.commit()
         # expect
@@ -112,9 +111,9 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_user_not_authorized_on_either_task_raises(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         self.pl.add(target)
         user = User('user@example.com')
         self.pl.add(user)
@@ -132,9 +131,9 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_user_not_authorized_on_task_to_move_raises(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         self.pl.add(target)
         user = User('user@example.com')
         target.users.add(user)
@@ -153,9 +152,9 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_user_not_authorized_on_target_raises(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         self.pl.add(target)
         user = User('user@example.com')
         task_to_move.users.add(user)
@@ -174,15 +173,15 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_different_parents_raises(self):
         # given
-        p1 = Task('p1')
+        p1 = self.pl.create_task('p1')
         self.pl.add(p1)
-        p2 = Task('p2')
+        p2 = self.pl.create_task('p2')
         self.pl.add(p2)
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         task_to_move.order_num = 1
         task_to_move.parent = p1
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         target.order_num = 2
         target.parent = p2
         self.pl.add(target)
@@ -200,35 +199,35 @@ class LongOrderChangeTest(unittest.TestCase):
 
     def test_reorders_all_siblings_even_those_not_involved_in_the_move(self):
         # given
-        task_to_move = Task('task_to_move')
+        task_to_move = self.pl.create_task('task_to_move')
         task_to_move.order_num = 43
         self.pl.add(task_to_move)
-        target = Task('target')
+        target = self.pl.create_task('target')
         target.order_num = 47
         self.pl.add(target)
-        s1 = Task('s1')
+        s1 = self.pl.create_task('s1')
         s1.order_num = 41
         self.pl.add(s1)
-        s2 = Task('s2')
+        s2 = self.pl.create_task('s2')
         s2.order_num = 42
         self.pl.add(s2)
 
-        s3 = Task('s3')
+        s3 = self.pl.create_task('s3')
         s3.order_num = 44
         self.pl.add(s3)
-        s4 = Task('s4')
+        s4 = self.pl.create_task('s4')
         s4.order_num = 45
         self.pl.add(s4)
-        s5 = Task('s5')
+        s5 = self.pl.create_task('s5')
         s5.order_num = 46
         self.pl.add(s5)
-        s6 = Task('s6')
+        s6 = self.pl.create_task('s6')
         s6.order_num = 48
         self.pl.add(s6)
-        s7 = Task('s7')
+        s7 = self.pl.create_task('s7')
         s7.order_num = 49
         self.pl.add(s7)
-        s8 = Task('s8')
+        s8 = self.pl.create_task('s8')
         s8.order_num = 50
         self.pl.add(s8)
 

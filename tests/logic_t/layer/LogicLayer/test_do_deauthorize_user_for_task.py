@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import Forbidden, NotFound, Conflict
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -29,7 +28,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_null_user_id_to_authorize_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -42,7 +41,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_null_current_user_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -55,7 +54,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_deauthorizes_user_for_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -92,7 +91,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_user_not_found_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -107,7 +106,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_authorized_non_admin_current_user_deauthorizes_user(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -129,7 +128,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_non_authorized_non_admin_current_user_deauthorizes_user(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -148,7 +147,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_last_authorized_user_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -167,7 +166,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_user_not_already_authorized_silently_ignores(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -188,7 +187,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_neither_user_nor_current_user_authorized_silently_ignores(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)

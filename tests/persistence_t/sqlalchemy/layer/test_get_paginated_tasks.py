@@ -1,7 +1,7 @@
+
 import logging
 
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -15,15 +15,15 @@ class PaginatedTasksTest(PersistenceLayerTestBase):
         self.pl.create_all()
         self._logger.debug(u'setUp create objects')
 
-        self.t1 = Task('t1')
+        self.t1 = self.pl.create_task('t1')
         self.t1.order_num = 11
-        self.t2 = Task('t2')
+        self.t2 = self.pl.create_task('t2')
         self.t2.order_num = 23
-        self.t3 = Task('t3')
+        self.t3 = self.pl.create_task('t3')
         self.t3.order_num = 37
-        self.t4 = Task('t4')
+        self.t4 = self.pl.create_task('t4')
         self.t4.order_num = 47
-        self.t5 = Task('t5')
+        self.t5 = self.pl.create_task('t5')
         self.t5.order_num = 53
         self.tag1 = Tag('tag1')
         self.tag2 = Tag('tag2')
@@ -230,27 +230,27 @@ class PaginatedTasksNullTasksPerPageTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        self.pl.add(Task('t1'))
-        self.pl.add(Task('t2'))
-        self.pl.add(Task('t3'))
-        self.pl.add(Task('t4'))
-        self.pl.add(Task('t5'))
-        self.pl.add(Task('t6'))
-        self.pl.add(Task('t7'))
-        self.pl.add(Task('t8'))
-        self.pl.add(Task('t9'))
-        self.pl.add(Task('t10'))
-        self.pl.add(Task('t11'))
-        self.pl.add(Task('t12'))
-        self.pl.add(Task('t13'))
-        self.pl.add(Task('t14'))
-        self.pl.add(Task('t15'))
-        self.pl.add(Task('t16'))
-        self.pl.add(Task('t17'))
-        self.pl.add(Task('t18'))
-        self.pl.add(Task('t19'))
-        self.pl.add(Task('t20'))
-        self.pl.add(Task('t21'))
+        self.pl.add(self.pl.create_task('t1'))
+        self.pl.add(self.pl.create_task('t2'))
+        self.pl.add(self.pl.create_task('t3'))
+        self.pl.add(self.pl.create_task('t4'))
+        self.pl.add(self.pl.create_task('t5'))
+        self.pl.add(self.pl.create_task('t6'))
+        self.pl.add(self.pl.create_task('t7'))
+        self.pl.add(self.pl.create_task('t8'))
+        self.pl.add(self.pl.create_task('t9'))
+        self.pl.add(self.pl.create_task('t10'))
+        self.pl.add(self.pl.create_task('t11'))
+        self.pl.add(self.pl.create_task('t12'))
+        self.pl.add(self.pl.create_task('t13'))
+        self.pl.add(self.pl.create_task('t14'))
+        self.pl.add(self.pl.create_task('t15'))
+        self.pl.add(self.pl.create_task('t16'))
+        self.pl.add(self.pl.create_task('t17'))
+        self.pl.add(self.pl.create_task('t18'))
+        self.pl.add(self.pl.create_task('t19'))
+        self.pl.add(self.pl.create_task('t20'))
+        self.pl.add(self.pl.create_task('t21'))
         self.pl.commit()
 
     def test_test_get_paginated_tasks_none_tasks_per_page_default_twenty(self):

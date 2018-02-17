@@ -1,7 +1,6 @@
 
 import logging_util
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -15,7 +14,7 @@ class InternalsTest(InMemoryTestBase):
 
     def test_added_domain_objects_are_added_to_list_of_added_objects(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         # precondition
         self.assertEquals(0, len(self.pl._added_objects))
         # when
@@ -26,7 +25,7 @@ class InternalsTest(InMemoryTestBase):
 
     def test_deleted_domain_objects_are_added_to_list_of_deleted_objects(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         self.pl.add(task)
         self.pl.commit()
         # precondition
@@ -41,7 +40,7 @@ class InternalsTest(InMemoryTestBase):
         # given
         logger = logging_util.get_logger_by_object(__name__, self)
         logger.debug(u'before create task')
-        task = Task('task')
+        task = self.pl.create_task('task')
         logger.debug(u'after create task')
         logger.debug(u'before create tag')
         tag = Tag('tag', description='a')

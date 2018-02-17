@@ -6,7 +6,6 @@ from datetime import datetime
 from werkzeug.exceptions import NotFound, Forbidden
 
 from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from util import generate_ll
 
@@ -16,7 +15,7 @@ class CreateNewNoteTest(unittest.TestCase):
         self.ll = generate_ll()
         self.pl = self.ll.pl
         self.user = User('name@example.com')
-        self.task = Task('task')
+        self.task = self.pl.create_task('task')
         self.task.id = 1
 
     def test_id_none_raises(self):

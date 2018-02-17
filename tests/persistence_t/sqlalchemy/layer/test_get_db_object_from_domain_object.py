@@ -2,7 +2,6 @@ from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -62,7 +61,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_id_is_none_returns_none(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         # precondition
         self.assertIsNone(task.id)
         # when
@@ -104,7 +103,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_get_task_from_domain(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         # precondition

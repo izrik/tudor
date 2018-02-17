@@ -5,7 +5,6 @@ from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
@@ -20,7 +19,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_task_does_not_create_id(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         # precondition
         self.assertIsNone(task.id)
         # when
@@ -30,7 +29,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_task_creates_id(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         self.pl.add(task)
         # precondition
         self.assertIsNone(task.id)
@@ -41,14 +40,14 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_task_with_same_id_raises(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         task.id = 1
         self.pl.add(task)
         self.pl.commit()
         # precondition
         self.assertEqual(1, task.id)
         # when
-        task2 = Task('task2')
+        task2 = self.pl.create_task('task2')
         task2.id = 1
         self.pl.add(task2)
         # then
@@ -56,7 +55,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_task_does_not_affect_order_num(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         # precondition
         self.assertEqual(0, task.order_num)
         # when
@@ -66,7 +65,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_task_does_not_affect_order_num(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         self.pl.add(task)
         # precondition
         self.assertEqual(0, task.order_num)
@@ -77,14 +76,14 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_task_with_same_order_num_is_allowed(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         task.order_num = 1
         self.pl.add(task)
         self.pl.commit()
         # precondition
         self.assertEqual(1, task.order_num)
         # when
-        task2 = Task('task2')
+        task2 = self.pl.create_task('task2')
         task2.order_num = 1
         self.pl.add(task2)
         self.pl.commit()
@@ -94,7 +93,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_task_with_null_order_num_does_not_affect_order_num(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         task.order_num = None
         # precondition
         self.assertIsNone(task.order_num)
@@ -105,7 +104,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_task_with_null_order_num_makes_non_null(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         task.order_num = None
         self.pl.add(task)
         # precondition
@@ -117,7 +116,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_task_with_null_order_num_makes_non_null_2(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         self.pl.add(task)
         task.order_num = None
         # precondition
@@ -129,7 +128,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_changing_order_num_of_already_committed_task_doesnt_affect(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         self.pl.add(task)
         self.pl.commit()
         # precondition
@@ -141,7 +140,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_changing_commit_null_order_num_of_commed_task_raises(self):
         # given
-        task = Task('summary')
+        task = self.pl.create_task('summary')
         self.pl.add(task)
         self.pl.commit()
         task.order_num = None
@@ -324,7 +323,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_rollback_reverts_changes_to_collections(self):
         # given:
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag1 = Tag('tag1')
         tag2 = Tag('tag2')
         tag3 = Tag('tag3')
@@ -421,7 +420,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag = Tag('tag', description='a')
         self.pl.add(task)
         self.pl.add(tag)
@@ -447,8 +446,8 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_child_also_sets_parent(self):
         # given
-        parent = Task('parent')
-        child = Task('child')
+        parent = self.pl.create_task('parent')
+        child = self.pl.create_task('child')
         self.pl.add(parent)
         self.pl.add(child)
         self.pl.commit()
@@ -474,8 +473,8 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_child_also_sets_parent_id(self):
         # given
-        parent = Task('parent')
-        child = Task('child')
+        parent = self.pl.create_task('parent')
+        child = self.pl.create_task('child')
         self.pl.add(parent)
         self.pl.add(child)
         self.pl.commit()
@@ -502,8 +501,8 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_setting_parent_also_sets_parent_id(self):
         # given
-        parent = Task('parent')
-        child = Task('child')
+        parent = self.pl.create_task('parent')
+        child = self.pl.create_task('child')
         self.pl.add(parent)
         self.pl.add(child)
         self.pl.commit()
@@ -531,8 +530,8 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_setting_parent_also_adds_child(self):
         # given
-        parent = Task('parent')
-        child = Task('child')
+        parent = self.pl.create_task('parent')
+        child = self.pl.create_task('child')
         self.pl.add(parent)
         self.pl.add(child)
         self.pl.commit()
@@ -558,10 +557,10 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_inconsistent_parent_parent_and_children_last_one_wins_1(self):
         # given
-        p1 = Task('p1')
-        p2 = Task('p2')
-        p3 = Task('p3')
-        child = Task('child')
+        p1 = self.pl.create_task('p1')
+        p2 = self.pl.create_task('p2')
+        p3 = self.pl.create_task('p3')
+        child = self.pl.create_task('child')
         self.pl.add(p1)
         self.pl.add(p2)
         self.pl.add(p3)
@@ -598,10 +597,10 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_inconsistent_parent_parent_and_children_last_one_wins_2(self):
         # given
-        p1 = Task('p1')
-        p2 = Task('p2')
-        p3 = Task('p3')
-        child = Task('child')
+        p1 = self.pl.create_task('p1')
+        p2 = self.pl.create_task('p2')
+        p3 = self.pl.create_task('p3')
+        child = self.pl.create_task('child')
         self.pl.add(p1)
         self.pl.add(p2)
         self.pl.add(p3)
@@ -638,7 +637,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_decimal_expected_cost_not_converted_to_str(self):
         # given
-        task = Task('task', expected_cost=Decimal('123.45'))
+        task = self.pl.create_task('task', expected_cost=Decimal('123.45'))
         self.assertIsInstance(task.expected_cost, Decimal)
         self.pl.add(task)
         self.assertIsInstance(task.expected_cost, Decimal)
@@ -647,8 +646,8 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_task_dependee_also_adds_other_task_dependant(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.commit()
@@ -681,8 +680,8 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_task_after_also_adds_other_task_before(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.commit()
@@ -715,7 +714,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_user_to_task_also_adds_task_to_user(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         user = User('name@example.com')
         self.pl.add(task)
         self.pl.add(user)
@@ -741,7 +740,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_setting_id_before_adding_succeeds(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         task.id = 1
         # precondition
         self.assertEqual(1, task.id)
@@ -764,10 +763,10 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_conflicting_id_when_committing_raises_exception(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.id = 1
         self.pl.add(t1)
-        t2 = Task('t1')
+        t2 = self.pl.create_task('t1')
         t2.id = 1
         self.pl.add(t2)
         # precondition

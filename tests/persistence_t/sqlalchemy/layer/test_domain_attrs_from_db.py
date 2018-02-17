@@ -3,7 +3,6 @@ import types
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -229,7 +228,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_parent_is_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -240,7 +239,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_children_are_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -262,7 +261,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_tasks_are_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -284,7 +283,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_dependees_are_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -296,7 +295,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_dependants_are_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -308,7 +307,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_prioritize_before_are_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -320,7 +319,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_prioritize_after_are_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -355,7 +354,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_task_is_translated(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -440,7 +439,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_parent_is_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -454,7 +453,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_children_are_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -483,7 +482,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_tasks_are_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -511,7 +510,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_dependees_are_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -526,7 +525,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_dependants_are_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -541,7 +540,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_prioritize_before_are_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -556,7 +555,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_prioritize_after_are_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)
@@ -600,7 +599,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_task_is_translated_lazily(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         dbtask = self.pl._get_db_object_from_domain_object(task)

@@ -5,7 +5,6 @@ import unittest
 from werkzeug.exceptions import NotFound, Forbidden
 
 from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.util import MockFileObject
 from util import generate_ll
@@ -16,7 +15,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
         self.ll = generate_ll()
         self.pl = self.ll.pl
         self.user = User('name@example.com')
-        self.task = Task('task')
+        self.task = self.pl.create_task('task')
         self.task.id = 1
         self.f = MockFileObject('/filename.txt')
 

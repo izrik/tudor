@@ -31,7 +31,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_admin_adds_second_task(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
 
         self.pl.add(t1)
@@ -47,7 +47,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_admin_adds_child_task_to_parent(self):
         # given
-        p = Task('p')
+        p = self.pl.create_task('p')
         p.order_num = 1
 
         self.pl.add(p)
@@ -65,7 +65,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_user_adds_task_to_authorized_parent_succeeds(self):
         # given
-        p = Task('p')
+        p = self.pl.create_task('p')
         p.order_num = 1
         p.users.append(self.user)
 
@@ -84,7 +84,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
     def test_user_adds_task_to_non_authorized_parent_raises_403(self):
         # given
-        p = Task('p')
+        p = self.pl.create_task('p')
         p.order_num = 1
 
         self.pl.add(p)

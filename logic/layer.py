@@ -12,7 +12,6 @@ from werkzeug import secure_filename
 import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.attachment import Attachment
@@ -101,7 +100,7 @@ class LogicLayer(object):
                         order_num=None, parent_id=None, is_public=None):
         self._logger.debug('begin')
         self._logger.debug('creating the new task')
-        task = Task(
+        task = self.pl.create_task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,
             expected_duration_minutes=expected_duration_minutes,
@@ -843,11 +842,12 @@ class LogicLayer(object):
                     order_num = task.get('order_num', None)
                     tag_ids = task.get('tag_ids', [])
                     user_ids = task.get('user_ids', [])
-                    t = Task(summary=summary, description=description,
-                             is_done=is_done, is_deleted=is_deleted,
-                             deadline=deadline,
-                             expected_duration_minutes=exp_dur_min,
-                             expected_cost=expected_cost)
+                    t = self.pl.create_task(
+                        summary=summary, description=description,
+                        is_done=is_done, is_deleted=is_deleted,
+                        deadline=deadline,
+                        expected_duration_minutes=exp_dur_min,
+                        expected_cost=expected_cost)
                     t.id = id
                     parent_id_by_task[t] = parent_id
                     t.order_num = order_num

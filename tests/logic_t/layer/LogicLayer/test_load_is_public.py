@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User, GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -12,31 +11,31 @@ class LoadIsPublicTest(unittest.TestCase):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
 
-        self.tp = Task('tp', is_public=True)
-        self.tpp = Task('tpp', is_public=True)
+        self.tp = self.pl.create_task('tp', is_public=True)
+        self.tpp = self.pl.create_task('tpp', is_public=True)
         self.tpp.parent = self.tp
-        self.tppp = Task('tppp', is_public=True)
+        self.tppp = self.pl.create_task('tppp', is_public=True)
         self.tppp.parent = self.tpp
-        self.tppr = Task('tppr', is_public=False)
+        self.tppr = self.pl.create_task('tppr', is_public=False)
         self.tppr.parent = self.tpp
-        self.tpr = Task('tpr', is_public=False)
+        self.tpr = self.pl.create_task('tpr', is_public=False)
         self.tpr.parent = self.tp
-        self.tprp = Task('tprp', is_public=True)
+        self.tprp = self.pl.create_task('tprp', is_public=True)
         self.tprp.parent = self.tpr
-        self.tprr = Task('tprr', is_public=False)
+        self.tprr = self.pl.create_task('tprr', is_public=False)
         self.tprr.parent = self.tpr
-        self.tr = Task('tr', is_public=False)
-        self.trp = Task('trp', is_public=True)
+        self.tr = self.pl.create_task('tr', is_public=False)
+        self.trp = self.pl.create_task('trp', is_public=True)
         self.trp.parent = self.tr
-        self.trpp = Task('trpp', is_public=True)
+        self.trpp = self.pl.create_task('trpp', is_public=True)
         self.trpp.parent = self.trp
-        self.trpr = Task('trpr', is_public=False)
+        self.trpr = self.pl.create_task('trpr', is_public=False)
         self.trpr.parent = self.trp
-        self.trr = Task('trr', is_public=False)
+        self.trr = self.pl.create_task('trr', is_public=False)
         self.trr.parent = self.tr
-        self.trrp = Task('trrp', is_public=True)
+        self.trrp = self.pl.create_task('trrp', is_public=True)
         self.trrp.parent = self.trr
-        self.trrr = Task('trrr', is_public=False)
+        self.trrr = self.pl.create_task('trrr', is_public=False)
         self.trrr.parent = self.trr
 
         self.pl.add(self.tp)
@@ -109,8 +108,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_1(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -128,8 +127,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_2(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c')
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -147,8 +146,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_3(self):
         # given
-        p = Task('p')
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -166,8 +165,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_4(self):
         # given
-        p = Task('p')
-        c = Task('c')
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -185,8 +184,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_5(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -203,8 +202,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_6(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c')
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -221,8 +220,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_7(self):
         # given
-        p = Task('p')
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -239,8 +238,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_8(self):
         # given
-        p = Task('p')
-        c = Task('c')
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -257,8 +256,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_9(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -275,8 +274,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_10(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c')
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -293,8 +292,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_11(self):
         # given
-        p = Task('p')
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -311,8 +310,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_12(self):
         # given
-        p = Task('p')
-        c = Task('c')
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -329,8 +328,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_13(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -346,8 +345,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_14(self):
         # given
-        p = Task('p', is_public=True)
-        c = Task('c')
+        p = self.pl.create_task('p', is_public=True)
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -363,8 +362,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_15(self):
         # given
-        p = Task('p')
-        c = Task('c', is_public=True)
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')
@@ -380,8 +379,8 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 
     def test_regular_user_sees_own_and_public_tasks_16(self):
         # given
-        p = Task('p')
-        c = Task('c')
+        p = self.pl.create_task('p')
+        c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
         user = User('email')

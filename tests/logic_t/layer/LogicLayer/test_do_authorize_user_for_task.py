@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import Forbidden
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -29,7 +28,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
 
     def test_null_user_to_authorize_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -42,7 +41,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
 
     def test_null_current_user_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -55,7 +54,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
 
     def test_authorizes_user_for_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -74,7 +73,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
 
     def test_user_already_authorized_silently_ignored(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -94,7 +93,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
 
     def test_current_user_not_authorized_not_admin_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)
@@ -112,7 +111,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
 
     def test_current_user_authorized_not_admin_authorizes_user(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         user = User('user@example.com')
         self.pl.add(user)

@@ -1,5 +1,5 @@
+
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -36,7 +36,7 @@ class DatabaseInteraction2Test(InMemoryTestBase):
 
     def test_rollback_undeletes_deleted_objects(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         self.pl.delete(task)

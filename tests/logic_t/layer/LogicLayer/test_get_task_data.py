@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User, GuestUser
 from persistence.sqlalchemy.layer import Pager
 from util import generate_ll
@@ -16,7 +15,7 @@ class GetTaskDataTest(unittest.TestCase):
         self.pl = self.ll.pl
         self.user = User('name@example.com')
         self.guest = GuestUser()
-        self.task = Task('task')
+        self.task = self.pl.create_task('task')
         self.task.id = 1
         self.pl.add(self.task)
         self.pl.commit()
@@ -117,7 +116,7 @@ class GetTaskDataTest(unittest.TestCase):
 
     def create_and_add_task(self, summary, order_num=None, parent=None,
                             user=None):
-        task = Task(summary)
+        task = self.pl.create_task(summary)
         if order_num:
             task.order_num = order_num
         if parent:

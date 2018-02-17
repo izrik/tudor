@@ -26,25 +26,25 @@ class DbLoaderTest(unittest.TestCase):
         self.user = User('name@example.org', None, True)
         pl.add(self.user)
 
-        normal = Task(summary='normal')
+        normal = self.pl.create_task(summary='normal')
         pl.add(normal)
 
-        parent = Task(summary='parent')
-        child = Task(summary='child')
+        parent = self.pl.create_task(summary='parent')
+        child = self.pl.create_task(summary='child')
         child.parent = parent
         pl.add(parent)
         pl.add(child)
 
-        parent2 = Task(summary='parent2')
-        child2 = Task(summary='child2')
+        parent2 = self.pl.create_task(summary='parent2')
+        child2 = self.pl.create_task(summary='child2')
         child2.parent = parent2
-        child3 = Task(summary='child3')
+        child3 = self.pl.create_task(summary='child3')
         child3.parent = parent2
-        grandchild = Task(summary='grandchild')
+        grandchild = self.pl.create_task(summary='grandchild')
         grandchild.parent = child3
-        great_grandchild = Task(summary='great_grandchild')
+        great_grandchild = self.pl.create_task(summary='great_grandchild')
         great_grandchild.parent = grandchild
-        great_great_grandchild = Task(summary='great_great_grandchild')
+        great_great_grandchild = self.pl.create_task(summary='great_great_grandchild')
         great_great_grandchild.parent = great_grandchild
         pl.add(parent2)
         pl.add(child2)
@@ -197,45 +197,45 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         self.user = User('name@example.org', None, True)
         pl.add(self.user)
 
-        normal = Task(summary='normal')
+        normal = self.pl.create_task(summary='normal')
         pl.add(normal)
 
-        done = Task(summary='done')
+        done = self.pl.create_task(summary='done')
         done.is_done = True
         pl.add(done)
 
-        deleted = Task(summary='deleted')
+        deleted = self.pl.create_task(summary='deleted')
         deleted.is_deleted = True
         pl.add(deleted)
 
-        done_and_deleted = Task(summary='done_and_deleted')
+        done_and_deleted = self.pl.create_task(summary='done_and_deleted')
         done_and_deleted.is_done = True
         done_and_deleted.is_deleted = True
         pl.add(done_and_deleted)
 
-        parent1 = Task(summary='parent1')
-        child1 = Task(summary='child1')
+        parent1 = self.pl.create_task(summary='parent1')
+        child1 = self.pl.create_task(summary='child1')
         child1.parent = parent1
         child1.is_done = True
         pl.add(parent1)
         pl.add(child1)
 
-        parent2 = Task(summary='parent2')
+        parent2 = self.pl.create_task(summary='parent2')
         parent2.is_done = True
-        child2 = Task(summary='child2')
+        child2 = self.pl.create_task(summary='child2')
         child2.parent = parent2
         pl.add(parent2)
         pl.add(child2)
 
-        parent3 = Task(summary='parent3')
-        child3 = Task(summary='child3')
+        parent3 = self.pl.create_task(summary='parent3')
+        child3 = self.pl.create_task(summary='child3')
         child3.parent = parent3
-        grandchild3 = Task(summary='grandchild3')
+        grandchild3 = self.pl.create_task(summary='grandchild3')
         grandchild3.parent = child3
-        great_grandchild3 = Task(summary='great_grandchild3')
+        great_grandchild3 = self.pl.create_task(summary='great_grandchild3')
         great_grandchild3.is_done = True
         great_grandchild3.parent = grandchild3
-        great_great_grandchild3 = Task(summary='great_great_grandchild3')
+        great_great_grandchild3 = self.pl.create_task(summary='great_great_grandchild3')
         great_great_grandchild3.parent = great_grandchild3
         pl.add(parent3)
         pl.add(child3)
@@ -243,15 +243,15 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         pl.add(great_grandchild3)
         pl.add(great_great_grandchild3)
 
-        parent4 = Task(summary='parent4')
-        child4 = Task(summary='child4')
+        parent4 = self.pl.create_task(summary='parent4')
+        child4 = self.pl.create_task(summary='child4')
         child4.parent = parent4
-        grandchild4 = Task(summary='grandchild4')
+        grandchild4 = self.pl.create_task(summary='grandchild4')
         grandchild4.parent = child4
-        great_grandchild4 = Task(summary='great_grandchild4')
+        great_grandchild4 = self.pl.create_task(summary='great_grandchild4')
         great_grandchild4.is_deleted = True
         great_grandchild4.parent = grandchild4
-        great_great_grandchild4 = Task(summary='great_great_grandchild4')
+        great_great_grandchild4 = self.pl.create_task(summary='great_great_grandchild4')
         great_great_grandchild4.parent = great_grandchild4
         pl.add(parent4)
         pl.add(child4)
@@ -259,16 +259,16 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         pl.add(great_grandchild4)
         pl.add(great_great_grandchild4)
 
-        parent5 = Task(summary='parent5')
-        child5 = Task(summary='child5')
+        parent5 = self.pl.create_task(summary='parent5')
+        child5 = self.pl.create_task(summary='child5')
         child5.parent = parent5
-        grandchild5 = Task(summary='grandchild5')
+        grandchild5 = self.pl.create_task(summary='grandchild5')
         grandchild5.parent = child5
-        great_grandchild5 = Task(summary='great_grandchild5')
+        great_grandchild5 = self.pl.create_task(summary='great_grandchild5')
         great_grandchild5.is_done = True
         great_grandchild5.id_deleted = True
         great_grandchild5.parent = grandchild5
-        great_great_grandchild5 = Task(summary='great_great_grandchild5')
+        great_great_grandchild5 = self.pl.create_task(summary='great_great_grandchild5')
         great_great_grandchild5.parent = great_grandchild5
         pl.add(parent5)
         pl.add(child5)
@@ -276,9 +276,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         pl.add(great_grandchild5)
         pl.add(great_great_grandchild5)
 
-        parent6 = Task(summary='parent6')
+        parent6 = self.pl.create_task(summary='parent6')
         parent6.is_deleted = True
-        child6 = Task(summary='child6')
+        child6 = self.pl.create_task(summary='child6')
         child6.parent = parent6
         pl.add(parent6)
         pl.add(child6)
@@ -575,21 +575,21 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         self.user = User('name@example.org', None, True)
         pl.add(self.user)
 
-        no_deadline = Task(summary='no_deadline')
+        no_deadline = self.pl.create_task(summary='no_deadline')
         pl.add(no_deadline)
 
-        with_deadline = Task(summary='with_deadline', deadline='2015-10-05')
+        with_deadline = self.pl.create_task(summary='with_deadline', deadline='2015-10-05')
         pl.add(with_deadline)
 
-        parent1 = Task(summary='parent1')
-        child1 = Task(summary='child1')
+        parent1 = self.pl.create_task(summary='parent1')
+        child1 = self.pl.create_task(summary='child1')
         child1.parent = parent1
-        grandchild1 = Task(summary='grandchild1')
+        grandchild1 = self.pl.create_task(summary='grandchild1')
         grandchild1.parent = child1
-        great_grandchild1 = Task(summary='great_grandchild1',
+        great_grandchild1 = self.pl.create_task(summary='great_grandchild1',
                                  deadline='2015-10-05')
         great_grandchild1.parent = grandchild1
-        great_great_grandchild1 = Task(summary='great_great_grandchild1')
+        great_great_grandchild1 = self.pl.create_task(summary='great_great_grandchild1')
         great_great_grandchild1.parent = great_grandchild1
         pl.add(parent1)
         pl.add(child1)
@@ -597,14 +597,14 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         pl.add(great_grandchild1)
         pl.add(great_great_grandchild1)
 
-        parent2 = Task(summary='parent2', deadline='2015-10-05')
-        child2 = Task(summary='child2', deadline='2015-10-05')
+        parent2 = self.pl.create_task(summary='parent2', deadline='2015-10-05')
+        child2 = self.pl.create_task(summary='child2', deadline='2015-10-05')
         child2.parent = parent2
-        grandchild2 = Task(summary='grandchild2', deadline='2015-10-05')
+        grandchild2 = self.pl.create_task(summary='grandchild2', deadline='2015-10-05')
         grandchild2.parent = child2
-        great_grandchild2 = Task(summary='great_grandchild2')
+        great_grandchild2 = self.pl.create_task(summary='great_grandchild2')
         great_grandchild2.parent = grandchild2
-        great_great_grandchild2 = Task(summary='great_great_grandchild2',
+        great_great_grandchild2 = self.pl.create_task(summary='great_great_grandchild2',
                                        deadline='2015-10-05')
         great_great_grandchild2.parent = great_grandchild2
         pl.add(parent2)
@@ -726,27 +726,27 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         pl.add(efgh)
         pl.add(ijkl)
 
-        self.normal = normal = Task(summary='normal')
+        self.normal = normal = self.pl.create_task(summary='normal')
         pl.add(normal)
 
-        self.parent = parent = Task(summary='parent')
-        self.child = child = Task(summary='child')
+        self.parent = parent = self.pl.create_task(summary='parent')
+        self.child = child = self.pl.create_task(summary='child')
         child.parent = parent
         pl.add(parent)
         pl.add(child)
 
-        self.parent2 = parent2 = Task(summary='parent2')
-        self.child2 = child2 = Task(summary='child2', is_done=True,
+        self.parent2 = parent2 = self.pl.create_task(summary='parent2')
+        self.child2 = child2 = self.pl.create_task(summary='child2', is_done=True,
                                     deadline='2016-01-01')
         child2.parent = parent2
-        self.child3 = child3 = Task(summary='child3', is_deleted=True)
+        self.child3 = child3 = self.pl.create_task(summary='child3', is_deleted=True)
         child3.parent = parent2
-        self.grandchild = grandchild = Task(summary='grandchild')
+        self.grandchild = grandchild = self.pl.create_task(summary='grandchild')
         grandchild.parent = child3
-        self.great_grandchild = great_grandchild = Task(
+        self.great_grandchild = great_grandchild = self.pl.create_task(
             summary='great_grandchild', deadline='2016-12-31')
         great_grandchild.parent = grandchild
-        self.great_great_grandchild = great_great_grandchild = Task(
+        self.great_great_grandchild = great_great_grandchild = self.pl.create_task(
             summary='great_great_grandchild')
         great_great_grandchild.parent = great_grandchild
         pl.add(parent2)

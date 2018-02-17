@@ -1,8 +1,6 @@
-import unittest
 
 import logging_util
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -13,7 +11,7 @@ class InternalsTest(PersistenceLayerTestBase):
 
     def test_create_db_object_from_domain_object(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         # when
         result = self.pl._create_db_object_from_domain_object(task)
         # then
@@ -23,7 +21,7 @@ class InternalsTest(PersistenceLayerTestBase):
 
     def test_get_db_object_from_cache_when_none_exist_returns_none(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         # when
         result = self.pl._get_db_object_from_domain_object_in_cache(task)
         # then
@@ -31,7 +29,7 @@ class InternalsTest(PersistenceLayerTestBase):
 
     def test_get_db_object_from_cache_when_some_exist_returns_none(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         dbtask = self.pl._create_db_object_from_domain_object(task)
         self.pl._db_by_domain[task] = dbtask
         # when
@@ -42,7 +40,7 @@ class InternalsTest(PersistenceLayerTestBase):
 
     def test_get_db_object_from_domain_object_by_id(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         dbtask = self.pl._create_db_object_from_domain_object(task)
         self.pl.db.session.add(dbtask)
         self.pl.db.session.commit()
@@ -56,7 +54,7 @@ class InternalsTest(PersistenceLayerTestBase):
 
     def test_added_domain_objects_are_added_to_list_of_added_objects(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         # precondition
         self.assertEquals(0, len(self.pl._added_objects))
         # when
@@ -67,7 +65,7 @@ class InternalsTest(PersistenceLayerTestBase):
 
     def test_deleted_domain_objects_are_added_to_list_of_deleted_objects(self):
         # given
-        task = Task('task1')
+        task = self.pl.create_task('task1')
         self.pl.add(task)
         self.pl.commit()
         # precondition
@@ -82,7 +80,7 @@ class InternalsTest(PersistenceLayerTestBase):
         # given
         logger = logging_util.get_logger_by_object(__name__, self)
         logger.debug(u'before create task')
-        task = Task('task')
+        task = self.pl.create_task('task')
         logger.debug(u'after create task')
         logger.debug(u'before create tag')
         tag = Tag('tag', description='a')

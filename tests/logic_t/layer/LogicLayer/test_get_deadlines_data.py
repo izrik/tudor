@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -19,9 +18,9 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
     def test_only_tasks_with_deadlines_are_returned(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
         t1.order_num = 1
-        t2 = Task('t2', deadline='2016-12-01')
+        t2 = self.pl.create_task('t2', deadline='2016-12-01')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -38,9 +37,9 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
     def test_tasks_are_sorted_by_deadline_earliest_first(self):
         # given
-        t1 = Task('t1', deadline='2016-12-01')
+        t1 = self.pl.create_task('t1', deadline='2016-12-01')
         t1.order_num = 1
-        t2 = Task('t2', deadline='2016-12-02')
+        t2 = self.pl.create_task('t2', deadline='2016-12-02')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -57,9 +56,9 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
     def test_only_tasks_for_the_current_non_admin_user_are_returned(self):
         # given
-        t1 = Task('t1', deadline='2016-12-01')
+        t1 = self.pl.create_task('t1', deadline='2016-12-01')
         t1.order_num = 1
-        t2 = Task('t2', deadline='2016-12-01')
+        t2 = self.pl.create_task('t2', deadline='2016-12-01')
         t2.order_num = 2
 
         self.pl.add(t1)
@@ -79,9 +78,9 @@ class GetDeadlinesDataTest(unittest.TestCase):
 
     def test_all_tasks_are_returned_for_admin_user(self):
         # given
-        t1 = Task('t1', deadline='2016-12-01')
+        t1 = self.pl.create_task('t1', deadline='2016-12-01')
         t1.order_num = 1
-        t2 = Task('t2', deadline='2016-12-02')
+        t2 = self.pl.create_task('t2', deadline='2016-12-02')
         t2.order_num = 2
 
         self.pl.add(t1)

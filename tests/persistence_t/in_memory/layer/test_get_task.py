@@ -1,4 +1,4 @@
-from persistence.in_memory.models.task import Task
+
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -24,7 +24,7 @@ class GetTaskTest(InMemoryTestBase):
 
     def test_valid_task_returns_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         # when

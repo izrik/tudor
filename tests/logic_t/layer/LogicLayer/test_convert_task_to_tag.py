@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from util import generate_ll
@@ -17,7 +16,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def test_old_task_becomes_a_tag(self):
         # given
-        task = Task('some_task')
+        task = self.pl.create_task('some_task')
         self.pl.add(task)
         self.pl.commit()
 
@@ -33,7 +32,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def test_old_task_gets_deleted(self):
         # given
-        task = Task('some_task')
+        task = self.pl.create_task('some_task')
         self.pl.add(task)
         self.pl.commit()
 
@@ -47,16 +46,16 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
     def test_child_tasks_get_the_new_tag(self):
         # given
-        task = Task('some_task')
+        task = self.pl.create_task('some_task')
         self.pl.add(task)
 
-        child1 = Task('child1')
+        child1 = self.pl.create_task('child1')
         child1.parent = task
         self.pl.add(child1)
-        child2 = Task('child2')
+        child2 = self.pl.create_task('child2')
         child2.parent = task
         self.pl.add(child2)
-        child3 = Task('child3')
+        child3 = self.pl.create_task('child3')
         child3.parent = task
         self.pl.add(child3)
 
@@ -90,19 +89,19 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag1 = Tag('tag1')
         self.pl.add(tag1)
 
-        task = Task('some_task')
+        task = self.pl.create_task('some_task')
         self.pl.add(task)
         task.tags.append(tag1)
 
         self.pl.commit()
 
-        child1 = Task('child1')
+        child1 = self.pl.create_task('child1')
         child1.parent = task
         self.pl.add(child1)
-        child2 = Task('child2')
+        child2 = self.pl.create_task('child2')
         child2.parent = task
         self.pl.add(child2)
-        child3 = Task('child3')
+        child3 = self.pl.create_task('child3')
         child3.parent = task
         self.pl.add(child3)
 
@@ -128,20 +127,20 @@ class ConvertTaskToTagTest(unittest.TestCase):
     def test_children_of_old_task_become_children_of_old_tasks_parent(self):
         # given
 
-        grand_parent = Task('grand_parent')
+        grand_parent = self.pl.create_task('grand_parent')
         self.pl.add(grand_parent)
 
-        task = Task('some_task')
+        task = self.pl.create_task('some_task')
         task.parent = grand_parent
         self.pl.add(task)
 
-        child1 = Task('child1')
+        child1 = self.pl.create_task('child1')
         child1.parent = task
         self.pl.add(child1)
-        child2 = Task('child2')
+        child2 = self.pl.create_task('child2')
         child2.parent = task
         self.pl.add(child2)
-        child3 = Task('child3')
+        child3 = self.pl.create_task('child3')
         child3.parent = task
         self.pl.add(child3)
 

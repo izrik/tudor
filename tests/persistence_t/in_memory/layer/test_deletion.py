@@ -3,7 +3,6 @@ from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
@@ -18,7 +17,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_reduces_count(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         # precondition
@@ -96,10 +95,10 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_all_children(self):
         # given
-        parent = Task('parent')
-        c1 = Task('c1')
-        c2 = Task('c2')
-        c3 = Task('c3')
+        parent = self.pl.create_task('parent')
+        c1 = self.pl.create_task('c1')
+        c2 = self.pl.create_task('c2')
+        c3 = self.pl.create_task('c3')
         parent.children.append(c1)
         parent.children.append(c2)
         parent.children.append(c3)
@@ -126,10 +125,10 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_parent_task_nullifies_parent_and_parent_id(self):
         # given
-        parent = Task('parent')
-        c1 = Task('c1')
-        c2 = Task('c2')
-        c3 = Task('c3')
+        parent = self.pl.create_task('parent')
+        c1 = self.pl.create_task('c1')
+        c2 = self.pl.create_task('c2')
+        c3 = self.pl.create_task('c3')
         parent.children.append(c1)
         parent.children.append(c2)
         parent.children.append(c3)
@@ -158,7 +157,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_task_from_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag = Tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
@@ -178,7 +177,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_tag_from_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag = Tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
@@ -198,7 +197,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_tag_removes_tag_from_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag = Tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
@@ -218,7 +217,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_tag_removes_task_from_tag(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         tag = Tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
@@ -238,7 +237,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_task_from_user(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         user = User('user')
         task.users.append(user)
         self.pl.add(task)
@@ -258,7 +257,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_user_from_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         user = User('user')
         task.users.append(user)
         self.pl.add(task)
@@ -278,7 +277,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_user_removes_user_from_task(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         user = User('user')
         task.users.append(user)
         self.pl.add(task)
@@ -298,7 +297,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_user_removes_task_from_user(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         user = User('user')
         task.users.append(user)
         self.pl.add(task)
@@ -318,8 +317,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_dependee_removes_dependee_from_dependant(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.dependees.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -338,8 +337,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_dependee_removes_dependant(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.dependees.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -358,8 +357,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_dependant_removes_dependant_from_dependee(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.dependants.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -378,8 +377,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_dependant_removes_dependee(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.dependants.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -398,8 +397,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_pbefore_removes_pbefore_from_pafter(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.prioritize_before.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -418,8 +417,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_pbefore_removes_pafter(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.prioritize_before.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -438,8 +437,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_pafter_removes_pafter_from_pbefore(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.prioritize_after.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -458,8 +457,8 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_pafter_removes_pbefore(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2')
         t1.prioritize_after.append(t2)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -478,7 +477,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_all_notes(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         n1 = Note('n1')
         n2 = Note('n2')
         n3 = Note('n3')
@@ -508,7 +507,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_of_notes_nullifies_task_and_task_id(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         n1 = Note('n1')
         n2 = Note('n2')
         n3 = Note('n3')
@@ -540,7 +539,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_removes_all_attachments(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         a1 = Attachment('a1')
         a2 = Attachment('a2')
         a3 = Attachment('a3')
@@ -570,7 +569,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_task_of_atts_nullifies_task_and_task_id(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         a1 = Attachment('a1')
         a2 = Attachment('a2')
         a3 = Attachment('a3')
@@ -608,7 +607,7 @@ class AddDeleteTest(InMemoryTestBase):
 
     def test_add_after_add_silently_ignored(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         # precondition
         self.assertIn(task, self.pl._added_objects)
@@ -619,7 +618,7 @@ class AddDeleteTest(InMemoryTestBase):
 
     def test_delete_after_delete_silently_ignored(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         self.pl.delete(task)
@@ -632,7 +631,7 @@ class AddDeleteTest(InMemoryTestBase):
 
     def test_delete_after_add_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         # precondition
         self.assertIn(task, self.pl._added_objects)
@@ -648,7 +647,7 @@ class AddDeleteTest(InMemoryTestBase):
 
     def test_add_after_delete_raises(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         self.pl.commit()
         self.pl.delete(task)
@@ -666,7 +665,7 @@ class AddDeleteTest(InMemoryTestBase):
 
     def test_add_an_object_already_committed_silently_ignored(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         self.pl.add(task)
         tag = Tag('tag')
         self.pl.add(tag)
