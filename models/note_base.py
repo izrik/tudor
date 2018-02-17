@@ -2,6 +2,8 @@
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
+from models.object_types import ObjectTypes
+
 
 class NoteBase(object):
 
@@ -13,6 +15,11 @@ class NoteBase(object):
     def __init__(self, content, timestamp=None):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
+
+    @staticmethod
+    @property
+    def object_type():
+        return ObjectTypes.Note
 
     def __repr__(self):
         cls = type(self).__name__

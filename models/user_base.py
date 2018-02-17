@@ -1,5 +1,6 @@
 
 from collections_util import assign
+from models.object_types import ObjectTypes
 
 
 class UserBase(object):
@@ -17,6 +18,11 @@ class UserBase(object):
         self.email = email
         self.hashed_password = hashed_password
         self.is_admin = is_admin
+
+    @staticmethod
+    @property
+    def object_type():
+        return ObjectTypes.User
 
     def __repr__(self):
         cls = type(self).__name__

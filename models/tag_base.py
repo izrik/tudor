@@ -1,5 +1,6 @@
 
 from collections_util import assign
+from models.object_types import ObjectTypes
 
 
 class TagBase(object):
@@ -13,6 +14,11 @@ class TagBase(object):
         self._logger.debug(u'TagBase.__init__ %s', self)
         self.value = value
         self.description = description
+
+    @staticmethod
+    @property
+    def object_type():
+        return ObjectTypes.Tag
 
     def __repr__(self):
         cls = type(self).__name__

@@ -3,6 +3,7 @@ from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime, money_from_str
 from collections_util import assign
+from models.object_types import ObjectTypes
 
 
 class TaskBase(object):
@@ -44,6 +45,11 @@ class TaskBase(object):
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
         self.is_public = not not is_public
+
+    @staticmethod
+    @property
+    def object_type():
+        return ObjectTypes.Task
 
     def __repr__(self):
         cls = type(self).__name__
@@ -202,4 +208,3 @@ class TaskBase(object):
         if value is None:
             return None
         return '{:.2f}'.format(value)
-

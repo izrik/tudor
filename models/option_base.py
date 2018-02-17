@@ -1,3 +1,5 @@
+from models.object_types import ObjectTypes
+
 
 class OptionBase(object):
 
@@ -7,6 +9,11 @@ class OptionBase(object):
     def __init__(self, key, value):
         self.key = key
         self.value = value
+
+    @staticmethod
+    @property
+    def object_type():
+        return ObjectTypes.Option
 
     def __repr__(self):
         cls = type(self).__name__

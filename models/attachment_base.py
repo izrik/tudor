@@ -2,6 +2,7 @@
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
+from object_types import ObjectTypes
 
 
 class AttachmentBase(object):
@@ -20,6 +21,11 @@ class AttachmentBase(object):
         self.path = path
         self.filename = filename
         self.description = description
+
+    @staticmethod
+    @property
+    def object_type():
+        return ObjectTypes.Attachment
 
     def __repr__(self):
         cls = type(self).__name__
