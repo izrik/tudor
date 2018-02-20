@@ -22,9 +22,8 @@ class AttachmentBase(object):
         self.filename = filename
         self.description = description
 
-    @staticmethod
     @property
-    def object_type():
+    def object_type(self):
         return ObjectTypes.Attachment
 
     def __repr__(self):

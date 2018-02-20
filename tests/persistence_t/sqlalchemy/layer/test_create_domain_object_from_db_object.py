@@ -1,9 +1,8 @@
-
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -91,7 +90,7 @@ class CreateDomainFromDbTest(PersistenceLayerTestBase):
         result = self.pl._create_domain_object_from_db_object(dbtask)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Task)
+        self.assertEqual(result.object_type, ObjectTypes.Task)
         self.assertEqual(dbtask.summary, result.summary)
         self.assertEqual(dbtask.description, result.description)
 

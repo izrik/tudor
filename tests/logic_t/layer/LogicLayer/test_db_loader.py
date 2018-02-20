@@ -2,8 +2,8 @@
 
 import unittest
 
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -62,9 +62,9 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_no_params(self):
         tasks = self.ll.load(self.user)
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent', 'parent2'}
         summaries = set(t.summary for t in tasks)
@@ -73,7 +73,7 @@ class DbLoaderTest(unittest.TestCase):
     def test_loader_with_single_root(self):
         tasks = self.ll.load(self.user, root_task_id=self.task_ids['parent'])
         self.assertEqual(1, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
         self.assertEqual(self.task_ids['parent'], tasks[0].id)
 
     def test_loader_with_max_depth_1(self):
@@ -84,9 +84,9 @@ class DbLoaderTest(unittest.TestCase):
 
         # then
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent2', 'child2', 'child3'}
         summaries = set(t.summary for t in tasks)
@@ -100,10 +100,10 @@ class DbLoaderTest(unittest.TestCase):
 
         # then
         self.assertEqual(4, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent2', 'child2', 'child3', 'grandchild'}
         summaries = set(t.summary for t in tasks)
@@ -117,11 +117,11 @@ class DbLoaderTest(unittest.TestCase):
 
         # then
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent2', 'child2', 'child3', 'grandchild',
                               'great_grandchild'}
@@ -136,12 +136,12 @@ class DbLoaderTest(unittest.TestCase):
 
         # then
         self.assertEqual(6, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent2', 'child2', 'child3', 'grandchild',
                               'great_grandchild', 'great_great_grandchild'}
@@ -156,12 +156,12 @@ class DbLoaderTest(unittest.TestCase):
 
         # then
         self.assertEqual(6, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent2', 'child2', 'child3', 'grandchild',
                               'great_grandchild', 'great_great_grandchild'}
@@ -176,8 +176,8 @@ class DbLoaderTest(unittest.TestCase):
 
         # then
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent', 'child'}
         summaries = set(t.summary for t in tasks)
@@ -307,11 +307,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     def test_loader_do_not_include_no_roots(self):
         tasks = self.ll.load(self.user)
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent1',
                               'parent3', 'parent4', 'parent5'}
@@ -321,13 +321,13 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     def test_loader_include_done_no_roots(self):
         tasks = self.ll.load(self.user, include_done=True)
         self.assertEqual(7, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'done', 'parent1', 'parent2',
                               'parent3', 'parent4', 'parent5'}
@@ -337,11 +337,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     def test_loader_dont_include_done_no_roots(self):
         tasks = self.ll.load(self.user, include_done=False)
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent1', 'parent3', 'parent4',
                               'parent5'}
@@ -352,9 +352,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         tasks = self.ll.load(self.user, root_task_id=self.task_ids['parent3'],
                              max_depth=None)
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent3', 'child3', 'grandchild3'}
         summaries = set(t.summary for t in tasks)
@@ -364,11 +364,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         tasks = self.ll.load(self.user, root_task_id=self.task_ids['parent3'],
                              max_depth=None, include_done=True)
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent3', 'child3', 'grandchild3',
                               'great_grandchild3', 'great_great_grandchild3'}
@@ -378,13 +378,13 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     def test_loader_include_deleted_no_roots(self):
         tasks = self.ll.load(self.user, include_deleted=True)
         self.assertEqual(7, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'deleted', 'parent1',
                               'parent3', 'parent4', 'parent5', 'parent6'}
@@ -394,11 +394,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     def test_loader_do_not_include_deleted_no_roots(self):
         tasks = self.ll.load(self.user, include_deleted=False)
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent1', 'parent3', 'parent4',
                               'parent5'}
@@ -409,16 +409,16 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         tasks = self.ll.load(self.user, include_done=True,
                              include_deleted=True)
         self.assertEqual(10, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
-        self.assertIsInstance(tasks[7], Task)
-        self.assertIsInstance(tasks[8], Task)
-        self.assertIsInstance(tasks[9], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[7].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[8].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[9].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'done', 'deleted', 'done_and_deleted',
                               'parent1', 'parent2', 'parent3', 'parent4',
@@ -432,9 +432,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              max_depth=None)
         # then
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent3', 'child3', 'grandchild3'}
         summaries = set(t.summary for t in tasks)
@@ -445,9 +445,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              max_depth=None)
         # then
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent4', 'child4', 'grandchild4'}
         summaries = set(t.summary for t in tasks)
@@ -458,9 +458,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              max_depth=None)
         # then
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent5', 'child5', 'grandchild5'}
         summaries = set(t.summary for t in tasks)
@@ -472,9 +472,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              max_depth=None, include_deleted=True)
         # then
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent3', 'child3', 'grandchild3'}
         summaries = set((t.summary for t in tasks))
@@ -485,11 +485,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              max_depth=None, include_deleted=True)
         # then
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent4', 'child4', 'grandchild4',
                               'great_grandchild4', 'great_great_grandchild4'}
@@ -501,9 +501,9 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              max_depth=None, include_deleted=True)
         # then
         self.assertEqual(3, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent5', 'child5', 'grandchild5'}
         summaries = set((t.summary for t in tasks))
@@ -516,11 +516,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              include_deleted=True)
         # then
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent3', 'child3', 'grandchild3',
                               'great_grandchild3', 'great_great_grandchild3'}
@@ -533,11 +533,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              include_deleted=True)
         # then
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent4', 'child4', 'grandchild4',
                               'great_grandchild4', 'great_great_grandchild4'}
@@ -550,11 +550,11 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
                              include_deleted=True)
         # then
         self.assertEqual(5, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
 
         expected_summaries = {'parent5', 'child5', 'grandchild5',
                               'great_grandchild5', 'great_great_grandchild5'}
@@ -628,10 +628,10 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
     def test_loader_do_not_exclude_no_roots(self):
         tasks = self.ll.load(self.user)
         self.assertEqual(4, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
 
         expected_summaries = {'no_deadline', 'with_deadline', 'parent1',
                               'parent2'}
@@ -641,10 +641,10 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
     def test_loader_explicit_do_not_exclude_no_roots(self):
         tasks = self.ll.load(self.user, exclude_undeadlined=False)
         self.assertEqual(4, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
 
         expected_summaries = {'no_deadline', 'with_deadline', 'parent1',
                               'parent2'}
@@ -654,8 +654,8 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
     def test_loader_exclude_undeadlined_no_roots(self):
         tasks = self.ll.load(self.user, exclude_undeadlined=True)
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'with_deadline', 'parent2'}
         summaries = set(t.summary for t in tasks)
@@ -667,7 +667,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
                              max_depth=None)
         # then
         self.assertEqual(5, len(tasks))
-        self.assertTrue(all(isinstance(t, Task) for t in tasks))
+        self.assertTrue(all(t.object_type == ObjectTypes.Task for t in tasks))
 
         expected_summaries = {'parent1', 'child1', 'grandchild1',
                               'great_grandchild1', 'great_great_grandchild1'}
@@ -679,7 +679,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
                              max_depth=None)
         # then
         self.assertEqual(5, len(tasks))
-        self.assertTrue(all(isinstance(t, Task) for t in tasks))
+        self.assertTrue(all(t.object_type == ObjectTypes.Task for t in tasks))
 
         expected_summaries = {'parent2', 'child2', 'grandchild2',
                               'great_grandchild2', 'great_great_grandchild2'}
@@ -698,7 +698,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
                              max_depth=None, exclude_undeadlined=True)
         # then
         self.assertEqual(3, len(tasks))
-        self.assertTrue(all(isinstance(t, Task) for t in tasks))
+        self.assertTrue(all(t.object_type == ObjectTypes.Task for t in tasks))
 
         expected_summaries = {'parent2', 'child2', 'grandchild2'}
         summaries = set(t.summary for t in tasks)
@@ -775,13 +775,13 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(7, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent', 'child', 'parent2',
                               'grandchild', 'great_grandchild',
@@ -795,14 +795,14 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(8, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
-        self.assertIsInstance(tasks[7], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[7].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
                               'grandchild', 'great_grandchild',
@@ -816,14 +816,14 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(8, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
-        self.assertIsInstance(tasks[7], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[7].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child3',
                               'grandchild', 'great_grandchild',
@@ -838,15 +838,15 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(9, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
-        self.assertIsInstance(tasks[2], Task)
-        self.assertIsInstance(tasks[3], Task)
-        self.assertIsInstance(tasks[4], Task)
-        self.assertIsInstance(tasks[5], Task)
-        self.assertIsInstance(tasks[6], Task)
-        self.assertIsInstance(tasks[7], Task)
-        self.assertIsInstance(tasks[8], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[2].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[3].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[4].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[5].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[6].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[7].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[8].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent', 'child', 'parent2', 'child2',
                               'child3', 'grandchild', 'great_grandchild',
@@ -860,7 +860,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(1, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
         self.assertEquals('great_grandchild', tasks[0].summary)
 
     def test_exclude_undeadlined_only_returns_tasks_with_deadlines2(self):
@@ -871,8 +871,8 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'child2', 'great_grandchild'}
         summaries = set(t.summary for t in tasks)
@@ -886,8 +886,8 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'great_great_grandchild'}
         summaries = set(t.summary for t in tasks)
@@ -901,8 +901,8 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent2'}
         summaries = set(t.summary for t in tasks)
@@ -916,8 +916,8 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'parent'}
         summaries = set(t.summary for t in tasks)
@@ -931,8 +931,8 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
 
         # then
         self.assertEqual(2, len(tasks))
-        self.assertIsInstance(tasks[0], Task)
-        self.assertIsInstance(tasks[1], Task)
+        self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
+        self.assertEqual(tasks[1].object_type, ObjectTypes.Task)
 
         expected_summaries = {'normal', 'great_great_grandchild'}
         summaries = set(t.summary for t in tasks)

@@ -46,9 +46,8 @@ class TaskBase(object):
         self.order_num = 0
         self.is_public = not not is_public
 
-    @staticmethod
     @property
-    def object_type():
+    def object_type(self):
         return ObjectTypes.Task
 
     def __repr__(self):

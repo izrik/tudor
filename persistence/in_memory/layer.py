@@ -1,13 +1,12 @@
+
+from __future__ import absolute_import
+
 from itertools import islice
 from numbers import Number
 
 import logging_util
-from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.task import Task
-from persistence.in_memory.models.user import User
 from persistence.sqlalchemy.layer import is_iterable
 from persistence.pager import Pager
 
@@ -341,33 +340,33 @@ class InMemoryPersistenceLayer(object):
     def commit(self):
         for domobj in list(self._added_objects):
             tt = self._get_object_type(domobj)
-            if tt is not Option and domobj.id is None:
+            if tt != ObjectTypes.Option and domobj.id is None:
                 domobj.id = self._get_next_id(tt)
-            if tt is Task and domobj.order_num is None:
+            if tt == ObjectTypes.Task and domobj.order_num is None:
                 domobj.order_num = 0
 
-            if tt == Attachment:
+            if tt == ObjectTypes.Attachment:
                 if domobj.id in self._attachments_by_id:
                     raise Exception(
                         'There already exists an attachment with id '
                         '{}'.format(domobj.id))
                 self._attachments.append(domobj)
                 self._attachments_by_id[domobj.id] = domobj
-            elif tt == Note:
+            elif tt == ObjectTypes.Note:
                 if domobj.id in self._notes_by_id:
                     raise Exception(
                         'There already exists a note with id {}'.format(
                             domobj.id))
                 self._notes.append(domobj)
                 self._notes_by_id[domobj.id] = domobj
-            elif tt == Task:
+            elif tt == ObjectTypes.Task:
                 if domobj.id in self._tasks_by_id:
                     raise Exception(
                         'There already exists a task with id {}'.format(
                             domobj.id))
                 self._tasks.append(domobj)
                 self._tasks_by_id[domobj.id] = domobj
-            elif tt == Tag:
+            elif tt == ObjectTypes.Tag:
                 if domobj.id in self._tags_by_id:
                     raise Exception(
                         'There already exists a tag with id {}'.format(
@@ -379,14 +378,14 @@ class InMemoryPersistenceLayer(object):
                 self._tags.append(domobj)
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
-            elif tt == Option:
+            elif tt == ObjectTypes.Option:
                 if domobj.key in self._options_by_key:
                     raise Exception(
                         'There already exists an option with key {}'.format(
                             domobj.id))
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
-            else:  # tt == User
+            else:  # tt == ObjectTypes.User
                 if domobj.id in self._users_by_id:
                     raise Exception(
                         'There already exists a user with id {}'.format(
@@ -405,22 +404,22 @@ class InMemoryPersistenceLayer(object):
         for domobj in list(self._deleted_objects):
             tt = self._get_object_type(domobj)
             domobj.clear_relationships()
-            if tt == Attachment:
+            if tt == ObjectTypes.Attachment:
                 self._attachments.remove(domobj)
                 del self._attachments_by_id[domobj.id]
-            elif tt == Note:
+            elif tt == ObjectTypes.Note:
                 self._notes.remove(domobj)
                 del self._notes_by_id[domobj.id]
-            elif tt == Task:
+            elif tt == ObjectTypes.Task:
                 self._tasks.remove(domobj)
                 del self._tasks_by_id[domobj.id]
-            elif tt == Tag:
+            elif tt == ObjectTypes.Tag:
                 self._tags.remove(domobj)
                 del self._tags_by_id[domobj.id]
-            elif tt == Option:
+            elif tt == ObjectTypes.Option:
                 self._options.remove(domobj)
                 del self._options_by_key[domobj.key]
-            else:  # tt == User
+            else:  # tt == ObjectTypes.User
                 self._users.remove(domobj)
                 del self._users_by_id[domobj.id]
                 del self._users_by_email[domobj.email]
@@ -506,18 +505,18 @@ class InMemoryPersistenceLayer(object):
         return max(self._users_by_id.iterkeys()) + 1
 
     def _get_next_id(self, objtype):
-        if objtype is Task:
+        if objtype == ObjectTypes.Task:
             return self._get_next_task_id()
-        if objtype is Tag:
+        if objtype == ObjectTypes.Tag:
             return self._get_next_tag_id()
-        if objtype is Attachment:
+        if objtype == ObjectTypes.Attachment:
             return self._get_next_attachment_id()
-        if objtype is Note:
+        if objtype == ObjectTypes.Note:
             return self._get_next_note_id()
-        if objtype is User:
+        if objtype == ObjectTypes.User:
             return self._get_next_user_id()
         raise Exception(
-            'Unknown object type: {}'.format(objtype.__name__))
+            'Unknown object type: {}'.format(objtype))
 
     def rollback(self):
         for t, d in self._values_by_object.iteritems():
@@ -532,18 +531,14 @@ class InMemoryPersistenceLayer(object):
         self._deleted_objects.clear()
 
     def _get_object_type(self, domobj):
-        if isinstance(domobj, Attachment):
-            return Attachment
-        if isinstance(domobj, Note):
-            return Note
-        if isinstance(domobj, Option):
-            return Option
-        if isinstance(domobj, Tag):
-            return Tag
-        if isinstance(domobj, Task):
-            return Task
-        if isinstance(domobj, User):
-            return User
-        raise Exception(
-            'Unknown object type: {}, {}'.format(domobj,
-                                                 type(domobj).__name__))
+        try:
+            tt = domobj.object_type
+        except AttributeError:
+            raise Exception(
+                'Not a domain object: {}, {}'.format(domobj,
+                                                     type(domobj).__name__))
+        if tt not in ObjectTypes.all:
+            raise Exception(
+                'Unknown object type: {}, {}, "{}"'.format(
+                    domobj, type(domobj).__name__, tt))
+        return tt

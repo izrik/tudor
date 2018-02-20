@@ -15,9 +15,8 @@ class TagBase(object):
         self.value = value
         self.description = description
 
-    @staticmethod
     @property
-    def object_type():
+    def object_type(self):
         return ObjectTypes.Tag
 
     def __repr__(self):

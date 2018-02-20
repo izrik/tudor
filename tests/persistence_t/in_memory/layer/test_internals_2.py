@@ -1,9 +1,8 @@
-
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
@@ -22,7 +21,7 @@ class GetObjectTypeTest(InMemoryTestBase):
         # when
         result = self.pl._get_object_type(task)
         # then
-        self.assertEqual(Task, result)
+        self.assertEqual(ObjectTypes.Task, result)
 
     def test_get_object_type_tag_returns_tag(self):
         # given
@@ -30,7 +29,7 @@ class GetObjectTypeTest(InMemoryTestBase):
         # when
         result = self.pl._get_object_type(tag)
         # then
-        self.assertEqual(Tag, result)
+        self.assertEqual(ObjectTypes.Tag, result)
 
     def test_get_object_type_attachment_returns_attachment(self):
         # given
@@ -38,7 +37,7 @@ class GetObjectTypeTest(InMemoryTestBase):
         # when
         result = self.pl._get_object_type(attachment)
         # then
-        self.assertEqual(Attachment, result)
+        self.assertEqual(ObjectTypes.Attachment, result)
 
     def test_get_object_type_note_returns_note(self):
         # given
@@ -46,7 +45,7 @@ class GetObjectTypeTest(InMemoryTestBase):
         # when
         result = self.pl._get_object_type(note)
         # then
-        self.assertEqual(Note, result)
+        self.assertEqual(ObjectTypes.Note, result)
 
     def test_get_object_type_user_returns_user(self):
         # given
@@ -54,7 +53,7 @@ class GetObjectTypeTest(InMemoryTestBase):
         # when
         result = self.pl._get_object_type(user)
         # then
-        self.assertEqual(User, result)
+        self.assertEqual(ObjectTypes.User, result)
 
     def test_get_object_type_option_returns_option(self):
         # given
@@ -62,14 +61,14 @@ class GetObjectTypeTest(InMemoryTestBase):
         # when
         result = self.pl._get_object_type(option)
         # then
-        self.assertEqual(Option, result)
+        self.assertEqual(ObjectTypes.Option, result)
 
     def test_get_object_type_non_domain_object_raises(self):
         # expect
         with self.assertRaises(Exception) as cm:
             self.pl._get_object_type('something')
         # then
-        self.assertEqual('Unknown object type: something, str',
+        self.assertEqual('Not a domain object: something, str',
                          cm.exception.message)
 
 
@@ -212,31 +211,31 @@ class GetNextIdTest(InMemoryTestBase):
 
     def test_get_next_id_task_returns_max_task_id_plus_one(self):
         # when
-        result = self.pl._get_next_id(Task)
+        result = self.pl._get_next_id(ObjectTypes.Task)
         # then
         self.assertEqual(4, result)
 
     def test_get_next_id_tag_returns_max_tag_id_plus_one(self):
         # when
-        result = self.pl._get_next_id(Tag)
+        result = self.pl._get_next_id(ObjectTypes.Tag)
         # then
         self.assertEqual(6, result)
 
     def test_get_next_id_attachment_returns_max_attachment_id_plus_one(self):
         # when
-        result = self.pl._get_next_id(Attachment)
+        result = self.pl._get_next_id(ObjectTypes.Attachment)
         # then
         self.assertEqual(8, result)
 
     def test_get_next_id_note_returns_max_note_id_plus_one(self):
         # when
-        result = self.pl._get_next_id(Note)
+        result = self.pl._get_next_id(ObjectTypes.Note)
         # then
         self.assertEqual(10, result)
 
     def test_get_next_id_user_returns_max_user_id_plus_one(self):
         # when
-        result = self.pl._get_next_id(User)
+        result = self.pl._get_next_id(ObjectTypes.User)
         # then
         self.assertEqual(12, result)
 
@@ -245,4 +244,4 @@ class GetNextIdTest(InMemoryTestBase):
         with self.assertRaises(Exception) as cm:
             self.pl._get_next_id(str)
         # then
-        self.assertEqual('Unknown object type: str', cm.exception.message)
+        self.assertEqual('Unknown object type: <type \'str\'>', cm.exception.message)

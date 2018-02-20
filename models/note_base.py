@@ -16,9 +16,8 @@ class NoteBase(object):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
 
-    @staticmethod
     @property
-    def object_type():
+    def object_type(self):
         return ObjectTypes.Note
 
     def __repr__(self):

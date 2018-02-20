@@ -10,9 +10,8 @@ class OptionBase(object):
         self.key = key
         self.value = value
 
-    @staticmethod
     @property
-    def object_type():
+    def object_type(self):
         return ObjectTypes.Option
 
     def __repr__(self):

@@ -19,9 +19,8 @@ class UserBase(object):
         self.hashed_password = hashed_password
         self.is_admin = is_admin
 
-    @staticmethod
     @property
-    def object_type():
+    def object_type(self):
         return ObjectTypes.User
 
     def __repr__(self):

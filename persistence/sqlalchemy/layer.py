@@ -6,6 +6,7 @@ from numbers import Number
 
 from sqlalchemy import or_
 
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.note import Note
@@ -189,9 +190,13 @@ class SqlAlchemyPersistenceLayer(object):
         return isinstance(obj, self.db.Model)
 
     def _is_domain_object(self, obj):
-        return isinstance(obj,
-                          (Attachment, Task, Tag,
-                           Note, User, Option))
+        try:
+            tt = obj.object_type
+            if tt in ObjectTypes.all:
+                return True
+        except:
+            pass
+        return False
 
     def _get_db_object_from_domain_object(self, domobj):
         self._logger.debug(u'begin, domobj: %s', domobj)
@@ -233,17 +238,18 @@ class SqlAlchemyPersistenceLayer(object):
             self._logger.debug(u'end (domobj.id is None)')
             return None
 
-        if isinstance(domobj, Attachment):
+        tt = domobj.object_type
+        if tt == ObjectTypes.Attachment:
             dbobj = self._get_db_attachment(domobj.id)
-        elif isinstance(domobj, Note):
+        elif tt == ObjectTypes.Note:
             dbobj = self._get_db_note(domobj.id)
-        elif isinstance(domobj, Option):
+        elif tt == ObjectTypes.Option:
             dbobj = self._get_db_option(domobj.id)
-        elif isinstance(domobj, Tag):
+        elif tt == ObjectTypes.Tag:
             dbobj = self._get_db_tag(domobj.id)
-        elif isinstance(domobj, Task):
+        elif tt == ObjectTypes.Task:
             dbobj = self._get_db_task(domobj.id)
-        else:  # isinstance(domobj, User):
+        else:  # tt == ObjectTypes.User:
             # _is_domain_object above means domobj can't be any other type
             dbobj = self._get_db_user(domobj.id)
 
@@ -267,17 +273,18 @@ class SqlAlchemyPersistenceLayer(object):
                 'Cannot create a new DB object; the domain object is already '
                 'in the cache: {} ({})'.format(domobj, type(domobj)))
 
-        if isinstance(domobj, Attachment):
+        tt = domobj.object_type
+        if tt == ObjectTypes.Attachment:
             dbclass = self.DbAttachment
-        elif isinstance(domobj, Note):
+        elif tt == ObjectTypes.Note:
             dbclass = self.DbNote
-        elif isinstance(domobj, Option):
+        elif tt == ObjectTypes.Option:
             dbclass = self.DbOption
-        elif isinstance(domobj, Tag):
+        elif tt == ObjectTypes.Tag:
             dbclass = self.DbTag
-        elif isinstance(domobj, Task):
+        elif tt == ObjectTypes.Task:
             dbclass = self.DbTask
-        else:  # isinstance(domobj, User):
+        else:  # tt == ObjectTypes.User:
             # _is_domain_object above means domobj can't be any other type
             dbclass = self.DbUser
 
@@ -339,17 +346,18 @@ class SqlAlchemyPersistenceLayer(object):
                 'Cannot create a new domain object; the DB object is already '
                 'in the cache: {} ({})'.format(dbobj, type(dbobj)))
 
-        if isinstance(dbobj, self.DbAttachment):
+        tt = dbobj.object_type
+        if tt == ObjectTypes.Attachment:
             domclass = Attachment
-        elif isinstance(dbobj, self.DbTask):
+        elif tt == ObjectTypes.Task:
             domclass = Task
-        elif isinstance(dbobj, self.DbTag):
+        elif tt == ObjectTypes.Tag:
             domclass = Tag
-        elif isinstance(dbobj, self.DbNote):
+        elif tt == ObjectTypes.Note:
             domclass = Note
-        elif isinstance(dbobj, self.DbUser):
+        elif tt == ObjectTypes.User:
             domclass = User
-        else:  # isinstance(dbobj, self.DbOption):
+        else:  # tt == ObjectTypes.Option:
             # _is_db_object above means dbobj can't be any other type
             domclass = Option
 

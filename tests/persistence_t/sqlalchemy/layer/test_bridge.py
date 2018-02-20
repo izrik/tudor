@@ -1,8 +1,8 @@
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -43,7 +43,7 @@ class BridgeTest(PersistenceLayerTestBase):
         result = self.pl._get_domain_object_from_db_object(task)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Task)
+        self.assertEqual(result.object_type, ObjectTypes.Task)
 
     def test_get_db_object_db_task_raises(self):
         # given

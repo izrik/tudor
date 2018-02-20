@@ -6,3 +6,5 @@ class ObjectTypes(object):
     Note = 'Note'
     User = 'User'
     Option = 'Option'
+
+    all = [Attachment, Task, Tag, Note, Option, User]

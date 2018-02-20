@@ -4,7 +4,7 @@ import unittest
 
 import werkzeug.exceptions
 
-from persistence.in_memory.models.task import Task
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -25,7 +25,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, Task)
+        self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('t1', task.summary)
         self.assertIsNone(task.parent)
 
@@ -41,7 +41,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, Task)
+        self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('t2', task.summary)
         self.assertIsNone(task.parent)
 
@@ -59,7 +59,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, Task)
+        self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('c', task.summary)
         self.assertIs(p, task.parent)
 
@@ -78,7 +78,7 @@ class CreateNewTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIsInstance(task, Task)
+        self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('c', task.summary)
         self.assertIs(p, task.parent)
 
