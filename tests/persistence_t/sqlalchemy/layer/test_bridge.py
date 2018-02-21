@@ -1,6 +1,5 @@
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.user import User
@@ -194,7 +193,7 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_domain_attachment_is_not_db_object(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         # expect
         self.assertFalse(self.pl._is_db_object(attachment))
 
@@ -206,13 +205,13 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_domain_attachment_is_domain_object(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         # expect
         self.assertTrue(self.pl._is_domain_object(attachment))
 
     def test_get_domain_object_domain_attachment_raises(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_domain_object_from_db_object,
@@ -225,7 +224,7 @@ class BridgeTest(PersistenceLayerTestBase):
         result = self.pl._get_domain_object_from_db_object(attachment)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Attachment)
+        self.assertEqual(result.object_type, ObjectTypes.Attachment)
 
     def test_get_db_object_db_attachment_raises(self):
         # given
@@ -237,7 +236,7 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_get_db_object_domain_attachment_returns_db(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         # when
         result = self.pl._get_db_object_from_domain_object(attachment)
         # then

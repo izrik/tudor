@@ -1,6 +1,5 @@
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.user import User
@@ -58,7 +57,7 @@ class CreateDomainFromDbTest(PersistenceLayerTestBase):
         # then
         self.assertIsNotNone(result)
 
-        self.assertIsInstance(result, Attachment)
+        self.assertEqual(result.object_type, ObjectTypes.Attachment)
         self.assertEqual(dbatt.timestamp, result.timestamp)
         self.assertEqual(dbatt.path, result.path)
         self.assertEqual(dbatt.filename, result.filename)

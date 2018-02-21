@@ -1,6 +1,6 @@
+
 import types
 
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
@@ -341,7 +341,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_attachments_are_translated(self):
         # given
-        att = Attachment('att')
+        att = self.pl.create_attachment('att')
         self.pl.add(att)
         self.pl.commit()
         dbatt = self.pl._get_db_object_from_domain_object(att)
@@ -583,7 +583,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_attachments_are_translated_lazily(self):
         # given
-        att = Attachment('att')
+        att = self.pl.create_attachment('att')
         self.pl.add(att)
         self.pl.commit()
         dbatt = self.pl._get_db_object_from_domain_object(att)

@@ -1,6 +1,4 @@
-import unittest
 
-from persistence.in_memory.models.attachment import Attachment
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -19,7 +17,7 @@ class GetAttachmentTest(PersistenceLayerTestBase):
 
     def test_get_attachment_existing_yields_that_attachment(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         self.pl.add(attachment)
         self.pl.commit()
         # precondition

@@ -1,4 +1,4 @@
-from persistence.in_memory.models.attachment import Attachment
+
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -6,9 +6,9 @@ class GetAttachmentsTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        self.a1 = Attachment('a1.txt')
+        self.a1 = self.pl.create_attachment('a1.txt')
         self.pl.add(self.a1)
-        self.a2 = Attachment('a2.txt')
+        self.a2 = self.pl.create_attachment('a2.txt')
         self.pl.add(self.a2)
         self.pl.commit()
 

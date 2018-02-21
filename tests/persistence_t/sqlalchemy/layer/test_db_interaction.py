@@ -1,7 +1,6 @@
 
 from decimal import Decimal
 
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.user import User
 from persistence.in_memory.models.option import Option
@@ -219,7 +218,7 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
 
     def test_adding_attachment_does_not_create_id(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         # precondition
         self.assertIsNone(attachment.id)
         # when
@@ -229,7 +228,7 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
 
     def test_committing_attachment_creates_id(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         self.pl.add(attachment)
         # precondition
         self.assertIsNone(attachment.id)
@@ -240,14 +239,14 @@ class DatabaseInteractionTest(PersistenceLayerTestBase):
 
     def test_committing_attachment_with_same_id_raises(self):
         # given
-        attachment = Attachment('summary')
+        attachment = self.pl.create_attachment('summary')
         attachment.id = 1
         self.pl.add(attachment)
         self.pl.commit()
         # precondition
         self.assertEqual(1, attachment.id)
         # when
-        attachment2 = Attachment('attachment2')
+        attachment2 = self.pl.create_attachment('attachment2')
         attachment2.id = 1
         self.pl.add(attachment2)
         # then

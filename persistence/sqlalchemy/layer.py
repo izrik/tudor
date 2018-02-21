@@ -969,6 +969,11 @@ class SqlAlchemyPersistenceLayer(object):
     def attachment_query(self):
         return self.DbAttachment.query
 
+    def create_attachment(self, path, description=None, timestamp=None,
+                          filename=None, lazy=None):
+        return Attachment(path=path, description=description,
+                          timestamp=timestamp, filename=filename, lazy=lazy)
+
     def _get_db_attachment(self, attachment_id):
         if attachment_id is None:
             raise ValueError('attachment_id acannot be None')

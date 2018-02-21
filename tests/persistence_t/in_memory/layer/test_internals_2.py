@@ -1,5 +1,4 @@
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.user import User
@@ -32,7 +31,7 @@ class GetObjectTypeTest(InMemoryTestBase):
 
     def test_get_object_type_attachment_returns_attachment(self):
         # given
-        attachment = Attachment('attachment1')
+        attachment = self.pl.create_attachment('attachment1')
         # when
         result = self.pl._get_object_type(attachment)
         # then
@@ -130,7 +129,7 @@ class GetNextObjectIdsTest(InMemoryTestBase):
 
     def test_get_next_attachment_id_some_attachments_return_max_plus_one(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         attachment.id = 3
         self.pl.add(attachment)
         self.pl.commit()
@@ -197,7 +196,7 @@ class GetNextIdTest(InMemoryTestBase):
         tag = self.pl.create_tag('tag')
         tag.id = 5
         self.pl.add(tag)
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         attachment.id = 7
         self.pl.add(attachment)
         note = Note('note')

@@ -1,5 +1,4 @@
 
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.user import User
@@ -42,7 +41,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_attachment_reduces_count(self):
         # given
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         self.pl.add(attachment)
         self.pl.commit()
         # precondition
@@ -539,9 +538,9 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_task_removes_all_attachments(self):
         # given
         task = self.pl.create_task('task')
-        a1 = Attachment('a1')
-        a2 = Attachment('a2')
-        a3 = Attachment('a3')
+        a1 = self.pl.create_attachment('a1')
+        a2 = self.pl.create_attachment('a2')
+        a3 = self.pl.create_attachment('a3')
         task.attachments.append(a1)
         task.attachments.append(a2)
         task.attachments.append(a3)
@@ -569,9 +568,9 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_task_of_atts_nullifies_task_and_task_id(self):
         # given
         task = self.pl.create_task('task')
-        a1 = Attachment('a1')
-        a2 = Attachment('a2')
-        a3 = Attachment('a3')
+        a1 = self.pl.create_attachment('a1')
+        a2 = self.pl.create_attachment('a2')
+        a3 = self.pl.create_attachment('a3')
         task.attachments.append(a1)
         task.attachments.append(a2)
         task.attachments.append(a3)
@@ -668,7 +667,7 @@ class AddDeleteTest(InMemoryTestBase):
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        attachment = Attachment('attachment')
+        attachment = self.pl.create_attachment('attachment')
         self.pl.add(attachment)
         note = Note('note')
         self.pl.add(note)

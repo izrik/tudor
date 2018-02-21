@@ -1,4 +1,4 @@
-from persistence.in_memory.models.attachment import Attachment
+
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.user import User
@@ -70,7 +70,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_get_attachment_from_domain(self):
         # given
-        att = Attachment('att')
+        att = self.pl.create_attachment('att')
         self.pl.add(att)
         self.pl.commit()
         # precondition

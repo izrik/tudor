@@ -4,7 +4,7 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.attachment import Attachment
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.user import User
 from tests.util import MockFileObject
 from util import generate_ll
@@ -30,7 +30,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
                                                'test attachment', self.user)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Attachment)
+        self.assertEqual(result.object_type, ObjectTypes.Attachment)
         self.assertIsNotNone(result.id)
         self.assertIsNone(result.timestamp)
         self.assertEqual('filename.txt', result.path)

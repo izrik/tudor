@@ -14,7 +14,6 @@ from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
 from models.object_types import ObjectTypes
 from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.option import Option
 from models.task_user_ops import TaskUserOps
 from persistence.in_memory.models.user import User
@@ -381,7 +380,7 @@ class LogicLayer(object):
         path = secure_filename(f.filename)
         f.save(os.path.join(self.upload_folder, path))
 
-        att = Attachment(path, description)
+        att = self.pl.create_attachment(path, description)
         att.task = task
 
         self.pl.add(att)
@@ -914,8 +913,10 @@ class LogicLayer(object):
                     filename = attachment['filename']
                     description = attachment['description']
                     task_id = attachment['task_id']
-                    a = Attachment(path=path, description=description,
-                                   timestamp=timestamp, filename=filename)
+                    a = self.pl.create_attachment(path=path,
+                                                  description=description,
+                                                  timestamp=timestamp,
+                                                  filename=filename)
                     a.id = id
                     a.task_id = task_id
                     db_objects.append(a)

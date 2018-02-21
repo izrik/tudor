@@ -6,6 +6,7 @@ from numbers import Number
 
 import logging_util
 from models.object_types import ObjectTypes
+from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
 from persistence.sqlalchemy.layer import is_iterable
@@ -258,6 +259,11 @@ class InMemoryPersistenceLayer(object):
 
     def count_tags(self, value=UNSPECIFIED, limit=None):
         return len(list(self.get_tags(value=value, limit=limit)))
+
+    def create_attachment(self, path, description=None, timestamp=None,
+                          filename=None, lazy=None):
+        return Attachment(path=path, description=description,
+                          timestamp=timestamp, filename=filename, lazy=lazy)
 
     def get_attachment(self, attachment_id):
         if attachment_id is None:
