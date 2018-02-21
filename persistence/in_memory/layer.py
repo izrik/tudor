@@ -6,6 +6,7 @@ from numbers import Number
 
 import logging_util
 from models.object_types import ObjectTypes
+from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
 from persistence.sqlalchemy.layer import is_iterable
 from persistence.pager import Pager
@@ -235,6 +236,9 @@ class InMemoryPersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)))
+
+    def create_tag(self, value, description=None, lazy=None):
+        return Tag(value=value, description=description, lazy=lazy)
 
     def get_tag(self, tag_id):
         if tag_id is None:

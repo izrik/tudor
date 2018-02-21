@@ -1,4 +1,4 @@
-from persistence.in_memory.models.tag import Tag
+
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -17,7 +17,7 @@ class GetTagTest(PersistenceLayerTestBase):
 
     def test_get_tag_existing_yields_that_tag(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         self.pl.commit()
         # precondition

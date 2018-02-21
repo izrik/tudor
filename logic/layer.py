@@ -12,7 +12,7 @@ from werkzeug import secure_filename
 import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
-from persistence.in_memory.models.tag import Tag
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.option import Option
@@ -593,7 +593,7 @@ class LogicLayer(object):
     def get_or_create_tag(self, value):
         tag = self.pl.get_tag_by_value(value)
         if tag is None:
-            tag = Tag(value)
+            tag = self.pl.create_tag(value)
             self.pl.add(tag)
             self.pl.commit()
         return tag
@@ -811,7 +811,8 @@ class LogicLayer(object):
                     task_id = tag['id']
                     value = tag['value']
                     description = tag.get('description', '')
-                    t = Tag(value=value, description=description)
+                    t = self.pl.create_tag(value=value,
+                                           description=description)
                     t.id = task_id
                     db_objects.append(t)
 
@@ -855,8 +856,8 @@ class LogicLayer(object):
                         tag = self.pl.get_tag(tag_id)
                         if tag is None:
                             tag = next((obj for obj in db_objects
-                                        if isinstance(obj, Tag) and
-                                        obj.id == tag_id),
+                                        if obj.object_type == ObjectTypes.Tag
+                                        and obj.id == tag_id),
                                        None)
                         if tag is None:
                             raise Exception('Tag not found')
@@ -1081,7 +1082,7 @@ class LogicLayer(object):
                 'A tag already exists with the name "{}"'.format(
                     task.summary))
 
-        tag = Tag(task.summary, task.description)
+        tag = self.pl.create_tag(task.summary, task.description)
         self.pl.add(tag)
 
         for child in list(task.children):
@@ -1224,7 +1225,8 @@ class LogicLayer(object):
                 if not tag:
                     raise werkzeug.exceptions.NotFound(
                         'No tag found by the name "{}"'.format(value))
-            elif isinstance(tag, Tag):
+            elif hasattr(tag, 'object_type') and \
+                    tag.object_type == ObjectTypes.Tag:
                 pass
             else:
                 raise TypeError(

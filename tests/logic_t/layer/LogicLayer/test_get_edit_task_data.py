@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from util import generate_ll
 
@@ -72,7 +71,7 @@ class EditTaskDataTest(unittest.TestCase):
 
     def test_single_tag_given_in_list(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         self.pl.add(self.user)
         self.pl.add(self.task)
@@ -91,9 +90,9 @@ class EditTaskDataTest(unittest.TestCase):
 
     def test_two_tags_given_in_list(self):
         # given
-        tag1 = Tag('tag1')
+        tag1 = self.pl.create_tag('tag1')
         self.pl.add(tag1)
-        tag2 = Tag('tag2')
+        tag2 = self.pl.create_tag('tag2')
         self.pl.add(tag2)
         self.pl.add(self.user)
         self.pl.add(self.task)

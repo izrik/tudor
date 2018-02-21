@@ -1,6 +1,5 @@
 
 import logging_util
-from persistence.in_memory.models.tag import Tag
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -83,7 +82,7 @@ class InternalsTest(PersistenceLayerTestBase):
         task = self.pl.create_task('task')
         logger.debug(u'after create task')
         logger.debug(u'before create tag')
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         logger.debug(u'after create tag')
         logger.debug(u'before add task')
         self.pl.add(task)

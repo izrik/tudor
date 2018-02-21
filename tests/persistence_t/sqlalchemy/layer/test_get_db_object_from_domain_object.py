@@ -1,7 +1,6 @@
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -118,7 +117,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_get_tag_from_domain(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         self.pl.commit()
         # precondition

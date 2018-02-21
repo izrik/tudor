@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -29,7 +28,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_task_id_none_raises(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -44,7 +43,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -64,7 +63,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -87,7 +86,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)
@@ -111,7 +110,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         user = User('user@example.com')
         self.pl.add(user)
@@ -135,7 +134,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         user = User('user@example.com')
         self.pl.add(user)
@@ -154,7 +153,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
 
     def test_task_not_found_raises(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         admin = User('admin@example.com', is_admin=True)
         self.pl.add(admin)

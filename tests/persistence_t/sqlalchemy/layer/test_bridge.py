@@ -1,8 +1,8 @@
+
 from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -84,13 +84,13 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_domain_tag_is_not_db_object(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         # expect
         self.assertFalse(self.pl._is_db_object(tag))
 
     def test_domain_tag_is_domain_object(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         # expect
         self.assertTrue(self.pl._is_domain_object(tag))
 
@@ -101,11 +101,11 @@ class BridgeTest(PersistenceLayerTestBase):
         result = self.pl._get_domain_object_from_db_object(tag)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Tag)
+        self.assertEqual(result.object_type, ObjectTypes.Tag)
 
     def test_get_domain_object_domain_tag_raises(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         # expect
         self.assertRaises(Exception,
                           self.pl._get_domain_object_from_db_object,
@@ -121,7 +121,7 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_get_db_object_domain_tag_returns_dg_tag(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         # when
         result = self.pl._get_db_object_from_domain_object(tag)
         # then

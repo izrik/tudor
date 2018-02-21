@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound
 
-from persistence.in_memory.models.tag import Tag
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -32,7 +31,7 @@ class GetTagTest(unittest.TestCase):
 
     def test_edits_tag(self):
         # given
-        tag = Tag(value='value', description='description')
+        tag = self.pl.create_tag(value='value', description='description')
         self.pl.add(tag)
         self.pl.commit()
         # precondition

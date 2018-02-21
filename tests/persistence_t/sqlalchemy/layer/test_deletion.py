@@ -2,7 +2,6 @@
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
@@ -27,7 +26,7 @@ class DbOnlyDeletionTest(PersistenceLayerTestBase):
 
     def test_deleting_tag_reduces_count(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         self.pl.commit()
         # precondition
@@ -667,7 +666,7 @@ class DeletionTest(PersistenceLayerTestBase):
     def test_deleting_task_removes_task_from_tag(self):
         # given
         task = self.pl.create_task('task')
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
         self.pl.add(tag)
@@ -687,7 +686,7 @@ class DeletionTest(PersistenceLayerTestBase):
     def test_deleting_task_removes_tag_from_task(self):
         # given
         task = self.pl.create_task('task')
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
         self.pl.add(tag)
@@ -707,7 +706,7 @@ class DeletionTest(PersistenceLayerTestBase):
     def test_deleting_tag_removes_tag_from_task(self):
         # given
         task = self.pl.create_task('task')
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
         self.pl.add(tag)
@@ -727,7 +726,7 @@ class DeletionTest(PersistenceLayerTestBase):
     def test_deleting_tag_removes_task_from_tag(self):
         # given
         task = self.pl.create_task('task')
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         task.tags.append(tag)
         self.pl.add(task)
         self.pl.add(tag)
@@ -1176,7 +1175,7 @@ class AddDeleteTest(PersistenceLayerTestBase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         self.pl.add(tag)
         attachment = Attachment('attachment')
         self.pl.add(attachment)

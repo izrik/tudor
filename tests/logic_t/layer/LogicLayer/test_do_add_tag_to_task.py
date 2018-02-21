@@ -4,7 +4,7 @@ import unittest
 
 from werkzeug.exceptions import Forbidden
 
-from persistence.in_memory.models.tag import Tag
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -34,13 +34,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag)
-        self.assertIsInstance(tag, Tag)
+        self.assertEqual(tag.object_type, ObjectTypes.Tag)
         self.assertEqual('ghi', tag.value)
 
     def test_add_tag_to_task_admin_existent_adds_tag(self):
         # given
         task = self.pl.create_task('task')
-        tag1 = Tag('jkl')
+        tag1 = self.pl.create_tag('jkl')
         self.pl.add(task)
         self.pl.add(tag1)
         self.pl.commit()
@@ -54,7 +54,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag2)
-        self.assertIsInstance(tag2, Tag)
+        self.assertEqual(tag2.object_type, ObjectTypes.Tag)
         self.assertEqual('jkl', tag2.value)
         self.assertIs(tag1, tag2)
 
@@ -74,13 +74,13 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag)
-        self.assertIsInstance(tag, Tag)
+        self.assertEqual(tag.object_type, ObjectTypes.Tag)
         self.assertEqual('mno', tag.value)
 
     def test_add_tag_to_task_user_existent_adds_tag(self):
         # given
         task = self.pl.create_task('task')
-        tag1 = Tag('pqr')
+        tag1 = self.pl.create_tag('pqr')
         task.users.append(self.user)
         self.pl.add(task)
         self.pl.add(tag1)
@@ -95,7 +95,7 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(task.tags))
         self.assertIsNotNone(tag2)
-        self.assertIsInstance(tag2, Tag)
+        self.assertEqual(tag2.object_type, ObjectTypes.Tag)
         self.assertEqual('pqr', tag2.value)
         self.assertIs(tag1, tag2)
 

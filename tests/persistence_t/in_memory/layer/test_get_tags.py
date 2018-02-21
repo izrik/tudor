@@ -1,5 +1,4 @@
-
-from persistence.in_memory.models.tag import Tag
+from models.object_types import ObjectTypes
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -10,9 +9,9 @@ class GetTagsTest(InMemoryTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        self.t1 = Tag('t1')
+        self.t1 = self.pl.create_tag('t1')
         self.pl.add(self.t1)
-        self.t2 = Tag('t2')
+        self.t2 = self.pl.create_tag('t2')
         self.pl.add(self.t2)
         self.pl.commit()
 
@@ -74,7 +73,7 @@ class GetTagsTest(InMemoryTestBase):
 
     def test_count_tags_specifying_limit_returns_that_limit(self):
         # given
-        t3 = Tag('t3')
+        t3 = self.pl.create_tag('t3')
         self.pl.add(t3)
         self.pl.commit()
         # when
@@ -92,7 +91,7 @@ class GetTagsTest(InMemoryTestBase):
 
     def test_count_tags_limit_greater_than_max_yields_max(self):
         # given
-        t3 = Tag('t3')
+        t3 = self.pl.create_tag('t3')
         self.pl.add(t3)
         self.pl.commit()
         # when
@@ -105,7 +104,7 @@ class GetTagsTest(InMemoryTestBase):
         results = self.pl.get_tag_by_value('t1')
         # then
         self.assertIsNotNone(results)
-        self.assertIsInstance(results, Tag)
+        self.assertEqual(results.object_type, ObjectTypes.Tag)
         self.assertIs(self.t1, results)
 
     def test_get_tag_by_value_tag_missing_returns_none(self):
@@ -135,5 +134,5 @@ class GetTagsTest(InMemoryTestBase):
         result = self.pl.get_tag_by_value('asdf')
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Tag)
+        self.assertEqual(result.object_type, ObjectTypes.Tag)
         self.assertIs(self.t1, result)

@@ -1,5 +1,4 @@
 
-from persistence.in_memory.models.tag import Tag
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -13,7 +12,7 @@ class DatabaseInteraction2Test(InMemoryTestBase):
 
     def test_changes_after_get_are_also_tracked(self):
         # given
-        tag1 = Tag('tag', description='a')
+        tag1 = self.pl.create_tag('tag', description='a')
         self.pl.add(tag1)
         self.pl.commit()
         tag = self.pl.get_tag_by_value('tag')

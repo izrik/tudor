@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from util import generate_ll
 
@@ -86,7 +85,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
     def test_child_tasks_get_the_old_tasks_tags(self):
         # given
 
-        tag1 = Tag('tag1')
+        tag1 = self.pl.create_tag('tag1')
         self.pl.add(tag1)
 
         task = self.pl.create_task('some_task')

@@ -1,7 +1,6 @@
 
 from datetime import datetime
 
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
@@ -681,8 +680,8 @@ class TagsTest(InMemoryTestBase):
         self.t1 = self.pl.create_task('t1')
         self.t2 = self.pl.create_task('t2')
         self.t3 = self.pl.create_task('t3')
-        self.tag1 = Tag('tag1')
-        self.tag2 = Tag('tag2')
+        self.tag1 = self.pl.create_tag('tag1')
+        self.tag2 = self.pl.create_tag('tag2')
         self.t2.tags.add(self.tag1)
         self.t3.tags.add(self.tag1)
         self.t3.tags.add(self.tag2)

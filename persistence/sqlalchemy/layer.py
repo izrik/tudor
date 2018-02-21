@@ -901,6 +901,9 @@ class SqlAlchemyPersistenceLayer(object):
     def tag_query(self):
         return self.DbTag.query
 
+    def create_tag(self, value, description=None, lazy=None):
+        return Tag(value=value, description=description, lazy=lazy)
+
     def _get_db_tag(self, tag_id):
         if tag_id is None:
             raise ValueError('tag_id cannot be None')

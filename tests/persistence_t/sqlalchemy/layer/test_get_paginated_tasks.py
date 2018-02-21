@@ -1,7 +1,6 @@
 
 import logging
 
-from persistence.in_memory.models.tag import Tag
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -25,8 +24,8 @@ class PaginatedTasksTest(PersistenceLayerTestBase):
         self.t4.order_num = 47
         self.t5 = self.pl.create_task('t5')
         self.t5.order_num = 53
-        self.tag1 = Tag('tag1')
-        self.tag2 = Tag('tag2')
+        self.tag1 = self.pl.create_tag('tag1')
+        self.tag2 = self.pl.create_tag('tag2')
         self._logger.debug(u'setUp connect objects')
         self.t2.tags.add(self.tag1)
         self.t3.tags.add(self.tag1)

@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -35,7 +34,7 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.add(t3)
         self.pl.add(t4)
 
-        tag1 = Tag('tag1')
+        tag1 = self.pl.create_tag('tag1')
 
         self.pl.add(tag1)
 
@@ -111,7 +110,7 @@ class GetIndexDataTest(unittest.TestCase):
         self.pl.add(t3)
         self.pl.add(t4)
 
-        tag1 = Tag('tag1')
+        tag1 = self.pl.create_tag('tag1')
 
         self.pl.add(tag1)
 

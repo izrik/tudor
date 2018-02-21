@@ -4,7 +4,6 @@ from decimal import Decimal
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
@@ -151,7 +150,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_tag_does_not_create_id(self):
         # given
-        tag = Tag('value')
+        tag = self.pl.create_tag('value')
         # precondition
         self.assertIsNone(tag.id)
         # when
@@ -161,7 +160,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_tag_creates_id(self):
         # given
-        tag = Tag('value')
+        tag = self.pl.create_tag('value')
         self.pl.add(tag)
         # precondition
         self.assertIsNone(tag.id)
@@ -172,14 +171,14 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_tag_with_same_id_raises(self):
         # given
-        tag = Tag('summary')
+        tag = self.pl.create_tag('summary')
         tag.id = 1
         self.pl.add(tag)
         self.pl.commit()
         # precondition
         self.assertEqual(1, tag.id)
         # when
-        tag2 = Tag('tag2')
+        tag2 = self.pl.create_tag('tag2')
         tag2.id = 1
         self.pl.add(tag2)
         # then
@@ -307,7 +306,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.assertRaises(Exception, self.pl.commit)
 
     def test_rollback_reverts_changes(self):
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         self.pl.add(tag)
         self.pl.commit()
         tag.description = 'b'
@@ -324,9 +323,9 @@ class DatabaseInteractionTest(InMemoryTestBase):
     def test_rollback_reverts_changes_to_collections(self):
         # given:
         task = self.pl.create_task('task')
-        tag1 = Tag('tag1')
-        tag2 = Tag('tag2')
-        tag3 = Tag('tag3')
+        tag1 = self.pl.create_tag('tag1')
+        tag2 = self.pl.create_tag('tag2')
+        tag3 = self.pl.create_tag('tag3')
         task.tags.add(tag1)
         task.tags.add(tag2)
         self.pl.add(task)
@@ -366,7 +365,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.assertNotIn(task, tag3.tasks)
 
     def test_rollback_does_not_revert_changes_on_unadded_new_objects(self):
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         tag.description = 'b'
         # precondition
         self.assertEqual('b', tag.description)
@@ -376,7 +375,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.assertEqual('b', tag.description)
 
     def test_rollback_reverts_changes_after_before_object_added(self):
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         self.assertEqual('a', tag.description)
         self.pl.add(tag)
         tag.description = 'b'
@@ -388,7 +387,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.assertEqual('a', tag.description)
 
     def test_rollback_does_not_revert_changes_made_before_object_added(self):
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         self.assertEqual('a', tag.description)
         tag.description = 'b'
         self.pl.add(tag)
@@ -400,7 +399,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
         self.assertEqual('b', tag.description)
 
     def test_changes_to_objects_are_tracked_automatically(self):
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         self.pl.add(tag)
         self.pl.commit()
         # precondition
@@ -421,7 +420,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
         task = self.pl.create_task('task')
-        tag = Tag('tag', description='a')
+        tag = self.pl.create_tag('tag', description='a')
         self.pl.add(task)
         self.pl.add(tag)
         self.pl.commit()
@@ -777,9 +776,9 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_commit_changed_tag_values_conflict_raises(self):
         # given
-        self.t1 = Tag('t1')
+        self.t1 = self.pl.create_tag('t1')
         self.pl.add(self.t1)
-        self.t2 = Tag('t2')
+        self.t2 = self.pl.create_tag('t2')
         self.pl.add(self.t2)
         self.pl.commit()
         self.t2.value = 't1'
@@ -788,10 +787,10 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_commit_new_tag_values_conflict_raises(self):
         # given
-        self.t1 = Tag('t1')
+        self.t1 = self.pl.create_tag('t1')
         self.pl.add(self.t1)
         self.pl.commit()
-        t3 = Tag('t1')
+        t3 = self.pl.create_tag('t1')
         self.pl.add(t3)
         # expect
         self.assertRaises(Exception, self.pl.commit)

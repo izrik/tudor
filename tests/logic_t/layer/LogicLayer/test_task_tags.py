@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.tag import Tag
+from models.object_types import ObjectTypes
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -27,12 +27,12 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag)
-        self.assertIsInstance(tag, Tag)
+        self.assertEqual(tag.object_type, ObjectTypes.Tag)
         self.assertEqual('abc', tag.value)
 
     def test_get_or_create_tag_existent_gets_tag(self):
         # given
-        tag1 = Tag('def')
+        tag1 = self.pl.create_tag('def')
         self.pl.add(tag1)
         self.pl.commit()
 
@@ -45,6 +45,6 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         # then
         self.assertEqual(1, self.pl.count_tags())
         self.assertIsNotNone(tag2)
-        self.assertIsInstance(tag2, Tag)
+        self.assertEqual(tag2.object_type, ObjectTypes.Tag)
         self.assertEqual('def', tag2.value)
         self.assertIs(tag1, tag2)

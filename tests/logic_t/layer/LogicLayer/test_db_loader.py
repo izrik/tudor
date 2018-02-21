@@ -3,7 +3,6 @@
 import unittest
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -718,9 +717,9 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         self.user = User('name@example.org', None, True)
         pl.add(self.user)
 
-        self.abcd = abcd = Tag('abcd')
-        self.efgh = efgh = Tag('efgh')
-        self.ijkl = ijkl = Tag('ijkl')
+        self.abcd = abcd = self.pl.create_tag('abcd')
+        self.efgh = efgh = self.pl.create_tag('efgh')
+        self.ijkl = ijkl = self.pl.create_tag('ijkl')
 
         pl.add(abcd)
         pl.add(efgh)

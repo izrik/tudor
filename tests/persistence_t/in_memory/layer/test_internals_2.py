@@ -2,7 +2,6 @@ from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.note import Note
 from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
@@ -25,7 +24,7 @@ class GetObjectTypeTest(InMemoryTestBase):
 
     def test_get_object_type_tag_returns_tag(self):
         # given
-        tag = Tag('tag1')
+        tag = self.pl.create_tag('tag1')
         # when
         result = self.pl._get_object_type(tag)
         # then
@@ -109,7 +108,7 @@ class GetNextObjectIdsTest(InMemoryTestBase):
 
     def test_get_next_tag_id_some_tags_returns_max_plus_one(self):
         # given
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         tag.id = 3
         self.pl.add(tag)
         self.pl.commit()
@@ -195,7 +194,7 @@ class GetNextIdTest(InMemoryTestBase):
         task = self.pl.create_task('task')
         task.id = 3
         self.pl.add(task)
-        tag = Tag('tag')
+        tag = self.pl.create_tag('tag')
         tag.id = 5
         self.pl.add(tag)
         attachment = Attachment('attachment')
@@ -244,4 +243,5 @@ class GetNextIdTest(InMemoryTestBase):
         with self.assertRaises(Exception) as cm:
             self.pl._get_next_id(str)
         # then
-        self.assertEqual('Unknown object type: <type \'str\'>', cm.exception.message)
+        self.assertEqual('Unknown object type: <type \'str\'>',
+                         cm.exception.message)
