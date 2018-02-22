@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -11,9 +10,9 @@ class GetDeadlinesDataTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.admin = User('name@example.org', None, True)
+        self.admin = self.pl.create_user('name@example.org', None, True)
         self.pl.add(self.admin)
-        self.user = User('name2@example.org', None, False)
+        self.user = self.pl.create_user('name2@example.org', None, False)
         self.pl.add(self.user)
 
     def test_only_tasks_with_deadlines_are_returned(self):

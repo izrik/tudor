@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import Conflict
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -15,7 +14,7 @@ class AddNewUserTest(unittest.TestCase):
 
     def test_email_already_exists_raises(self):
         # given
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         self.pl.add(user)
         self.pl.commit()
         # expect

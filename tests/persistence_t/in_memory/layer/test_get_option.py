@@ -1,5 +1,4 @@
 
-from persistence.in_memory.models.option import Option
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -21,7 +20,7 @@ class GetOptionTest(InMemoryTestBase):
 
     def test_get_option_existing_yields_that_option(self):
         # given
-        option = Option('key', 'value')
+        option = self.pl.create_option('key', 'value')
         self.pl.add(option)
         self.pl.commit()
         # precondition

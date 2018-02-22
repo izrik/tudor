@@ -1,9 +1,6 @@
 
 from decimal import Decimal
 
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -185,7 +182,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_note_does_not_create_id(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         # precondition
         self.assertIsNone(note.id)
         # when
@@ -195,7 +192,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_note_creates_id(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         # precondition
         self.assertIsNone(note.id)
@@ -206,14 +203,14 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_note_with_same_id_raises(self):
         # given
-        note = Note('summary')
+        note = self.pl.create_note('summary')
         note.id = 1
         self.pl.add(note)
         self.pl.commit()
         # precondition
         self.assertEqual(1, note.id)
         # when
-        note2 = Note('note2')
+        note2 = self.pl.create_note('note2')
         note2.id = 1
         self.pl.add(note2)
         # then
@@ -257,7 +254,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_adding_user_does_not_create_id(self):
         # given
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         # precondition
         self.assertIsNone(user.id)
         # when
@@ -267,7 +264,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_user_creates_id(self):
         # given
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         self.pl.add(user)
         # precondition
         self.assertIsNone(user.id)
@@ -278,14 +275,14 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_user_with_same_id_raises(self):
         # given
-        user = User('summary')
+        user = self.pl.create_user('summary')
         user.id = 1
         self.pl.add(user)
         self.pl.commit()
         # precondition
         self.assertEqual(1, user.id)
         # when
-        user2 = User('user2')
+        user2 = self.pl.create_user('user2')
         user2.id = 1
         self.pl.add(user2)
         # then
@@ -293,13 +290,13 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_committing_option_with_same_key_raises(self):
         # given
-        option = Option('key', 'value')
+        option = self.pl.create_option('key', 'value')
         self.pl.add(option)
         self.pl.commit()
         # precondition
         self.assertEqual('key', option.key)
         # when
-        option2 = Option('key', 'value2')
+        option2 = self.pl.create_option('key', 'value2')
         self.pl.add(option2)
         # then
         self.assertRaises(Exception, self.pl.commit)
@@ -713,7 +710,7 @@ class DatabaseInteractionTest(InMemoryTestBase):
     def test_adding_user_to_task_also_adds_task_to_user(self):
         # given
         task = self.pl.create_task('task')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         self.pl.add(task)
         self.pl.add(user)
         self.pl.commit()
@@ -796,9 +793,9 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_commit_changed_user_emails_conflict_raises(self):
         # given
-        self.user1 = User('user1')
+        self.user1 = self.pl.create_user('user1')
         self.pl.add(self.user1)
-        self.user2 = User('user2')
+        self.user2 = self.pl.create_user('user2')
         self.pl.add(self.user2)
         self.pl.commit()
         self.user2.email = 'user1'
@@ -807,10 +804,10 @@ class DatabaseInteractionTest(InMemoryTestBase):
 
     def test_commit_new_user_emails_conflict_raises(self):
         # given
-        self.user1 = User('user1')
+        self.user1 = self.pl.create_user('user1')
         self.pl.add(self.user1)
         self.pl.commit()
-        user3 = User('user1')
+        user3 = self.pl.create_user('user1')
         self.pl.add(user3)
         # expect
         self.assertRaises(Exception, self.pl.commit)

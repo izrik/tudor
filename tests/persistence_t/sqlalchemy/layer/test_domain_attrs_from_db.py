@@ -1,8 +1,6 @@
 
 import types
 
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -271,7 +269,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_users_are_translated(self):
         # given
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         self.pl.add(user)
         self.pl.commit()
         dbuser = self.pl._get_db_object_from_domain_object(user)
@@ -330,7 +328,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_notes_are_translated(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         self.pl.commit()
         dbnote = self.pl._get_db_object_from_domain_object(note)
@@ -495,7 +493,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_users_are_translated_lazily(self):
         # given
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         self.pl.add(user)
         self.pl.commit()
         dbuser = self.pl._get_db_object_from_domain_object(user)
@@ -569,7 +567,7 @@ class DomainAttrsFromDbTest(PersistenceLayerTestBase):
 
     def test_links_lazy_notes_are_translated_lazily(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         self.pl.commit()
         dbnote = self.pl._get_db_object_from_domain_object(note)

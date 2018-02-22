@@ -1,7 +1,6 @@
 
 from datetime import datetime
 
-from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -94,9 +93,9 @@ class GetTaskTest(PersistenceLayerTestBase):
 
     def test_get_tasks_users_contains(self):
         # given
-        user1 = User('name@example.com')
-        user2 = User('name2@example.com')
-        user3 = User('name3@example.com')
+        user1 = self.pl.create_user('name@example.com')
+        user2 = self.pl.create_user('name2@example.com')
+        user3 = self.pl.create_user('name3@example.com')
         self.pl.add(user1)
         self.pl.add(user2)
         self.pl.add(user3)
@@ -162,7 +161,7 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
         self.pl.add(self.t1)
         self.t2 = self.pl.create_task('t2', is_public=False)
         self.pl.add(self.t2)
-        self.user = User('email')
+        self.user = self.pl.create_user('email')
         self.pl.add(self.user)
         self.pl.commit()
 

@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -17,7 +16,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -49,7 +48,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
         t1.dependees.append(t2)
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -82,7 +81,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -118,7 +117,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -146,7 +145,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -173,7 +172,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -199,7 +198,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
     def test_task_not_found_raises_exception(self):
         # given
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -222,7 +221,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
     def test_dependee_not_found_raises_exception(self):
         # given
         t1 = self.pl.create_task('t1')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)
@@ -247,7 +246,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.dependees.append(t2)
@@ -280,7 +279,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -309,7 +308,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.dependees.append(t2)
@@ -350,7 +349,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.dependees.append(t2)
@@ -383,7 +382,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         t1.dependees.append(t2)
         self.pl.add(t1)
@@ -418,7 +417,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t1.dependees.append(t2)
         self.pl.add(t1)
@@ -452,7 +451,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
     def test_remove_dependee_task_not_found_raises_exception(self):
         # given
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -475,7 +474,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
     def test_remove_dependee_dependee_not_found_raises_exception(self):
         # given
         t1 = self.pl.create_task('t1')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)
@@ -505,7 +504,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -537,7 +536,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
         t1.dependants.append(t2)
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -570,7 +569,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -606,7 +605,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -634,7 +633,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -661,7 +660,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(t2)
@@ -687,7 +686,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
     def test_task_not_found_raises_exception(self):
         # given
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -710,7 +709,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
     def test_dependant_not_found_raises_exception(self):
         # given
         t1 = self.pl.create_task('t1')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)
@@ -735,7 +734,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.dependants.append(t2)
@@ -768,7 +767,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         self.pl.add(t1)
@@ -797,7 +796,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.dependants.append(t2)
@@ -838,7 +837,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t2.users.append(user)
         t1.dependants.append(t2)
@@ -871,7 +870,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         t1.dependants.append(t2)
         self.pl.add(t1)
@@ -906,7 +905,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         t1.dependants.append(t2)
         self.pl.add(t1)
@@ -940,7 +939,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
     def test_remove_dependant_task_not_found_raises_exception(self):
         # given
         t2 = self.pl.create_task('t2')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t2.users.append(user)
         self.pl.add(t2)
         self.pl.add(user)
@@ -963,7 +962,7 @@ class TaskDependantsLogicLayerTest(unittest.TestCase):
     def test_remove_dependant_dependant_not_found_raises_exception(self):
         # given
         t1 = self.pl.create_task('t1')
-        user = User('name@example.com')
+        user = self.pl.create_user('name@example.com')
         t1.users.append(user)
         self.pl.add(t1)
         self.pl.add(user)

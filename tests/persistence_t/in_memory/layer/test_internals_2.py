@@ -1,7 +1,5 @@
+
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -39,7 +37,7 @@ class GetObjectTypeTest(InMemoryTestBase):
 
     def test_get_object_type_note_returns_note(self):
         # given
-        note = Note('note1')
+        note = self.pl.create_note('note1')
         # when
         result = self.pl._get_object_type(note)
         # then
@@ -47,7 +45,7 @@ class GetObjectTypeTest(InMemoryTestBase):
 
     def test_get_object_type_user_returns_user(self):
         # given
-        user = User('user1')
+        user = self.pl.create_user('user1')
         # when
         result = self.pl._get_object_type(user)
         # then
@@ -55,7 +53,7 @@ class GetObjectTypeTest(InMemoryTestBase):
 
     def test_get_object_type_option_returns_option(self):
         # given
-        option = Option('key', 'value')
+        option = self.pl.create_option('key', 'value')
         # when
         result = self.pl._get_object_type(option)
         # then
@@ -151,7 +149,7 @@ class GetNextObjectIdsTest(InMemoryTestBase):
 
     def test_get_next_note_id_some_notes_returns_max_plus_one(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         note.id = 3
         self.pl.add(note)
         self.pl.commit()
@@ -173,7 +171,7 @@ class GetNextObjectIdsTest(InMemoryTestBase):
 
     def test_get_next_user_id_some_users_returns_max_plus_one(self):
         # given
-        user = User('user')
+        user = self.pl.create_user('user')
         user.id = 3
         self.pl.add(user)
         self.pl.commit()
@@ -199,10 +197,10 @@ class GetNextIdTest(InMemoryTestBase):
         attachment = self.pl.create_attachment('attachment')
         attachment.id = 7
         self.pl.add(attachment)
-        note = Note('note')
+        note = self.pl.create_note('note')
         note.id = 9
         self.pl.add(note)
-        user = User('user')
+        user = self.pl.create_user('user')
         user.id = 11
         self.pl.add(user)
         self.pl.commit()

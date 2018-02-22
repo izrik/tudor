@@ -7,8 +7,11 @@ from numbers import Number
 import logging_util
 from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.user import User
 from persistence.sqlalchemy.layer import is_iterable
 from persistence.pager import Pager
 
@@ -280,6 +283,9 @@ class InMemoryPersistenceLayer(object):
         return len(
             list(self.get_attachments(attachment_id_in=attachment_id_in)))
 
+    def create_note(self, content, timestamp=None, lazy=None):
+        return Note(content=content, timestamp=timestamp, lazy=lazy)
+
     def get_note(self, note_id):
         if note_id is None:
             raise ValueError('No note_id provided.')
@@ -294,6 +300,9 @@ class InMemoryPersistenceLayer(object):
     def count_notes(self, note_id_in=UNSPECIFIED):
         return len(list(self.get_notes(note_id_in=note_id_in)))
 
+    def create_option(self, key, value):
+        return Option(key=key, value=value)
+
     def get_option(self, key):
         if key is None:
             raise ValueError('No option_id provided.')
@@ -307,6 +316,11 @@ class InMemoryPersistenceLayer(object):
 
     def count_options(self, key_in=UNSPECIFIED):
         return len(list(self.get_options(key_in=key_in)))
+
+    def create_user(self, email, hashed_password=None, is_admin=False,
+                    lazy=None):
+        return User(email=email, hashed_password=hashed_password,
+                    is_admin=is_admin, lazy=lazy)
 
     def get_user(self, user_id):
         if user_id is None:

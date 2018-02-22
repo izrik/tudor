@@ -13,10 +13,7 @@ import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
 from models.task_user_ops import TaskUserOps
-from persistence.in_memory.models.user import User
 
 
 class LogicLayer(object):
@@ -285,7 +282,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         timestamp = datetime.utcnow()
-        note = Note(content, timestamp)
+        note = self.pl.create_note(content, timestamp)
         note.task = task
         self.pl.add(note)
         self.pl.commit()
@@ -725,7 +722,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Conflict(
                 "A user already exists with the email address '{}'".format(
                     email))
-        user = User(email=email, is_admin=is_admin)
+        user = self.pl.create_user(email=email, is_admin=is_admin)
         self.pl.add(user)
         self.pl.commit()
         return user
@@ -751,7 +748,7 @@ class LogicLayer(object):
         if option is not None:
             option.value = value
         else:
-            option = Option(key, value)
+            option = self.pl.create_option(key, value)
         self.pl.add(option)
         self.pl.commit()
         return option
@@ -865,8 +862,8 @@ class LogicLayer(object):
                         user = self.pl.get_user(user_id)
                         if user is None:
                             user = next((obj for obj in db_objects
-                                        if isinstance(obj, User) and
-                                         obj.id == user_id),
+                                        if obj.object_type == ObjectTypes.User
+                                         and obj.id == user_id),
                                         None)
                         if user is None:
                             raise Exception('User not found')
@@ -891,7 +888,8 @@ class LogicLayer(object):
                     content = note['content']
                     timestamp = note['timestamp']
                     task_id = note['task_id']
-                    n = Note(content=content, timestamp=timestamp)
+                    n = self.pl.create_note(content=content,
+                                            timestamp=timestamp)
                     n.id = id
                     n.task_id = task_id
                     db_objects.append(n)
@@ -935,8 +933,9 @@ class LogicLayer(object):
                     email = user['email']
                     hashed_password = user['hashed_password']
                     is_admin = user['is_admin']
-                    u = User(email=email, hashed_password=hashed_password,
-                             is_admin=is_admin)
+                    u = self.pl.create_user(email=email,
+                                            hashed_password=hashed_password,
+                                            is_admin=is_admin)
                     db_objects.append(u)
 
             if 'options' in src:
@@ -951,7 +950,7 @@ class LogicLayer(object):
                 for option in src['options']:
                     key = option['key']
                     value = option['value']
-                    t = Option(key, value)
+                    t = self.pl.create_option(key, value)
                     db_objects.append(t)
         except werkzeug.exceptions.HTTPException:
             raise
@@ -971,7 +970,8 @@ class LogicLayer(object):
         if current_user is None:
             # guest users not allowed
             raise ValueError('current_user cannot be None.')
-        if not isinstance(current_user, User):
+        if not hasattr(current_user, 'object_type') or \
+                        current_user.object_type != ObjectTypes.User:
             # guest users not allowed
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')

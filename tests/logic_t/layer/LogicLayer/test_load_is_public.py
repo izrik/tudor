@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User, GuestUser
+from persistence.in_memory.models.user import GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -56,7 +56,7 @@ class LoadIsPublicTest(unittest.TestCase):
 
     def test_admin_sees_all_tasks(self):
         # given
-        admin = User('email', is_admin=True)
+        admin = self.pl.create_user('email', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # when
@@ -70,7 +70,7 @@ class LoadIsPublicTest(unittest.TestCase):
 
     def test_admin_sees_all_tasks2(self):
         # given
-        admin = User('email', is_admin=True)
+        admin = self.pl.create_user('email', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # when
@@ -112,7 +112,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -131,7 +131,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -150,7 +150,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -169,7 +169,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -188,7 +188,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -206,7 +206,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -224,7 +224,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -242,7 +242,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -260,7 +260,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -278,7 +278,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -296,7 +296,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -314,7 +314,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -332,7 +332,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -349,7 +349,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -366,7 +366,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c', is_public=True)
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -383,7 +383,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
         c = self.pl.create_task('c')
         self.pl.add(p)
         self.pl.add(c)
-        user = User('email')
+        user = self.pl.create_user('email')
         self.pl.add(user)
         self.pl.commit()
         c.parent = p
@@ -437,7 +437,7 @@ class LoadIsPublicRegularUserTest(unittest.TestCase):
 #
 #         print("        self.pl.add(p)")
 #         print("        self.pl.add(c)")
-#         print("        user = User('email')")
+#         print("        user = self.pl.create_user('email')")
 #         print("        self.pl.add(user)")
 #         print("        self.pl.commit()")
 #         print("        c.parent = p")

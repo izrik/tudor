@@ -3,7 +3,6 @@ import unittest
 from mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.user import User
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.util import MockFileObject
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
@@ -32,7 +31,7 @@ class ImportTest(unittest.TestCase):
         form = {}
         files = {'file': MockFileObject(filename='', content=src)}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # when
         result = self.vl.import_(request, admin)
         # then
@@ -57,7 +56,7 @@ class ImportTest(unittest.TestCase):
         form = {'raw': src}
         files = {}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # when
         result = self.vl.import_(request, admin)
         # then
@@ -70,7 +69,7 @@ class ImportTest(unittest.TestCase):
     def test_get_request_returns_template(self):
         # given
         request = generate_mock_request(method='GET')
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # self.r.render_template
         # when
         result = self.vl.import_(request, admin)

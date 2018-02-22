@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -17,7 +16,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # expect
@@ -30,7 +29,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # expect
@@ -45,7 +44,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -65,7 +64,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         task.tags.add(tag)
         self.pl.commit()
@@ -88,7 +87,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         task.tags.add(tag)
         task.users.add(admin)
@@ -112,7 +111,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.tags.add(tag)
         task.users.add(user)
@@ -136,7 +135,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.tags.add(tag)
         self.pl.commit()
@@ -155,7 +154,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -171,7 +170,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition

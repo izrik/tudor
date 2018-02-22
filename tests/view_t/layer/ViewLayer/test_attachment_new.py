@@ -5,7 +5,6 @@ from werkzeug.exceptions import BadRequest
 
 from logic.layer import LogicLayer
 from persistence.in_memory.models.task import Task
-from persistence.in_memory.models.user import User
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.util import MockFileObject
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
@@ -27,7 +26,7 @@ class AttachmentNewTest(unittest.TestCase):
         f = MockFileObject('/filename.txt')
         files = {'filename': f}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # when
         result = self.vl.attachment_new(request, admin)
         # then
@@ -47,7 +46,7 @@ class AttachmentNewTest(unittest.TestCase):
         f = MockFileObject('/filename.txt')
         files = {'filename': f}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # when
         result = self.vl.attachment_new(request, admin)
         # then
@@ -67,7 +66,7 @@ class AttachmentNewTest(unittest.TestCase):
         f = MockFileObject('/filename.txt')
         files = {'filename': f}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # when
         result = self.vl.attachment_new(request, admin)
         # then
@@ -87,7 +86,7 @@ class AttachmentNewTest(unittest.TestCase):
         f = MockFileObject('/filename.txt')
         files = {'filename': f}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # when
         result = self.vl.attachment_new(request, admin)
         # then
@@ -106,7 +105,7 @@ class AttachmentNewTest(unittest.TestCase):
                 'description': 'asdf'}
         files = {'filename': None}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # expect
         self.assertRaises(
             BadRequest,
@@ -123,7 +122,7 @@ class AttachmentNewTest(unittest.TestCase):
                 'description': 'asdf'}
         files = {'filename': MockFileObject(None)}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # expect
         self.assertRaises(
             BadRequest,
@@ -140,7 +139,7 @@ class AttachmentNewTest(unittest.TestCase):
                 'description': 'asdf'}
         files = {'filename': MockFileObject('')}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # expect
         self.assertRaises(
             BadRequest,
@@ -157,7 +156,7 @@ class AttachmentNewTest(unittest.TestCase):
                 'description': 'asdf'}
         files = {'filename': MockFileObject('/filename.exe')}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         self.ll.allowed_file.return_value = False
         # expect
         self.assertRaises(
@@ -174,7 +173,7 @@ class AttachmentNewTest(unittest.TestCase):
         form = {}
         files = {'filename': MockFileObject('/filename.exe')}
         request = generate_mock_request(form=form, files=files)
-        admin = User('admin', is_admin=True)
+        admin = self.pl.create_user('admin', is_admin=True)
         # expect
         self.assertRaises(
             BadRequest,

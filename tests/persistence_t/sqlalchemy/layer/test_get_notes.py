@@ -1,4 +1,4 @@
-from persistence.in_memory.models.note import Note
+
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -6,9 +6,9 @@ class GetNotesTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        self.n1 = Note('n1')
+        self.n1 = self.pl.create_note('n1')
         self.pl.add(self.n1)
-        self.n2 = Note('n2')
+        self.n2 = self.pl.create_note('n2')
         self.pl.add(self.n2)
         self.pl.commit()
 

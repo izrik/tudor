@@ -1,6 +1,4 @@
-import unittest
 
-from persistence.in_memory.models.note import Note
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -19,7 +17,7 @@ class GetNoteTest(PersistenceLayerTestBase):
 
     def test_get_note_existing_yields_that_note(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         self.pl.commit()
         # precondition

@@ -1,5 +1,4 @@
 
-from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -21,7 +20,7 @@ class GetUserTest(InMemoryTestBase):
 
     def test_get_user_existing_yields_that_user(self):
         # given
-        user = User('user')
+        user = self.pl.create_user('user')
         self.pl.add(user)
         self.pl.commit()
         # precondition

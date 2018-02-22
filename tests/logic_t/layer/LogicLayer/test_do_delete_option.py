@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.option import Option
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -22,7 +21,7 @@ class DeleteOptionTest(unittest.TestCase):
 
     def test_option_found_gets_deleted(self):
         # given
-        opt = Option('key', 'value')
+        opt = self.pl.create_option('key', 'value')
         self.pl.add(opt)
         self.pl.commit()
         # precondition

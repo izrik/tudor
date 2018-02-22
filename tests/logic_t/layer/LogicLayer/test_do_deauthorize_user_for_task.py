@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import Forbidden, NotFound, Conflict
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -15,9 +14,9 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_null_task_id_raises(self):
         # given
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # expect
@@ -30,7 +29,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # expect
@@ -43,7 +42,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         self.pl.commit()
         # expect
@@ -56,10 +55,10 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.users.add(user)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         task.users.add(admin)
         self.pl.commit()
@@ -76,9 +75,9 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
 
     def test_task_not_found_raises(self):
         # given
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -93,7 +92,7 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -108,10 +107,10 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.users.add(user)
-        user2 = User('user2@example.com')
+        user2 = self.pl.create_user('user2@example.com')
         self.pl.add(user2)
         task.users.add(user2)
         self.pl.commit()
@@ -130,10 +129,10 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.users.add(user)
-        user2 = User('user2@example.com')
+        user2 = self.pl.create_user('user2@example.com')
         self.pl.add(user2)
         self.pl.commit()
         # precondition
@@ -149,10 +148,10 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.users.add(user)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -168,9 +167,9 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         task.users.add(admin)
         self.pl.commit()
@@ -189,9 +188,9 @@ class DeauthorizeUserForTaskTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition

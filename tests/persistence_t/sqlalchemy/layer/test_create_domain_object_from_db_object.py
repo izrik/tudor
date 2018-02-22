@@ -1,8 +1,5 @@
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -74,7 +71,7 @@ class CreateDomainFromDbTest(PersistenceLayerTestBase):
         result = self.pl._create_domain_object_from_db_object(dbnote)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Note)
+        self.assertEqual(result.object_type, ObjectTypes.Note)
         self.assertEqual(dbnote.content, result.content)
         self.assertEqual(dbnote.timestamp, result.timestamp)
 
@@ -119,7 +116,7 @@ class CreateDomainFromDbTest(PersistenceLayerTestBase):
         result = self.pl._create_domain_object_from_db_object(dbuser)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, User)
+        self.assertEqual(result.object_type, ObjectTypes.User)
         self.assertEqual(dbuser.email, result.email)
         self.assertEqual(dbuser.hashed_password, result.hashed_password)
 
@@ -134,6 +131,6 @@ class CreateDomainFromDbTest(PersistenceLayerTestBase):
         result = self.pl._create_domain_object_from_db_object(dboption)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Option)
+        self.assertEqual(result.object_type, ObjectTypes.Option)
         self.assertEqual(dboption.key, result.key)
         self.assertEqual(dboption.value, result.value)

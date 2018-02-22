@@ -4,7 +4,6 @@ import unittest
 from mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.user import User
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
@@ -21,7 +20,7 @@ class TaskUndeleteTest(unittest.TestCase):
     def test_unsets_is_deleted(self):
         # given
         task_id = 1
-        user = User('admin@example.com', is_admin=True)
+        user = self.pl.create_user('admin@example.com', is_admin=True)
         req = generate_mock_request(method='GET', args={})
         self.r.url_for.return_value = 'http://example.com/'
         # when
@@ -34,7 +33,7 @@ class TaskUndeleteTest(unittest.TestCase):
     def test_takes_redirect_url_from_args_next_if_available(self):
         # given
         task_id = 1
-        user = User('admin@example.com', is_admin=True)
+        user = self.pl.create_user('admin@example.com', is_admin=True)
         req = generate_mock_request(method='GET',
                                     args={'next': 'http://example2.org/'})
         self.r.url_for.return_value = 'http://example.com/'

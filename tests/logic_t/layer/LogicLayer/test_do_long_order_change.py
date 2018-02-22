@@ -4,7 +4,6 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Conflict
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -21,7 +20,7 @@ class LongOrderChangeTest(unittest.TestCase):
         target = self.pl.create_task('target')
         target.order_num = 2
         self.pl.add(target)
-        admin = User('user@example.com', is_admin=True)
+        admin = self.pl.create_user('user@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -44,7 +43,7 @@ class LongOrderChangeTest(unittest.TestCase):
         # given
         target = self.pl.create_task('target')
         self.pl.add(target)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # expect
@@ -57,7 +56,7 @@ class LongOrderChangeTest(unittest.TestCase):
         # given
         target = self.pl.create_task('target')
         self.pl.add(target)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -72,7 +71,7 @@ class LongOrderChangeTest(unittest.TestCase):
         # given
         task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # expect
@@ -85,7 +84,7 @@ class LongOrderChangeTest(unittest.TestCase):
         # given
         task_to_move = self.pl.create_task('task_to_move')
         self.pl.add(task_to_move)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -115,7 +114,7 @@ class LongOrderChangeTest(unittest.TestCase):
         self.pl.add(task_to_move)
         target = self.pl.create_task('target')
         self.pl.add(target)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         self.pl.commit()
         # precondition
@@ -135,7 +134,7 @@ class LongOrderChangeTest(unittest.TestCase):
         self.pl.add(task_to_move)
         target = self.pl.create_task('target')
         self.pl.add(target)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         target.users.add(user)
         self.pl.add(user)
         self.pl.commit()
@@ -156,7 +155,7 @@ class LongOrderChangeTest(unittest.TestCase):
         self.pl.add(task_to_move)
         target = self.pl.create_task('target')
         self.pl.add(target)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         task_to_move.users.add(user)
         self.pl.add(user)
         self.pl.commit()
@@ -185,7 +184,7 @@ class LongOrderChangeTest(unittest.TestCase):
         target.order_num = 2
         target.parent = p2
         self.pl.add(target)
-        admin = User('user@example.com', is_admin=True)
+        admin = self.pl.create_user('user@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition
@@ -231,7 +230,7 @@ class LongOrderChangeTest(unittest.TestCase):
         s8.order_num = 50
         self.pl.add(s8)
 
-        admin = User('user@example.com', is_admin=True)
+        admin = self.pl.create_user('user@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition

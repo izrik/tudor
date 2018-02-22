@@ -3,7 +3,6 @@
 import unittest
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -22,7 +21,7 @@ class DbLoaderTest(unittest.TestCase):
         # is_deleted=False,
         # deadline=None):
 
-        self.user = User('name@example.org', None, True)
+        self.user = self.pl.create_user('name@example.org', None, True)
         pl.add(self.user)
 
         normal = self.pl.create_task(summary='normal')
@@ -193,7 +192,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
         pl = self.pl
         self.task_ids = {}
 
-        self.user = User('name@example.org', None, True)
+        self.user = self.pl.create_user('name@example.org', None, True)
         pl.add(self.user)
 
         normal = self.pl.create_task(summary='normal')
@@ -571,7 +570,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
         pl = self.pl
         self.task_ids = {}
 
-        self.user = User('name@example.org', None, True)
+        self.user = self.pl.create_user('name@example.org', None, True)
         pl.add(self.user)
 
         no_deadline = self.pl.create_task(summary='no_deadline')
@@ -714,7 +713,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         pl = self.pl
         self.task_ids = {}
 
-        self.user = User('name@example.org', None, True)
+        self.user = self.pl.create_user('name@example.org', None, True)
         pl.add(self.user)
 
         self.abcd = abcd = self.pl.create_tag('abcd')

@@ -5,8 +5,7 @@ import unittest
 from datetime import datetime
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.user import User
+from models.object_types import ObjectTypes
 from util import generate_ll
 
 
@@ -14,7 +13,7 @@ class CreateNewNoteTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.user = User('name@example.com')
+        self.user = self.pl.create_user('name@example.com')
         self.task = self.pl.create_task('task')
         self.task.id = 1
 
@@ -65,7 +64,7 @@ class CreateNewNoteTest(unittest.TestCase):
         result = self.ll.create_new_note(self.task.id, 'content', self.user)
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, Note)
+        self.assertEqual(result.object_type, ObjectTypes.Note)
         self.assertEqual('content', result.content)
         time_delta = (datetime.utcnow() - result.timestamp)
         self.assertLessEqual(time_delta.total_seconds(), 1)

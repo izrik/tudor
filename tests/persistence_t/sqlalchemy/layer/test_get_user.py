@@ -1,6 +1,4 @@
-import unittest
 
-from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -19,7 +17,7 @@ class GetUserTest(PersistenceLayerTestBase):
 
     def test_get_user_existing_yields_that_user(self):
         # given
-        user = User('user')
+        user = self.pl.create_user('user')
         self.pl.add(user)
         self.pl.commit()
         # precondition

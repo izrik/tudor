@@ -937,6 +937,9 @@ class SqlAlchemyPersistenceLayer(object):
     def note_query(self):
         return self.DbNote.query
 
+    def create_note(self, content, timestamp=None, lazy=None):
+        return Note(content=content, timestamp=timestamp, lazy=lazy)
+
     def _get_db_note(self, note_id):
         if note_id is None:
             raise ValueError('note_id acannot be None')
@@ -1007,6 +1010,11 @@ class SqlAlchemyPersistenceLayer(object):
     def user_query(self):
         return self.DbUser.query
 
+    def create_user(self, email, hashed_password=None, is_admin=False,
+                    lazy=None):
+        return User(email=email, hashed_password=hashed_password,
+                    is_admin=is_admin, lazy=lazy)
+
     def _get_db_user(self, user_id):
         if user_id is None:
             raise ValueError('user_id acannot be None')
@@ -1042,6 +1050,9 @@ class SqlAlchemyPersistenceLayer(object):
     @property
     def option_query(self):
         return self.DbOption.query
+
+    def create_option(self, key, value):
+        return Option(key=key, value=value)
 
     def _get_db_option(self, key):
         if key is None:

@@ -4,7 +4,7 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
-from persistence.in_memory.models.user import User, GuestUser
+from persistence.in_memory.models.user import GuestUser
 from persistence.sqlalchemy.layer import Pager
 from util import generate_ll
 
@@ -13,7 +13,7 @@ class GetTaskDataTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
-        self.user = User('name@example.com')
+        self.user = self.pl.create_user('name@example.com')
         self.guest = GuestUser()
         self.task = self.pl.create_task('task')
         self.task.id = 1
@@ -100,7 +100,7 @@ class GetTaskDataTest(unittest.TestCase):
 
     def test_not_authorized_admin_can_see_tasks(self):
         # given
-        admin = User('admin@example.com', '', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', '', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         # precondition

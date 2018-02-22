@@ -1,7 +1,4 @@
 
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.user import User
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -54,7 +51,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_note_reduces_count(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         self.pl.commit()
         # precondition
@@ -67,7 +64,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_user_reduces_count(self):
         # given
-        user = User('user')
+        user = self.pl.create_user('user')
         self.pl.add(user)
         self.pl.commit()
         # precondition
@@ -80,7 +77,7 @@ class DeletionTest(InMemoryTestBase):
 
     def test_deleting_option_reduces_count(self):
         # given
-        option = Option('key', 'value')
+        option = self.pl.create_option('key', 'value')
         self.pl.add(option)
         self.pl.commit()
         # precondition
@@ -236,7 +233,7 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_task_removes_task_from_user(self):
         # given
         task = self.pl.create_task('task')
-        user = User('user')
+        user = self.pl.create_user('user')
         task.users.append(user)
         self.pl.add(task)
         self.pl.add(user)
@@ -256,7 +253,7 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_task_removes_user_from_task(self):
         # given
         task = self.pl.create_task('task')
-        user = User('user')
+        user = self.pl.create_user('user')
         task.users.append(user)
         self.pl.add(task)
         self.pl.add(user)
@@ -276,7 +273,7 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_user_removes_user_from_task(self):
         # given
         task = self.pl.create_task('task')
-        user = User('user')
+        user = self.pl.create_user('user')
         task.users.append(user)
         self.pl.add(task)
         self.pl.add(user)
@@ -296,7 +293,7 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_user_removes_task_from_user(self):
         # given
         task = self.pl.create_task('task')
-        user = User('user')
+        user = self.pl.create_user('user')
         task.users.append(user)
         self.pl.add(task)
         self.pl.add(user)
@@ -476,9 +473,9 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_task_removes_all_notes(self):
         # given
         task = self.pl.create_task('task')
-        n1 = Note('n1')
-        n2 = Note('n2')
-        n3 = Note('n3')
+        n1 = self.pl.create_note('n1')
+        n2 = self.pl.create_note('n2')
+        n3 = self.pl.create_note('n3')
         task.notes.append(n1)
         task.notes.append(n2)
         task.notes.append(n3)
@@ -506,9 +503,9 @@ class DeletionTest(InMemoryTestBase):
     def test_deleting_task_of_notes_nullifies_task_and_task_id(self):
         # given
         task = self.pl.create_task('task')
-        n1 = Note('n1')
-        n2 = Note('n2')
-        n3 = Note('n3')
+        n1 = self.pl.create_note('n1')
+        n2 = self.pl.create_note('n2')
+        n3 = self.pl.create_note('n3')
         task.notes.append(n1)
         task.notes.append(n2)
         task.notes.append(n3)
@@ -669,11 +666,11 @@ class AddDeleteTest(InMemoryTestBase):
         self.pl.add(tag)
         attachment = self.pl.create_attachment('attachment')
         self.pl.add(attachment)
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
-        user = User('user')
+        user = self.pl.create_user('user')
         self.pl.add(user)
-        option = Option('key', 'value')
+        option = self.pl.create_option('key', 'value')
         self.pl.add(option)
         self.pl.commit()
         # precondition

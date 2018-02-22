@@ -1,6 +1,5 @@
-import unittest
 
-from persistence.in_memory.models.user import User
+from models.object_types import ObjectTypes
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -8,9 +7,9 @@ class GetUsersTest(PersistenceLayerTestBase):
     def setUp(self):
         self.pl = self.generate_pl()
         self.pl.create_all()
-        self.user1 = User('admin@example.com', is_admin=True)
+        self.user1 = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(self.user1)
-        self.user2 = User('name@example.com')
+        self.user2 = self.pl.create_user('name@example.com')
         self.pl.add(self.user2)
         self.pl.commit()
 
@@ -51,7 +50,7 @@ class GetUsersTest(PersistenceLayerTestBase):
         result = self.pl.get_user_by_email('asdf')
         # then
         self.assertIsNotNone(result)
-        self.assertIsInstance(result, User)
+        self.assertEqual(result.object_type, ObjectTypes.User)
         self.assertIs(self.user1, result)
 
     def test_get_users_without_params_returns_all_users(self):

@@ -3,7 +3,7 @@
 import unittest
 from datetime import datetime
 
-from persistence.in_memory.models.user import User, GuestUser
+from persistence.in_memory.models.user import GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -16,7 +16,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         attrs = task.to_dict()
@@ -31,7 +31,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task(summary='task')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_summary'.format(task.id)
@@ -48,7 +48,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task', deadline='2017-01-01')
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_deadline'.format(task.id)
@@ -65,7 +65,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task', is_done=True)
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_is_done'.format(task.id)
@@ -82,7 +82,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task', is_deleted=True)
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_is_deleted'.format(task.id)
@@ -100,7 +100,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         task = self.pl.create_task('task')
         task.order_num = 123
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_order_num'.format(task.id)
@@ -117,7 +117,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task', expected_duration_minutes=123)
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_duration'.format(task.id)
@@ -134,7 +134,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task('task', expected_cost=123)
         self.pl.add(task)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_cost'.format(task.id)
@@ -156,7 +156,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         task.parent = p1
         p2 = self.pl.create_task('p2')
         self.pl.add(p2)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         key = 'task_{}_parent_id'.format(task.id)
@@ -177,7 +177,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         self.pl.add(t2)
         t3 = self.pl.create_task('t3')
         self.pl.add(t3)
-        admin = User('admin@example.com', is_admin=True)
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
         self.pl.commit()
         crud_data = {'task_{}_summary'.format(t1.id): 't4',
@@ -199,7 +199,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task(summary='task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         task.users.add(user)
         self.pl.commit()
@@ -219,7 +219,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task(summary='task')
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         self.pl.commit()
         key = 'task_{}_summary'.format(task.id)
@@ -242,7 +242,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         self.pl.add(t2)
         t3 = self.pl.create_task('t3')
         self.pl.add(t3)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         t1.users.add(user)
         t3.users.add(user)
@@ -272,7 +272,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         # given
         task = self.pl.create_task(summary='task', is_public=True)
         self.pl.add(task)
-        user = User('user@example.com')
+        user = self.pl.create_user('user@example.com')
         self.pl.add(user)
         self.pl.commit()
         key = 'task_{}_summary'.format(task.id)

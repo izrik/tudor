@@ -5,7 +5,6 @@ from datetime import datetime
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -13,8 +12,8 @@ class LogicLayerSetTaskTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.admin = User('admin@example.com', is_admin=True)
-        self.user = User('user@example.com', is_admin=False)
+        self.admin = self.pl.create_user('admin@example.com', is_admin=True)
+        self.user = self.pl.create_user('user@example.com', is_admin=False)
         self.task = self.pl.create_task('summary')
         self.pl.add(self.admin)
         self.pl.add(self.user)

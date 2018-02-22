@@ -3,7 +3,6 @@
 import unittest
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -12,9 +11,9 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.admin = User('name@example.org', None, True)
+        self.admin = self.pl.create_user('name@example.org', None, True)
         self.pl.add(self.admin)
-        self.user = User('name2@example.org', None, False)
+        self.user = self.pl.create_user('name2@example.org', None, False)
         self.pl.add(self.user)
 
     def test_get_or_create_tag_nonexistent_creates_tag(self):

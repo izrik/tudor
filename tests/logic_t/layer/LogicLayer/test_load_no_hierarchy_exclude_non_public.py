@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -15,7 +14,7 @@ class DbLoadNoHierarchyExcludeNonPublicTest(unittest.TestCase):
         self.t2 = self.pl.create_task('t2', is_public=False)
         self.pl.add(self.t1)
         self.pl.add(self.t2)
-        self.user = User('name@example.org', None, True)
+        self.user = self.pl.create_user('name@example.org', None, True)
         self.pl.add(self.user)
         self.pl.commit()
 
@@ -30,5 +29,3 @@ class DbLoadNoHierarchyExcludeNonPublicTest(unittest.TestCase):
         tasks = self.ll.load_no_hierarchy(self.user, exclude_non_public=True)
         # then
         self.assertEqual({self.t1}, set(tasks))
-
-

@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.option import Option
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -33,7 +32,7 @@ class SetOptionTest(unittest.TestCase):
 
     def test_edits_option(self):
         # given
-        option = Option('a', 'b')
+        option = self.pl.create_option('a', 'b')
         self.pl.add(option)
         self.pl.commit()
         # precondition

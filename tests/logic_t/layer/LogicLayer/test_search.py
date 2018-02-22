@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -10,7 +9,7 @@ class SearchTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.admin = User('name@example.org', None, True)
+        self.admin = self.pl.create_user('name@example.org', None, True)
         self.pl.add(self.admin)
         self.pl.commit()
 
@@ -48,7 +47,7 @@ class SearchTest(unittest.TestCase):
 
     def test_non_admin_may_access_own_tasks(self):
         # given
-        user1 = User('user1@example.org', None, False)
+        user1 = self.pl.create_user('user1@example.org', None, False)
         self.pl.add(user1)
         task = self.pl.create_task('one two three')
         task.users.append(user1)
@@ -63,9 +62,9 @@ class SearchTest(unittest.TestCase):
 
     def test_non_admin_may_not_access_other_tasks(self):
         # given
-        user1 = User('user1@example.org', None, False)
+        user1 = self.pl.create_user('user1@example.org', None, False)
         self.pl.add(user1)
-        user2 = User('user2@example.org', None, False)
+        user2 = self.pl.create_user('user2@example.org', None, False)
         self.pl.add(user2)
         task = self.pl.create_task('one two three')
         task.users.append(user1)

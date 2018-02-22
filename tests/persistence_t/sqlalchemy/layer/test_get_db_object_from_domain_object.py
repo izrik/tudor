@@ -1,7 +1,4 @@
 
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.user import User
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -87,7 +84,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_get_note_from_domain(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         self.pl.commit()
         # precondition
@@ -132,7 +129,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_get_user_from_domain(self):
         # given
-        user = User('user')
+        user = self.pl.create_user('user')
         self.pl.add(user)
         self.pl.commit()
         # precondition
@@ -147,7 +144,7 @@ class GetDbFromDomainTest(PersistenceLayerTestBase):
 
     def test_get_option_from_domain(self):
         # given
-        option = Option('key', 'value')
+        option = self.pl.create_option('key', 'value')
         self.pl.add(option)
         self.pl.commit()
         # precondition

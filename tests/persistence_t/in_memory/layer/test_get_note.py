@@ -1,5 +1,4 @@
 
-from persistence.in_memory.models.note import Note
 from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 
 
@@ -21,7 +20,7 @@ class GetNoteTest(InMemoryTestBase):
 
     def test_get_note_existing_yields_that_note(self):
         # given
-        note = Note('note')
+        note = self.pl.create_note('note')
         self.pl.add(note)
         self.pl.commit()
         # precondition

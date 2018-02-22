@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User
 from util import generate_ll
 
 
@@ -11,7 +10,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll(db_uri='sqlite://')
         self.pl = self.ll.pl
-        self.user = User('name@example.org', None, True)
+        self.user = self.pl.create_user('name@example.org', None, True)
 
     def test_old_task_becomes_a_tag(self):
         # given
