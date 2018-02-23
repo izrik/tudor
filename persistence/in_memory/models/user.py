@@ -82,7 +82,7 @@ class User(Changeable, UserBase):
 
 
 class InterlinkedTasks(ManyToManySet):
-    __change_field__ = User.FIELD_TASKS
+    __change_field__ = UserBase.FIELD_TASKS
     __attr_counterpart__ = 'users'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedTasks')

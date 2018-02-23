@@ -1,6 +1,7 @@
+
 from models.changeable import Changeable
-from persistence.in_memory.models.task import Task
-from persistence.in_memory.models.user import User
+from models.task_base import TaskBase
+from models.user_base import UserBase
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -14,7 +15,7 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertIsNone(self.user.id)
         # when
-        self.user.make_change(User.FIELD_ID, Changeable.OP_SET, 1)
+        self.user.make_change(UserBase.FIELD_ID, Changeable.OP_SET, 1)
         # then
         self.assertEqual(1, self.user.id)
 
@@ -23,27 +24,27 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_ID, Changeable.OP_ADD, 1)
+            UserBase.FIELD_ID, Changeable.OP_ADD, 1)
 
     def test_removing_id_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_ID, Changeable.OP_REMOVE, 1)
+            UserBase.FIELD_ID, Changeable.OP_REMOVE, 1)
 
     def test_changing_id_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_ID, Changeable.OP_CHANGING, 1)
+            UserBase.FIELD_ID, Changeable.OP_CHANGING, 1)
 
     def test_setting_email_sets_email(self):
         # precondition
         self.assertEqual('name@example.com', self.user.email)
         # when
-        self.user.make_change(User.FIELD_EMAIL, Changeable.OP_SET,
+        self.user.make_change(UserBase.FIELD_EMAIL, Changeable.OP_SET,
                               'another@example.com')
         # then
         self.assertEqual('another@example.com', self.user.email)
@@ -53,28 +54,29 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_EMAIL, Changeable.OP_ADD, 'another@example.com')
+            UserBase.FIELD_EMAIL, Changeable.OP_ADD, 'another@example.com')
 
     def test_removing_email_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_EMAIL, Changeable.OP_REMOVE, 'another@example.com')
+            UserBase.FIELD_EMAIL, Changeable.OP_REMOVE, 'another@example.com')
 
     def test_changing_email_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_EMAIL, Changeable.OP_CHANGING, 'another@example.com')
+            UserBase.FIELD_EMAIL, Changeable.OP_CHANGING,
+            'another@example.com')
 
     def test_setting_hashed_password_sets_hashed_password(self):
         # precondition
         self.assertIsNone(self.user.hashed_password)
         # when
-        self.user.make_change(User.FIELD_HASHED_PASSWORD, Changeable.OP_SET,
-                              'b')
+        self.user.make_change(UserBase.FIELD_HASHED_PASSWORD,
+                              Changeable.OP_SET, 'b')
         # then
         self.assertEqual('b', self.user.hashed_password)
 
@@ -83,27 +85,27 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_HASHED_PASSWORD, Changeable.OP_ADD, 'b')
+            UserBase.FIELD_HASHED_PASSWORD, Changeable.OP_ADD, 'b')
 
     def test_removing_hashed_password_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_HASHED_PASSWORD, Changeable.OP_REMOVE, 'b')
+            UserBase.FIELD_HASHED_PASSWORD, Changeable.OP_REMOVE, 'b')
 
     def test_changing_hashed_password_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_HASHED_PASSWORD, Changeable.OP_CHANGING, 'b')
+            UserBase.FIELD_HASHED_PASSWORD, Changeable.OP_CHANGING, 'b')
 
     def test_setting_is_admin_sets_is_admin(self):
         # precondition
         self.assertFalse(self.user.is_admin)
         # when
-        self.user.make_change(User.FIELD_IS_ADMIN, Changeable.OP_SET, True)
+        self.user.make_change(UserBase.FIELD_IS_ADMIN, Changeable.OP_SET, True)
         # then
         self.assertTrue(self.user.is_admin)
 
@@ -112,21 +114,21 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_IS_ADMIN, Changeable.OP_ADD, True)
+            UserBase.FIELD_IS_ADMIN, Changeable.OP_ADD, True)
 
     def test_removing_is_admin_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_IS_ADMIN, Changeable.OP_REMOVE, True)
+            UserBase.FIELD_IS_ADMIN, Changeable.OP_REMOVE, True)
 
     def test_changing_is_admin_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_IS_ADMIN, Changeable.OP_CHANGING, True)
+            UserBase.FIELD_IS_ADMIN, Changeable.OP_CHANGING, True)
 
     def test_adding_tasks_adds(self):
         # given
@@ -134,7 +136,7 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([], list(self.user.tasks))
         # when
-        self.user.make_change(User.FIELD_TASKS, Changeable.OP_ADD, task)
+        self.user.make_change(UserBase.FIELD_TASKS, Changeable.OP_ADD, task)
         # then
         self.assertEqual([task], list(self.user.tasks))
 
@@ -145,7 +147,7 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([task], list(self.user.tasks))
         # when
-        self.user.make_change(User.FIELD_TASKS, Changeable.OP_REMOVE, task)
+        self.user.make_change(UserBase.FIELD_TASKS, Changeable.OP_REMOVE, task)
         # then
         self.assertEqual([], list(self.user.tasks))
 
@@ -156,7 +158,7 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_TASKS, Changeable.OP_SET, task)
+            UserBase.FIELD_TASKS, Changeable.OP_SET, task)
 
     def test_changing_tasks_raises(self):
         # given
@@ -165,14 +167,14 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            User.FIELD_TASKS, Changeable.OP_CHANGING, task)
+            UserBase.FIELD_TASKS, Changeable.OP_CHANGING, task)
 
     def test_non_user_field_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.user.make_change,
-            Task.FIELD_SUMMARY, Changeable.OP_SET, 'value')
+            TaskBase.FIELD_SUMMARY, Changeable.OP_SET, 'value')
 
     def test_invalid_field_raises(self):
         # expect
@@ -188,7 +190,7 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([task], list(self.user.tasks))
         # when
-        self.user.make_change(User.FIELD_TASKS, Changeable.OP_ADD, task)
+        self.user.make_change(UserBase.FIELD_TASKS, Changeable.OP_ADD, task)
         # then
         self.assertEqual([task], list(self.user.tasks))
 
@@ -198,6 +200,6 @@ class DbUserMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([], list(self.user.tasks))
         # when
-        self.user.make_change(User.FIELD_TASKS, Changeable.OP_REMOVE, task)
+        self.user.make_change(UserBase.FIELD_TASKS, Changeable.OP_REMOVE, task)
         # then
         self.assertEqual([], list(self.user.tasks))

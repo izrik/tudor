@@ -338,58 +338,58 @@ class Task(Changeable, TaskBase):
 
 
 class InterlinkedChildren(OneToManySet):
-    __change_field__ = Task.FIELD_CHILDREN
+    __change_field__ = TaskBase.FIELD_CHILDREN
     __attr_counterpart__ = 'parent'
     _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedChildren')
 
 
 class InterlinkedTags(ManyToManySet):
-    __change_field__ = Task.FIELD_TAGS
+    __change_field__ = TaskBase.FIELD_TAGS
     __attr_counterpart__ = 'tasks'
     _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedTags')
 
 
 class InterlinkedUsers(ManyToManySet):
-    __change_field__ = Task.FIELD_USERS
+    __change_field__ = TaskBase.FIELD_USERS
     __attr_counterpart__ = 'tasks'
     _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedUsers')
 
 
 class InterlinkedDependees(ManyToManySet):
-    __change_field__ = Task.FIELD_DEPENDEES
+    __change_field__ = TaskBase.FIELD_DEPENDEES
     __attr_counterpart__ = 'dependants'
     _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedDependees')
 
 
 class InterlinkedDependants(ManyToManySet):
-    __change_field__ = Task.FIELD_DEPENDANTS
+    __change_field__ = TaskBase.FIELD_DEPENDANTS
     __attr_counterpart__ = 'dependees'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedDependants')
 
 
 class InterlinkedPrioritizeBefore(ManyToManySet):
-    __change_field__ = Task.FIELD_PRIORITIZE_BEFORE
+    __change_field__ = TaskBase.FIELD_PRIORITIZE_BEFORE
     __attr_counterpart__ = 'prioritize_after'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedPrioritizeBefore')
 
 
 class InterlinkedPrioritizeAfter(ManyToManySet):
-    __change_field__ = Task.FIELD_PRIORITIZE_AFTER
+    __change_field__ = TaskBase.FIELD_PRIORITIZE_AFTER
     __attr_counterpart__ = 'prioritize_before'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedPrioritizeAfter')
 
 
 class InterlinkedNotes(OneToManySet):
-    __change_field__ = Task.FIELD_NOTES
+    __change_field__ = TaskBase.FIELD_NOTES
     __attr_counterpart__ = 'task'
     _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedNotes')
 
 
 class InterlinkedAttachments(OneToManySet):
-    __change_field__ = Task.FIELD_ATTACHMENTS
+    __change_field__ = TaskBase.FIELD_ATTACHMENTS
     __attr_counterpart__ = 'task'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedAttachments')

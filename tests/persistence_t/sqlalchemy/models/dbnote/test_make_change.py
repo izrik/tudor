@@ -1,8 +1,9 @@
+
 from datetime import datetime
 
 from models.changeable import Changeable
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.task import Task
+from models.note_base import NoteBase
+from models.task_base import TaskBase
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -16,7 +17,7 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertIsNone(self.Note.id)
         # when
-        self.Note.make_change(Note.FIELD_ID, Changeable.OP_SET, 1)
+        self.Note.make_change(NoteBase.FIELD_ID, Changeable.OP_SET, 1)
         # then
         self.assertEqual(1, self.Note.id)
 
@@ -25,27 +26,27 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_ID, Changeable.OP_ADD, 1)
+            NoteBase.FIELD_ID, Changeable.OP_ADD, 1)
 
     def test_removing_id_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_ID, Changeable.OP_REMOVE, 1)
+            NoteBase.FIELD_ID, Changeable.OP_REMOVE, 1)
 
     def test_changing_id_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_ID, Changeable.OP_CHANGING, 1)
+            NoteBase.FIELD_ID, Changeable.OP_CHANGING, 1)
 
     def test_setting_content_sets_content(self):
         # precondition
         self.assertEqual('Note', self.Note.content)
         # when
-        self.Note.make_change(Note.FIELD_CONTENT, Changeable.OP_SET, 'a')
+        self.Note.make_change(NoteBase.FIELD_CONTENT, Changeable.OP_SET, 'a')
         # then
         self.assertEqual('a', self.Note.content)
 
@@ -54,27 +55,27 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_CONTENT, Changeable.OP_ADD, 'a')
+            NoteBase.FIELD_CONTENT, Changeable.OP_ADD, 'a')
 
     def test_removing_content_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_CONTENT, Changeable.OP_REMOVE, 'a')
+            NoteBase.FIELD_CONTENT, Changeable.OP_REMOVE, 'a')
 
     def test_changing_content_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_CONTENT, Changeable.OP_CHANGING, 'a')
+            NoteBase.FIELD_CONTENT, Changeable.OP_CHANGING, 'a')
 
     def test_setting_timestamp_sets_timestamp(self):
         # precondition
         self.assertEqual(datetime(2017, 1, 1), self.Note.timestamp)
         # when
-        self.Note.make_change(Note.FIELD_TIMESTAMP, Changeable.OP_SET,
+        self.Note.make_change(NoteBase.FIELD_TIMESTAMP, Changeable.OP_SET,
                               datetime(2017, 1, 2))
         # then
         self.assertEqual(datetime(2017, 1, 2), self.Note.timestamp)
@@ -84,21 +85,21 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TIMESTAMP, Changeable.OP_ADD, 'b')
+            NoteBase.FIELD_TIMESTAMP, Changeable.OP_ADD, 'b')
 
     def test_removing_timestamp_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TIMESTAMP, Changeable.OP_REMOVE, 'b')
+            NoteBase.FIELD_TIMESTAMP, Changeable.OP_REMOVE, 'b')
 
     def test_changing_timestamp_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TIMESTAMP, Changeable.OP_CHANGING, 'b')
+            NoteBase.FIELD_TIMESTAMP, Changeable.OP_CHANGING, 'b')
 
     def test_setting_task_sets_task(self):
         # given
@@ -106,7 +107,7 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertIsNone(self.Note.task)
         # when
-        self.Note.make_change(Note.FIELD_TASK, Changeable.OP_SET, task)
+        self.Note.make_change(NoteBase.FIELD_TASK, Changeable.OP_SET, task)
         # then
         self.assertEqual(task, self.Note.task)
 
@@ -119,7 +120,7 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TASK, Changeable.OP_ADD, task)
+            NoteBase.FIELD_TASK, Changeable.OP_ADD, task)
 
     def test_removing_task_raises(self):
         # given
@@ -130,7 +131,7 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TASK, Changeable.OP_REMOVE, task)
+            NoteBase.FIELD_TASK, Changeable.OP_REMOVE, task)
 
     def test_changing_task_raises(self):
         # given
@@ -141,14 +142,14 @@ class DbNoteMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Note.FIELD_TASK, Changeable.OP_CHANGING, task)
+            NoteBase.FIELD_TASK, Changeable.OP_CHANGING, task)
 
     def test_non_note_field_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.Note.make_change,
-            Task.FIELD_SUMMARY, Changeable.OP_SET, 'value')
+            TaskBase.FIELD_SUMMARY, Changeable.OP_SET, 'value')
 
     def test_invalid_field_raises(self):
         # expect

@@ -71,5 +71,5 @@ class Tag(Changeable, TagBase):
 
 
 class InterlinkedTasks(ManyToManySet):
-    __change_field__ = Tag.FIELD_TASKS
+    __change_field__ = TagBase.FIELD_TASKS
     __attr_counterpart__ = 'tags'

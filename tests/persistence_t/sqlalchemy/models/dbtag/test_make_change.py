@@ -1,6 +1,7 @@
+
 from models.changeable import Changeable
-from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
+from models.tag_base import TagBase
+from models.task_base import TaskBase
 from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
@@ -14,7 +15,7 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertIsNone(self.tag.id)
         # when
-        self.tag.make_change(Tag.FIELD_ID, Changeable.OP_SET, 1)
+        self.tag.make_change(TagBase.FIELD_ID, Changeable.OP_SET, 1)
         # then
         self.assertEqual(1, self.tag.id)
 
@@ -23,27 +24,27 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_ID, Changeable.OP_ADD, 1)
+            TagBase.FIELD_ID, Changeable.OP_ADD, 1)
 
     def test_removing_id_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_ID, Changeable.OP_REMOVE, 1)
+            TagBase.FIELD_ID, Changeable.OP_REMOVE, 1)
 
     def test_changing_id_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_ID, Changeable.OP_CHANGING, 1)
+            TagBase.FIELD_ID, Changeable.OP_CHANGING, 1)
 
     def test_setting_value_sets_value(self):
         # precondition
         self.assertEqual('tag', self.tag.value)
         # when
-        self.tag.make_change(Tag.FIELD_VALUE, Changeable.OP_SET, 'a')
+        self.tag.make_change(TagBase.FIELD_VALUE, Changeable.OP_SET, 'a')
         # then
         self.assertEqual('a', self.tag.value)
 
@@ -52,27 +53,27 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_VALUE, Changeable.OP_ADD, 'a')
+            TagBase.FIELD_VALUE, Changeable.OP_ADD, 'a')
 
     def test_removing_value_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_VALUE, Changeable.OP_REMOVE, 'a')
+            TagBase.FIELD_VALUE, Changeable.OP_REMOVE, 'a')
 
     def test_changing_value_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_VALUE, Changeable.OP_CHANGING, 'a')
+            TagBase.FIELD_VALUE, Changeable.OP_CHANGING, 'a')
 
     def test_setting_description_sets_description(self):
         # precondition
         self.assertIsNone(self.tag.description)
         # when
-        self.tag.make_change(Tag.FIELD_DESCRIPTION, Changeable.OP_SET, 'b')
+        self.tag.make_change(TagBase.FIELD_DESCRIPTION, Changeable.OP_SET, 'b')
         # then
         self.assertEqual('b', self.tag.description)
 
@@ -81,21 +82,21 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_DESCRIPTION, Changeable.OP_ADD, 'b')
+            TagBase.FIELD_DESCRIPTION, Changeable.OP_ADD, 'b')
 
     def test_removing_description_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_DESCRIPTION, Changeable.OP_REMOVE, 'b')
+            TagBase.FIELD_DESCRIPTION, Changeable.OP_REMOVE, 'b')
 
     def test_changing_description_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_DESCRIPTION, Changeable.OP_CHANGING, 'b')
+            TagBase.FIELD_DESCRIPTION, Changeable.OP_CHANGING, 'b')
 
     def test_adding_tasks_adds(self):
         # given
@@ -103,7 +104,7 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([], list(self.tag.tasks))
         # when
-        self.tag.make_change(Tag.FIELD_TASKS, Changeable.OP_ADD, task)
+        self.tag.make_change(TagBase.FIELD_TASKS, Changeable.OP_ADD, task)
         # then
         self.assertEqual([task], list(self.tag.tasks))
 
@@ -114,7 +115,7 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([task], list(self.tag.tasks))
         # when
-        self.tag.make_change(Tag.FIELD_TASKS, Changeable.OP_REMOVE, task)
+        self.tag.make_change(TagBase.FIELD_TASKS, Changeable.OP_REMOVE, task)
         # then
         self.assertEqual([], list(self.tag.tasks))
 
@@ -125,7 +126,7 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_TASKS, Changeable.OP_SET, task)
+            TagBase.FIELD_TASKS, Changeable.OP_SET, task)
 
     def test_changing_tasks_raises(self):
         # given
@@ -134,14 +135,14 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Tag.FIELD_TASKS, Changeable.OP_CHANGING, task)
+            TagBase.FIELD_TASKS, Changeable.OP_CHANGING, task)
 
     def test_non_tag_field_raises(self):
         # expect
         self.assertRaises(
             ValueError,
             self.tag.make_change,
-            Task.FIELD_SUMMARY, Changeable.OP_SET, 'value')
+            TaskBase.FIELD_SUMMARY, Changeable.OP_SET, 'value')
 
     def test_invalid_field_raises(self):
         # expect
@@ -157,7 +158,7 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([task], list(self.tag.tasks))
         # when
-        self.tag.make_change(Tag.FIELD_TASKS, Changeable.OP_ADD, task)
+        self.tag.make_change(TagBase.FIELD_TASKS, Changeable.OP_ADD, task)
         # then
         self.assertEqual([task], list(self.tag.tasks))
 
@@ -167,6 +168,6 @@ class DbTagMakeChangeTest(PersistenceLayerTestBase):
         # precondition
         self.assertEqual([], list(self.tag.tasks))
         # when
-        self.tag.make_change(Tag.FIELD_TASKS, Changeable.OP_REMOVE, task)
+        self.tag.make_change(TagBase.FIELD_TASKS, Changeable.OP_REMOVE, task)
         # then
         self.assertEqual([], list(self.tag.tasks))
