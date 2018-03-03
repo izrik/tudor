@@ -86,26 +86,3 @@ class InterlinkedTasks(ManyToManySet):
     __attr_counterpart__ = 'users'
     _logger = logging_util.get_logger_by_name(__name__,
                                               'InterlinkedTasks')
-
-
-class GuestUser(UserBase):
-    id = -1
-    authenticated = False
-    tasks = ()
-
-    def __init__(self):
-        super(GuestUser, self).__init__('Guest', '', False)
-
-    def is_authenticated(self):
-        return False
-
-    def is_anonymous(self):
-        return True
-
-    @property
-    def is_admin(self):
-        return False
-
-    @is_admin.setter
-    def is_admin(self, value):
-        pass

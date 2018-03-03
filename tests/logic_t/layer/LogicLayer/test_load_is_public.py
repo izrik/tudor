@@ -2,7 +2,6 @@
 
 import unittest
 
-from persistence.in_memory.models.user import GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -84,7 +83,7 @@ class LoadIsPublicTest(unittest.TestCase):
 
     def test_guest_sees_only_public_tasks(self):
         # given
-        guest = GuestUser()
+        guest = self.pl.get_guest_user()
         # when
         tasks = self.ll.load(current_user=guest, root_task_id=self.tp.id,
                              max_depth=None)
@@ -93,7 +92,7 @@ class LoadIsPublicTest(unittest.TestCase):
 
     def test_guest_sees_only_public_tasks2(self):
         # given
-        guest = GuestUser()
+        guest = self.pl.get_guest_user()
         # when
         tasks = self.ll.load(current_user=guest, root_task_id=self.tr.id,
                              max_depth=None)

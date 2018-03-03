@@ -11,7 +11,8 @@ class UserBase(object):
     FIELD_IS_ADMIN = 'IS_ADMIN'
     FIELD_TASKS = 'TASKS'
 
-    authenticated = True
+    _is_authenticated = True
+    _is_anonymous = False
 
     def __init__(self, email, hashed_password, is_admin=False):
 
@@ -83,7 +84,7 @@ class UserBase(object):
         return self.email
 
     def is_authenticated(self):
-        return self.authenticated
+        return self._is_authenticated
 
     def is_anonymous(self):
-        return False
+        return self._is_anonymous

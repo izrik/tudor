@@ -6,7 +6,7 @@ from flask_login import AnonymousUserMixin
 
 from persistence.in_memory.models.task import Task
 from models.task_user_ops import TaskUserOps
-from persistence.in_memory.models.user import User, GuestUser
+from persistence.in_memory.models.user import User
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 
 
@@ -68,7 +68,7 @@ class UserCanViewTaskTest(unittest.TestCase):
     def test_guest_user_cannot_view_private_task(self):
         # given
         task = Task('task')
-        guest = GuestUser()
+        guest = self.pl.get_guest_user()
         self.pl.add(task)
         self.pl.commit()
         # when
@@ -150,7 +150,7 @@ class UserCanViewTaskTest(unittest.TestCase):
     def test_guest_user_can_view_public_task(self):
         # given
         task = Task('task', is_public=True)
-        guest = GuestUser()
+        guest = self.pl.get_guest_user()
         self.pl.add(task)
         self.pl.commit()
         # when

@@ -322,6 +322,16 @@ class InMemoryPersistenceLayer(object):
         return User(email=email, hashed_password=hashed_password,
                     is_admin=is_admin, lazy=lazy)
 
+    _guest_user = None
+
+    def get_guest_user(self):
+        if self._guest_user is None:
+            self._guest_user = self.create_user('guest@guest')
+            self._guest_user._is_authenticated = False
+            self._guest_user._is_anonymous = True
+            self._guest_user.is_admin = False
+        return self._guest_user
+
     def get_user(self, user_id):
         if user_id is None:
             raise ValueError('No user_id provided.')

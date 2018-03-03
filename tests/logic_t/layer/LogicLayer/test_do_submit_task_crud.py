@@ -3,7 +3,6 @@
 import unittest
 from datetime import datetime
 
-from persistence.in_memory.models.user import GuestUser
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -289,7 +288,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
 
     def test_guest_user_raises(self):
         # given
-        user = GuestUser()
+        user = self.pl.get_guest_user()
         crud_data = {}
         # expect
         self.assertRaises(

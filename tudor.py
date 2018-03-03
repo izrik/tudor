@@ -18,7 +18,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
-from persistence.in_memory.models.user import GuestUser
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
@@ -170,13 +169,13 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         @staticmethod
         def get_user():
             if current_user is None:
-                return GuestUser()
+                return pl.get_guest_user()
 
             try:
                 user_id = current_user.id
                 return pl.get_user(user_id)
             except AttributeError:
-                return GuestUser()
+                return pl.get_guest_user()
 
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)

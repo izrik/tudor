@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User, GuestUser
+from persistence.in_memory.models.user import User
 
 
 class UserTest(unittest.TestCase):
@@ -119,27 +119,3 @@ class UserTest(unittest.TestCase):
         # then
         self.assertEqual({'tasks': []},
                          user.to_dict({user.FIELD_TASKS}))
-
-
-class GuestUserTest(unittest.TestCase):
-    def test_create_is_not_none(self):
-        # when
-        guest = GuestUser()
-        # then
-        self.assertIsNotNone(guest)
-        self.assertFalse(guest.authenticated)
-        self.assertTrue(guest.is_active())
-        self.assertEqual('Guest', guest.get_id())
-        self.assertFalse(guest.is_authenticated())
-        self.assertTrue(guest.is_anonymous())
-        self.assertFalse(guest.is_admin)
-
-    def test_setting_is_admin_does_not_set_is_admin(self):
-        # given
-        guest = GuestUser()
-        # precondition
-        self.assertFalse(guest.is_admin)
-        # when
-        guest.is_admin = True
-        # then
-        self.assertFalse(guest.is_admin)

@@ -970,8 +970,7 @@ class LogicLayer(object):
         if current_user is None:
             # guest users not allowed
             raise ValueError('current_user cannot be None.')
-        if not hasattr(current_user, 'object_type') or \
-                        current_user.object_type != ObjectTypes.User:
+        if current_user.is_anonymous():
             # guest users not allowed
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')
