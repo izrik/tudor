@@ -201,7 +201,7 @@ class SubmitTaskCrudTest(unittest.TestCase):
         self.pl.add(task)
         user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        task.users.add(user)
+        task.users.append(user)
         self.pl.commit()
         key = 'task_{}_summary'.format(task.id)
         crud_data = {key: 'something else'}
@@ -244,8 +244,8 @@ class SubmitTaskCrudTest(unittest.TestCase):
         self.pl.add(t3)
         user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        t1.users.add(user)
-        t3.users.add(user)
+        t1.users.append(user)
+        t3.users.append(user)
         self.pl.commit()
         crud_data = {'task_{}_summary'.format(t1.id): 't4',
                      'task_{}_summary'.format(t2.id): 't5',

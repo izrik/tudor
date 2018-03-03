@@ -74,6 +74,9 @@ class InterlinkedSet(collections.MutableSet):
         self._populate()
         self.set.discard(item)
 
+    def count(self):
+        return len(self)
+
 
 class OneToManySet(InterlinkedSet):
     _logger = logging_util.get_logger_by_name(__name__, 'OneToManySet')

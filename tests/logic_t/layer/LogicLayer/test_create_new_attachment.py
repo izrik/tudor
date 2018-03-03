@@ -22,7 +22,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.create_new_attachment(self.task.id, self.f,
@@ -64,7 +64,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.create_new_attachment(self.task.id, self.f, 'abc',
@@ -81,7 +81,7 @@ class CreateNewAttachmentTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.create_new_attachment(self.task.id, self.f, None,

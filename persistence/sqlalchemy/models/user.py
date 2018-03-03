@@ -66,4 +66,7 @@ def generate_user_class(db, users_tasks_table):
                     if value in self.tasks:
                         self.tasks.remove(value)
 
+        def clear_relationships(self):
+            self.tasks = []
+
     return DbUser

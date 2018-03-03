@@ -207,3 +207,11 @@ class TaskBase(object):
         if value is None:
             return None
         return '{:.2f}'.format(value)
+
+    def get_tag_values(self):
+        for tag in self.tags:
+            yield tag.value
+
+    def is_user_authorized(self, user):
+        self._logger.debug(u'%s', self)
+        return user in self.users

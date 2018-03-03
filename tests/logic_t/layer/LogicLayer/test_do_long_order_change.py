@@ -135,7 +135,7 @@ class LongOrderChangeTest(unittest.TestCase):
         target = self.pl.create_task('target')
         self.pl.add(target)
         user = self.pl.create_user('user@example.com')
-        target.users.add(user)
+        target.users.append(user)
         self.pl.add(user)
         self.pl.commit()
         # precondition
@@ -156,7 +156,7 @@ class LongOrderChangeTest(unittest.TestCase):
         target = self.pl.create_task('target')
         self.pl.add(target)
         user = self.pl.create_user('user@example.com')
-        task_to_move.users.add(user)
+        task_to_move.users.append(user)
         self.pl.add(user)
         self.pl.commit()
         # precondition

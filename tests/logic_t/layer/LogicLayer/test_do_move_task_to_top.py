@@ -56,13 +56,13 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 15
-        t1.users.add(self.user)
+        t1.users.append(self.user)
         t2 = self.pl.create_task('t2')
         t2.order_num = 10
-        t2.users.add(self.user)
+        t2.users.append(self.user)
         t3 = self.pl.create_task('t3')
         t3.order_num = 5
-        t3.users.add(self.user)
+        t3.users.append(self.user)
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
@@ -83,37 +83,37 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         # given
         p1 = self.pl.create_task('p1')
         p1.order_num = 10
-        p1.users.add(self.user)
+        p1.users.append(self.user)
         c1 = self.pl.create_task('c1')
         c1.parent = p1
         c1.order_num = 9
-        c1.users.add(self.user)
+        c1.users.append(self.user)
         c2 = self.pl.create_task('c2')
         c2.parent = p1
         c2.order_num = 8
-        c2.users.add(self.user)
+        c2.users.append(self.user)
         p2 = self.pl.create_task('p2')
         p2.order_num = 7
-        p2.users.add(self.user)
+        p2.users.append(self.user)
         c3 = self.pl.create_task('c3')
         c3.parent = p2
         c3.order_num = 6
-        c3.users.add(self.user)
+        c3.users.append(self.user)
         c4 = self.pl.create_task('c4')
         c4.parent = p2
         c4.order_num = 5
-        c4.users.add(self.user)
+        c4.users.append(self.user)
         p3 = self.pl.create_task('p3')
         p3.order_num = 4
-        p3.users.add(self.user)
+        p3.users.append(self.user)
         c5 = self.pl.create_task('c5')
         c5.parent = p3
         c5.order_num = 3
-        c5.users.add(self.user)
+        c5.users.append(self.user)
         c6 = self.pl.create_task('c6')
         c6.parent = p3
         c6.order_num = 2
-        c6.users.add(self.user)
+        c6.users.append(self.user)
         self.pl.add(p1)
         self.pl.add(c1)
         self.pl.add(c2)
@@ -152,27 +152,27 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         # given
         p1 = self.pl.create_task('p1')
         p1.order_num = 7
-        p1.users.add(self.user)
+        p1.users.append(self.user)
         c1 = self.pl.create_task('c1')
         c1.parent = p1
         c1.order_num = 6
-        c1.users.add(self.user)
+        c1.users.append(self.user)
         c2 = self.pl.create_task('c2')
         c2.parent = p1
         c2.order_num = 5
-        c2.users.add(self.user)
+        c2.users.append(self.user)
         c3 = self.pl.create_task('c3')
         c3.parent = p1
         c3.order_num = 4
-        c3.users.add(self.user)
+        c3.users.append(self.user)
         c4 = self.pl.create_task('c4')
         c4.parent = p1
         c4.order_num = 3
-        c4.users.add(self.user)
+        c4.users.append(self.user)
         c5 = self.pl.create_task('c5')
         c5.parent = p1
         c5.order_num = 2
-        c5.users.add(self.user)
+        c5.users.append(self.user)
         self.pl.add(p1)
         self.pl.add(c1)
         self.pl.add(c2)
@@ -202,19 +202,19 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 6
-        t1.users.add(self.user)
+        t1.users.append(self.user)
         t2 = self.pl.create_task('t2')
         t2.order_num = 5
-        t2.users.add(self.user)
+        t2.users.append(self.user)
         t3 = self.pl.create_task('t3')
         t3.order_num = 4
-        t3.users.add(self.user)
+        t3.users.append(self.user)
         t4 = self.pl.create_task('t4')
         t4.order_num = 3
-        t4.users.add(self.user)
+        t4.users.append(self.user)
         t5 = self.pl.create_task('t5')
         t5.order_num = 2
-        t5.users.add(self.user)
+        t5.users.append(self.user)
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)
@@ -241,10 +241,10 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 6
-        t1.users.add(self.user)
+        t1.users.append(self.user)
         t2 = self.pl.create_task('t2')
         t2.order_num = 5
-        t2.users.add(self.user)
+        t2.users.append(self.user)
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.commit()
@@ -262,19 +262,19 @@ class DoMoveTaskToTopTest(unittest.TestCase):
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 6
-        t1.users.add(self.user)
+        t1.users.append(self.user)
         t2 = self.pl.create_task('t2')
         t2.order_num = 5
-        t2.users.add(self.user)
+        t2.users.append(self.user)
         t3 = self.pl.create_task('t3', is_deleted=True)
         t3.order_num = 4
-        t3.users.add(self.user)
+        t3.users.append(self.user)
         t4 = self.pl.create_task('t4')
         t4.order_num = 3
-        t4.users.add(self.user)
+        t4.users.append(self.user)
         t5 = self.pl.create_task('t5')
         t5.order_num = 2
-        t5.users.add(self.user)
+        t5.users.append(self.user)
         self.pl.add(t1)
         self.pl.add(t2)
         self.pl.add(t3)

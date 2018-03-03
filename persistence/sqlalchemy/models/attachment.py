@@ -16,7 +16,7 @@ def generate_attachment_class(db):
         path = db.Column(db.String(1000), nullable=False)
         timestamp = db.Column(db.DateTime)
         filename = db.Column(db.String(100))
-        description = db.Column(db.String(100), default='')
+        description = db.Column(db.String(100), default=None)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
         task = db.relationship('DbTask',
@@ -61,5 +61,8 @@ def generate_attachment_class(db):
                 self.filename = value
             else:  # field == self.FIELD_TASK
                 self.task = value
+
+        def clear_relationships(self):
+            self.task = None
 
     return DbAttachment

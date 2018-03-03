@@ -63,4 +63,7 @@ def generate_tag_class(db, tags_tasks_table):
                     if value in self.tasks:
                         self.tasks.remove(value)
 
+        def clear_relationships(self):
+            self.tasks = []
+
     return DbTag

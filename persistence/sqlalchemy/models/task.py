@@ -145,4 +145,17 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 if value in collection:
                     collection.remove(value)
 
+        def clear_relationships(self):
+            self._logger.debug(u'%s', self)
+            self.parent = None
+            self.children = []
+            self.tags = []
+            self.users = []
+            self.notes = []
+            self.attachments = []
+            self.dependees = []
+            self.dependants = []
+            self.prioritize_before = []
+            self.prioritize_after = []
+
     return DbTask

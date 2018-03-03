@@ -52,4 +52,7 @@ def generate_note_class(db):
             else:  # field == self.FIELD_TASK
                 self.task = value
 
+        def clear_relationships(self):
+            self.task = None
+
     return DbNote

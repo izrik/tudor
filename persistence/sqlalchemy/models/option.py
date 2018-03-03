@@ -41,4 +41,7 @@ def generate_option_class(db):
             else:  # field == self.FIELD_VALUE:
                 self.value = value
 
+        def clear_relationships(self):
+            pass
+
     return DbOption

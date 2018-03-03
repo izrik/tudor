@@ -99,10 +99,10 @@ class GetTaskTest(PersistenceLayerTestBase):
         self.pl.add(user1)
         self.pl.add(user2)
         self.pl.add(user3)
-        self.t1.users.add(user1)
-        self.t2.users.add(user2)
-        self.t3.users.add(user1)
-        self.t3.users.add(user2)
+        self.t1.users.append(user1)
+        self.t2.users.append(user2)
+        self.t3.users.append(user1)
+        self.t3.users.append(user2)
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)
@@ -177,7 +177,7 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
 
     def test_user_authorized_on_public_task_returns_only_public_task(self):
         # given
-        self.t1.users.add(self.user)
+        self.t1.users.append(self.user)
         self.pl.commit()
         # precondition
         self.assertEqual({self.user}, set(self.t1.users))
@@ -190,7 +190,7 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
 
     def test_user_authorized_on_private_task_returns_both_tasks(self):
         # given
-        self.t2.users.add(self.user)
+        self.t2.users.append(self.user)
         self.pl.commit()
         # precondition
         self.assertEqual(set(), set(self.t1.users))
@@ -203,8 +203,8 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
 
     def test_user_authorized_on_both_tasks_returns_both_tasks(self):
         # given
-        self.t1.users.add(self.user)
-        self.t2.users.add(self.user)
+        self.t1.users.append(self.user)
+        self.t2.users.append(self.user)
         self.pl.commit()
         # precondition
         self.assertEqual({self.user}, set(self.t1.users))
@@ -678,9 +678,9 @@ class TagsTest(PersistenceLayerTestBase):
         self.t3 = self.pl.create_task('t3')
         self.tag1 = self.pl.create_tag('tag1')
         self.tag2 = self.pl.create_tag('tag2')
-        self.t2.tags.add(self.tag1)
-        self.t3.tags.add(self.tag1)
-        self.t3.tags.add(self.tag2)
+        self.t2.tags.append(self.tag1)
+        self.t3.tags.append(self.tag1)
+        self.t3.tags.append(self.tag2)
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)

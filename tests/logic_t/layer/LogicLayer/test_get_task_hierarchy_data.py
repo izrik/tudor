@@ -56,7 +56,7 @@ class GetTaskHierarchyDataTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_hierarchy_data(self.task.id, self.user)

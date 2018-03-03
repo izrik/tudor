@@ -58,7 +58,7 @@ class CreateNewNoteTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.create_new_note(self.task.id, 'content', self.user)

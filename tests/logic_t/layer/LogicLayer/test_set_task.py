@@ -2,6 +2,7 @@
 
 import unittest
 from datetime import datetime
+from decimal import Decimal
 
 from werkzeug.exceptions import NotFound, Forbidden
 
@@ -128,7 +129,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertEqual(123, task.order_num)
         self.assertEqual(datetime(2017, 1, 1), task.deadline)
         self.assertEqual(456, task.expected_duration_minutes)
-        self.assertEqual(789.1, task.expected_cost)
+        self.assertEqual(Decimal(789.1), task.expected_cost)
         self.assertIsNone(task.parent_id)
         self.assertIsNone(task.parent)
         self.assertTrue(self.task.is_public)

@@ -276,10 +276,6 @@ class Task(Changeable, TaskBase):
             return u' class="{}" '.format(cls)
         return u''
 
-    def get_tag_values(self):
-        for tag in self.tags:
-            yield tag.value
-
     def get_expected_duration_for_viewing(self):
         if self.expected_duration_minutes is None:
             return ''
@@ -291,10 +287,6 @@ class Task(Changeable, TaskBase):
         if self.expected_cost is None:
             return ''
         return u'{:.2f}'.format(self.expected_cost)
-
-    def is_user_authorized(self, user):
-        self._logger.debug(u'%s', self)
-        return user in self.users
 
     def contains_dependency_cycle(self, visited=None):
         self._logger.debug(u'%s', self)

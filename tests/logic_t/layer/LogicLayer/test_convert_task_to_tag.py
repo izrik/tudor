@@ -144,7 +144,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
 
         self.pl.commit()
 
-        self.assertEquals(1, len(grand_parent.children))
+        self.assertEquals(1, grand_parent.children.count())
         self.assertIs(task, child1.parent)
         self.assertIs(task, child2.parent)
         self.assertIs(task, child3.parent)
@@ -153,7 +153,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.ll.convert_task_to_tag(task.id, self.user)
 
         # then
-        self.assertEquals(3, len(grand_parent.children))
+        self.assertEquals(3, grand_parent.children.count())
         self.assertIs(grand_parent, child1.parent)
         self.assertIs(grand_parent, child2.parent)
         self.assertIs(grand_parent, child3.parent)

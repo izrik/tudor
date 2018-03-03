@@ -66,7 +66,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(tag)
         admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
-        task.tags.add(tag)
+        task.tags.append(tag)
         self.pl.commit()
         # precondition
         self.assertIn(tag, task.tags)
@@ -89,8 +89,8 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(tag)
         admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
-        task.tags.add(tag)
-        task.users.add(admin)
+        task.tags.append(tag)
+        task.users.append(admin)
         self.pl.commit()
         # precondition
         self.assertIn(tag, task.tags)
@@ -113,8 +113,8 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(tag)
         user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        task.tags.add(tag)
-        task.users.add(user)
+        task.tags.append(tag)
+        task.users.append(user)
         self.pl.commit()
         # precondition
         self.assertIn(tag, task.tags)
@@ -137,7 +137,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.pl.add(tag)
         user = self.pl.create_user('user@example.com')
         self.pl.add(user)
-        task.tags.add(tag)
+        task.tags.append(tag)
         self.pl.commit()
         # precondition
         self.assertIn(tag, task.tags)

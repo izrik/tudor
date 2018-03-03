@@ -78,7 +78,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
         self.pl.add(user)
         admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(admin)
-        task.users.add(user)
+        task.users.append(user)
         self.pl.commit()
         # precondition
         self.assertIn(user, task.users)
@@ -116,7 +116,7 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
         self.pl.add(user)
         user2 = self.pl.create_user('user2@example.com')
         self.pl.add(user2)
-        task.users.add(user2)
+        task.users.append(user2)
         self.pl.commit()
         # precondition
         self.assertIn(user2, task.users)
@@ -127,4 +127,4 @@ class AuthorizeUserForTaskTest(unittest.TestCase):
         self.assertIs(result, task)
         self.assertIn(user, task.users)
         self.assertIn(task, user.tasks)
-        self.assertEqual({user, user2}, task.users)
+        self.assertEqual({user, user2}, set(task.users))

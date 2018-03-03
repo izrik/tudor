@@ -56,7 +56,7 @@ class EditTaskDataTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_edit_task_data(self.task.id, self.user)
@@ -74,8 +74,8 @@ class EditTaskDataTest(unittest.TestCase):
         self.pl.add(tag)
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
-        self.task.tags.add(tag)
+        self.task.users.append(self.user)
+        self.task.tags.append(tag)
         self.pl.commit()
         # when
         result = self.ll.get_edit_task_data(self.task.id, self.user)
@@ -95,9 +95,9 @@ class EditTaskDataTest(unittest.TestCase):
         self.pl.add(tag2)
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
-        self.task.tags.add(tag1)
-        self.task.tags.add(tag2)
+        self.task.users.append(self.user)
+        self.task.tags.append(tag1)
+        self.task.tags.append(tag2)
         self.pl.commit()
         # when
         result = self.ll.get_edit_task_data(self.task.id, self.user)

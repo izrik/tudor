@@ -72,7 +72,7 @@ class GetTaskDataTest(unittest.TestCase):
         # given
         self.pl.add(self.user)
         self.pl.add(self.task)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_data(self.task.id, self.user)
@@ -122,7 +122,7 @@ class GetTaskDataTest(unittest.TestCase):
         if parent:
             task.parent = parent
         if user:
-            task.users.add(user)
+            task.users.append(user)
         self.pl.add(task)
         return task
 
@@ -150,7 +150,7 @@ class GetTaskDataTest(unittest.TestCase):
         t19 = self.create_and_add_task('t19', 19, self.task, self.user)
         t20 = self.create_and_add_task('t20', 20, self.task, self.user)
         t21 = self.create_and_add_task('t21', 21, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_data(self.task.id, self.user)
@@ -184,7 +184,7 @@ class GetTaskDataTest(unittest.TestCase):
         t19 = self.create_and_add_task('t19', 19, self.task, self.user)
         t20 = self.create_and_add_task('t20', 20, self.task, self.user)
         t21 = self.create_and_add_task('t21', 21, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_data(self.task.id, self.user, page_num=1)
@@ -221,7 +221,7 @@ class GetTaskDataTest(unittest.TestCase):
         t19 = self.create_and_add_task('t19', 19, self.task, self.user)
         t20 = self.create_and_add_task('t20', 20, self.task, self.user)
         t21 = self.create_and_add_task('t21', 21, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_data(self.task.id, self.user, page_num=2)
@@ -256,7 +256,7 @@ class GetTaskDataTest(unittest.TestCase):
         t19 = self.create_and_add_task('t19', 19, self.task, self.user)
         t20 = self.create_and_add_task('t20', 20, self.task, self.user)
         t21 = self.create_and_add_task('t21', 21, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         result = None
         # expect
@@ -289,7 +289,7 @@ class GetTaskDataTest(unittest.TestCase):
         t19 = self.create_and_add_task('t19', 19, self.task, self.user)
         t20 = self.create_and_add_task('t20', 20, self.task, self.user)
         t21 = self.create_and_add_task('t21', 21, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         result = None
         # expect
@@ -307,7 +307,7 @@ class GetTaskDataTest(unittest.TestCase):
         t4 = self.create_and_add_task('t4', 4, self.task, self.user)
         t5 = self.create_and_add_task('t5', 5, self.task, self.user)
         t6 = self.create_and_add_task('t6', 6, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_data(self.task.id, self.user,
@@ -328,7 +328,7 @@ class GetTaskDataTest(unittest.TestCase):
         t4 = self.create_and_add_task('t4', 4, self.task, self.user)
         t5 = self.create_and_add_task('t5', 5, self.task, self.user)
         t6 = self.create_and_add_task('t6', 6, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # when
         result = self.ll.get_task_data(self.task.id, self.user,
@@ -349,7 +349,7 @@ class GetTaskDataTest(unittest.TestCase):
         t4 = self.create_and_add_task('t4', 4, self.task, self.user)
         t5 = self.create_and_add_task('t5', 5, self.task, self.user)
         t6 = self.create_and_add_task('t6', 6, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # expect
         self.assertRaises(
@@ -366,7 +366,7 @@ class GetTaskDataTest(unittest.TestCase):
         t4 = self.create_and_add_task('t4', 4, self.task, self.user)
         t5 = self.create_and_add_task('t5', 5, self.task, self.user)
         t6 = self.create_and_add_task('t6', 6, self.task, self.user)
-        self.task.users.add(self.user)
+        self.task.users.append(self.user)
         self.pl.commit()
         # expect
         self.assertRaises(
