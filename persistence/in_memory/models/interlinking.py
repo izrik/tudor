@@ -1,7 +1,7 @@
 import collections
 
 import logging_util
-from changeable import Changeable
+from models.changeable import Changeable
 
 
 class InterlinkedSet(collections.MutableSet):

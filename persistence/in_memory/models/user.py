@@ -3,8 +3,8 @@ from __future__ import absolute_import
 
 import logging_util
 from models.changeable import Changeable
-from models.interlinking import ManyToManySet
 from models.user_base import UserBase
+from persistence.in_memory.models.interlinking import ManyToManySet
 
 
 class User(Changeable, UserBase):

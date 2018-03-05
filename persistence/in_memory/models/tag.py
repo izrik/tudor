@@ -1,10 +1,10 @@
 
 from __future__ import absolute_import
 
-from models.changeable import Changeable
 import logging_util
-from models.interlinking import ManyToManySet
+from models.changeable import Changeable
 from models.tag_base import TagBase
+from persistence.in_memory.models.interlinking import ManyToManySet
 
 
 class Tag(Changeable, TagBase):

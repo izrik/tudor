@@ -1,7 +1,7 @@
 
 import unittest
 
-from models.interlinking import InterlinkedSet
+from persistence.in_memory.models.interlinking import InterlinkedSet
 
 
 class TestingCollection(InterlinkedSet):
