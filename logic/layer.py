@@ -993,8 +993,7 @@ class LogicLayer(object):
             parent_id = crud_data.get('task_{}_parent_id'.format(task.id))
 
             # TODO: Normalize the values the same way the class would, e.g. use
-            # Task._clean_deadline to normalize the deadline. Alternately,
-            # maybe just use make_change.
+            # Task._clean_deadline to normalize the deadline.
             if deadline:
                 deadline = dparse(deadline)
             else:

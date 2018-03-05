@@ -27,20 +27,6 @@ def generate_option_class(db):
                 raise ValueError('parameter \'lazy\' must be None or empty')
             return super(DbOption, cls).from_dict(d=d, lazy=None)
 
-        def make_change(self, field, operation, value):
-            if field in (self.FIELD_KEY, self.FIELD_VALUE):
-                if operation != Changeable.OP_SET:
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            else:
-                raise ValueError('Unknown field "{}"'.format(field))
-
-            if field == self.FIELD_KEY:
-                self.key = value
-            else:  # field == self.FIELD_VALUE:
-                self.value = value
-
         def clear_relationships(self):
             pass
 

@@ -31,38 +31,6 @@ def generate_tag_class(db, tags_tasks_table):
                 raise ValueError('parameter \'lazy\' must be None or empty')
             return super(DbTag, cls).from_dict(d=d, lazy=None)
 
-        def make_change(self, field, operation, value):
-            if operation == Changeable.OP_CHANGING:
-                raise ValueError('Invalid operation "{}"'.format(operation))
-
-            if field in (self.FIELD_ID, self.FIELD_VALUE,
-                         self.FIELD_DESCRIPTION):
-                if operation != Changeable.OP_SET:
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            elif field == self.FIELD_TASKS:
-                if operation not in (Changeable.OP_ADD, Changeable.OP_REMOVE):
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            else:
-                raise ValueError('Unknown field "{}"'.format(field))
-
-            if field == self.FIELD_ID:
-                self.id = value
-            elif field == self.FIELD_VALUE:
-                self.value = value
-            elif field == self.FIELD_DESCRIPTION:
-                self.description = value
-            else:  # field == self.FIELD_TASKS
-                if operation == Changeable.OP_ADD:
-                    if value not in self.tasks:
-                        self.tasks.append(value)
-                elif operation == Changeable.OP_REMOVE:
-                    if value in self.tasks:
-                        self.tasks.remove(value)
-
         def clear_relationships(self):
             self.tasks = []
 

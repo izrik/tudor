@@ -38,30 +38,6 @@ def generate_attachment_class(db):
                 raise ValueError('parameter \'lazy\' must be None or empty')
             return super(DbAttachment, cls).from_dict(d=d, lazy=None)
 
-        def make_change(self, field, operation, value):
-            if field in (self.FIELD_ID, self.FIELD_PATH,
-                         self.FIELD_DESCRIPTION, self.FIELD_TIMESTAMP,
-                         self.FIELD_FILENAME, self.FIELD_TASK):
-                if operation != Changeable.OP_SET:
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            else:
-                raise ValueError('Unknown field "{}"'.format(field))
-
-            if field == self.FIELD_ID:
-                self.id = value
-            elif field == self.FIELD_PATH:
-                self.path = value
-            elif field == self.FIELD_DESCRIPTION:
-                self.description = value
-            elif field == self.FIELD_TIMESTAMP:
-                self.timestamp = value
-            elif field == self.FIELD_FILENAME:
-                self.filename = value
-            else:  # field == self.FIELD_TASK
-                self.task = value
-
         def clear_relationships(self):
             self.task = None
 

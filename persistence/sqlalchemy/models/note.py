@@ -33,25 +33,6 @@ def generate_note_class(db):
                 raise ValueError('parameter \'lazy\' must be None or empty')
             return super(DbNote, cls).from_dict(d=d, lazy=None)
 
-        def make_change(self, field, operation, value):
-            if field in (self.FIELD_ID, self.FIELD_CONTENT,
-                         self.FIELD_TIMESTAMP, self.FIELD_TASK):
-                if operation != Changeable.OP_SET:
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            else:
-                raise ValueError('Unknown field "{}"'.format(field))
-
-            if field == self.FIELD_ID:
-                self.id = value
-            elif field == self.FIELD_CONTENT:
-                self.content = value
-            elif field == self.FIELD_TIMESTAMP:
-                self.timestamp = value
-            else:  # field == self.FIELD_TASK
-                self.task = value
-
         def clear_relationships(self):
             self.task = None
 

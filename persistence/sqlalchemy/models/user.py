@@ -35,37 +35,6 @@ def generate_user_class(db, users_tasks_table):
                 raise ValueError('parameter \'lazy\' must be None or empty')
             return super(DbUser, cls).from_dict(d=d, lazy=None)
 
-        def make_change(self, field, operation, value):
-            if field in (self.FIELD_ID, self.FIELD_EMAIL,
-                         self.FIELD_HASHED_PASSWORD, self.FIELD_IS_ADMIN):
-                if operation != Changeable.OP_SET:
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            elif field == self.FIELD_TASKS:
-                if operation not in (Changeable.OP_ADD, Changeable.OP_REMOVE):
-                    raise ValueError(
-                        'Invalid operation "{}" for field "{}"'.format(
-                            operation, field))
-            else:
-                raise ValueError('Unknown field "{}"'.format(field))
-
-            if field == self.FIELD_ID:
-                self.id = value
-            elif field == self.FIELD_EMAIL:
-                self.email = value
-            elif field == self.FIELD_HASHED_PASSWORD:
-                self.hashed_password = value
-            elif field == self.FIELD_IS_ADMIN:
-                self.is_admin = value
-            else:  # field == self.FIELD_TASKS
-                if operation == Changeable.OP_ADD:
-                    if value not in self.tasks:
-                        self.tasks.append(value)
-                elif operation == Changeable.OP_REMOVE:
-                    if value in self.tasks:
-                        self.tasks.remove(value)
-
         def clear_relationships(self):
             self.tasks = []
 
