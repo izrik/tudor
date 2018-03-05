@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 
 import logging_util
-from models.changeable import Changeable
 from models.note_base import NoteBase
+from persistence.in_memory.models.changeable import Changeable
 
 
 class Note(Changeable, NoteBase):

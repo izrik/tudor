@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 
 import logging_util
-from models.changeable import Changeable
 from models.option_base import OptionBase
+from persistence.in_memory.models.changeable import Changeable
 
 
 class Option(Changeable, OptionBase):

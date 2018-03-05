@@ -2,8 +2,8 @@
 from __future__ import absolute_import
 
 import logging_util
-from models.changeable import Changeable
 from models.task_base import TaskBase
+from persistence.in_memory.models.changeable import Changeable
 from persistence.in_memory.models.interlinking import OneToManySet, \
     ManyToManySet
 
