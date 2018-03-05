@@ -10,7 +10,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                         task_dependencies_table, task_prioritize_table):
     db = pl.db
 
-    class DbTask(Changeable, db.Model, TaskBase):
+    class DbTask(db.Model, TaskBase):
         _logger = logging_util.get_logger_by_name(__name__, 'DbTask')
 
         __tablename__ = 'task'
