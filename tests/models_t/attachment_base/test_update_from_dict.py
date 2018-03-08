@@ -14,7 +14,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({})
@@ -23,7 +23,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
 
     def test_id_in_dict_changes_id(self):
@@ -34,7 +34,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({'id': 1})
@@ -43,7 +43,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
 
     def test_timestamp_in_dict_changes_timestamp(self):
@@ -54,7 +54,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({'timestamp': datetime(2018, 1, 1)})
@@ -63,7 +63,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertEqual(datetime(2018, 1, 1), att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
 
     def test_path_in_dict_changes_path(self):
@@ -74,7 +74,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({'path': '/path/to/file'})
@@ -83,7 +83,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertEqual('/path/to/file', att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
 
     def test_filename_in_dict_changes_filename(self):
@@ -94,7 +94,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({'filename': 'file.ext'})
@@ -103,7 +103,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertEqual('file.ext', att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
 
     def test_description_in_dict_changes_description(self):
@@ -114,7 +114,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({'description': 'this is the attachment'})
@@ -134,7 +134,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         task = object()
         # when
@@ -144,7 +144,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIs(task, att.task)
 
     def test_other_names_silently_ignored(self):
@@ -155,7 +155,7 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
         # when
         att.update_from_dict({'something': 'other thing'})
@@ -164,5 +164,5 @@ class AttachmentUpdateFromDictTest(unittest.TestCase):
         self.assertIsNone(att.timestamp)
         self.assertIsNone(att.path)
         self.assertIsNone(att.filename)
-        self.assertEqual('', att.description)
+        self.assertIsNone(att.description)
         self.assertIsNone(att.task)
