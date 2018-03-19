@@ -122,3 +122,27 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         self.assertRaises(Forbidden,
                           self.ll.do_add_tag_to_task,
                           task, 'abc', other_user)
+
+    def test_tag_already_in_task_silently_ignored(self):
+        # given
+        task = self.pl.create_task('task')
+        task.users.append(self.user)
+        self.pl.add(task)
+        tag = self.pl.create_tag('stu')
+        self.pl.add(tag)
+        task.tags.append(tag)
+        self.pl.commit()
+
+        # precondition
+        self.assertEqual(1, len(task.tags))
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+
+        # when
+        result = self.ll.do_add_tag_to_task(task, 'stu', self.user)
+
+        # then
+        self.assertEqual(1, len(task.tags))
+        self.assertIn(tag, task.tags)
+        self.assertIn(task, tag.tasks)
+        self.assertIs(tag, result)
