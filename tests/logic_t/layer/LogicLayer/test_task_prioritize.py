@@ -9,7 +9,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_add_prioritize_before_adds_prioritize_before(self):
@@ -508,7 +508,7 @@ class TaskPrioritizeBeforeLogicLayerTest(unittest.TestCase):
 class TaskPrioritizeAfterLogicLayerTest(unittest.TestCase):
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_add_prioritize_after_adds_prioritize_after(self):

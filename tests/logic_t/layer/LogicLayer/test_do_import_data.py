@@ -12,7 +12,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 class LogicLayerDoImportDataTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_do_import_data_empty(self):

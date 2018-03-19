@@ -9,7 +9,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 class TaskDependeesLogicLayerTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_add_dependee_adds_dependee(self):
@@ -497,7 +497,7 @@ class TaskDependeesLogicLayerTest(unittest.TestCase):
 
 class TaskDependantsLogicLayerTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_add_dependant_adds_dependant(self):

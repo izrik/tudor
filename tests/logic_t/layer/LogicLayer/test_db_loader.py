@@ -11,7 +11,7 @@ class DbLoaderTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.task_ids = {}
         self.pl = self.ll.pl
         pl = self.pl
@@ -187,7 +187,7 @@ class DbLoaderDoneDeletedTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
         pl = self.pl
         self.task_ids = {}
@@ -565,7 +565,7 @@ class DbLoaderDeadlinedTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
         pl = self.pl
         self.task_ids = {}
@@ -708,7 +708,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
     task_ids = None
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
         pl = self.pl
         self.task_ids = {}

@@ -8,7 +8,7 @@ from util import generate_ll
 class ConvertTaskToTagTest(unittest.TestCase):
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
         self.user = self.pl.create_user('name@example.org', None, True)
 

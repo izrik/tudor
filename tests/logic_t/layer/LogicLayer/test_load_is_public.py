@@ -7,7 +7,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 class LoadIsPublicTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
         self.tp = self.pl.create_task('tp', is_public=True)
@@ -102,7 +102,7 @@ class LoadIsPublicTest(unittest.TestCase):
 
 class LoadIsPublicRegularUserTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_regular_user_sees_own_and_public_tasks_1(self):

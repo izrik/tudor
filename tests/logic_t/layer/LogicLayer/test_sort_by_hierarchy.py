@@ -8,7 +8,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 class SortByHierarchyTest(unittest.TestCase):
 
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
 
     def test_errant_leading_none_when_no_root_specified(self):

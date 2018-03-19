@@ -11,7 +11,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 class LogicLayerSetTaskTest(unittest.TestCase):
     def setUp(self):
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
         self.admin = self.pl.create_user('admin@example.com', is_admin=True)
         self.user = self.pl.create_user('user@example.com', is_admin=False)

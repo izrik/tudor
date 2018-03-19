@@ -8,7 +8,7 @@ from tests.logic_t.layer.LogicLayer.util import generate_ll
 class DbLoadNoHierarchyExcludeNonPublicTest(unittest.TestCase):
     def setUp(self):
         # given
-        self.ll = generate_ll(db_uri='sqlite://')
+        self.ll = generate_ll()
         self.pl = self.ll.pl
         self.t1 = self.pl.create_task('t1', is_public=True)
         self.t2 = self.pl.create_task('t2', is_public=False)
