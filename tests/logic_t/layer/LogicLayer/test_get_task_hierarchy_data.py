@@ -70,3 +70,19 @@ class GetTaskHierarchyDataTest(unittest.TestCase):
         self.assertEqual([self.task], result['descendants'])
 
     # TODO: is_done and is_deleted
+
+    def test_guest_user_can_see_public_tasks(self):
+        # given
+        self.pl.add(self.user)
+        self.pl.add(self.task)
+        self.pl.commit()
+        self.task.is_public = True
+        self.pl.commit()
+        # when
+        result = self.ll.get_task_hierarchy_data(self.task.id, self.user)
+        # then
+        self.assertIsNotNone(result)
+        self.assertEqual(result, {
+            'task': self.task,
+            'descendants': [self.task],
+        })
