@@ -891,7 +891,10 @@ class LogicLayer(object):
                     n = self.pl.create_note(content=content,
                                             timestamp=timestamp)
                     n.id = id
-                    n.task_id = task_id
+                    if task_id in tasks_by_id:
+                        n.task = tasks_by_id[task_id]
+                    else:
+                        raise Exception('Task not found')
                     db_objects.append(n)
 
             if 'attachments' in src:

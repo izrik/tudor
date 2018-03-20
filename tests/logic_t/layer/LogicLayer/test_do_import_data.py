@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from flask import json
-from werkzeug.exceptions import Conflict
+from werkzeug.exceptions import Conflict, BadRequest
 
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
@@ -258,6 +258,84 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
             self.ll.do_import_data,
             json.loads(src))
 
+    def test_imports_task_with_a_tag(self):
+        # given
+        src = '''{"tasks":[{
+            "id": 1,
+            "summary":"summary",
+            "tag_ids": [2]
+        }],
+        "tags":[{
+            "id": 2,
+            "value": "tag",
+            "description": "a tag"
+        }]}'''
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(json.loads(src))
+        self.pl.commit()
+
+        # then
+        self.assertEqual(1, self.pl.count_tasks())
+        task = self.pl.get_task(1)
+        self.assertIsNotNone(task)
+
+        self.assertEqual(1, self.pl.count_tags())
+        tag = self.pl.get_tag(2)
+        self.assertIsNotNone(tag)
+
+        self.assertEqual(1, task.id)
+        self.assertEqual('summary', task.summary)
+        self.assertEqual([tag], list(task.tags))
+
+        self.assertEqual('tag', tag.value)
+        self.assertEqual([task], list(tag.tasks))
+
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_tag_of_task_not_found_raises(self):
+        # given
+        src = '''{"tasks":[{
+            "id": 1,
+            "summary":"summary",
+            "tag_ids": [2]
+        }]}'''
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        # expect
+        self.assertRaisesRegexp(
+            BadRequest,
+            r"^400 Bad Request: The data was incorrect",
+            self.ll.do_import_data,
+            json.loads(src))
+
+        # and
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
     def test_do_import_data_empty_tags(self):
         # given
         src = '{"tags":[]}'
@@ -276,6 +354,39 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_imports_single_tag(self):
+        # given
+        src = '{"tags":[{' \
+                '"id":123,' \
+                '"value":"tag",' \
+                '"description":"description"}]}'
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(json.loads(src))
+
+        # then
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(1, self.pl.count_tags())
+        tags = list(self.pl.get_tags())
+        self.assertEqual(1, len(tags))
+        tag = tags[0]
+        self.assertEqual(123, tag.id)
+        self.assertEqual('tag', tag.value)
+        self.assertEqual('description', tag.description)
+        self.assertEqual(set(), set(tag.tasks))
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
@@ -300,6 +411,46 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_imports_single_note(self):
+        # given
+        src = '''{"tasks":[{
+            "id": 1,
+            "summary":"summary"
+        }],
+        "notes":[{
+            "id":2,
+            "content":"note",
+            "timestamp": "2018-01-01",
+            "task_id": 1
+        }]}'''
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(json.loads(src))
+
+        # then
+        self.assertEqual(1, self.pl.count_tasks())
+        task = self.pl.get_task(1)
+        self.assertIsNotNone(task)
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(1, self.pl.count_notes())
+        note = self.pl.get_note(2)
+        self.assertIsNotNone(note)
+        self.assertEqual('note', note.content)
+        self.assertEqual(datetime(2018, 1, 1), note.timestamp)
+        self.assertIs(task, note.task)
+        self.assertEqual([note], list(task.notes))
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
