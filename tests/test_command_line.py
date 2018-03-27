@@ -1,8 +1,7 @@
 import os
 import unittest
 
-from in_memory_persistence_layer import InMemoryPersistenceLayer
-from models.task import Task
+from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line
 
@@ -14,7 +13,7 @@ class CommandLineTests(unittest.TestCase):
 
     def test_make_task_public(self):
         # given
-        task = Task('task')
+        task = self.pl.create_task('task')
         task.id = 1
         self.pl.add(task)
         self.pl.commit()
@@ -48,22 +47,22 @@ class CommandLineTests(unittest.TestCase):
 
     def test_make_task_public_and_descendants(self):
         # given
-        t1 = Task('t1', is_public=False)
+        t1 = self.pl.create_task('t1', is_public=False)
         t1.id = 1
         self.pl.add(t1)
-        t2 = Task('t2', is_public=False)
+        t2 = self.pl.create_task('t2', is_public=False)
         t2.id = 2
         self.pl.add(t2)
         t2.parent = t1
-        t3 = Task('t3', is_public=False)
+        t3 = self.pl.create_task('t3', is_public=False)
         t3.id = 3
         self.pl.add(t3)
         t3.parent = t2
-        t4 = Task('t4', is_public=False)
+        t4 = self.pl.create_task('t4', is_public=False)
         t4.id = 4
         self.pl.add(t4)
         t4.parent = t1
-        t5 = Task('t5', is_public=False)
+        t5 = self.pl.create_task('t5', is_public=False)
         t5.id = 5
         self.pl.add(t5)
         self.pl.commit()
@@ -94,7 +93,7 @@ class CommandLineTests(unittest.TestCase):
 
     def test_make_task_private(self):
         # given
-        task = Task('task', is_public=True)
+        task = self.pl.create_task('task', is_public=True)
         task.id = 1
         self.pl.add(task)
         self.pl.commit()
@@ -128,22 +127,22 @@ class CommandLineTests(unittest.TestCase):
 
     def test_make_task_private_and_descendants(self):
         # given
-        t1 = Task('t1', is_public=True)
+        t1 = self.pl.create_task('t1', is_public=True)
         t1.id = 1
         self.pl.add(t1)
-        t2 = Task('t2', is_public=True)
+        t2 = self.pl.create_task('t2', is_public=True)
         t2.id = 2
         self.pl.add(t2)
         t2.parent = t1
-        t3 = Task('t3', is_public=True)
+        t3 = self.pl.create_task('t3', is_public=True)
         t3.id = 3
         self.pl.add(t3)
         t3.parent = t2
-        t4 = Task('t4', is_public=True)
+        t4 = self.pl.create_task('t4', is_public=True)
         t4.id = 4
         self.pl.add(t4)
         t4.parent = t1
-        t5 = Task('t5', is_public=True)
+        t5 = self.pl.create_task('t5', is_public=True)
         t5.id = 5
         self.pl.add(t5)
         self.pl.commit()

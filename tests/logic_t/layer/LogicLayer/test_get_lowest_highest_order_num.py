@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+
+import unittest
+
+from tests.logic_t.layer.LogicLayer.util import generate_ll
+
+
+class GetLowestHighestOrderNumTest(unittest.TestCase):
+
+    def setUp(self):
+        self.ll = generate_ll()
+        self.pl = self.ll.pl
+
+    def test_no_tasks_lowest_returns_none(self):
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+
+        # when
+        order_num = self.ll.get_lowest_order_num()
+
+        # then
+        self.assertIsNone(order_num)
+
+    def test_no_tasks_highest_returns_none(self):
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+
+        # when
+        order_num = self.ll.get_highest_order_num()
+
+        # then
+        self.assertIsNone(order_num)
+
+    def test_single_task_lowest_returns_order_num(self):
+        # given
+        task = self.pl.create_task('task')
+        task.order_num = 10
+        self.pl.add(task)
+        self.pl.commit()
+
+        # when
+        order_num = self.ll.get_lowest_order_num()
+
+        # then
+        self.assertEqual(10, order_num)
+
+    def test_single_task_highest_returns_order_num(self):
+        # given
+        task = self.pl.create_task('task')
+        task.order_num = 10
+        self.pl.add(task)
+        self.pl.commit()
+
+        # when
+        order_num = self.ll.get_highest_order_num()
+
+        # then
+        self.assertEqual(10, order_num)
+
+    def test_many_tasks_lowest_returns_lowest(self):
+        # given
+        t1 = self.pl.create_task('t1')
+        t1.order_num = 10
+        t2 = self.pl.create_task('t2')
+        t2.order_num = 20
+        t3 = self.pl.create_task('t3')
+        t3.order_num = 30
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.commit()
+
+        # when
+        order_num = self.ll.get_lowest_order_num()
+
+        # then
+        self.assertEqual(10, order_num)
+
+    def test_many_tasks_highest_returns_highest(self):
+        # given
+        t1 = self.pl.create_task('t1')
+        t1.order_num = 10
+        t2 = self.pl.create_task('t2')
+        t2.order_num = 20
+        t3 = self.pl.create_task('t3')
+        t3.order_num = 30
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.commit()
+
+        # when
+        order_num = self.ll.get_highest_order_num()
+
+        # then
+        self.assertEqual(30, order_num)

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import unittest
+
 from mock import Mock
 
 from tudor import generate_app
-from view_layer import ViewLayer
+from view.layer import ViewLayer
 
 
 class RouteTest(unittest.TestCase):
