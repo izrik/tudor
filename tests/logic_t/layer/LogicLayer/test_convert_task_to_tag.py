@@ -2,6 +2,8 @@
 
 import unittest
 
+from werkzeug.exceptions import NotFound, Forbidden, Conflict
+
 from util import generate_ll
 
 
@@ -40,6 +42,7 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.ll.convert_task_to_tag(task.id, self.user)
 
         # then
+        self.assertIsNotNone(tag)
         self.assertEquals(0, self.pl.count_tasks())
 
     def test_child_tasks_get_the_new_tag(self):
@@ -72,6 +75,8 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.ll.convert_task_to_tag(task.id, self.user)
 
         # then
+        self.assertIsNotNone(tag)
+
         self.assertEquals(3, self.pl.count_tasks())
         self.assertEquals(1, len(child1.tags))
         self.assertEquals(1, len(child2.tags))
@@ -153,7 +158,78 @@ class ConvertTaskToTagTest(unittest.TestCase):
         tag = self.ll.convert_task_to_tag(task.id, self.user)
 
         # then
+        self.assertIsNotNone(tag)
+
         self.assertEquals(3, grand_parent.children.count())
         self.assertIs(grand_parent, child1.parent)
         self.assertIs(grand_parent, child2.parent)
         self.assertIs(grand_parent, child3.parent)
+
+    def test_task_not_found_raises(self):
+        # precondition
+        self.assertEquals(0, self.pl.count_tags())
+        self.assertIsNone(self.pl.get_tag(123))
+        # expect
+        self.assertRaises(
+            NotFound,
+            self.ll.convert_task_to_tag,
+            123, self.user)
+        # and
+        self.assertEquals(0, self.pl.count_tags())
+
+    def test_user_not_authorized_for_private_task_raises(self):
+        # given
+        task = self.pl.create_task('some_task', is_public=False)
+        self.pl.add(task)
+        user2 = self.pl.create_user('user2@example.com')
+        self.pl.add(user2)
+        self.pl.commit()
+        # precondition
+        self.assertEquals(0, self.pl.count_tags())
+        self.assertNotIn(user2, task.users)
+        self.assertNotIn(task, user2.tasks)
+        self.assertFalse(task.is_public)
+        # expect
+        self.assertRaises(
+            NotFound,
+            self.ll.convert_task_to_tag,
+            task.id, user2)
+        # and
+        self.assertEquals(0, self.pl.count_tags())
+
+    def test_user_not_authorized_for_public_task_raises(self):
+        # given
+        task = self.pl.create_task('some_task', is_public=True)
+        self.pl.add(task)
+        user2 = self.pl.create_user('user2@example.com')
+        self.pl.add(user2)
+        self.pl.commit()
+        # precondition
+        self.assertEquals(0, self.pl.count_tags())
+        self.assertNotIn(user2, task.users)
+        self.assertNotIn(task, user2.tasks)
+        self.assertTrue(task.is_public)
+        # expect
+        self.assertRaises(
+            Forbidden,
+            self.ll.convert_task_to_tag,
+            task.id, user2)
+        # and
+        self.assertEquals(0, self.pl.count_tags())
+
+    def test_tag_name_already_exists_raises(self):
+        # given
+        task = self.pl.create_task('some_task')
+        self.pl.add(task)
+        tag = self.pl.create_tag('some_task')
+        self.pl.add(tag)
+        self.pl.commit()
+        # precondition
+        self.assertEquals(1, self.pl.count_tags())
+        # expect
+        self.assertRaises(
+            Conflict,
+            self.ll.convert_task_to_tag,
+            task.id, self.user)
+        # and
+        self.assertEquals(1, self.pl.count_tags())
