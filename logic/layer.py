@@ -1075,7 +1075,7 @@ class LogicLayer(object):
         task = self.get_task(task_id, current_user)
         if task is None:
             raise werkzeug.exceptions.NotFound(
-                "No task found for the id '%s'".format(id))
+                "No task found for the id '{}'".format(id))
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
