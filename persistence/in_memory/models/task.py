@@ -262,33 +262,6 @@ class Task(Changeable, TaskBase):
             self._on_attr_changed(self.FIELD_IS_PUBLIC, self.OP_SET,
                                   self._is_public)
 
-    def get_css_class(self):
-        if self.is_deleted and self.is_done:
-            return u'done-deleted'
-        if self.is_deleted:
-            return u'not-done-deleted'
-        if self.is_done:
-            return u'done-not-deleted'
-        return ''
-
-    def get_css_class_attr(self):
-        cls = self.get_css_class()
-        if cls:
-            return u' class="{}" '.format(cls)
-        return u''
-
-    def get_expected_duration_for_viewing(self):
-        if self.expected_duration_minutes is None:
-            return ''
-        if self.expected_duration_minutes == 1:
-            return u'1 minute'
-        return u'{} minutes'.format(self.expected_duration_minutes)
-
-    def get_expected_cost_for_viewing(self):
-        if self.expected_cost is None:
-            return ''
-        return u'{:.2f}'.format(self.expected_cost)
-
     def contains_dependency_cycle(self, visited=None):
         self._logger.debug(u'%s', self)
         if visited is None:
