@@ -274,7 +274,7 @@
                 <form action="{{ url_for('new_note') }}" method="post">
                     <input type="hidden" name="task_id" value="{{ task.id }}" />
                     <textarea name="content"></textarea><br/>
-                    <input type="submit" value="Add New Note">
+                    <input type="submit" value="Add New Note" class="btn btn-default btn-xs">
                 </form>
             </td>
         </tr>
@@ -312,7 +312,7 @@
                 </td>
                 <td>
                     <input type="text" name="description" maxlength="100" />
-                    <input type="submit" value="Attach" />
+                    <input type="submit" value="Attach" class="btn btn-default btn-xs"/>
                 </td>
             </form>
         </tr>
