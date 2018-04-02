@@ -5,7 +5,7 @@ sudo: false
 install:
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
-    - npm install -g css-lint
+    - npm install -g csslint
 script:
     - ./run_tests_with_coverage.sh
 after_success:
