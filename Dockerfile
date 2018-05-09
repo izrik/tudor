@@ -13,6 +13,7 @@ COPY collections_util.py \
      README.md \
      requirements.txt \
      tudor.py \
+     start.sh \
      ./
  
 COPY logic logic
@@ -29,4 +30,4 @@ EXPOSE 8080
 ENV TUDOR_PORT=8080 \
     TUDOR_HOST=0.0.0.0
 
-CMD ["gunicorn", "-b", "0.0.0.0:8080", "gtudor:app"]
+CMD ["/opt/tudor/start.sh"]
