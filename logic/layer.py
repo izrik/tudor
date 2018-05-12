@@ -377,7 +377,10 @@ class LogicLayer(object):
         path = secure_filename(f.filename)
         f.save(os.path.join(self.upload_folder, path))
 
-        att = self.pl.create_attachment(path, description)
+        timestamp = datetime.utcnow()
+        filename = os.path.split(path)[1]
+        att = self.pl.create_attachment(path, description, timestamp=timestamp,
+                                        filename=filename)
         att.task = task
 
         self.pl.add(att)
