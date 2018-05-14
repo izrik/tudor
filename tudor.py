@@ -21,6 +21,7 @@ from logic.layer import LogicLayer
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
+__version__ = '0.1'
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                               always=True, abbrev=40)
