@@ -164,6 +164,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return __revision__
 
         @staticmethod
+        def get_version():
+            return __version__
+
+        @staticmethod
         def get_author():
             return Options.get('author', 'the author')
 
