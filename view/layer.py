@@ -365,7 +365,7 @@ class ViewLayer(object):
 
         return self.redirect(self.url_for('view_task', id=task.id))
 
-    def attachment_new(self, request, current_user):
+    def attachment_new(self, request, current_user, timestamp=None):
         if 'task_id' not in request.form:
             raise BadRequest('No task_id specified')
         task_id = request.form['task_id']
@@ -379,7 +379,8 @@ class ViewLayer(object):
         else:
             description = ''
 
-        self.ll.create_new_attachment(task_id, f, description, current_user)
+        self.ll.create_new_attachment(task_id, f, description, current_user,
+                                      timestamp=timestamp)
 
         return self.redirect(self.url_for('view_task', id=task_id))
 

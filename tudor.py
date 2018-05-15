@@ -10,6 +10,7 @@ from os import environ
 
 import git
 import markdown
+from datetime import datetime
 from flask import Flask, request
 from flask import Markup
 from flask.ext.bcrypt import Bcrypt
@@ -313,7 +314,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/attachment/new', methods=['POST'])
     @login_required
     def new_attachment():
-        return vl.attachment_new(request, Options.get_user())
+        return vl.attachment_new(request, Options.get_user(),
+                                 timestamp=datetime.utcnow())
 
     @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
