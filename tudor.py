@@ -183,6 +183,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             except AttributeError:
                 return pl.get_guest_user()
 
+    app.Options = Options
+
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
     app.ll = ll
