@@ -31,7 +31,7 @@ class AttachmentNewTest(unittest.TestCase):
         result = self.vl.attachment_new(request, admin)
         # then
         self.ll.create_new_attachment.assert_called_once_with(
-            task.id, f, '', admin)
+            task.id, f, '', admin, timestamp=None)
         # and
         self.r.url_for.assert_called_once_with('view_task', id=task.id)
         self.r.redirect.assert_called_once_with(self.r.url_for.return_value)
@@ -51,7 +51,7 @@ class AttachmentNewTest(unittest.TestCase):
         result = self.vl.attachment_new(request, admin)
         # then
         self.ll.create_new_attachment.assert_called_once_with(
-            task.id, f, None, admin)
+            task.id, f, None, admin, timestamp=None)
         # and
         self.r.url_for.assert_called_once_with('view_task', id=task.id)
         self.r.redirect.assert_called_once_with(self.r.url_for.return_value)
@@ -71,7 +71,7 @@ class AttachmentNewTest(unittest.TestCase):
         result = self.vl.attachment_new(request, admin)
         # then
         self.ll.create_new_attachment.assert_called_once_with(
-            task.id, f, '', admin)
+            task.id, f, '', admin, timestamp=None)
         # and
         self.r.url_for.assert_called_once_with('view_task', id=task.id)
         self.r.redirect.assert_called_once_with(self.r.url_for.return_value)
@@ -91,7 +91,7 @@ class AttachmentNewTest(unittest.TestCase):
         result = self.vl.attachment_new(request, admin)
         # then
         self.ll.create_new_attachment.assert_called_once_with(
-            task.id, f, 'asdf', admin)
+            task.id, f, 'asdf', admin, timestamp=None)
         # and
         self.r.url_for.assert_called_once_with('view_task', id=task.id)
         self.r.redirect.assert_called_once_with(self.r.url_for.return_value)

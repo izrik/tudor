@@ -365,7 +365,8 @@ class LogicLayer(object):
         ext = filename.rsplit('.', 1)[1]
         return (ext in self.allowed_extensions)
 
-    def create_new_attachment(self, task_id, f, description, current_user):
+    def create_new_attachment(self, task_id, f, description, current_user,
+                              timestamp=None):
 
         task = self.pl.get_task(task_id)
         if task is None:
@@ -377,7 +378,9 @@ class LogicLayer(object):
         path = secure_filename(f.filename)
         f.save(os.path.join(self.upload_folder, path))
 
-        att = self.pl.create_attachment(path, description)
+        filename = os.path.split(path)[1]
+        att = self.pl.create_attachment(path, description, timestamp=timestamp,
+                                        filename=filename)
         att.task = task
 
         self.pl.add(att)

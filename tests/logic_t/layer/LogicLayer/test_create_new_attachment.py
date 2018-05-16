@@ -2,6 +2,7 @@
 
 import unittest
 
+from datetime import datetime
 from werkzeug.exceptions import NotFound, Forbidden
 
 from models.object_types import ObjectTypes
@@ -109,3 +110,19 @@ class CreateNewAttachmentTest(unittest.TestCase):
             Forbidden,
             self.ll.create_new_attachment,
             self.task.id, self.f, 'test attachment', self.user)
+
+    def test_timestamp_sets_timestamp(self):
+        # given
+        self.pl.add(self.user)
+        self.pl.add(self.task)
+        self.task.users.append(self.user)
+        self.pl.commit()
+        timestamp = datetime(2018, 1, 1)
+        # when
+        result = self.ll.create_new_attachment(self.task.id, self.f,
+                                               'test attachment', self.user,
+                                               timestamp=timestamp)
+        # then
+        self.assertIsNotNone(result)
+        self.assertEqual(result.object_type, ObjectTypes.Attachment)
+        self.assertEqual(timestamp, result.timestamp)

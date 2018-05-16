@@ -10,6 +10,7 @@ from os import environ
 
 import git
 import markdown
+from datetime import datetime
 from flask import Flask, request
 from flask import Markup
 from flask.ext.bcrypt import Bcrypt
@@ -21,6 +22,7 @@ from logic.layer import LogicLayer
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
+__version__ = '0.1'
 try:
     __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                               always=True, abbrev=40)
@@ -163,6 +165,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             return __revision__
 
         @staticmethod
+        def get_version():
+            return __version__
+
+        @staticmethod
         def get_author():
             return Options.get('author', 'the author')
 
@@ -176,6 +182,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                 return pl.get_user(user_id)
             except AttributeError:
                 return pl.get_guest_user()
+
+    app.Options = Options
 
     if ll is None:
         ll = LogicLayer(upload_folder, allowed_extensions, pl)
@@ -308,7 +316,8 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/attachment/new', methods=['POST'])
     @login_required
     def new_attachment():
-        return vl.attachment_new(request, Options.get_user())
+        return vl.attachment_new(request, Options.get_user(),
+                                 timestamp=datetime.utcnow())
 
     @app.route('/attachment/<int:aid>', defaults={'x': 'x'})
     @app.route('/attachment/<int:aid>/', defaults={'x': 'x'})
