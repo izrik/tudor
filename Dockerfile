@@ -24,7 +24,7 @@ COPY templates templates
 COPY view view
 
 RUN pip install -r requirements.txt
-RUN pip install gunicorn
+RUN pip install gunicorn==19.7.1
 
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \
