@@ -24,7 +24,8 @@ COPY templates templates
 COPY view view
 
 RUN pip install -r requirements.txt
-RUN pip install gunicorn
+RUN pip install gunicorn==19.7.1
+RUN pip install MySQL-python==1.2.5
 
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \
