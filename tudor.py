@@ -443,7 +443,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        return vl. reset_order_nums(request, Options.get_user())
+        return vl.reset_order_nums(request, Options.get_user())
 
     @app.route('/export', methods=['GET', 'POST'])
     @login_required
