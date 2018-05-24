@@ -769,6 +769,8 @@ class LogicLayer(object):
                             include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
+        tasks_h = [task for task in tasks_h if task is not None]
+
         k = len(tasks_h) + 1
         for task in tasks_h:
             if task is None:

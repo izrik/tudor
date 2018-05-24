@@ -21,7 +21,7 @@ class ResetOrderNumsTest(unittest.TestCase):
         results = self.ll.do_reset_order_nums(self.admin)
 
         # then
-        self.assertEqual([None], results)
+        self.assertEqual([], results)
 
     def test_errant_leading_none(self):
         # TODO: Fix this. The None should not be there. Only return tasks.
@@ -30,7 +30,7 @@ class ResetOrderNumsTest(unittest.TestCase):
         results = self.ll.do_reset_order_nums(self.admin)
 
         # then
-        self.assertEqual([None], results)
+        self.assertEqual([], results)
 
     def test_tasks_in_order_stay_in_order(self):
 
@@ -51,7 +51,7 @@ class ResetOrderNumsTest(unittest.TestCase):
         results = self.ll.do_reset_order_nums(self.admin)
 
         # then
-        self.assertEqual([None, t3, t2, t1], results)
+        self.assertEqual([t3, t2, t1], results)
 
     def test_order_nums_get_changed(self):
 
@@ -72,9 +72,9 @@ class ResetOrderNumsTest(unittest.TestCase):
         results = self.ll.do_reset_order_nums(self.admin)
 
         # then
-        self.assertEqual(6, t1.order_num)
-        self.assertEqual(8, t2.order_num)
-        self.assertEqual(10, t3.order_num)
+        self.assertEqual(4, t1.order_num)
+        self.assertEqual(6, t2.order_num)
+        self.assertEqual(8, t3.order_num)
 
     def test_tasks_with_same_order_num_get_reordered_arbitrarily(self):
 
@@ -129,10 +129,10 @@ class ResetOrderNumsTest(unittest.TestCase):
         results = self.ll.do_reset_order_nums(self.user)
 
         # then
-        self.assertEqual([None, t4, t3, t2], results)
-        self.assertEqual(6, t2.order_num)
-        self.assertEqual(8, t3.order_num)
-        self.assertEqual(10, t4.order_num)
+        self.assertEqual([t4, t3, t2], results)
+        self.assertEqual(4, t2.order_num)
+        self.assertEqual(6, t3.order_num)
+        self.assertEqual(8, t4.order_num)
         self.assertEqual(1, t1.order_num)
         self.assertEqual(5, t5.order_num)
         self.assertNotEqual(t1.order_num, t2.order_num)
