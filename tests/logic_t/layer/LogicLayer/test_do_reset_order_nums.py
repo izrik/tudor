@@ -23,15 +23,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         # then
         self.assertEqual([], results)
 
-    def test_errant_leading_none(self):
-        # TODO: Fix this. The None should not be there. Only return tasks.
-
-        # when
-        results = self.ll.do_reset_order_nums(self.admin)
-
-        # then
-        self.assertEqual([], results)
-
     def test_tasks_in_order_stay_in_order(self):
 
         # given
