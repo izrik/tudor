@@ -764,7 +764,76 @@ class LogicLayer(object):
         self.pl.commit()
         return option
 
-    def do_reset_order_nums(self, current_user):
+    def do_reset_order_nums(self, current_user, include_done_deleted=False):
+
+        kwargs = {}
+        if not current_user.is_admin:
+            kwargs['is_public_or_users_contains'] = current_user
+        if not include_done_deleted:
+            # exclude from consideration tasks that are done or deleted or
+            # both (unless explicitly told otherwise)
+            kwargs['is_done'] = False
+            kwargs['is_deleted'] = False
+
+        tasks_to_order = self.pl.get_tasks(**kwargs)
+
+        deadlined_roots = sorted(
+            (t for t in tasks_to_order
+             if t.parent is None and t.deadline is not None),
+            key=lambda t: t.deadline)
+
+        non_deadlined_roots = [
+            t for t in tasks_to_order
+            if t.parent is None and t.deadline is None]
+
+        links = {task: [] for task in tasks_to_order}
+
+        # add a link from each non-deadline task to the last deadline task
+        last = deadlined_roots[-1]
+        for task in non_deadlined_roots:
+            links[task].append(last)
+
+        # add a link from each deadlined task to the next deadline task
+        # before it
+        for task, i in enumerate(deadlined_roots):
+            if i == 0: continue
+            links[task].append(deadlined_roots[i - 1])
+
+        for parent in tasks_to_order:
+            # add a link from each parent task to each of its children
+            links[parent].extend(parent.children)
+            # add a link from each child task to its previous sibling, based on
+            # order_num
+            sorted_children = sorted(parent.children, key=lambda c: c.order_num,
+                                     reverse=True)
+            for child, i in sorted_children:
+                if i == 0: continue
+                links[child].append(sorted_children[i - 1])
+
+        for task in tasks_to_order:
+            # add a link from a task to each of its dependees
+            links[task].extend(task.dependees)
+            # add a link from a task to each of its prioritize_before's
+            links[task].extend(task.prioritize_before)
+
+        # TODO: double-check for cycles
+
+        ordered_roots = deadlined_roots + non_deadlined_roots
+        visited = set()
+        def depth_first_search(task):
+            if task in visited: return
+            visited.add(task)
+            yield task
+            for link in links[task]:
+                for t in depth_first_search(link):
+                    yield t
+
+        order = []
+        for root in ordered_roots:
+            order.extend(depth_first_search(root))
+
+        ###
+
         tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
                             include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
