@@ -2,6 +2,8 @@
 
 import unittest
 
+from datetime import datetime
+
 from tests.logic_t.layer.LogicLayer.util import generate_ll
 
 
@@ -129,3 +131,88 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertNotEqual(t1.order_num, t2.order_num)
         self.assertNotEqual(t1.order_num, t3.order_num)
         self.assertNotEqual(t2.order_num, t3.order_num)
+
+    def test_children_are_ordered_before_parents(self):
+        # given
+        p = self.pl.create_task('t1')
+        c1 = self.pl.create_task('c1')
+        c1.parent = p
+        c1.order_num = 1
+        c2 = self.pl.create_task('c2')
+        c2.parent = p
+        c2.order_num = 2
+        c3 = self.pl.create_task('c3')
+        c3.parent = p
+        c3.order_num = 3
+
+        self.pl.add(p)
+        self.pl.add(c1)
+        self.pl.add(c2)
+        self.pl.add(c3)
+
+        self.pl.commit()
+
+        # when
+        results = self.ll.do_reset_order_nums(self.admin)
+
+        # then
+        self.assertEqual([c3, c2, c1, p], results)
+        self.assertEqual(10, c3.order_num)
+        self.assertEqual(8, c2.order_num)
+        self.assertEqual(6, c1.order_num)
+        self.assertEqual(4, p.order_num)
+
+    def test_a_task_is_ordered_after_its_dependees(self):
+        # given
+        task = self.pl.create_task('task')
+        task.order_num = 100
+        d1 = self.pl.create_task('d1')
+        task.dependees.append(d1)
+        d1.order_num = 1
+        d2 = self.pl.create_task('d2')
+        task.dependees.append(d2)
+        d2.order_num = 2
+        d3 = self.pl.create_task('d3')
+        task.dependees.append(d3)
+        d3.order_num = 3
+
+        self.pl.add(task)
+        self.pl.add(d1)
+        self.pl.add(d2)
+        self.pl.add(d3)
+
+        self.pl.commit()
+
+        # when
+        results = self.ll.do_reset_order_nums(self.admin)
+
+        # then
+        self.assertEqual([d3, d2, d1, task], results)
+        self.assertEqual(10, d3.order_num)
+        self.assertEqual(8, d2.order_num)
+        self.assertEqual(6, d1.order_num)
+        self.assertEqual(4, task.order_num)
+
+    def test_tasks_with_deadline_are_ordered_earliest_first(self):
+        pass
+
+    def test_tasks_with_deadline_are_ordered_before_tasks_without(self):
+        # given
+        t1 = self.pl.create_task('t1')
+        t2 = self.pl.create_task('t2', deadline=datetime(2018, 1, 1))
+        t3 = self.pl.create_task('t3', deadline=datetime(2018, 1, 2))
+
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+
+        self.pl.commit()
+
+        # when
+        results = self.ll.do_reset_order_nums(self.admin)
+
+        # then
+        self.assertEqual([t2, t3, t1], results)
+        self.assertEqual(8, t1.order_num)
+        self.assertEqual(4, t2.order_num)
+        self.assertEqual(6, t3.order_num)
