@@ -43,6 +43,10 @@
                 <ul class="nav navbar-nav navbar-right">
                     {% block header_nav_items %}
                     {% if opts.get_user() %}
+                    <li class="small">
+                        <a class="nav-link" href="{{ url_for('new_task') }}">
+                            <span class="glyphicon glyphicon-plus"></span> New Task</a>
+                    </li>
                     <li class="small"><a class="nav-link" href="{{ url_for('deadlines') }}">Deadlines</a></li>
                     <li class="small"><a class="nav-link" href="{{ url_for('list_tags') }}">Tags</a></li>
                         {% if opts.get_user().is_admin %}
