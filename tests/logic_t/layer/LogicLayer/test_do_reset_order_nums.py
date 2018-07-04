@@ -263,4 +263,33 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertEqual(8, t2.order_num)
         self.assertEqual(6, t3.order_num)
 
-    # TODO: prioritize_before/prioritize_after
+    def test_a_task_is_ordered_after_its_prioritize_befores(self):
+        # given
+        task = self.pl.create_task('task')
+        task.order_num = 100
+        pb1 = self.pl.create_task('pb1')
+        task.prioritize_before.append(pb1)
+        pb1.order_num = 1
+        pb2 = self.pl.create_task('pb2')
+        task.prioritize_before.append(pb2)
+        pb2.order_num = 2
+        pb3 = self.pl.create_task('pb3')
+        task.prioritize_before.append(pb3)
+        pb3.order_num = 3
+
+        self.pl.add(task)
+        self.pl.add(pb1)
+        self.pl.add(pb2)
+        self.pl.add(pb3)
+
+        self.pl.commit()
+
+        # when
+        results = self.ll.do_reset_order_nums(self.admin)
+
+        # then
+        self.assertEqual([pb3, pb2, pb1, task], results)
+        self.assertEqual(10, pb3.order_num)
+        self.assertEqual(8, pb2.order_num)
+        self.assertEqual(6, pb1.order_num)
+        self.assertEqual(4, task.order_num)
