@@ -134,7 +134,7 @@ class ResetOrderNumsTest(unittest.TestCase):
 
     def test_children_are_ordered_before_parents(self):
         # given
-        p = self.pl.create_task('t1')
+        p = self.pl.create_task('p')
         c1 = self.pl.create_task('c1')
         c1.parent = p
         c1.order_num = 1
@@ -194,7 +194,53 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertEqual(4, task.order_num)
 
     def test_tasks_with_deadline_are_ordered_earliest_first(self):
-        pass
+        # given
+        t1 = self.pl.create_task('t1')
+        t1.deadline = datetime(2018, 1, 1)
+        t2 = self.pl.create_task('t2')
+        t2.deadline = datetime(2018, 1, 2)
+        t3 = self.pl.create_task('t3')
+        t3.deadline = datetime(2018, 1, 3)
+
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.commit()
+
+        # when
+        results = self.ll.do_reset_order_nums(self.admin)
+
+        # then
+        self.assertEqual([t1, t2, t3], results)
+        self.assertEqual(8, t1.order_num)
+        self.assertEqual(6, t2.order_num)
+        self.assertEqual(4, t3.order_num)
+
+    def test_tasks_with_deadline_are_ordered_ignoring_order_num(self):
+        # given
+        t1 = self.pl.create_task('t1')
+        t1.deadline = datetime(2018, 1, 1)
+        t1.order_num = 1
+        t2 = self.pl.create_task('t2')
+        t2.deadline = datetime(2018, 1, 2)
+        t2.order_num = 2
+        t3 = self.pl.create_task('t3')
+        t3.deadline = datetime(2018, 1, 3)
+        t3.order_num = 3
+
+        self.pl.add(t1)
+        self.pl.add(t2)
+        self.pl.add(t3)
+        self.pl.commit()
+
+        # when
+        results = self.ll.do_reset_order_nums(self.admin)
+
+        # then
+        self.assertEqual([t1, t2, t3], results)
+        self.assertEqual(8, t1.order_num)
+        self.assertEqual(6, t2.order_num)
+        self.assertEqual(4, t3.order_num)
 
     def test_tasks_with_deadline_are_ordered_before_tasks_without(self):
         # given
@@ -213,6 +259,8 @@ class ResetOrderNumsTest(unittest.TestCase):
 
         # then
         self.assertEqual([t2, t3, t1], results)
-        self.assertEqual(8, t1.order_num)
-        self.assertEqual(4, t2.order_num)
+        self.assertEqual(4, t1.order_num)
+        self.assertEqual(8, t2.order_num)
         self.assertEqual(6, t3.order_num)
+
+    # TODO: prioritize_before/prioritize_after

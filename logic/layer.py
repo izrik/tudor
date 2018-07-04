@@ -775,29 +775,11 @@ class LogicLayer(object):
             kwargs['is_done'] = False
             kwargs['is_deleted'] = False
 
-        tasks_to_order = self.pl.get_tasks(**kwargs)
+        tasks_to_order = list(self.pl.get_tasks(**kwargs))
 
-        deadlined_roots = sorted(
-            (t for t in tasks_to_order
-             if t.parent is None and t.deadline is not None),
-            key=lambda t: t.deadline)
-
-        non_deadlined_roots = [
-            t for t in tasks_to_order
-            if t.parent is None and t.deadline is None]
-
+        # construct links
         links = {task: [] for task in tasks_to_order}
-
-        # add a link from each non-deadline task to the last deadline task
-        last = deadlined_roots[-1]
-        for task in non_deadlined_roots:
-            links[task].append(last)
-
-        # add a link from each deadlined task to the next deadline task
-        # before it
-        for task, i in enumerate(deadlined_roots):
-            if i == 0: continue
-            links[task].append(deadlined_roots[i - 1])
+        # links[t] gives a list of all tasks that should be done before t
 
         for parent in tasks_to_order:
             # add a link from each parent task to each of its children
@@ -806,8 +788,9 @@ class LogicLayer(object):
             # order_num
             sorted_children = sorted(parent.children, key=lambda c: c.order_num,
                                      reverse=True)
-            for child, i in sorted_children:
-                if i == 0: continue
+            for i, child in enumerate(sorted_children):
+                if i == 0:
+                    continue
                 links[child].append(sorted_children[i - 1])
 
         for task in tasks_to_order:
@@ -816,41 +799,63 @@ class LogicLayer(object):
             # add a link from a task to each of its prioritize_before's
             links[task].extend(task.prioritize_before)
 
+        deadlined_roots = sorted(
+            (t for t in tasks_to_order
+             if t.parent is None and len(t.dependants) == 0 and
+             len(t.prioritize_after) == 0 and t.deadline is not None),
+            key=lambda t: t.deadline)
+
+        non_deadlined_roots = sorted(
+            (t for t in tasks_to_order
+             if t.parent is None and len(t.dependants) == 0 and
+             len(t.prioritize_after) == 0 and t.deadline is None),
+            key=lambda t: t.order_num, reverse=True)
+
+        if deadlined_roots:
+            # add a link from each non-deadline task to the last deadline task
+            last = deadlined_roots[-1]
+            for task in non_deadlined_roots:
+                links[task].append(last)
+
+            # add a link from each deadlined task to the next deadline task
+            # before it
+            for i, task in enumerate(deadlined_roots):
+                if i == 0:
+                    continue
+                links[task].append(deadlined_roots[i - 1])
+
         # TODO: double-check for cycles
 
-        ordered_roots = deadlined_roots + non_deadlined_roots
+        # preserve existing order as much as possible
+        for _, tasks in links.iteritems():
+            tasks.sort(key=lambda t: t.order_num, reverse=True)
+
+        # topological sort via DFS of roots
         visited = set()
+
         def depth_first_search(task):
-            if task in visited: return
+            if task in visited:
+                return
             visited.add(task)
-            yield task
             for link in links[task]:
                 for t in depth_first_search(link):
                     yield t
+            yield task
 
+        ordered_roots = deadlined_roots + non_deadlined_roots
         order = []
         for root in ordered_roots:
             order.extend(depth_first_search(root))
 
-        ###
-
-        tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
-                            include_done=True, include_deleted=True)
-        tasks_h = self.sort_by_hierarchy(tasks_h)
-
-        tasks_h = [task for task in tasks_h if task is not None]
-
-        k = len(tasks_h) + 1
-        for task in tasks_h:
-            if task is None:
-                continue
-            task.order_num = 2 * k
-            self.pl.add(task)
-            k -= 1
+        # set new order numbers
+        k = len(order) * 2 + 2
+        for task in order:
+            task.order_num = k
+            k -= 2
 
         self.pl.commit()
 
-        return tasks_h
+        return order
 
     def do_export_data(self, types_to_export):
         results = {}
