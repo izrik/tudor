@@ -775,29 +775,43 @@ class LogicLayer(object):
             kwargs['is_done'] = False
             kwargs['is_deleted'] = False
 
-        tasks_to_order = list(self.pl.get_tasks(**kwargs))
+        tasks_to_order = set(self.pl.get_tasks(**kwargs))
 
         # construct links
         links = {task: [] for task in tasks_to_order}
         # links[t] gives a list of all tasks that should be done before t
+
+        def link_append(key, value):
+            if key not in links:
+                links[key] = []
+            if (include_done_deleted or
+                    (not value.is_done and not value.is_deleted)):
+                links[key].append(value)
+
+        def link_extend(key, values):
+            if key not in links:
+                links[key] = []
+            for value in values:
+                link_append(key, value)
 
         for parent in tasks_to_order:
             # add a link from each parent task to each of its children
             links[parent].extend(parent.children)
             # add a link from each child task to its previous sibling, based on
             # order_num
-            sorted_children = sorted(parent.children, key=lambda c: c.order_num,
+            sorted_children = sorted(parent.children,
+                                     key=lambda c: c.order_num,
                                      reverse=True)
             for i, child in enumerate(sorted_children):
                 if i == 0:
                     continue
-                links[child].append(sorted_children[i - 1])
+                link_append(child, sorted_children[i-1])
 
         for task in tasks_to_order:
             # add a link from a task to each of its dependees
-            links[task].extend(task.dependees)
+            link_extend(task, task.dependees)
             # add a link from a task to each of its prioritize_before's
-            links[task].extend(task.prioritize_before)
+            link_extend(task, task.prioritize_before)
 
         deadlined_roots = sorted(
             (t for t in tasks_to_order
@@ -815,14 +829,14 @@ class LogicLayer(object):
             # add a link from each non-deadline task to the last deadline task
             last = deadlined_roots[-1]
             for task in non_deadlined_roots:
-                links[task].append(last)
+                link_append(task, last)
 
             # add a link from each deadlined task to the next deadline task
             # before it
             for i, task in enumerate(deadlined_roots):
                 if i == 0:
                     continue
-                links[task].append(deadlined_roots[i - 1])
+                link_append(task, deadlined_roots[i-1])
 
         # TODO: double-check for cycles
 
@@ -1558,6 +1572,80 @@ class LogicLayer(object):
             n += 1
         self.pl.commit()
         return n
+
+    def get_queue_data(self, current_user):
+        is_public = self.pl.UNSPECIFIED
+        is_public_or_users_contains = self.pl.UNSPECIFIED
+        if current_user is None or current_user.is_anonymous():
+            is_public = True
+        elif not current_user.is_admin:
+            is_public_or_users_contains = current_user
+
+        tasks = self.pl.get_tasks(
+            is_done=False, is_deleted=False,
+            order_by=[[self.pl.ORDER_NUM, self.pl.DESCENDING]],
+            parent_id=None, is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains)
+        tasks_list = list(tasks)
+        tasks_set = set(tasks_list)
+
+        def is_done_or_deleted(t):
+            return t.is_done or t.is_deleted
+
+        def has_priors(t):
+            if t.children.count() > 0:
+                return True
+            for t2 in t.children:
+                if not is_done_or_deleted(t2):
+                    return True
+            for t2 in t.dependees:
+                if not is_done_or_deleted(t2):
+                    return True
+            for t2 in t.prioritize_before:
+                if not is_done_or_deleted(t2):
+                    return True
+            return False
+
+        visited = set()
+        queueable_tasks = set()
+
+        def visit(task):
+            if task in visited:
+                return task in queueable_tasks
+            visited.add(task)
+            if task.is_done or task.is_deleted:
+                return False
+            if (len(task.children) > 0 or len(task.dependees) > 0 or
+                    len(task.prioritize_before) > 0):
+                return False
+
+            is_queueable = True
+            for child in task.children:
+                if visit(child):
+                    is_queueable = False
+                    break
+
+            for dependee in task.dependees:
+                if visit(dependee):
+                    is_queueable = False
+
+            for pb in task.prioritize_before:
+                if visit(pb):
+                    is_queueable = False
+
+        queue_tasks = [task for task in tasks_list if not has_priors(task)]
+
+        from persistence.pager import Pager
+        data = {
+            'show_deleted': False,
+            'show_done': False,
+            'tasks': queue_tasks,
+            'all_tags': [],
+            'pager': Pager(1, len(queue_tasks), queue_tasks, len(queue_tasks),
+                           1, None),
+        }
+
+        return data
 
     def pl_get_task(self, task_id):
         return self.pl.get_task(task_id)

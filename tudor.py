@@ -592,6 +592,11 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         return vl.task_id_remove_prioritize_after(request, Options.get_user(),
                                                   task_id, prioritize_after_id)
 
+    @app.route('/queue')
+    @login_required
+    def view_queue():
+        return vl.view_queue(request, Options.get_user())
+
     @app.template_filter(name='gfm')
     def render_gfm(s):
         output = markdown.markdown(s, extensions=['gfm'])

@@ -793,3 +793,39 @@ class ViewLayer(object):
             request.args.get('next') or
             request.args.get('next_url') or
             self.url_for('view_task', id=task_id)))
+
+    def view_queue(self, request, current_user):
+
+        # page_num = None
+        # try:
+        #     page_num = int(self.get_form_or_arg(request, 'page'))
+        # except:
+        #     pass
+        # tasks_per_page = None
+        # try:
+        #     tasks_per_page = int(self.get_form_or_arg(request, 'per_page'))
+        # except:
+        #     pass
+
+        show_deleted = self.get_form_or_arg(request, 'show_deleted')
+        show_done = self.get_form_or_arg(request, 'show_done')
+        page_num = self.get_form_or_arg(request, 'page_num')
+        tasks_per_page = self.get_form_or_arg(request, 'tasks_per_page')
+
+        # data = self.ll.get_index_data(show_deleted, show_done, current_user,
+        #                               page_num=page_num,
+        #                               tasks_per_page=tasks_per_page)
+        data = self.ll.get_queue_data(current_user)
+
+        resp = self.make_response(
+            self.render_template('index.t.html',
+                                 show_deleted=data['show_deleted'],
+                                 show_done=data['show_done'],
+                                 cycle=itertools.cycle,
+                                 user=current_user,
+                                 tasks=data['tasks'],
+                                 tags=data['all_tags'],
+                                 pager=data['pager'],
+                                 pager_link_page='index',
+                                 pager_link_args={}))
+        return resp

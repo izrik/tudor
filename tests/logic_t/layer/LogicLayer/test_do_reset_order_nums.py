@@ -18,7 +18,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.pl.add(self.user)
 
     def test_no_tasks_does_nothing(self):
-
         # when
         results = self.ll.do_reset_order_nums(self.admin)
 
@@ -26,7 +25,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertEqual([], results)
 
     def test_tasks_in_order_stay_in_order(self):
-
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 1
@@ -47,7 +45,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertEqual([t3, t2, t1], results)
 
     def test_order_nums_get_changed(self):
-
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 1
@@ -70,7 +67,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertEqual(8, t3.order_num)
 
     def test_tasks_with_same_order_num_get_reordered_arbitrarily(self):
-
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 0
@@ -93,7 +89,6 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertNotEqual(t2.order_num, t3.order_num)
 
     def test_only_tasks_user_is_authorized_for_are_changed(self):
-
         # given
         t1 = self.pl.create_task('t1')
         t1.order_num = 1
@@ -293,3 +288,20 @@ class ResetOrderNumsTest(unittest.TestCase):
         self.assertEqual(8, pb2.order_num)
         self.assertEqual(6, pb1.order_num)
         self.assertEqual(4, task.order_num)
+
+    def test_the_thing(self):
+        db_uri = 'sqlite:////Users/rich4632/other-projects/' \
+                 'tudor/.tudor/db.sqlite'
+        self.ll = generate_ll(db_uri=db_uri, use_in_mem_pl=False)
+        self.pl = self.ll.pl
+
+        # users = list(self.pl.get_users())
+        tasks = list(self.pl.get_tasks())
+        # given
+        user = self.pl.get_user_by_email('izrik@izrik.com')
+
+        # when
+        results = self.ll.do_reset_order_nums(user)
+
+        # then
+        self.assertEqual(1, 1)
