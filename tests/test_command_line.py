@@ -325,6 +325,7 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
                          result.ALLOWED_EXTENSIONS)
         self.assertEqual(self.env_configs.SECRET_KEY, result.SECRET_KEY)
         self.assertIsNotNone(result.args)
+        self.assertFalse(result.args.profile)
 
     def test_debug_arg_yields_debug(self):
         # when
@@ -476,3 +477,9 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         # then
         self.assertIsNotNone(result.args)
         self.assertTrue(result.args.test_db_conn)
+
+    def test_profile_arg_yields_profile(self):
+        # when
+        result = get_config_from_command_line(['--profile'], self.env_configs)
+        # then
+        self.assertTrue(result.args.profile)
