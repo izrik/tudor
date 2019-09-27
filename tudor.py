@@ -13,8 +13,8 @@ import markdown
 from datetime import datetime
 from flask import Flask, request
 from flask import Markup
-from flask.ext.bcrypt import Bcrypt
-from flask.ext.login import LoginManager, login_required, current_user
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 
 from conversions import bool_from_str, int_from_str

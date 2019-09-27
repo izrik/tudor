@@ -227,7 +227,7 @@ class RouteTest(unittest.TestCase):
 
     def test_attachment_get(self):
         resp = self.client.get('/attachment/1')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.attachment.assert_not_called()
 
     def test_attachment_slash_get(self):
@@ -237,7 +237,7 @@ class RouteTest(unittest.TestCase):
 
     def test_attachment_slash_name_get(self):
         resp = self.client.get('/attachment/1/x')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.attachment.assert_not_called()
 
     def test_attachment_post(self):
@@ -307,7 +307,7 @@ class RouteTest(unittest.TestCase):
 
     def test_task_delete_tag_get(self):
         resp = self.client.get('/task/1/delete_tag')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.task_delete_tag.assert_not_called()
 
     def test_task_delete_tag_slash_get(self):
@@ -322,7 +322,7 @@ class RouteTest(unittest.TestCase):
 
     def test_task_delete_tag_post(self):
         resp = self.client.post('/task/1/delete_tag')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.task_delete_tag.assert_not_called()
 
     def test_task_authorize_user_get(self):
@@ -357,7 +357,7 @@ class RouteTest(unittest.TestCase):
 
     def test_task_deauthorize_user_get(self):
         resp = self.client.get('/task/1/deauthorize_user')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.task_deauthorize_user.assert_not_called()
 
     def test_task_deauthorize_user_slash_get(self):
@@ -372,7 +372,7 @@ class RouteTest(unittest.TestCase):
 
     def test_task_deauthorize_user_post(self):
         resp = self.client.post('/task/1/deauthorize_user')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.task_deauthorize_user.assert_not_called()
 
     def test_task_deauthorize_user_slash_post(self):
@@ -507,7 +507,7 @@ class RouteTest(unittest.TestCase):
 
     def test_tags_get(self):
         resp = self.client.get('/tags')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.tags.assert_not_called()
 
     def test_tags_slash_get(self):
@@ -557,7 +557,7 @@ class RouteTest(unittest.TestCase):
 
     def test_search_get(self):
         resp = self.client.get('/search')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.search.assert_not_called()
 
     def test_search_slash_get(self):
@@ -572,17 +572,17 @@ class RouteTest(unittest.TestCase):
 
     def test_search_post(self):
         resp = self.client.post('/search')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.search.assert_not_called()
 
     def test_search_slash_post(self):
         resp = self.client.post('/search')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.search.assert_not_called()
 
     def test_search_slash_value_post(self):
         resp = self.client.post('/search')
-        self.assertEqual(301, resp.status_code)
+        self.assertEqual(308, resp.status_code)
         self.vl.search.assert_not_called()
 
     def test_task_id_add_dependee_get(self):

@@ -57,7 +57,7 @@ class UserTest(unittest.TestCase):
         # when
         user = User('name@example.org', 'hashed_password')
         # then
-        self.assertFalse(user.is_anonymous())
+        self.assertFalse(user.is_anonymous)
 
     def test_is_authenticated_always_true(self):
         # when

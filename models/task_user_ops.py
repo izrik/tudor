@@ -4,7 +4,7 @@ class TaskUserOps(object):
     def is_user_authorized_or_admin(task, user):
         if user is None:
             return False
-        if user.is_anonymous():
+        if user.is_anonymous:
             return False
         if user.is_admin:
             return True

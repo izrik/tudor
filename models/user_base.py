@@ -86,5 +86,6 @@ class UserBase(object):
     def is_authenticated(self):
         return self._is_authenticated
 
+    @property
     def is_anonymous(self):
         return self._is_anonymous

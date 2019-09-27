@@ -976,7 +976,7 @@ class LogicLayer(object):
         if current_user is None:
             # guest users not allowed
             raise ValueError('current_user cannot be None.')
-        if current_user.is_anonymous():
+        if current_user.is_anonymous:
             # guest users not allowed
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')
@@ -1121,7 +1121,7 @@ class LogicLayer(object):
 
         kwargs = {}
 
-        if current_user is None or current_user.is_anonymous():
+        if current_user is None or current_user.is_anonymous:
             kwargs['is_public'] = True
         elif not current_user.is_admin:
             kwargs['is_public_or_users_contains'] = current_user
@@ -1164,7 +1164,7 @@ class LogicLayer(object):
                 depth += 1
 
                 kwargs = {}
-                if current_user is None or current_user.is_anonymous():
+                if current_user is None or current_user.is_anonymous:
                     kwargs['is_public'] = True
                 elif not current_user.is_admin:
                     kwargs['is_public_or_users_contains'] = current_user
@@ -1201,7 +1201,7 @@ class LogicLayer(object):
 
         kwargs = {}
 
-        if current_user is None or current_user.is_anonymous():
+        if current_user is None or current_user.is_anonymous:
             kwargs['is_public'] = True
         elif not current_user.is_admin:
             kwargs['is_public_or_users_contains'] = current_user
