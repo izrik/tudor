@@ -52,37 +52,37 @@ class TypeConversionFunctionTest(unittest.TestCase):
         self.assertFalse(bool_from_str(None))
 
     def test_int_from_str(self):
-        self.assertEquals(1, int_from_str('1'))
-        self.assertEquals(123, int_from_str('123'))
-        self.assertEquals(-123, int_from_str('-123'))
+        self.assertEqual(1, int_from_str('1'))
+        self.assertEqual(123, int_from_str('123'))
+        self.assertEqual(-123, int_from_str('-123'))
         self.assertIsNone(int_from_str(None))
         self.assertIsNone(int_from_str(''))
         self.assertIsNone(int_from_str([]))
         self.assertIsNone(int_from_str([1]))
-        self.assertEquals(1, int_from_str(True))
+        self.assertEqual(1, int_from_str(True))
 
     def test_int_from_str_with_default(self):
-        self.assertEquals(1, int_from_str('1', 555))
-        self.assertEquals(123, int_from_str('123', 555))
-        self.assertEquals(-123, int_from_str('-123', 555))
-        self.assertEquals(555, int_from_str(None, 555))
-        self.assertEquals(555, int_from_str('', 555))
-        self.assertEquals(555, int_from_str([], 555))
-        self.assertEquals(555, int_from_str([1], 555))
-        self.assertEquals(1, int_from_str(True, 555))
+        self.assertEqual(1, int_from_str('1', 555))
+        self.assertEqual(123, int_from_str('123', 555))
+        self.assertEqual(-123, int_from_str('-123', 555))
+        self.assertEqual(555, int_from_str(None, 555))
+        self.assertEqual(555, int_from_str('', 555))
+        self.assertEqual(555, int_from_str([], 555))
+        self.assertEqual(555, int_from_str([1], 555))
+        self.assertEqual(1, int_from_str(True, 555))
 
     def test_str_from_datetime(self):
         self.assertIsNone(None, str_from_datetime(None))
-        self.assertEquals('2016-02-03 00:00:00',
+        self.assertEqual('2016-02-03 00:00:00',
                           str_from_datetime(datetime(2016, 2, 3)))
-        self.assertEquals('2016-02-03 12:34:56',
+        self.assertEqual('2016-02-03 12:34:56',
                           str_from_datetime(datetime(2016, 2, 3, 12, 34, 56)))
 
-        self.assertEquals('2016-02-03', str_from_datetime('2016-02-03'))
-        self.assertEquals('abcdefgh', str_from_datetime('abcdefgh'))
+        self.assertEqual('2016-02-03', str_from_datetime('2016-02-03'))
+        self.assertEqual('abcdefgh', str_from_datetime('abcdefgh'))
 
     def test_money_from_str(self):
-        self.assertEquals(Decimal('123.46'), money_from_str('123.4567'))
-        self.assertEquals(Decimal('12345678901234567890.0'),
+        self.assertEqual(Decimal('123.46'), money_from_str('123.4567'))
+        self.assertEqual(Decimal('12345678901234567890.0'),
                           money_from_str('12345678901234567890'))
-        self.assertEquals(None, money_from_str(None))
+        self.assertEqual(None, money_from_str(None))

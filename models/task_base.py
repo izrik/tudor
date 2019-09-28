@@ -34,7 +34,7 @@ class TaskBase(object):
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,
                  is_public=False):
-        self._logger.debug(u'TaskBase.__init__ %s', self)
+        self._logger.debug('TaskBase.__init__ %s', self)
 
         self.summary = summary
         self.description = description
@@ -61,13 +61,13 @@ class TaskBase(object):
 
     @staticmethod
     def _clean_deadline(deadline):
-        if isinstance(deadline, basestring):
+        if isinstance(deadline, str):
             return dparse(deadline)
         return deadline
 
     def to_dict(self, fields=None):
 
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
@@ -160,7 +160,7 @@ class TaskBase(object):
         return task
 
     def update_from_dict(self, d):
-        self._logger.debug(u'%s: %s', self, d)
+        self._logger.debug('%s: %s', self, d)
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'summary' in d:
@@ -213,32 +213,32 @@ class TaskBase(object):
             yield tag.value
 
     def is_user_authorized(self, user):
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
         return user in self.users
 
     def get_css_class(self):
         if self.is_deleted and self.is_done:
-            return u'done-deleted'
+            return 'done-deleted'
         if self.is_deleted:
-            return u'not-done-deleted'
+            return 'not-done-deleted'
         if self.is_done:
-            return u'done-not-deleted'
+            return 'done-not-deleted'
         return ''
 
     def get_css_class_attr(self):
         cls = self.get_css_class()
         if cls:
-            return u' class="{}" '.format(cls)
-        return u''
+            return ' class="{}" '.format(cls)
+        return ''
 
     def get_expected_duration_for_viewing(self):
         if self.expected_duration_minutes is None:
             return ''
         if self.expected_duration_minutes == 1:
-            return u'1 minute'
-        return u'{} minutes'.format(self.expected_duration_minutes)
+            return '1 minute'
+        return '{} minutes'.format(self.expected_duration_minutes)
 
     def get_expected_cost_for_viewing(self):
         if self.expected_cost is None:
             return ''
-        return u'{:.2f}'.format(self.expected_cost)
+        return '{:.2f}'.format(self.expected_cost)

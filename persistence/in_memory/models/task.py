@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.task_base import TaskBase
 from persistence.in_memory.models.changeable import Changeable
@@ -31,7 +29,7 @@ class Task(Changeable, TaskBase):
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost, is_public)
 
-        self._logger.debug(u'Task.__init__ %s', self)
+        self._logger.debug('Task.__init__ %s', self)
 
         if lazy is None:
             lazy = {}
@@ -66,7 +64,7 @@ class Task(Changeable, TaskBase):
     @id.setter
     def id(self, value):
         if value != self._id:
-            self._logger.debug(u'%s: %s -> %s', self, self.id, value)
+            self._logger.debug('%s: %s -> %s', self, self.id, value)
             self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
             self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
@@ -78,7 +76,7 @@ class Task(Changeable, TaskBase):
     @summary.setter
     def summary(self, value):
         if value != self._summary:
-            self._logger.debug(u'%s: %s -> %s',
+            self._logger.debug('%s: %s -> %s',
                                self, repr(self.summary), repr(value))
             self._on_attr_changing(self.FIELD_SUMMARY, self._summary)
             self._summary = value
@@ -92,7 +90,7 @@ class Task(Changeable, TaskBase):
     @description.setter
     def description(self, value):
         if value != self._description:
-            self._logger.debug(u'%s: %s -> %s', self, self.description, value)
+            self._logger.debug('%s: %s -> %s', self, self.description, value)
             self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,
@@ -105,7 +103,7 @@ class Task(Changeable, TaskBase):
     @is_done.setter
     def is_done(self, value):
         if value != self._is_done:
-            self._logger.debug(u'%s: %s -> %s', self, self.is_done, value)
+            self._logger.debug('%s: %s -> %s', self, self.is_done, value)
             self._on_attr_changing(self.FIELD_IS_DONE, self._is_done)
             self._is_done = value
             self._on_attr_changed(self.FIELD_IS_DONE, self.OP_SET,
@@ -118,7 +116,7 @@ class Task(Changeable, TaskBase):
     @is_deleted.setter
     def is_deleted(self, value):
         if value != self._is_deleted:
-            self._logger.debug(u'%s: %s -> %s', self, self.is_deleted, value)
+            self._logger.debug('%s: %s -> %s', self, self.is_deleted, value)
             self._on_attr_changing(self.FIELD_IS_DELETED, self._is_deleted)
             self._is_deleted = value
             self._on_attr_changed(self.FIELD_IS_DELETED, self.OP_SET,
@@ -131,7 +129,7 @@ class Task(Changeable, TaskBase):
     @order_num.setter
     def order_num(self, value):
         if value != self._order_num:
-            self._logger.debug(u'%s: %s -> %s', self, self.order_num, value)
+            self._logger.debug('%s: %s -> %s', self, self.order_num, value)
             self._on_attr_changing(self.FIELD_ORDER_NUM, self._order_num)
             self._order_num = value
             self._on_attr_changed(self.FIELD_ORDER_NUM, self.OP_SET,
@@ -144,7 +142,7 @@ class Task(Changeable, TaskBase):
     @deadline.setter
     def deadline(self, value):
         if value != self._deadline:
-            self._logger.debug(u'%s: %s -> %s', self, self.deadline, value)
+            self._logger.debug('%s: %s -> %s', self, self.deadline, value)
             self._on_attr_changing(self.FIELD_DEADLINE, self._deadline)
             self._deadline = value
             self._on_attr_changed(self.FIELD_DEADLINE, self.OP_SET,
@@ -157,7 +155,7 @@ class Task(Changeable, TaskBase):
     @expected_duration_minutes.setter
     def expected_duration_minutes(self, value):
         if value != self._expected_duration_minutes:
-            self._logger.debug(u'%s: %s -> %s', self,
+            self._logger.debug('%s: %s -> %s', self,
                                self.expected_duration_minutes, value)
             self._on_attr_changing(self.FIELD_EXPECTED_DURATION_MINUTES,
                                    self._expected_duration_minutes)
@@ -172,7 +170,7 @@ class Task(Changeable, TaskBase):
     @expected_cost.setter
     def expected_cost(self, value):
         if value != self._expected_cost:
-            self._logger.debug(u'%s: %s -> %s', self, self.expected_cost,
+            self._logger.debug('%s: %s -> %s', self, self.expected_cost,
                                value)
             self._on_attr_changing(self.FIELD_EXPECTED_COST,
                                    self._expected_cost)
@@ -188,7 +186,7 @@ class Task(Changeable, TaskBase):
 
     def _populate_parent(self):
         if self._parent_lazy:
-            self._logger.debug(u'populating parent from lazy %s', self)
+            self._logger.debug('populating parent from lazy %s', self)
             value = self._parent_lazy()
             self._parent_lazy = None
             self.parent = value
@@ -200,10 +198,10 @@ class Task(Changeable, TaskBase):
 
     @parent.setter
     def parent(self, value):
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
         self._populate_parent()
         if value != self._parent:
-            self._logger.debug(u'%s: %s -> %s', self, self._parent, value)
+            self._logger.debug('%s: %s -> %s', self, self._parent, value)
             self._on_attr_changing(self.FIELD_PARENT, self._parent)
             if self._parent is not None:
                 self._parent.children.discard(self)
@@ -255,7 +253,7 @@ class Task(Changeable, TaskBase):
     @is_public.setter
     def is_public(self, value):
         if value != self._is_public:
-            self._logger.debug(u'%s: %s -> %s', self, self.is_public, value)
+            self._logger.debug('%s: %s -> %s', self, self.is_public, value)
             self._on_attr_changing(self.FIELD_IS_PUBLIC,
                                    self._is_public)
             self._is_public = value
@@ -263,7 +261,7 @@ class Task(Changeable, TaskBase):
                                   self._is_public)
 
     def contains_dependency_cycle(self, visited=None):
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
         if visited is None:
             visited = set()
         if self in visited:
@@ -277,7 +275,7 @@ class Task(Changeable, TaskBase):
         return False
 
     def contains_priority_cycle(self, visited=None):
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
         if visited is None:
             visited = set()
         if self in visited:
@@ -290,7 +288,7 @@ class Task(Changeable, TaskBase):
         return False
 
     def clear_relationships(self):
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
         self.parent = None
         self.children.clear()
         self.tags.clear()

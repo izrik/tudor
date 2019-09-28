@@ -859,7 +859,7 @@ class DbLoadNoHierarchyTest(unittest.TestCase):
         # then
         self.assertEqual(1, len(tasks))
         self.assertEqual(tasks[0].object_type, ObjectTypes.Task)
-        self.assertEquals('great_grandchild', tasks[0].summary)
+        self.assertEqual('great_grandchild', tasks[0].summary)
 
     def test_exclude_undeadlined_only_returns_tasks_with_deadlines2(self):
         # when

@@ -2,7 +2,7 @@
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
-from object_types import ObjectTypes
+from .object_types import ObjectTypes
 
 
 class AttachmentBase(object):
@@ -39,7 +39,7 @@ class AttachmentBase(object):
     def _clean_timestamp(timestamp):
         if timestamp is None:
             return None
-        if isinstance(timestamp, basestring):
+        if isinstance(timestamp, str):
             return dparse(timestamp)
         return timestamp
 

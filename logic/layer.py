@@ -391,7 +391,7 @@ class LogicLayer(object):
     def reorder_tasks(self, tasks):
         tasks = list(tasks)
         N = len(tasks)
-        for i in xrange(N):
+        for i in range(N):
             tasks[i].order_num = 2 * (N - i)
             self.pl.add(tasks[i])
 
@@ -873,7 +873,7 @@ class LogicLayer(object):
                         t.users.append(user)
                     db_objects.append(t)
                     tasks_by_id[t.id] = t
-                for task, parent_id in parent_id_by_task.iteritems():
+                for task, parent_id in parent_id_by_task.items():
                     if parent_id is not None:
                         task.parent = tasks_by_id[parent_id]
 
@@ -1154,7 +1154,7 @@ class LogicLayer(object):
         if max_depth is None or max_depth > 0:
 
             buckets = [tasks]
-            next_ids = map(lambda t: t.id, tasks)
+            next_ids = [t.id for t in tasks]
             already_ids = set()
             already_ids.update(next_ids)
 

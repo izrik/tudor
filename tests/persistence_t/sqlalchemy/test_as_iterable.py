@@ -6,7 +6,7 @@ from persistence.sqlalchemy.layer import as_iterable
 class AsIterableTest(unittest.TestCase):
     def test_iterable_returns_same(self):
         # expect
-        self.assertEquals([1, 2, 3], as_iterable([1, 2, 3]))
+        self.assertEqual([1, 2, 3], as_iterable([1, 2, 3]))
 
     def test_non_iterable_returns_tuple(self):
         # expect

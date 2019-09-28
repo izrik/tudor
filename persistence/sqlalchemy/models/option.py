@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.option_base import OptionBase
 

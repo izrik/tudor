@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 from itertools import islice
 from numbers import Number
 
@@ -516,27 +514,27 @@ class InMemoryPersistenceLayer(object):
     def _get_next_task_id(self):
         if not self._tasks_by_id:
             return 1
-        return max(self._tasks_by_id.iterkeys()) + 1
+        return max(self._tasks_by_id.keys()) + 1
 
     def _get_next_tag_id(self):
         if not self._tags_by_id:
             return 1
-        return max(self._tags_by_id.iterkeys()) + 1
+        return max(self._tags_by_id.keys()) + 1
 
     def _get_next_note_id(self):
         if not self._notes_by_id:
             return 1
-        return max(self._notes_by_id.iterkeys()) + 1
+        return max(self._notes_by_id.keys()) + 1
 
     def _get_next_attachment_id(self):
         if not self._attachments_by_id:
             return 1
-        return max(self._attachments_by_id.iterkeys()) + 1
+        return max(self._attachments_by_id.keys()) + 1
 
     def _get_next_user_id(self):
         if not self._users_by_id:
             return 1
-        return max(self._users_by_id.iterkeys()) + 1
+        return max(self._users_by_id.keys()) + 1
 
     def _get_next_id(self, objtype):
         if objtype == ObjectTypes.Task:
@@ -553,7 +551,7 @@ class InMemoryPersistenceLayer(object):
             'Unknown object type: {}'.format(objtype))
 
     def rollback(self):
-        for t, d in self._values_by_object.iteritems():
+        for t, d in self._values_by_object.items():
             t.update_from_dict(d)
         for t in self._added_objects:
             del self._values_by_object[t]

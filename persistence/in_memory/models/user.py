@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.user_base import UserBase
 from persistence.in_memory.models.changeable import Changeable

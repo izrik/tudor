@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.note_base import NoteBase
 from persistence.in_memory.models.changeable import Changeable
@@ -17,7 +15,7 @@ class Note(Changeable, NoteBase):
 
     def __init__(self, content, timestamp=None, lazy=None):
         super(Note, self).__init__(content, timestamp)
-        self._logger.debug(u'Note.__init__ %s', self)
+        self._logger.debug('Note.__init__ %s', self)
 
         if lazy is None:
             lazy = {}
@@ -67,7 +65,7 @@ class Note(Changeable, NoteBase):
 
     def _populate_task(self):
         if self._task_lazy:
-            self._logger.debug(u'populating task from lazy %s', self)
+            self._logger.debug('populating task from lazy %s', self)
             value = self._task_lazy()
             self._task_lazy = None
             self.task = value

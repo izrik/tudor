@@ -19,7 +19,7 @@ class ItemSource(object):
 
     def __iter__(self):
         self.expanded = True
-        for item in xrange(self.count):
+        for item in range(self.count):
             yield item
 
 
@@ -238,7 +238,7 @@ class InterlinkedSetTest(unittest.TestCase):
         # when
         result = str(self.s)
         # then
-        self.assertEqual('set([456, 789])', result)
+        self.assertEqual('{456, 789}', result)
 
     def test_repr(self):
         # given
@@ -249,7 +249,7 @@ class InterlinkedSetTest(unittest.TestCase):
         # when
         result = repr(self.s)
         # then
-        self.assertEqual('TestingCollection(set([456, 789]))', result)
+        self.assertEqual('TestingCollection({456, 789})', result)
 
     def test_add_adds_item(self):
         # precondition

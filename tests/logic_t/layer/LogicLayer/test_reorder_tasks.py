@@ -2,7 +2,7 @@
 
 import unittest
 
-from util import generate_ll
+from .util import generate_ll
 
 
 class ReorderTasksTest(unittest.TestCase):

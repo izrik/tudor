@@ -127,7 +127,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     if flask_configs:
-        for k, v in flask_configs.iteritems():
+        for k, v in flask_configs.items():
             app.config[k] = v
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',

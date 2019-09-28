@@ -4,7 +4,7 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
-from util import generate_ll
+from .util import generate_ll
 
 
 class GetTaskHierarchyDataTest(unittest.TestCase):

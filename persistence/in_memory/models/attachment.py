@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.attachment_base import AttachmentBase
 from persistence.in_memory.models.changeable import Changeable
@@ -21,7 +19,7 @@ class Attachment(Changeable, AttachmentBase):
                  lazy=None):
         super(Attachment, self).__init__(path, description, timestamp,
                                          filename)
-        self._logger.debug(u'Attachment.__init__ %s', self)
+        self._logger.debug('Attachment.__init__ %s', self)
 
         if lazy is None:
             lazy = {}
@@ -94,7 +92,7 @@ class Attachment(Changeable, AttachmentBase):
 
     def _populate_task(self):
         if self._task_lazy:
-            self._logger.debug(u'populating task from lazy %s', self)
+            self._logger.debug('populating task from lazy %s', self)
             value = self._task_lazy()
             self._task_lazy = None
             self.task = value

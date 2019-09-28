@@ -36,7 +36,7 @@ class NoteBase(object):
     def _clean_timestamp(timestamp):
         if timestamp is None:
             return None
-        if isinstance(timestamp, basestring):
+        if isinstance(timestamp, str):
             return dparse(timestamp)
         return timestamp
 

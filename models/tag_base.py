@@ -11,7 +11,7 @@ class TagBase(object):
     FIELD_TASKS = 'TASKS'
 
     def __init__(self, value, description=None):
-        self._logger.debug(u'TagBase.__init__ %s', self)
+        self._logger.debug('TagBase.__init__ %s', self)
         self.value = value
         self.description = description
 
@@ -30,7 +30,7 @@ class TagBase(object):
 
     def to_dict(self, fields=None):
 
-        self._logger.debug(u'%s', self)
+        self._logger.debug('%s', self)
 
         d = {}
         if fields is None or self.FIELD_ID in fields:
@@ -48,7 +48,7 @@ class TagBase(object):
     @classmethod
     def from_dict(cls, d, lazy=None):
         logger = cls._logger
-        logger.debug(u'd: %s', d)
+        logger.debug('d: %s', d)
 
         tag_id = d.get('id', None)
         value = d.get('value')
@@ -60,11 +60,11 @@ class TagBase(object):
         if not lazy:
             if 'tasks' in d:
                 assign(tag.tasks, d['tasks'])
-        logger.debug(u'tag: %s', tag)
+        logger.debug('tag: %s', tag)
         return tag
 
     def update_from_dict(self, d):
-        self._logger.debug(u'%s: %s', self, d)
+        self._logger.debug('%s: %s', self, d)
         if 'id' in d and d['id'] is not None:
             self.id = d['id']
         if 'value' in d:

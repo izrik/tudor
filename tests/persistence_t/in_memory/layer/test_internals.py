@@ -15,7 +15,7 @@ class InternalsTest(InMemoryTestBase):
         # given
         task = self.pl.create_task('task1')
         # precondition
-        self.assertEquals(0, len(self.pl._added_objects))
+        self.assertEqual(0, len(self.pl._added_objects))
         # when
         self.pl.add(task)
         # then
@@ -28,7 +28,7 @@ class InternalsTest(InMemoryTestBase):
         self.pl.add(task)
         self.pl.commit()
         # precondition
-        self.assertEquals(0, len(self.pl._deleted_objects))
+        self.assertEqual(0, len(self.pl._deleted_objects))
         # when
         self.pl.delete(task)
         # then
@@ -38,18 +38,18 @@ class InternalsTest(InMemoryTestBase):
     def test_adding_tag_to_task_also_adds_task_to_tag(self):
         # given
         logger = logging_util.get_logger_by_object(__name__, self)
-        logger.debug(u'before create task')
+        logger.debug('before create task')
         task = self.pl.create_task('task')
-        logger.debug(u'after create task')
-        logger.debug(u'before create tag')
+        logger.debug('after create task')
+        logger.debug('before create tag')
         tag = self.pl.create_tag('tag', description='a')
-        logger.debug(u'after create tag')
-        logger.debug(u'before add task')
+        logger.debug('after create tag')
+        logger.debug('before add task')
         self.pl.add(task)
-        logger.debug(u'after add task')
-        logger.debug(u'before add tag')
+        logger.debug('after add task')
+        logger.debug('before add tag')
         self.pl.add(tag)
-        logger.debug(u'after add tag')
-        logger.debug(u'before commit')
+        logger.debug('after add tag')
+        logger.debug('before commit')
         self.pl.commit()
-        logger.debug(u'after commit')
+        logger.debug('after commit')
