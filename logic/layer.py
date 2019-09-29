@@ -224,7 +224,7 @@ class LogicLayer(object):
             pass
         elif task.is_public:
             pass
-        elif current_user and current_user.is_authenticated():
+        elif current_user and current_user.is_authenticated:
             raise werkzeug.exceptions.Forbidden()
         else:
             raise werkzeug.exceptions.Unauthorized()
@@ -259,7 +259,7 @@ class LogicLayer(object):
             pass
         elif task.is_public:
             pass
-        elif current_user and current_user.is_authenticated():
+        elif current_user and current_user.is_authenticated:
             raise werkzeug.exceptions.Forbidden()
         else:
             raise werkzeug.exceptions.Unauthorized()

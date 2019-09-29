@@ -63,7 +63,7 @@ class UserTest(unittest.TestCase):
         # when
         user = User('name@example.org', 'hashed_password')
         # then
-        self.assertTrue(user.is_authenticated())
+        self.assertTrue(user.is_authenticated)
 
     def test_to_dict_returns_correct_values(self):
         # when

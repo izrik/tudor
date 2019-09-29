@@ -83,6 +83,7 @@ class UserBase(object):
     def get_id(self):
         return self.email
 
+    @property
     def is_authenticated(self):
         return self._is_authenticated
 
