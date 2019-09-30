@@ -30,7 +30,7 @@ COPY static static
 COPY templates templates
 COPY view view
 
-RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev && \
+RUN apk add --virtual .build-deps gcc musl-dev libffi-dev && \
     pip install -r requirements.txt     --no-cache-dir && \
     apk --purge del .build-deps
 
