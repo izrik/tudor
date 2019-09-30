@@ -4,6 +4,9 @@ RUN mkdir -p /opt/tudor
 
 WORKDIR /opt/tudor
 
+RUN pip install gunicorn==19.7.1
+RUN pip install mysqlclient==1.4.4
+
 COPY collections_util.py \
      conversions.py \
      exception.py \
@@ -24,8 +27,6 @@ COPY templates templates
 COPY view view
 
 RUN pip install -r requirements.txt
-RUN pip install gunicorn==19.7.1
-RUN pip install mysqlclient==1.4.4
 
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \
