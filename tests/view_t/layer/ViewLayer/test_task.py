@@ -1,7 +1,7 @@
 
 import unittest
 
-from mock import Mock
+from unittest.mock import Mock
 
 from logic.layer import LogicLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request

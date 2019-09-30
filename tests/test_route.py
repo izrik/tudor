@@ -2,7 +2,7 @@
 
 import unittest
 
-from mock import Mock
+from unittest.mock import Mock
 
 from tudor import generate_app
 from view.layer import ViewLayer
