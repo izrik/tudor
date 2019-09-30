@@ -54,7 +54,7 @@ class InterlinkedSet(collections.MutableSet):
 
     def append(self, item):
         self._logger.debug('append')
-        self._logger.debug(u'%s: %s', self.c, item)
+        self._logger.debug('%s: %s', self.c, item)
         self._populate()
         self.add(item)
 
@@ -83,7 +83,7 @@ class OneToManySet(InterlinkedSet):
 
     def add(self, item):
         self._logger.debug('add')
-        self._logger.debug(u'%s: %s', self.c, item)
+        self._logger.debug('%s: %s', self.c, item)
         if item not in self:
             self._logger.debug('adding the item')
             self.container._on_attr_changing(self.__change_field__, None)
@@ -94,7 +94,7 @@ class OneToManySet(InterlinkedSet):
 
     def discard(self, item):
         self._logger.debug('discard')
-        self._logger.debug(u'%s: %s', self.c, item)
+        self._logger.debug('%s: %s', self.c, item)
         if item in self:
             self._logger.debug('discarding the item')
             self.container._on_attr_changing(self.__change_field__, None)
@@ -109,7 +109,7 @@ class ManyToManySet(InterlinkedSet):
 
     def add(self, item):
         self._logger.debug('add')
-        self._logger.debug(u'%s: %s', self.c, item)
+        self._logger.debug('%s: %s', self.c, item)
         if item not in self:
             self._logger.debug('adding the item')
             self.container._on_attr_changing(self.__change_field__, None)
@@ -120,7 +120,7 @@ class ManyToManySet(InterlinkedSet):
 
     def discard(self, item):
         self._logger.debug('discard')
-        self._logger.debug(u'%s: %s', self.c, item)
+        self._logger.debug('%s: %s', self.c, item)
         if item in self:
             self._logger.debug('discarding the item')
             self.container._on_attr_changing(self.__change_field__, None)

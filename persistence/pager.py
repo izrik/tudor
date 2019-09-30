@@ -20,7 +20,7 @@ class Pager(object):
                 right_edge < 1):
             raise ValueError('Parameter must be positive')
 
-        total_pages = self.total / self.per_page
+        total_pages = self.total // self.per_page
         if self.total % self.per_page > 0:
             total_pages += 1
 
@@ -28,19 +28,19 @@ class Pager(object):
         right_of_current = min(self.page + right_current,
                                total_pages - right_edge + 1)
 
-        for i in xrange(left_edge):
+        for i in range(left_edge):
             yield i + 1
 
         if left_of_current > left_edge + 1:
             yield None
 
-        for i in xrange(left_of_current, right_of_current):
+        for i in range(left_of_current, right_of_current):
             yield i
 
         if right_of_current < total_pages - right_edge + 1:
             yield None
 
-        for i in xrange(right_edge):
+        for i in range(right_edge):
             yield total_pages - right_edge + i + 1
 
     @property

@@ -9,11 +9,11 @@ from tests.persistence_t.in_memory.in_memory_test_base import InMemoryTestBase
 class PaginatedTasksTest(InMemoryTestBase):
     def setUp(self):
         self._logger = logging.getLogger('test')
-        self._logger.debug(u'setUp generate_app')
+        self._logger.debug('setUp generate_app')
         self.pl = self.generate_pl()
-        self._logger.debug(u'setUp create_all')
+        self._logger.debug('setUp create_all')
         self.pl.create_all()
-        self._logger.debug(u'setUp create objects')
+        self._logger.debug('setUp create objects')
 
         self.t1 = self.pl.create_task('t1')
         self.t1.order_num = 11
@@ -27,12 +27,12 @@ class PaginatedTasksTest(InMemoryTestBase):
         self.t5.order_num = 53
         self.tag1 = self.pl.create_tag('tag1')
         self.tag2 = self.pl.create_tag('tag2')
-        self._logger.debug(u'setUp connect objects')
+        self._logger.debug('setUp connect objects')
         self.t2.tags.add(self.tag1)
         self.t3.tags.add(self.tag1)
         self.t3.tags.add(self.tag2)
         self.t4.tags.add(self.tag1)
-        self._logger.debug(u'setUp add objects')
+        self._logger.debug('setUp add objects')
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)
@@ -40,10 +40,10 @@ class PaginatedTasksTest(InMemoryTestBase):
         self.pl.add(self.t5)
         self.pl.add(self.tag1)
         self.pl.add(self.tag2)
-        self._logger.debug(u'setUp commit')
+        self._logger.debug('setUp commit')
         self.pl.commit()
 
-        self._logger.debug(u'setUp finished')
+        self._logger.debug('setUp finished')
 
     def test_get_paginated_tasks_tasks_per_page_returns_that_number_1(self):
         # when
@@ -148,54 +148,54 @@ class PaginatedTasksTest(InMemoryTestBase):
 
     def test_get_paginated_tasks_filtered_by_tag_tag1_page_1(self):
         # when
-        self._logger.debug(u'when')
+        self._logger.debug('when')
         tasks = self.pl.get_tasks(tags_contains=self.tag1)
         # then
-        self._logger.debug(u'then')
+        self._logger.debug('then')
         tasks2 = set(tasks)
         self.assertEqual({self.t2, self.t3, self.t4}, tasks2)
         # when
-        self._logger.debug(u'when')
+        self._logger.debug('when')
         count = self.pl.count_tasks(tags_contains=self.tag1)
         # then
-        self._logger.debug(u'then')
+        self._logger.debug('then')
         self.assertEqual(3, count)
         # expect
-        self._logger.debug(u'expect')
+        self._logger.debug('expect')
         self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
         # expect
-        self._logger.debug(u'expect')
+        self._logger.debug('expect')
         self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
         # expect
-        self._logger.debug(u'expect')
+        self._logger.debug('expect')
         self.assertEqual(3, self.pl.count_tasks(tags_contains=self.tag1))
 
         # when
-        self._logger.debug(u'when')
+        self._logger.debug('when')
         pager = self.pl.get_paginated_tasks(page_num=1, tasks_per_page=2,
                                             tags_contains=self.tag1)
         # then
-        self._logger.debug(u'then 1')
+        self._logger.debug('then 1')
         self.assertIsNotNone(pager)
-        self._logger.debug(u'then 2')
+        self._logger.debug('then 2')
         self.assertEqual(1, pager.page)
-        self._logger.debug(u'then 3')
+        self._logger.debug('then 3')
         self.assertEqual(2, pager.per_page)
-        self._logger.debug(u'then 4')
+        self._logger.debug('then 4')
         self.assertEqual(3, pager.total)
-        self._logger.debug(u'then 5')
+        self._logger.debug('then 5')
         items = list(pager.items)
-        self._logger.debug(u'then 6')
+        self._logger.debug('then 6')
         self.assertEqual(2, len(items))
-        self._logger.debug(u'then 7')
+        self._logger.debug('then 7')
         self.assertIn(self.tag1, items[0].tags)
-        self._logger.debug(u'then 8')
+        self._logger.debug('then 8')
         self.assertIn(items[0], {self.t2, self.t3, self.t4})
-        self._logger.debug(u'then 9')
+        self._logger.debug('then 9')
         self.assertIn(self.tag1, items[1].tags)
-        self._logger.debug(u'then 10')
+        self._logger.debug('then 10')
         self.assertIn(items[1], {self.t2, self.t3, self.t4})
-        self._logger.debug(u'when 11')
+        self._logger.debug('when 11')
 
     def test_get_paginated_tasks_filtered_by_tag_tag1_page_2(self):
         # when

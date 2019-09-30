@@ -6,7 +6,7 @@ from datetime import datetime
 from werkzeug.exceptions import NotFound, Forbidden
 
 from models.object_types import ObjectTypes
-from util import generate_ll
+from .util import generate_ll
 
 
 class CreateNewNoteTest(unittest.TestCase):

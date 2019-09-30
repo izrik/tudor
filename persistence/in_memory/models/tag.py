@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.tag_base import TagBase
 from persistence.in_memory.models.changeable import Changeable
@@ -18,7 +16,7 @@ class Tag(Changeable, TagBase):
 
     def __init__(self, value, description=None, lazy=None):
         super(Tag, self).__init__(value=value, description=description)
-        self._logger.debug(u'Tag.__init__ %s', self)
+        self._logger.debug('Tag.__init__ %s', self)
 
         if lazy is None:
             lazy = {}
@@ -32,7 +30,7 @@ class Tag(Changeable, TagBase):
     @id.setter
     def id(self, value):
         if value != self._id:
-            self._logger.debug(u'%s: %s -> %s', self, self._id, value)
+            self._logger.debug('%s: %s -> %s', self, self._id, value)
             self._on_attr_changing(self.FIELD_ID, self._id)
             self._id = value
             self._on_attr_changed(self.FIELD_ID, self.OP_SET, self._id)
@@ -44,7 +42,7 @@ class Tag(Changeable, TagBase):
     @value.setter
     def value(self, value):
         if value != self._value:
-            self._logger.debug(u'%s: %s -> %s', self, self._value, value)
+            self._logger.debug('%s: %s -> %s', self, self._value, value)
             self._on_attr_changing(self.FIELD_VALUE, self._value)
             self._value = value
             self._on_attr_changed(self.FIELD_VALUE, self.OP_SET, self._value)
@@ -56,7 +54,7 @@ class Tag(Changeable, TagBase):
     @description.setter
     def description(self, value):
         if value != self._description:
-            self._logger.debug(u'%s: %s -> %s', self, self._description, value)
+            self._logger.debug('%s: %s -> %s', self, self._description, value)
             self._on_attr_changing(self.FIELD_DESCRIPTION, self._description)
             self._description = value
             self._on_attr_changed(self.FIELD_DESCRIPTION, self.OP_SET,

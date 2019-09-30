@@ -1,7 +1,7 @@
 
 import unittest
 
-from mock import Mock
+from unittest.mock import Mock
 
 from logic.layer import LogicLayer
 from persistence.in_memory.layer import InMemoryPersistenceLayer

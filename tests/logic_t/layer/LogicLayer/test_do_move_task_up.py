@@ -4,7 +4,7 @@ import unittest
 
 from werkzeug.exceptions import NotFound, Forbidden
 
-from util import generate_ll
+from .util import generate_ll
 
 
 class DoMoveTaskUpTest(unittest.TestCase):

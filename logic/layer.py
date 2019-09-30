@@ -224,7 +224,7 @@ class LogicLayer(object):
             pass
         elif task.is_public:
             pass
-        elif current_user and current_user.is_authenticated():
+        elif current_user and current_user.is_authenticated:
             raise werkzeug.exceptions.Forbidden()
         else:
             raise werkzeug.exceptions.Unauthorized()
@@ -259,7 +259,7 @@ class LogicLayer(object):
             pass
         elif task.is_public:
             pass
-        elif current_user and current_user.is_authenticated():
+        elif current_user and current_user.is_authenticated:
             raise werkzeug.exceptions.Forbidden()
         else:
             raise werkzeug.exceptions.Unauthorized()
@@ -391,7 +391,7 @@ class LogicLayer(object):
     def reorder_tasks(self, tasks):
         tasks = list(tasks)
         N = len(tasks)
-        for i in xrange(N):
+        for i in range(N):
             tasks[i].order_num = 2 * (N - i)
             self.pl.add(tasks[i])
 
@@ -873,7 +873,7 @@ class LogicLayer(object):
                         t.users.append(user)
                     db_objects.append(t)
                     tasks_by_id[t.id] = t
-                for task, parent_id in parent_id_by_task.iteritems():
+                for task, parent_id in parent_id_by_task.items():
                     if parent_id is not None:
                         task.parent = tasks_by_id[parent_id]
 
@@ -976,7 +976,7 @@ class LogicLayer(object):
         if current_user is None:
             # guest users not allowed
             raise ValueError('current_user cannot be None.')
-        if current_user.is_anonymous():
+        if current_user.is_anonymous:
             # guest users not allowed
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')
@@ -1121,7 +1121,7 @@ class LogicLayer(object):
 
         kwargs = {}
 
-        if current_user is None or current_user.is_anonymous():
+        if current_user is None or current_user.is_anonymous:
             kwargs['is_public'] = True
         elif not current_user.is_admin:
             kwargs['is_public_or_users_contains'] = current_user
@@ -1154,7 +1154,7 @@ class LogicLayer(object):
         if max_depth is None or max_depth > 0:
 
             buckets = [tasks]
-            next_ids = map(lambda t: t.id, tasks)
+            next_ids = [t.id for t in tasks]
             already_ids = set()
             already_ids.update(next_ids)
 
@@ -1164,7 +1164,7 @@ class LogicLayer(object):
                 depth += 1
 
                 kwargs = {}
-                if current_user is None or current_user.is_anonymous():
+                if current_user is None or current_user.is_anonymous:
                     kwargs['is_public'] = True
                 elif not current_user.is_admin:
                     kwargs['is_public_or_users_contains'] = current_user
@@ -1201,7 +1201,7 @@ class LogicLayer(object):
 
         kwargs = {}
 
-        if current_user is None or current_user.is_anonymous():
+        if current_user is None or current_user.is_anonymous:
             kwargs['is_public'] = True
         elif not current_user.is_admin:
             kwargs['is_public_or_users_contains'] = current_user

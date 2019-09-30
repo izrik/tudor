@@ -5,7 +5,7 @@
 <div class="container">
 <div>
     <table class="task_children">
-        {% set odd_even = cycle(['odd', 'even']).next %}
+        {% set odd_even = cycle(['odd', 'even']).__next__ %}
         <thead>
         <tr>
             <th>ID</th>

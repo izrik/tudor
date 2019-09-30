@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from mock import Mock
+from unittest.mock import Mock
 
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \

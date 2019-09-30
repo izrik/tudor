@@ -4,7 +4,7 @@ from decimal import Decimal
 
 
 def bool_from_str(s):
-    if isinstance(s, basestring):
+    if isinstance(s, str):
         s = s.lower()
     if s in ['true', 't', '1', 'y']:
         return True

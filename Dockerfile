@@ -1,4 +1,4 @@
-FROM python:2.7
+FROM python:3.7
 
 RUN mkdir -p /opt/tudor
 
@@ -25,7 +25,7 @@ COPY view view
 
 RUN pip install -r requirements.txt
 RUN pip install gunicorn==19.7.1
-RUN pip install MySQL-python==1.2.5
+RUN pip install mysqlclient==1.4.4
 
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \

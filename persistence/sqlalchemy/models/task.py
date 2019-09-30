@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import logging_util
 from models.task_base import TaskBase
 
@@ -74,7 +72,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             return super(DbTask, cls).from_dict(d=d, lazy=None)
 
         def clear_relationships(self):
-            self._logger.debug(u'%s', self)
+            self._logger.debug('%s', self)
             self.parent = None
             self.children = []
             self.tags = []

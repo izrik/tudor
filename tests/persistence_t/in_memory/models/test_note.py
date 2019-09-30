@@ -20,7 +20,7 @@ class NoteCleanTimestampTest(unittest.TestCase):
 
     def test_unicode_gets_parsed(self):
         # when
-        result = NoteBase._clean_timestamp(u'2017-01-01')
+        result = NoteBase._clean_timestamp('2017-01-01')
         # then
         self.assertEqual(datetime(2017, 1, 1), result)
 

@@ -125,17 +125,17 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
 
     def test_valid_deadline_gets_set(self):
         # when
-        result = self.pl.DbTask.from_dict({'deadline': datetime(2017, 01, 01)})
+        result = self.pl.DbTask.from_dict({'deadline': datetime(2017, 1, 1)})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertEqual(datetime(2017, 01, 01), result.deadline)
+        self.assertEqual(datetime(2017, 1, 1), result.deadline)
 
     def test_string_deadline_becomes_datetime(self):
         # when
         result = self.pl.DbTask.from_dict({'deadline': '2017-01-01'})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertEqual(datetime(2017, 01, 01), result.deadline)
+        self.assertEqual(datetime(2017, 1, 1), result.deadline)
 
     def test_expected_duration_minutes_none_is_ignored(self):
         # when

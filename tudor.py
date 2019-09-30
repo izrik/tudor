@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 import argparse
 import base64
 import random
@@ -8,13 +8,12 @@ import traceback
 from functools import wraps
 from os import environ
 
-import git
 import markdown
 from datetime import datetime
 from flask import Flask, request
 from flask import Markup
-from flask.ext.bcrypt import Bcrypt
-from flask.ext.login import LoginManager, login_required, current_user
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
 
 from conversions import bool_from_str, int_from_str
@@ -24,9 +23,13 @@ from view.layer import ViewLayer
 
 __version__ = '0.1'
 try:
-    __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
-                                              always=True, abbrev=40)
-except git.InvalidGitRepositoryError:
+    import git
+    try:
+        __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
+                                                  always=True, abbrev=40)
+    except git.InvalidGitRepositoryError:
+        __revision__ = 'unknown'
+except ImportError:
     __revision__ = 'unknown'
 
 
@@ -127,7 +130,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     if flask_configs:
-        for k, v in flask_configs.iteritems():
+        for k, v in flask_configs.items():
             app.config[k] = v
     app.secret_key = secret_key
     ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',

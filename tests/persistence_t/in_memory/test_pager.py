@@ -141,34 +141,34 @@ class PagerTest(InMemoryTestBase):
         # when
         generator = self.pager.iter_pages(0, 1, 1, 1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
         # when
         generator = self.pager.iter_pages(1, 0, 1, 1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
         # when
         generator = self.pager.iter_pages(1, 1, 0, 1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
         # when
         generator = self.pager.iter_pages(1, 1, 1, 0)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
 
     def test_pager_iter_items_negative_raises(self):
         # when
         generator = self.pager.iter_pages(-1, 1, 1, 1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
         # when
         generator = self.pager.iter_pages(1, -1, 1, 1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
         # when
         generator = self.pager.iter_pages(1, 1, -1, 1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)
         # when
         generator = self.pager.iter_pages(1, 1, 1, -1)
         # then
-        self.assertRaises(ValueError, generator.next)
+        self.assertRaises(ValueError, generator.__next__)

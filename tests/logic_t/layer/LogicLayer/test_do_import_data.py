@@ -251,7 +251,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_options())
 
         # expect
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             Conflict,
             r"^409 Conflict: Some specified task id's already exist in the "
             r"database$",
@@ -322,7 +322,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
         # when
         # expect
-        self.assertRaisesRegexp(
+        self.assertRaisesRegex(
             BadRequest,
             r"^400 Bad Request: The data was incorrect",
             self.ll.do_import_data,

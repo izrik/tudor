@@ -5,7 +5,7 @@ import unittest
 from werkzeug.exceptions import NotFound, Forbidden, Unauthorized
 
 from persistence.sqlalchemy.layer import Pager
-from util import generate_ll
+from .util import generate_ll
 
 
 class GetTaskDataTest(unittest.TestCase):

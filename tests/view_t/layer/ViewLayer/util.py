@@ -1,4 +1,4 @@
-from mock import Mock
+from unittest.mock import Mock
 
 
 def generate_mock_request(method=None, args=None, cookies=None, form=None,

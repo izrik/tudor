@@ -7,7 +7,7 @@ from werkzeug.exceptions import NotFound, Forbidden
 
 from models.object_types import ObjectTypes
 from tests.util import MockFileObject
-from util import generate_ll
+from .util import generate_ll
 
 
 class CreateNewAttachmentTest(unittest.TestCase):

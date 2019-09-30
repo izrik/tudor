@@ -65,7 +65,7 @@ class GetObjectTypeTest(InMemoryTestBase):
             self.pl._get_object_type('something')
         # then
         self.assertEqual('Not a domain object: something, str',
-                         cm.exception.message)
+                         str(cm.exception))
 
 
 class GetNextObjectIdsTest(InMemoryTestBase):
@@ -240,5 +240,5 @@ class GetNextIdTest(InMemoryTestBase):
         with self.assertRaises(Exception) as cm:
             self.pl._get_next_id(str)
         # then
-        self.assertEqual('Unknown object type: <type \'str\'>',
-                         cm.exception.message)
+        self.assertEqual('Unknown object type: <class \'str\'>',
+                         str(cm.exception))

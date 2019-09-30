@@ -1,6 +1,4 @@
 
-from __future__ import absolute_import
-
 import collections
 from numbers import Number
 
@@ -18,7 +16,7 @@ import logging_util
 
 
 def is_iterable(x):
-    return isinstance(x, collections.Iterable)
+    return isinstance(x, collections.abc.Iterable)
 
 
 def as_iterable(x):
@@ -81,36 +79,36 @@ class SqlAlchemyPersistenceLayer(object):
         self._domain_by_db = {}
 
     def add(self, dbobj):
-        self._logger.debug(u'begin, dbobj: %s', dbobj)
+        self._logger.debug('begin, dbobj: %s', dbobj)
         if not self._is_db_object(dbobj):
             raise Exception(
                 'The object is not compatible with the PL: {}'.format(dbobj))
 
         self.db.session.add(dbobj)
-        self._logger.debug(u'end')
+        self._logger.debug('end')
 
     def delete(self, dbobj):
-        self._logger.debug(u'begin, dbobj: %s', dbobj)
+        self._logger.debug('begin, dbobj: %s', dbobj)
         if not self._is_db_object(dbobj):
             raise Exception(
                 'The object is not compatible with the PL: {}'.format(dbobj))
         dbobj.clear_relationships()
         self.db.session.delete(dbobj)
-        self._logger.debug(u'end')
+        self._logger.debug('end')
 
     def commit(self):
-        self._logger.debug(u'begin')
+        self._logger.debug('begin')
         ###############
-        self._logger.debug(u'committing the db session/transaction')
+        self._logger.debug('committing the db session/transaction')
         self.db.session.commit()
-        self._logger.debug(u'committed the db session/transaction')
+        self._logger.debug('committed the db session/transaction')
         ###############
-        self._logger.debug(u'end')
+        self._logger.debug('end')
 
     def rollback(self):
-        self._logger.debug(u'begin')
+        self._logger.debug('begin')
         self.db.session.rollback()
-        self._logger.debug(u'end')
+        self._logger.debug('end')
 
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
