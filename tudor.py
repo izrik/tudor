@@ -8,7 +8,6 @@ import traceback
 from functools import wraps
 from os import environ
 
-import git
 import markdown
 from datetime import datetime
 from flask import Flask, request
@@ -24,9 +23,13 @@ from view.layer import ViewLayer
 
 __version__ = '0.1'
 try:
-    __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
-                                              always=True, abbrev=40)
-except git.InvalidGitRepositoryError:
+    import git
+    try:
+        __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
+                                                  always=True, abbrev=40)
+    except git.InvalidGitRepositoryError:
+        __revision__ = 'unknown'
+except ImportError:
     __revision__ = 'unknown'
 
 
