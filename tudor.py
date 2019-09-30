@@ -683,7 +683,7 @@ if __name__ == '__main__':
         app.pl.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
-        key = ''.join((random.choice(digits) for x in xrange(48)))
+        key = ''.join((random.choice(digits) for x in range(48)))
         print(key)
     elif args.hash_password is not None:
         print(app.bcrypt.generate_password_hash(args.hash_password))
