@@ -1,8 +1,15 @@
-FROM python:3.7
+FROM python:3.7.4-alpine3.10
 
 RUN mkdir -p /opt/tudor
 
 WORKDIR /opt/tudor
+
+RUN apk add --no-cache bash
+
+RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev && \
+    pip install gunicorn==19.7.1    --no-cache-dir && \
+    pip install mysqlclient==1.4.4  --no-cache-dir && \
+    apk --purge del .build-deps
 
 COPY collections_util.py \
      conversions.py \
@@ -23,9 +30,9 @@ COPY static static
 COPY templates templates
 COPY view view
 
-RUN pip install -r requirements.txt
-RUN pip install gunicorn==19.7.1
-RUN pip install mysqlclient==1.4.4
+RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev && \
+    pip install -r requirements.txt     --no-cache-dir && \
+    apk --purge del .build-deps
 
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \
