@@ -16,7 +16,7 @@ import logging_util
 
 
 def is_iterable(x):
-    return isinstance(x, collections.Iterable)
+    return isinstance(x, collections.abc.Iterable)
 
 
 def as_iterable(x):
