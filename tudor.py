@@ -686,7 +686,7 @@ if __name__ == '__main__':
         key = ''.join((random.choice(digits) for x in range(48)))
         print(key)
     elif args.hash_password is not None:
-        print(app.bcrypt.generate_password_hash(args.hash_password))
+        print(app.bcrypt.generate_password_hash(args.hash_password).decode())
     elif args.make_public is not None:
         make_task_public(app.pl, args.make_public,
                          descendants=args.descendants)
