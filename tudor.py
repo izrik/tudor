@@ -21,7 +21,7 @@ from logic.layer import LogicLayer
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
-__version__ = '0.1'
+__version__ = '0.2'
 try:
     import git
     try:
@@ -105,6 +105,9 @@ def get_config_from_command_line(args, defaults):
     parser.add_argument('--test-db-conn', action='store_true',
                         help='Try to make a connection to the database. '
                              'Useful for diagnosing connection problems.')
+    parser.add_argument('--create-user', action='store', nargs='*',
+                        help='Create a user in the database. Can optionally '
+                             'be made an admin.')
 
     args2 = parser.parse_args(args=args)
 
@@ -655,6 +658,13 @@ def test_db_conn(pl, debug):
               'tasks in the DB.'.format(count))
 
 
+def create_user(pl, email, hashed_password, is_admin=False):
+    user = pl.create_user(email=email, hashed_password=hashed_password,
+                          is_admin=is_admin)
+    pl.add(user)
+    pl.commit()
+
+
 if __name__ == '__main__':
 
     default_config = Config()
@@ -683,10 +693,10 @@ if __name__ == '__main__':
         app.pl.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
-        key = ''.join((random.choice(digits) for x in xrange(48)))
+        key = ''.join((random.choice(digits) for x in range(48)))
         print(key)
     elif args.hash_password is not None:
-        print(app.bcrypt.generate_password_hash(args.hash_password))
+        print(app.bcrypt.generate_password_hash(args.hash_password).decode())
     elif args.make_public is not None:
         make_task_public(app.pl, args.make_public,
                          descendants=args.descendants)
@@ -695,6 +705,14 @@ if __name__ == '__main__':
                           descendants=args.descendants)
     elif args.test_db_conn:
         test_db_conn(app.pl, args.debug)
+    elif args.create_user:
+        email = args.create_user[0]
+        hashed_password = args.create_user[1]
+        is_admin = False
+        if len(args.create_user) > 2 and bool_from_str(args.create_user[2]):
+            is_admin = True
+        create_user(app.pl, email=email, hashed_password=hashed_password,
+                    is_admin=is_admin)
     else:
         app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
                 port=arg_config.PORT)
