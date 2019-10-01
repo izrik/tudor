@@ -3,7 +3,7 @@ import unittest
 
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
-    get_config_from_command_line
+    get_config_from_command_line, create_user
 
 
 class CommandLineTests(unittest.TestCase):
@@ -171,6 +171,43 @@ class CommandLineTests(unittest.TestCase):
                           'Made task 3, "t3", private',
                           'Made task 4, "t4", private'}, output)
 
+    def test_create_user(self):
+        # precondition
+        self.assertEqual(0, self.pl.count_users())
+        # when
+        create_user(self.pl, email='name@example.org', hashed_password='asdf')
+        # then
+        self.assertEqual(1, self.pl.count_users())
+        user = self.pl.get_user_by_email('name@example.org')
+        self.assertIsNotNone(user)
+        self.assertEqual('asdf', user.hashed_password)
+        self.assertFalse(user.is_admin)
+
+    def test_create_user_as_admin(self):
+        # precondition
+        self.assertEqual(0, self.pl.count_users())
+        # when
+        create_user(self.pl, email='name@example.org', hashed_password='asdf',
+                    is_admin=True)
+        # then
+        self.assertEqual(1, self.pl.count_users())
+        user = self.pl.get_user_by_email('name@example.org')
+        self.assertIsNotNone(user)
+        self.assertEqual('asdf', user.hashed_password)
+        self.assertTrue(user.is_admin)
+
+    def test_create_user_not_as_admin(self):
+        # precondition
+        self.assertEqual(0, self.pl.count_users())
+        # when
+        create_user(self.pl, email='name@example.org', hashed_password='asdf',
+                    is_admin=False)
+        # then
+        self.assertEqual(1, self.pl.count_users())
+        user = self.pl.get_user_by_email('name@example.org')
+        self.assertIsNotNone(user)
+        self.assertEqual('asdf', user.hashed_password)
+        self.assertFalse(user.is_admin)
 
 class ConfigTest(unittest.TestCase):
     def test_init_no_args_yields_hard_coded_defaults(self):
