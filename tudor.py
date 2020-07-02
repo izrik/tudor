@@ -210,7 +210,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         api_key = request.headers.get('Authorization')
         if api_key:
             api_key = api_key.replace('Basic ', '', 1)
-            api_key = base64.b64decode(api_key)
+            api_key = base64.b64decode(api_key).decode('utf-8')
             email, password = api_key.split(':', 1)
             user = pl.get_user_by_email(email)
 
