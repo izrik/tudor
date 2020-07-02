@@ -21,7 +21,7 @@ from logic.layer import LogicLayer
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
-__version__ = '0.2'
+__version__ = '0.3'
 try:
     import git
     try:
@@ -234,13 +234,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.context_processor
     def setup_options():
         return {'opts': Options}
-
-    # View utility functions
-
-    def get_form_or_arg(name):
-        if name in request.form:
-            return request.form[name]
-        return request.args.get(name)
 
     # View Functions
 
@@ -673,6 +666,7 @@ if __name__ == '__main__':
 
     arg_config = get_config_from_command_line(sys.argv[1:], env_config)
 
+    print(f'__version__: {__version__}')
     print('__revision__: {}'.format(__revision__))
     print('DEBUG: {}'.format(arg_config.DEBUG))
     print('HOST: {}'.format(arg_config.HOST))
