@@ -235,13 +235,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     def setup_options():
         return {'opts': Options}
 
-    # View utility functions
-
-    def get_form_or_arg(name):
-        if name in request.form:
-            return request.form[name]
-        return request.args.get(name)
-
     # View Functions
 
     @app.route('/')
