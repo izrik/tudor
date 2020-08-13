@@ -10,7 +10,7 @@ from os import environ
 
 import markdown
 from datetime import datetime
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask import Markup
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user
@@ -24,6 +24,7 @@ from view.layer import ViewLayer
 __version__ = '0.3'
 try:
     import git
+
     try:
         __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                                   always=True, abbrev=40)
@@ -31,7 +32,6 @@ try:
         __revision__ = 'unknown'
 except ImportError:
     __revision__ = 'unknown'
-
 
 DEFAULT_TUDOR_DEBUG = False
 DEFAULT_TUDOR_HOST = '127.0.0.1'
@@ -108,6 +108,13 @@ def get_config_from_command_line(args, defaults):
     parser.add_argument('--create-user', action='store', nargs='*',
                         help='Create a user in the database. Can optionally '
                              'be made an admin.')
+    parser.add_argument('--export-db', action='store_true',
+                        help='Export the contents of the database in json '
+                             'format to stdout.')
+    parser.add_argument('--import-db', action='store_true',
+                        help='Read json formatted items from stdin and '
+                             'insert them into the database. Reverse of '
+                             '"import".')
 
     args2 = parser.parse_args(args=args)
 
@@ -128,7 +135,6 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
                  ll=None, vl=None, pl=None, flask_configs=None,
                  disable_admin_check=False):
-
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -229,6 +235,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
             if not disable_admin_check and not current_user.is_admin:
                 return ('You are not authorized to view this page', 403)
             return func(*args, **kwargs)
+
         return decorated_view
 
     @app.context_processor
@@ -436,7 +443,7 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
     @app.route('/reset_order_nums')
     @login_required
     def reset_order_nums():
-        return vl. reset_order_nums(request, Options.get_user())
+        return vl.reset_order_nums(request, Options.get_user())
 
     @app.route('/export', methods=['GET', 'POST'])
     @login_required
@@ -610,6 +617,7 @@ def make_task_public(pl, task_id, printer=default_printer, descendants=False):
                     'Made task {}, "{}", public'.format(task.id, task.summary))
                 for child in task.children:
                     recurse(child)
+
             recurse(task)
         else:
             task.is_public = True
@@ -707,6 +715,17 @@ if __name__ == '__main__':
             is_admin = True
         create_user(app.pl, email=email, hashed_password=hashed_password,
                     is_admin=is_admin)
+    elif args.export_db:
+        with app.app_context():
+            types_to_export = ('tasks', 'tags', 'notes', 'attachments', 'users',
+                               'options')
+            result = app.ll.do_export_data(types_to_export)
+            print('--------------------')
+            print(jsonify(result))
+    elif args.import_db:
+        with app.app_context():
+            app.ll.do_import_data(sys.stdin.read())
+            print('Finished')
     else:
         app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
                 port=arg_config.PORT)
