@@ -674,14 +674,15 @@ if __name__ == '__main__':
 
     arg_config = get_config_from_command_line(sys.argv[1:], env_config)
 
-    print(f'__version__: {__version__}')
-    print('__revision__: {}'.format(__revision__))
-    print('DEBUG: {}'.format(arg_config.DEBUG))
-    print('HOST: {}'.format(arg_config.HOST))
-    print('PORT: {}'.format(arg_config.PORT))
-    print('DB_URI: {}'.format(arg_config.DB_URI))
-    print('UPLOAD_FOLDER: {}'.format(arg_config.UPLOAD_FOLDER))
-    print('ALLOWED_EXTENSIONS: {}'.format(arg_config.ALLOWED_EXTENSIONS))
+    print(f'__version__: {__version__}', file=sys.stderr)
+    print(f'__revision__: {__revision__}', file=sys.stderr)
+    print(f'DEBUG: {arg_config.DEBUG}', file=sys.stderr)
+    print(f'HOST: {arg_config.HOST}', file=sys.stderr)
+    print(f'PORT: {arg_config.PORT}', file=sys.stderr)
+    print(f'DB_URI: {arg_config.DB_URI}', file=sys.stderr)
+    print(f'UPLOAD_FOLDER: {arg_config.UPLOAD_FOLDER}', file=sys.stderr)
+    print(f'ALLOWED_EXTENSIONS: {arg_config.ALLOWED_EXTENSIONS}',
+          file=sys.stderr)
 
     app = generate_app(db_uri=arg_config.DB_URI,
                        upload_folder=arg_config.UPLOAD_FOLDER,
@@ -720,7 +721,6 @@ if __name__ == '__main__':
             types_to_export = ('tasks', 'tags', 'notes', 'attachments', 'users',
                                'options')
             result = app.ll.do_export_data(types_to_export)
-            print('--------------------')
             print(jsonify(result))
     elif args.import_db:
         with app.app_context():
