@@ -38,6 +38,10 @@ class OptionBase(object):
 
         return d
 
+    def to_flat_dict(self, fields=None):
+        d = self.to_dict(fields=fields)
+        return d
+
     @classmethod
     def from_dict(cls, d, lazy=None):
         key = d.get('key')

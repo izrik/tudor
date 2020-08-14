@@ -1,4 +1,3 @@
-
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime, money_from_str
@@ -112,6 +111,42 @@ class TaskBase(object):
         if fields is None or self.FIELD_ATTACHMENTS in fields:
             d['attachments'] = list(self.attachments)
 
+        return d
+
+    def to_flat_dict(self, fields=None):
+        d = self.to_dict(fields=fields)
+        if 'parent' in d and d['parent'] is not None:
+            d['parent_id'] = d['parent'].id
+            del d['parent']
+        if 'children' in d:
+            d[f'children_ids'] = [x.id for x in d['children']]
+            del d['children']
+        if 'dependees' in d:
+            d[f'dependee_ids'] = [x.id for x in d['dependees']]
+            del d['dependees']
+        if 'dependants' in d:
+            d[f'dependant_ids'] = [x.id for x in d['dependants']]
+            del d['dependants']
+        if 'prioritize_before' in d:
+            d[f'prioritize_before_ids'] = [x.id for x in d['prioritize_before']]
+            del d['prioritize_before']
+        if 'prioritize_after' in d:
+            d[f'prioritize_after_ids'] = [x.id for x in d['prioritize_after']]
+            del d['prioritize_after']
+        if 'tags' in d:
+            d[f'tag_ids'] = [x.id for x in d['tags']]
+            del d['tags']
+        if 'users' in d:
+            d[f'user_ids'] = [x.id for x in d['users']]
+            del d['users']
+        if 'notes' in d:
+            d[f'note_ids'] = [x.id for x in d['notes']]
+            del d['notes']
+        if 'attachments' in d:
+            d[f'attachment_ids'] = [x.id for x in d['attachments']]
+            del d['attachments']
+        if 'expected_cost' in d and d['expected_cost'] is not None:
+            d['expected_cost'] = str(d['expected_cost'])
         return d
 
     @classmethod

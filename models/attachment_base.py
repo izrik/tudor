@@ -61,6 +61,13 @@ class AttachmentBase(object):
 
         return d
 
+    def to_flat_dict(self, fields=None):
+        d = self.to_dict(fields=fields)
+        if 'task' in d and d['task'] is not None:
+            d['task_id'] = d['task'].id
+            del d['task']
+        return d
+
     @classmethod
     def from_dict(cls, d, lazy=None):
         attachment_id = d.get('id', None)
