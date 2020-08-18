@@ -782,7 +782,7 @@ class LogicLayer(object):
         return tasks_h
 
     def do_export_data(self, types_to_export):
-        results = {}
+        results = {'format_version': 1}
         if 'tasks' in types_to_export:
             results['tasks'] = [t.to_flat_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
@@ -802,6 +802,11 @@ class LogicLayer(object):
     def do_import_data(self, src):
 
         db_objects = []
+
+        if 'format_version' not in src:
+            raise werkzeug.exceptions.BadRequest('Missing format_version')
+        if src['format_version'] != 1:
+            raise werkzeug.exceptions.BadRequest('Bad format_version')
 
         try:
 

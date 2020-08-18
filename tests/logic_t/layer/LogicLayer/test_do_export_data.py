@@ -31,6 +31,7 @@ class ExportDataTest(unittest.TestCase):
         result = self.ll.do_export_data(types_to_export)
         # then
         self.assertEqual(result, {
+            'format_version': 1,
             'tasks': [{
                 'id': task.id,
                 'summary': 'task',

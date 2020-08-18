@@ -17,7 +17,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty(self):
         # given
-        src = '{}'
+        src = '{"format_version":1}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -40,7 +40,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_tasks(self):
         # given
-        src = '{"tasks":[]}'
+        src = '{"tasks":[],"format_version":1}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -63,7 +63,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_single_task(self):
         # given
-        src = '''{"tasks":[{
+        src = '''{"format_version":1,
+        "tasks":[{
             "id": 1,
             "summary":"summary"
         }]}'''
@@ -110,7 +111,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_single_task_set_all_fields(self):
         # given
-        src = '''{"tasks":[{
+        src = '''{"format_version":1,
+        "tasks":[{
             "id": 1,
             "summary":"summary",
             "description":"desc",
@@ -163,7 +165,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_tasks_child_and_parent(self):
         # given
-        src = '''{"tasks":[{
+        src = '''{"format_version":1,
+        "tasks":[{
             "id": 1,
             "summary": "summary"
         },
@@ -237,7 +240,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         t0 = self.pl.create_task('pre-existing')
         self.pl.add(t0)
         self.pl.commit()
-        src = '{"tasks":[{"id": ' + str(t0.id) + ',"summary":"summary"}]}'
+        src = '{"format_version":1,"tasks":[{"id": ' + str(t0.id) +\
+              ',"summary":"summary"}]}'
 
         # precondition
         self.assertEqual(1, self.pl.count_tasks())
@@ -260,7 +264,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_imports_task_with_a_tag(self):
         # given
-        src = '''{"tasks":[{
+        src = '''{"format_version":1,
+        "tasks":[{
             "id": 1,
             "summary":"summary",
             "tag_ids": [2]
@@ -306,7 +311,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_tag_of_task_not_found_raises(self):
         # given
-        src = '''{"tasks":[{
+        src = '''{"format_version":1,
+        "tasks":[{
             "id": 1,
             "summary":"summary",
             "tag_ids": [2]
@@ -338,7 +344,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_tags(self):
         # given
-        src = '{"tags":[]}'
+        src = '{"tags":[],"format_version":1}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -361,10 +367,11 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_imports_single_tag(self):
         # given
-        src = '{"tags":[{' \
-                '"id":123,' \
-                '"value":"tag",' \
-                '"description":"description"}]}'
+        src = '{"format_version":1,' \
+              '"tags":[{' \
+              '"id":123,' \
+              '"value":"tag",' \
+              '"description":"description"}]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -394,7 +401,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_notes(self):
         # given
-        src = '{"notes":[]}'
+        src = '{"format_version":1,"notes":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -417,7 +424,8 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_imports_single_note(self):
         # given
-        src = '''{"tasks":[{
+        src = '''{"format_version":1,
+        "tasks":[{
             "id": 1,
             "summary":"summary"
         }],
@@ -457,7 +465,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_attachments(self):
         # given
-        src = '{"attachments":[]}'
+        src = '{"format_version":1,"attachments":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -480,7 +488,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_users(self):
         # given
-        src = '{"users":[]}'
+        src = '{"format_version":1,"users":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -503,7 +511,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_options(self):
         # given
-        src = '{"options":[]}'
+        src = '{"format_version":1,"options":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -517,6 +525,114 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll.do_import_data(json.loads(src))
 
         # then
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_do_import_data_no_format_version_raises(self):
+        # given
+        src = '{"options":[]}'
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # expect
+        self.assertRaisesRegex(
+            BadRequest,
+            r"^400 Bad Request: Missing format_version",
+            self.ll.do_import_data,
+            json.loads(src))
+
+        # and
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_do_import_data_wrong_format_version_raises(self):
+        # given
+        src = '{"format_version":2}'
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # expect
+        self.assertRaisesRegex(
+            BadRequest,
+            r"^400 Bad Request: Bad format_version",
+            self.ll.do_import_data,
+            json.loads(src))
+
+        # and
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_do_import_data_invalid_format_version_raises(self):
+        # given
+        src = '{"format_version":"one"}'
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # expect
+        self.assertRaisesRegex(
+            BadRequest,
+            r"^400 Bad Request: Bad format_version",
+            self.ll.do_import_data,
+            json.loads(src))
+
+        # and
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_do_import_data_invalid_format_version_raises_2(self):
+        # given
+        src = '{"format_version":[]}'
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # expect
+        self.assertRaisesRegex(
+            BadRequest,
+            r"^400 Bad Request: Bad format_version",
+            self.ll.do_import_data,
+            json.loads(src))
+
+        # and
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
         self.assertEqual(0, self.pl.count_notes())
