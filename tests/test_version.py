@@ -1,11 +1,8 @@
-import os
 import unittest
 
 from unittest.mock import Mock
 
-from persistence.in_memory.layer import InMemoryPersistenceLayer
-from tudor import make_task_public, make_task_private, Config, \
-    get_config_from_command_line, generate_app
+from tudor import generate_app
 
 
 class VersionTest(unittest.TestCase):
@@ -16,4 +13,4 @@ class VersionTest(unittest.TestCase):
 
     def test_version_number_is_correct(self):
         # expect
-        self.assertEqual('0.3', self.app.Options.get_version())
+        self.assertEqual('0.4', self.app.Options.get_version())

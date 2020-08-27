@@ -2,7 +2,6 @@
 import argparse
 import base64
 import random
-import re
 import sys
 import traceback
 from functools import wraps
@@ -21,7 +20,7 @@ from logic.layer import LogicLayer
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
-__version__ = '0.3'
+__version__ = '0.4'
 try:
     import git
 
@@ -142,9 +141,9 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
         for k, v in flask_configs.items():
             app.config[k] = v
     app.secret_key = secret_key
-    ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
-                                                     allowed_extensions)
-                             if ext is not None and ext != '')
+    # ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
+    #                                                  allowed_extensions)
+    #                          if ext is not None and ext != '')
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -718,8 +717,8 @@ if __name__ == '__main__':
                     is_admin=is_admin)
     elif args.export_db:
         with app.app_context():
-            types_to_export = ('tasks', 'tags', 'notes', 'attachments', 'users',
-                               'options')
+            types_to_export = ('tasks', 'tags', 'notes', 'attachments',
+                               'users', 'options')
             result = app.ll.do_export_data(types_to_export)
             print(jsonify(result))
     elif args.import_db:

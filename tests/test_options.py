@@ -37,4 +37,4 @@ class AppOptionsTest(unittest.TestCase):
 
     def test_get_version_returns_revision(self):
         # expect
-        self.assertEqual('0.3', self.ops.get_version())
+        self.assertEqual('0.4', self.ops.get_version())
