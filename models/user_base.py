@@ -50,6 +50,13 @@ class UserBase(object):
 
         return d
 
+    def to_flat_dict(self, fields=None):
+        d = self.to_dict(fields=fields)
+        if 'tasks' in d:
+            d['task_ids'] = [item.id for item in d['tasks']]
+            del d['tasks']
+        return d
+
     @classmethod
     def from_dict(cls, d, lazy=None):
         user_id = d.get('id', None)

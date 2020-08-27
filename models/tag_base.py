@@ -45,6 +45,14 @@ class TagBase(object):
 
         return d
 
+    def to_flat_dict(self, fields=None):
+        d = self.to_dict(fields=fields)
+        if 'tasks' in d:
+            items = d['tasks']
+            del d['tasks']
+            d['task_ids'] = [item.id for item in items]
+        return d
+
     @classmethod
     def from_dict(cls, d, lazy=None):
         logger = cls._logger

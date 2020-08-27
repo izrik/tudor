@@ -782,182 +782,168 @@ class LogicLayer(object):
         return tasks_h
 
     def do_export_data(self, types_to_export):
-        results = {}
+        results = {'format_version': 1}
         if 'tasks' in types_to_export:
-            results['tasks'] = [t.to_dict() for t in self.pl.get_tasks()]
+            results['tasks'] = [t.to_flat_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
-            results['tags'] = [t.to_dict() for t in self.pl.get_tags()]
+            results['tags'] = [t.to_flat_dict() for t in self.pl.get_tags()]
         if 'notes' in types_to_export:
-            results['notes'] = [t.to_dict() for t in self.pl.get_notes()]
+            results['notes'] = [t.to_flat_dict() for t in self.pl.get_notes()]
         if 'attachments' in types_to_export:
-            results['attachments'] = [t.to_dict() for t in
+            results['attachments'] = [t.to_flat_dict() for t in
                                       self.pl.get_attachments()]
         if 'users' in types_to_export:
-            results['users'] = [t.to_dict() for t in self.pl.get_users()]
+            results['users'] = [t.to_flat_dict() for t in self.pl.get_users()]
         if 'options' in types_to_export:
-            results['options'] = [t.to_dict() for t in
+            results['options'] = [t.to_flat_dict() for t in
                                   self.pl.get_options()]
         return results
 
-    def do_import_data(self, src):
+    def do_import_data(self, src, keep_id_numbers=True):
+
+        # TODO: check for id conflicts for tags
+        # TODO: check for id conflicts for notes
+        # TODO: check for id conflicts for attachments
+        # TODO: check for id conflicts for users
+        # TODO: check for key conflicts for options
+        # TODO: merge tags?
+        # TODO: merge users?
+        # TODO: merge options?
+        # TODO: merge tasks???
+        # TODO: merge notes???
+        # TODO: merge attachments???
+        #
+        # TODO: more run-time checks, insteead of relying on the db and pl
 
         db_objects = []
 
+        if 'format_version' not in src:
+            raise werkzeug.exceptions.BadRequest('Missing format_version')
+        if src['format_version'] != 1:
+            raise werkzeug.exceptions.BadRequest('Bad format_version')
+
+        if 'tasks' not in src:
+            src['tasks'] = []
+        if 'tags' not in src:
+            src['tags'] = []
+        if 'notes' not in src:
+            src['notes'] = []
+        if 'attachments' not in src:
+            src['attachments'] = []
+        if 'users' not in src:
+            src['users'] = []
+        if 'options' not in src:
+            src['options'] = []
+
         try:
+            tasks_by_id = {task['id']: task for task in src['tasks']}
+            tags_by_id = {tag['id']: tag for tag in src['tags']}
+            users_by_id = {user['id']: user for user in src['users']}
 
-            if 'tags' in src:
-                for tag in src['tags']:
-                    task_id = tag['id']
-                    value = tag['value']
-                    description = tag.get('description', '')
-                    t = self.pl.create_tag(value=value,
-                                           description=description)
-                    t.id = task_id
-                    db_objects.append(t)
+            for task in src['tasks']:
+                summary = task['summary']
+                description = task.get('description', '')
+                is_done = task.get('is_done', False)
+                is_deleted = task.get('is_deleted', False)
+                deadline = task.get('deadline', None)
+                exp_dur_min = task.get('expected_duration_minutes')
+                expected_cost = task.get('expected_cost')
+                expected_cost = money_from_str(expected_cost)
+                order_num = task.get('order_num', None)
+                t = self.pl.create_task(
+                    summary=summary, description=description,
+                    is_done=is_done, is_deleted=is_deleted,
+                    deadline=deadline,
+                    expected_duration_minutes=exp_dur_min,
+                    expected_cost=expected_cost)
+                if keep_id_numbers:
+                    t.id = task['id']
+                t.order_num = order_num
+                task['__object__'] = t
+                db_objects.append(t)
 
-            if 'tasks' in src:
-                ids = set()
-                for task in src['tasks']:
-                    ids.add(task['id'])
-                if ids:
-                    existing_tasks = self.pl.count_tasks(task_id_in=ids)
-                    if existing_tasks > 0:
-                        raise werkzeug.exceptions.Conflict(
-                            'Some specified task id\'s already exist in the '
-                            'database')
+            task_ids = set(task['__object__'].id for task in src['tasks'])
+            if self.pl.count_tasks(task_id_in=task_ids) > 0:
+                raise werkzeug.exceptions.Conflict(
+                    "Some specified task id's already exist in the "
+                    "database")
 
-                tasks_by_id = {}
-                parent_id_by_task = {}
-                for task in src['tasks']:
-                    id = task['id']
-                    summary = task['summary']
-                    description = task.get('description', '')
-                    is_done = task.get('is_done', False)
-                    is_deleted = task.get('is_deleted', False)
-                    deadline = task.get('deadline', None)
-                    exp_dur_min = task.get('expected_duration_minutes')
-                    expected_cost = task.get('expected_cost')
-                    expected_cost = money_from_str(expected_cost)
-                    parent_id = task.get('parent_id', None)
-                    order_num = task.get('order_num', None)
-                    tag_ids = task.get('tag_ids', [])
-                    user_ids = task.get('user_ids', [])
-                    t = self.pl.create_task(
-                        summary=summary, description=description,
-                        is_done=is_done, is_deleted=is_deleted,
-                        deadline=deadline,
-                        expected_duration_minutes=exp_dur_min,
-                        expected_cost=expected_cost)
-                    t.id = id
-                    parent_id_by_task[t] = parent_id
-                    t.order_num = order_num
-                    for tag_id in tag_ids:
-                        tag = self.pl.get_tag(tag_id)
-                        if tag is None:
-                            tag = next((obj for obj in db_objects
-                                        if obj.object_type == ObjectTypes.Tag
-                                        and obj.id == tag_id),
-                                       None)
-                        if tag is None:
-                            raise Exception('Tag not found')
+            for tag in src['tags']:
+                value = tag['value']
+                description = tag.get('description', '')
+                t = self.pl.create_tag(value=value,
+                                       description=description)
+                if keep_id_numbers:
+                    t.id = tag['id']
+                tag['__object__'] = t
+                db_objects.append(t)
+
+            for note in src['notes']:
+                content = note['content']
+                timestamp = note['timestamp']
+                n = self.pl.create_note(content=content,
+                                        timestamp=timestamp)
+                if keep_id_numbers:
+                    n.id = note['id']
+                note['__object__'] = n
+                db_objects.append(n)
+
+            for attachment in src['attachments']:
+                timestamp = attachment['timestamp']
+                path = attachment['path']
+                filename = attachment['filename']
+                description = attachment['description']
+                a = self.pl.create_attachment(path=path,
+                                              description=description,
+                                              timestamp=timestamp,
+                                              filename=filename)
+                if keep_id_numbers:
+                    a.id = attachment['id']
+                attachment['__object__'] = a
+                db_objects.append(aa)
+
+            for user in src['users']:
+                email = user['email']
+                hashed_password = user['hashed_password']
+                is_admin = user['is_admin']
+                u = self.pl.create_user(email=email,
+                                        hashed_password=hashed_password,
+                                        is_admin=is_admin)
+                if keep_id_numbers:
+                    u.id = user['id']
+                user['__object__'] = u
+                db_objects.append(u)
+
+            for option in src['options']:
+                key = option['key']
+                value = option['value']
+                o = self.pl.create_option(key, value)
+                option['__object__'] = o
+                db_objects.append(o)
+
+            #########
+
+            for task in src['tasks']:
+                t = task['__object__']
+                if 'tag_ids' in task:
+                    for tag_id in task['tag_ids']:
+                        tag = tags_by_id[tag_id]['__object__']
                         t.tags.append(tag)
-                    for user_id in user_ids:
-                        user = self.pl.get_user(user_id)
-                        if user is None:
-                            user = next((obj for obj in db_objects
-                                        if obj.object_type == ObjectTypes.User
-                                         and obj.id == user_id),
-                                        None)
-                        if user is None:
-                            raise Exception('User not found')
+                if 'user_ids' in task:
+                    for user_id in task['user_ids']:
+                        user = users_by_id[user_id]['__object__']
                         t.users.append(user)
-                    db_objects.append(t)
-                    tasks_by_id[t.id] = t
-                for task, parent_id in parent_id_by_task.items():
-                    if parent_id is not None:
-                        task.parent = tasks_by_id[parent_id]
+                if 'parent_id' in task and task['parent_id'] is not None:
+                    t.parent = tasks_by_id[task['parent_id']]['__object__']
 
-            if 'notes' in src:
-                ids = set()
-                for note in src['notes']:
-                    ids.add(note['id'])
-                if ids:
-                    if self.pl.count_notes(note_id_in=ids) > 0:
-                        raise werkzeug.exceptions.Conflict(
-                            'Some specified note id\'s already exist in the '
-                            'database')
-                for note in src['notes']:
-                    id = note['id']
-                    content = note['content']
-                    timestamp = note['timestamp']
-                    task_id = note['task_id']
-                    n = self.pl.create_note(content=content,
-                                            timestamp=timestamp)
-                    n.id = id
-                    if task_id in tasks_by_id:
-                        n.task = tasks_by_id[task_id]
-                    else:
-                        raise Exception('Task not found')
-                    db_objects.append(n)
+            for note in src['notes']:
+                task_map = tasks_by_id[note['task_id']]
+                note['__object__'].task = task_map['__object__']
 
-            if 'attachments' in src:
-                attachments = src['attachments']
-                ids = set()
-                for attachment in attachments:
-                    ids.add(attachment['id'])
-                if ids:
-                    if self.pl.count_attachments(attachment_id_in=ids) > 0:
-                        raise werkzeug.exceptions.Conflict(
-                            'Some specified attachment id\'s already exist in '
-                            'the database')
-                for attachment in attachments:
-                    id = attachment['id']
-                    timestamp = attachment['timestamp']
-                    path = attachment['path']
-                    filename = attachment['filename']
-                    description = attachment['description']
-                    task_id = attachment['task_id']
-                    a = self.pl.create_attachment(path=path,
-                                                  description=description,
-                                                  timestamp=timestamp,
-                                                  filename=filename)
-                    a.id = id
-                    a.task_id = task_id
-                    db_objects.append(a)
+            for attachment in src['attachments']:
+                task_map = tasks_by_id[attachment['task_id']]
+                attachment.task = task_map['__object__']
 
-            if 'users' in src:
-                users = src['users']
-                emails = set()
-                for user in users:
-                    emails.add(user['email'])
-                if emails:
-                    if self.pl.count_users(email_in=emails) > 0:
-                        raise werkzeug.exceptions.Conflict(
-                            'Some specified user email addresses already exist'
-                            ' in the database')
-                for user in users:
-                    email = user['email']
-                    hashed_password = user['hashed_password']
-                    is_admin = user['is_admin']
-                    u = self.pl.create_user(email=email,
-                                            hashed_password=hashed_password,
-                                            is_admin=is_admin)
-                    db_objects.append(u)
-
-            if 'options' in src:
-                keys = set()
-                for option in src['options']:
-                    keys.add(option['key'])
-                if keys:
-                    if self.pl.count_options(key_in=keys) > 0:
-                        raise werkzeug.exceptions.Conflict(
-                            'Some specified option keys already exist in the '
-                            'database')
-                for option in src['options']:
-                    key = option['key']
-                    value = option['value']
-                    t = self.pl.create_option(key, value)
-                    db_objects.append(t)
         except werkzeug.exceptions.HTTPException:
             raise
         except:
