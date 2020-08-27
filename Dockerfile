@@ -10,6 +10,7 @@ RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev && \
     pip install --upgrade pip setuptools    --no-cache-dir && \
     pip install gunicorn==19.7.1            --no-cache-dir && \
     pip install mysqlclient==1.4.4          --no-cache-dir && \
+    pip install pg8000==1.16.5              --no-cache-dir && \
     apk --purge del .build-deps
 
 COPY collections_util.py \
