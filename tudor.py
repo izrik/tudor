@@ -105,6 +105,10 @@ class Config(object):
             args=ifn(first.args, second.args))
 
 
+class ConfigError(Exception):
+    pass
+
+
 def get_config_from_command_line(argv, defaults=None):
     if defaults is None:
         defaults = Config.from_environ()
@@ -168,15 +172,32 @@ def get_config_from_command_line(argv, defaults=None):
         try:
             with open(config.DB_URI_FILE) as f:
                 config.DB_URI = f.read()
-        except:
-            pass
+        except FileNotFoundError:
+            raise ConfigError(
+                f'Could not find uri file "{config.DB_URI_FILE}".')
+        except PermissionError:
+            raise ConfigError(
+                f'Permission error when opening uri file '
+                f'"{config.DB_URI_FILE}".')
+        except Exception as e:
+            raise ConfigError(
+                f'Error opening uri file "{config.DB_URI_FILE}": {e}')
 
     if config.SECRET_KEY is None and config.SECRET_KEY_FILE is not None:
         try:
             with open(config.SECRET_KEY_FILE) as f:
                 config.SECRET_KEY = f.read()
-        except (FileNotFoundError, PermissionError):
-            pass
+        except FileNotFoundError:
+            raise ConfigError(
+                f'Could not find secret key file "{config.SECRET_KEY_FILE}".')
+        except PermissionError:
+            raise ConfigError(
+                f'Permission error when opening secret key file '
+                f'"{config.SECRET_KEY_FILE}".')
+        except Exception as e:
+            raise ConfigError(
+                f'Error opening secret key file '
+                f'"{config.SECRET_KEY_FILE}": {e}')
 
     return config
 
