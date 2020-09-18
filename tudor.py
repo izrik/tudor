@@ -44,6 +44,7 @@ DEFAULT_TUDOR_SECRET_KEY = None
 class Config(object):
     def __init__(self, debug=DEFAULT_TUDOR_DEBUG, host=DEFAULT_TUDOR_HOST,
                  port=DEFAULT_TUDOR_PORT, db_uri=DEFAULT_TUDOR_DB_URI,
+                 db_uri_file=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
                  secret_key=DEFAULT_TUDOR_SECRET_KEY, args=None):
@@ -51,6 +52,7 @@ class Config(object):
         self.HOST = host
         self.PORT = port
         self.DB_URI = db_uri
+        self.DB_URI_FILE = db_uri_file
         self.UPLOAD_FOLDER = upload_folder
         self.ALLOWED_EXTENSIONS = allowed_extensions
         self.SECRET_KEY = secret_key
@@ -65,31 +67,52 @@ class Config(object):
             port=int_from_str(environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT),
                               DEFAULT_TUDOR_PORT),
             db_uri=environ.get('TUDOR_DB_URI', DEFAULT_TUDOR_DB_URI),
+            db_uri_file=environ.get('TUDOR_DB_URI_FILE'),
             upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
                                       DEFAULT_TUDOR_UPLOAD_FOLDER),
             allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
                                            DEFAULT_TUDOR_ALLOWED_EXTENSIONS),
             secret_key=environ.get('TUDOR_SECRET_KEY'))
 
+    @classmethod
+    def combine(cls, first, second):
+        if first is None:
+            return second
+        if second is None:
+            return first
 
-def get_config_from_command_line(args, defaults=None):
+        def ifn(a, b):
+            if a is not None:
+                return a
+            return b
+
+        return Config(
+            debug=ifn(first.DEBUG, second.DEBUG),
+            host=ifn(first.HOST, second.HOST),
+            port=ifn(first.PORT, second.PORT),
+            db_uri=ifn(first.DB_URI, second.DB_URI),
+            db_uri_file=ifn(first.DB_URI_FILE, second.DB_URI_FILE),
+            upload_folder=ifn(first.UPLOAD_FOLDER, second.UPLOAD_FOLDER),
+            allowed_extensions=ifn(first.ALLOWED_EXTENSIONS,
+                                   second.ALLOWED_EXTENSIONS),
+            secret_key=ifn(first.SECRET_KEY, second.SECRET_KEY),
+            args=ifn(first.args, second.args))
+
+
+def get_config_from_command_line(argv, defaults=None):
     if defaults is None:
         defaults = Config.from_environ()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true',
-                        default=defaults.DEBUG)
-    parser.add_argument('--host', action='store', default=defaults.HOST)
-    parser.add_argument('--port', action='store', default=defaults.PORT,
-                        type=int)
+    parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--host', action='store')
+    parser.add_argument('--port', action='store', type=int)
     parser.add_argument('--create-db', action='store_true')
-    parser.add_argument('--db-uri', action='store', default=defaults.DB_URI)
-    parser.add_argument('--upload-folder', action='store',
-                        default=defaults.UPLOAD_FOLDER)
-    parser.add_argument('--allowed-extensions', action='store',
-                        default=defaults.ALLOWED_EXTENSIONS)
-    parser.add_argument('--secret-key', action='store',
-                        default=defaults.SECRET_KEY)
+    parser.add_argument('--db-uri', action='store')
+    parser.add_argument('--db-uri-file', action='store', default=None)
+    parser.add_argument('--upload-folder', action='store')
+    parser.add_argument('--allowed-extensions', action='store')
+    parser.add_argument('--secret-key', action='store')
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
@@ -118,17 +141,29 @@ def get_config_from_command_line(args, defaults=None):
                              'insert them into the database. Reverse of '
                              '"import".')
 
-    args2 = parser.parse_args(args=args)
+    args = parser.parse_args(args=argv)
 
-    return Config(
-        debug=args2.debug,
-        host=args2.host,
-        port=args2.port,
-        db_uri=args2.db_uri,
-        upload_folder=args2.upload_folder,
-        secret_key=args2.secret_key,
-        allowed_extensions=args2.allowed_extensions,
-        args=args2)
+    arg_config = Config(
+        debug=args.debug,
+        host=args.host,
+        port=args.port,
+        db_uri=args.db_uri,
+        db_uri_file=args.db_uri_file,
+        upload_folder=args.upload_folder,
+        secret_key=args.secret_key,
+        allowed_extensions=args.allowed_extensions,
+        args=args)
+
+    config = Config.combine(arg_config, defaults)
+
+    if config.DB_URI is None and config.DB_URI_FILE is not None:
+        try:
+            with open(config.DB_URI_FILE) as f:
+                config.DB_URI = f.read()
+        except:
+            pass
+
+    return config
 
 
 def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
