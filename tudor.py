@@ -72,7 +72,10 @@ class Config(object):
             secret_key=environ.get('TUDOR_SECRET_KEY'))
 
 
-def get_config_from_command_line(args, defaults):
+def get_config_from_command_line(args, defaults=None):
+    if defaults is None:
+        defaults = Config.from_environ()
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--debug', action='store_true',
                         default=defaults.DEBUG)
@@ -667,11 +670,7 @@ def create_user(pl, email, hashed_password, is_admin=False):
 
 if __name__ == '__main__':
 
-    default_config = Config()
-
-    env_config = Config.from_environ()
-
-    arg_config = get_config_from_command_line(sys.argv[1:], env_config)
+    arg_config = get_config_from_command_line(sys.argv[1:])
 
     print(f'__version__: {__version__}', file=sys.stderr)
     print(f'__revision__: {__revision__}', file=sys.stderr)
