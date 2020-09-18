@@ -47,7 +47,9 @@ class Config(object):
                  db_uri_file=None,
                  upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
                  allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 secret_key=DEFAULT_TUDOR_SECRET_KEY, args=None):
+                 secret_key=DEFAULT_TUDOR_SECRET_KEY,
+                 secret_key_file=None,
+                 args=None):
         self.DEBUG = debug
         self.HOST = host
         self.PORT = port
@@ -56,6 +58,7 @@ class Config(object):
         self.UPLOAD_FOLDER = upload_folder
         self.ALLOWED_EXTENSIONS = allowed_extensions
         self.SECRET_KEY = secret_key
+        self.SECRET_KEY_FILE = secret_key_file
         self.args = args
 
     @staticmethod
@@ -72,7 +75,8 @@ class Config(object):
                                       DEFAULT_TUDOR_UPLOAD_FOLDER),
             allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
                                            DEFAULT_TUDOR_ALLOWED_EXTENSIONS),
-            secret_key=environ.get('TUDOR_SECRET_KEY'))
+            secret_key=environ.get('TUDOR_SECRET_KEY'),
+            secret_key_file=environ.get('TUDOR_SECRET_KEY_FILE'))
 
     @classmethod
     def combine(cls, first, second):
@@ -96,6 +100,8 @@ class Config(object):
             allowed_extensions=ifn(first.ALLOWED_EXTENSIONS,
                                    second.ALLOWED_EXTENSIONS),
             secret_key=ifn(first.SECRET_KEY, second.SECRET_KEY),
+            secret_key_file=ifn(first.SECRET_KEY_FILE,
+                                second.SECRET_KEY_FILE),
             args=ifn(first.args, second.args))
 
 
@@ -113,6 +119,7 @@ def get_config_from_command_line(argv, defaults=None):
     parser.add_argument('--upload-folder', action='store')
     parser.add_argument('--allowed-extensions', action='store')
     parser.add_argument('--secret-key', action='store')
+    parser.add_argument('--secret-key-file', action='store')
     parser.add_argument('--create-secret-key', action='store_true')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
@@ -151,6 +158,7 @@ def get_config_from_command_line(argv, defaults=None):
         db_uri_file=args.db_uri_file,
         upload_folder=args.upload_folder,
         secret_key=args.secret_key,
+        secret_key_file=args.secret_key_file,
         allowed_extensions=args.allowed_extensions,
         args=args)
 
@@ -161,6 +169,13 @@ def get_config_from_command_line(argv, defaults=None):
             with open(config.DB_URI_FILE) as f:
                 config.DB_URI = f.read()
         except:
+            pass
+
+    if config.SECRET_KEY is None and config.SECRET_KEY_FILE is not None:
+        try:
+            with open(config.SECRET_KEY_FILE) as f:
+                config.SECRET_KEY = f.read()
+        except (FileNotFoundError, PermissionError):
             pass
 
     return config
