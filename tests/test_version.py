@@ -13,4 +13,4 @@ class VersionTest(unittest.TestCase):
 
     def test_version_number_is_correct(self):
         # expect
-        self.assertEqual('0.4', self.app.Options.get_version())
+        self.assertEqual('0.5', self.app.Options.get_version())
