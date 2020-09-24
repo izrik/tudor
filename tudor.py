@@ -739,9 +739,8 @@ def create_user(pl, email, hashed_password, is_admin=False):
     pl.commit()
 
 
-if __name__ == '__main__':
-
-    arg_config = get_config_from_command_line(sys.argv[1:])
+def main(argv):
+    arg_config = get_config_from_command_line(argv)
 
     print(f'__version__: {__version__}', file=sys.stderr)
     print(f'__revision__: {__revision__}', file=sys.stderr)
@@ -798,3 +797,7 @@ if __name__ == '__main__':
     else:
         app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
                 port=arg_config.PORT)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
