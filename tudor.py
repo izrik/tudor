@@ -20,7 +20,7 @@ from logic.layer import LogicLayer
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
-__version__ = '0.4'
+__version__ = '0.5'
 try:
     import git
 
