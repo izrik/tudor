@@ -765,10 +765,12 @@ def main(argv):
     print(f'DEBUG: {arg_config.DEBUG}', file=sys.stderr)
     print(f'HOST: {arg_config.HOST}', file=sys.stderr)
     print(f'PORT: {arg_config.PORT}', file=sys.stderr)
-    print(f'DB_URI: {arg_config.DB_URI}', file=sys.stderr)
     print(f'UPLOAD_FOLDER: {arg_config.UPLOAD_FOLDER}', file=sys.stderr)
     print(f'ALLOWED_EXTENSIONS: {arg_config.ALLOWED_EXTENSIONS}',
           file=sys.stderr)
+    if arg_config.DEBUG:
+        print(f'DB_URI: {arg_config.DB_URI}', file=sys.stderr)
+        print(f'SECRET_KEY: {arg_config.SECRET_KEY}', file=sys.stderr)
 
     app = generate_app(db_uri=arg_config.DB_URI,
                        upload_folder=arg_config.UPLOAD_FOLDER,
