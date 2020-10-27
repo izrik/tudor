@@ -1,9 +1,11 @@
 import os
 import unittest
+from unittest.mock import patch, MagicMock
 
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
-    get_config_from_command_line, create_user
+    get_config_from_command_line, create_user, get_db_uri, ConfigError, \
+    get_secret_key
 
 
 class CommandLineTests(unittest.TestCase):
@@ -209,17 +211,18 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual('asdf', user.hashed_password)
         self.assertFalse(user.is_admin)
 
+
 class ConfigTest(unittest.TestCase):
-    def test_init_no_args_yields_hard_coded_defaults(self):
+    def test_init_no_args_yields_none(self):
         # when
         result = Config()
         # then
-        self.assertIs(False, result.DEBUG)
-        self.assertEqual('127.0.0.1', result.HOST)
-        self.assertEqual(8304, result.PORT)
-        self.assertEqual('sqlite:////tmp/test.db', result.DB_URI)
-        self.assertEqual('/tmp/tudor/uploads', result.UPLOAD_FOLDER)
-        self.assertEqual('txt,pdf,png,jpg,jpeg,gif', result.ALLOWED_EXTENSIONS)
+        self.assertIsNone(result.DEBUG)
+        self.assertIsNone(result.HOST)
+        self.assertIsNone(result.PORT)
+        self.assertIsNone(result.DB_URI)
+        self.assertIsNone(result.UPLOAD_FOLDER)
+        self.assertIsNone(result.ALLOWED_EXTENSIONS)
         self.assertIsNone(result.SECRET_KEY)
         self.assertIsNone(result.args)
 
@@ -229,7 +232,7 @@ class ConfigTest(unittest.TestCase):
         # then
         self.assertIs(True, result.DEBUG)
 
-    def test_host_sets_(self):
+    def test_host_sets_host(self):
         # when
         result = Config(host='1.2.3.4')
         # then
@@ -307,16 +310,16 @@ class ConfigFromEnvironTest(unittest.TestCase):
         if 'TUDOR_SECRET_KEY' in os.environ:
             os.environ.pop('TUDOR_SECRET_KEY')
 
-    def test_from_environ_no_envvars_returns_defaults(self):
+    def test_from_environ_no_envvars_returns_none_or_false(self):
         # when
         result = Config.from_environ()
         # then
-        self.assertIs(False, result.DEBUG)
-        self.assertEqual('127.0.0.1', result.HOST)
-        self.assertEqual(8304, result.PORT)
-        self.assertEqual('sqlite:////tmp/test.db', result.DB_URI)
-        self.assertEqual('/tmp/tudor/uploads', result.UPLOAD_FOLDER)
-        self.assertEqual('txt,pdf,png,jpg,jpeg,gif', result.ALLOWED_EXTENSIONS)
+        self.assertIs(result.DEBUG, False)
+        self.assertIsNone(result.HOST)
+        self.assertIsNone(result.PORT)
+        self.assertIsNone(result.DB_URI)
+        self.assertIsNone(result.UPLOAD_FOLDER)
+        self.assertIsNone(result.ALLOWED_EXTENSIONS)
         self.assertIsNone(result.SECRET_KEY)
         self.assertIsNone(result.args)
 
@@ -513,3 +516,169 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         # then
         self.assertIsNotNone(result.args)
         self.assertTrue(result.args.test_db_conn)
+
+    @patch('tudor.open')
+    def test_get_db_uri_uri_returns_uri(self, _open):
+        # when
+        result = get_db_uri('asdf', 'zxcv')
+        # then
+        assert result == 'asdf'
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_db_uri_no_uri_returns_file(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.return_value = 'qwer'
+        # when
+        result = get_db_uri(None, 'zxcv')
+        # then
+        assert result == 'qwer'
+        # and
+        _open.assert_called_once_with('zxcv')
+        _f.read.assert_called_once_with()
+
+    @patch('tudor.open')
+    def test_get_db_uri_neither_uri_nor_file_returns_none(self, _open):
+        # when
+        result = get_db_uri(None, None)
+        # then
+        assert result is None
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_db_uri_no_file_returns_uri(self, _open):
+        # when
+        result = get_db_uri('asdf', None)
+        # then
+        assert result == 'asdf'
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_db_uri_raises_when_open_raises_fnf(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = FileNotFoundError
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_db_uri(None, 'zxcv')
+        # and
+        assert str(exc.exception) == 'Could not find uri file "zxcv".'
+
+    @patch('tudor.open')
+    def test_get_db_uri_raises_when_open_raises_perms(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = PermissionError
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_db_uri(None, 'zxcv')
+        # and
+        assert str(exc.exception) == \
+               'Permission error when opening uri file "zxcv".'
+
+    @patch('tudor.open')
+    def test_get_db_uri_raises_when_open_raises_other(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = Exception('something')
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_db_uri(None, 'zxcv')
+        # and
+        assert str(exc.exception) == \
+               'Error opening uri file "zxcv": something'
+
+    @patch('tudor.open')
+    def test_get_secret_key_uri_returns_uri(self, _open):
+        # when
+        result = get_secret_key('asdf', 'zxcv')
+        # then
+        assert result == 'asdf'
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_secret_key_no_uri_returns_file(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.return_value = 'qwer'
+        # when
+        result = get_secret_key(None, 'zxcv')
+        # then
+        assert result == 'qwer'
+        # and
+        _open.assert_called_once_with('zxcv')
+        _f.read.assert_called_once_with()
+
+    @patch('tudor.open')
+    def test_get_secret_key_neither_uri_nor_file_returns_none(self, _open):
+        # when
+        result = get_secret_key(None, None)
+        # then
+        assert result is None
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_secret_key_no_file_returns_uri(self, _open):
+        # when
+        result = get_secret_key('asdf', None)
+        # then
+        assert result == 'asdf'
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_secret_key_raises_when_open_raises_fnf(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = FileNotFoundError
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_secret_key(None, 'zxcv')
+        # and
+        assert str(exc.exception) == 'Could not find secret key file "zxcv".'
+
+    @patch('tudor.open')
+    def test_get_secret_key_raises_when_open_raises_perms(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = PermissionError
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_secret_key(None, 'zxcv')
+        # and
+        assert str(exc.exception) == \
+               'Permission error when opening secret key file "zxcv".'
+
+    @patch('tudor.open')
+    def test_get_secret_key_raises_when_open_raises_other(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = Exception('something')
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_secret_key(None, 'zxcv')
+        # and
+        assert str(exc.exception) == \
+               'Error opening secret key file "zxcv": something'

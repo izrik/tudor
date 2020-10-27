@@ -42,14 +42,10 @@ DEFAULT_TUDOR_SECRET_KEY = None
 
 
 class Config(object):
-    def __init__(self, debug=DEFAULT_TUDOR_DEBUG, host=DEFAULT_TUDOR_HOST,
-                 port=DEFAULT_TUDOR_PORT, db_uri=DEFAULT_TUDOR_DB_URI,
-                 db_uri_file=None,
-                 upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
-                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-                 secret_key=DEFAULT_TUDOR_SECRET_KEY,
-                 secret_key_file=None,
-                 args=None):
+    def __init__(self, debug=None, host=None, port=None, db_uri=None,
+                 db_uri_file=None, upload_folder=None,
+                 allowed_extensions=None, secret_key=None,
+                 secret_key_file=None, args=None):
         self.DEBUG = debug
         self.HOST = host
         self.PORT = port
@@ -64,17 +60,13 @@ class Config(object):
     @staticmethod
     def from_environ():
         return Config(
-            debug=bool_from_str(
-                environ.get('TUDOR_DEBUG', DEFAULT_TUDOR_DEBUG)),
-            host=environ.get('TUDOR_HOST', DEFAULT_TUDOR_HOST),
-            port=int_from_str(environ.get('TUDOR_PORT', DEFAULT_TUDOR_PORT),
-                              DEFAULT_TUDOR_PORT),
-            db_uri=environ.get('TUDOR_DB_URI', DEFAULT_TUDOR_DB_URI),
+            debug=bool_from_str(environ.get('TUDOR_DEBUG')),
+            host=environ.get('TUDOR_HOST'),
+            port=int_from_str(environ.get('TUDOR_PORT')),
+            db_uri=environ.get('TUDOR_DB_URI'),
             db_uri_file=environ.get('TUDOR_DB_URI_FILE'),
-            upload_folder=environ.get('TUDOR_UPLOAD_FOLDER',
-                                      DEFAULT_TUDOR_UPLOAD_FOLDER),
-            allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS',
-                                           DEFAULT_TUDOR_ALLOWED_EXTENSIONS),
+            upload_folder=environ.get('TUDOR_UPLOAD_FOLDER'),
+            allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS'),
             secret_key=environ.get('TUDOR_SECRET_KEY'),
             secret_key_file=environ.get('TUDOR_SECRET_KEY_FILE'))
 
@@ -167,37 +159,6 @@ def get_config_from_command_line(argv, defaults=None):
         args=args)
 
     config = Config.combine(arg_config, defaults)
-
-    if config.DB_URI is None and config.DB_URI_FILE is not None:
-        try:
-            with open(config.DB_URI_FILE) as f:
-                config.DB_URI = f.read()
-        except FileNotFoundError:
-            raise ConfigError(
-                f'Could not find uri file "{config.DB_URI_FILE}".')
-        except PermissionError:
-            raise ConfigError(
-                f'Permission error when opening uri file '
-                f'"{config.DB_URI_FILE}".')
-        except Exception as e:
-            raise ConfigError(
-                f'Error opening uri file "{config.DB_URI_FILE}": {e}')
-
-    if config.SECRET_KEY is None and config.SECRET_KEY_FILE is not None:
-        try:
-            with open(config.SECRET_KEY_FILE) as f:
-                config.SECRET_KEY = f.read()
-        except FileNotFoundError:
-            raise ConfigError(
-                f'Could not find secret key file "{config.SECRET_KEY_FILE}".')
-        except PermissionError:
-            raise ConfigError(
-                f'Permission error when opening secret key file '
-                f'"{config.SECRET_KEY_FILE}".')
-        except Exception as e:
-            raise ConfigError(
-                f'Error opening secret key file '
-                f'"{config.SECRET_KEY_FILE}": {e}')
 
     return config
 
@@ -739,8 +700,65 @@ def create_user(pl, email, hashed_password, is_admin=False):
     pl.commit()
 
 
+def get_db_uri(db_uri, db_uri_file):
+    if db_uri is None and db_uri_file is not None:
+        try:
+            with open(db_uri_file) as f:
+                return f.read()
+        except FileNotFoundError:
+            raise ConfigError(
+                f'Could not find uri file "{db_uri_file}".')
+        except PermissionError:
+            raise ConfigError(
+                f'Permission error when opening uri file '
+                f'"{db_uri_file}".')
+        except Exception as e:
+            raise ConfigError(
+                f'Error opening uri file "{db_uri_file}": {e}')
+    return db_uri
+
+
+def get_secret_key(secret_key, secret_key_file):
+    if secret_key is None and secret_key_file is not None:
+        try:
+            with open(secret_key_file) as f:
+                return f.read()
+        except FileNotFoundError:
+            raise ConfigError(
+                f'Could not find secret key file '
+                f'"{secret_key_file}".')
+        except PermissionError:
+            raise ConfigError(
+                f'Permission error when opening secret key file '
+                f'"{secret_key_file}".')
+        except Exception as e:
+            raise ConfigError(
+                f'Error opening secret key file '
+                f'"{secret_key_file}": {e}')
+    return secret_key
+
+
 def main(argv):
     arg_config = get_config_from_command_line(argv)
+
+    arg_config.DB_URI = get_db_uri(arg_config.DB_URI, arg_config.DB_URI_FILE)
+    arg_config.SECRET_KEY = get_secret_key(arg_config.SECRET_KEY,
+                                           arg_config.SECRET_KEY_FILE)
+
+    if arg_config.DEBUG is None:
+        arg_config.DEBUG = DEFAULT_TUDOR_DEBUG
+    if arg_config.HOST is None:
+        arg_config.HOST = DEFAULT_TUDOR_HOST
+    if arg_config.PORT is None:
+        arg_config.PORT = DEFAULT_TUDOR_PORT
+    if arg_config.DB_URI is None:
+        arg_config.DB_URI = DEFAULT_TUDOR_DB_URI
+    if arg_config.UPLOAD_FOLDER is None:
+        arg_config.UPLOAD_FOLDER = DEFAULT_TUDOR_UPLOAD_FOLDER
+    if arg_config.ALLOWED_EXTENSIONS is None:
+        arg_config.ALLOWED_EXTENSIONS = DEFAULT_TUDOR_ALLOWED_EXTENSIONS
+    if arg_config.SECRET_KEY is None:
+        arg_config.SECRET_KEY = DEFAULT_TUDOR_SECRET_KEY
 
     print(f'__version__: {__version__}', file=sys.stderr)
     print(f'__revision__: {__revision__}', file=sys.stderr)
