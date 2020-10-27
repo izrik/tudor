@@ -700,41 +700,50 @@ def create_user(pl, email, hashed_password, is_admin=False):
     pl.commit()
 
 
-def main(argv):
-    arg_config = get_config_from_command_line(argv)
-
-    if arg_config.DB_URI is None and arg_config.DB_URI_FILE is not None:
+def get_db_uri(db_uri, db_uri_file):
+    if db_uri is None and db_uri_file is not None:
         try:
-            with open(arg_config.DB_URI_FILE) as f:
-                arg_config.DB_URI = f.read()
+            with open(db_uri_file) as f:
+                return f.read()
         except FileNotFoundError:
             raise ConfigError(
-                f'Could not find uri file "{arg_config.DB_URI_FILE}".')
+                f'Could not find uri file "{db_uri_file}".')
         except PermissionError:
             raise ConfigError(
                 f'Permission error when opening uri file '
-                f'"{arg_config.DB_URI_FILE}".')
+                f'"{db_uri_file}".')
         except Exception as e:
             raise ConfigError(
-                f'Error opening uri file "{arg_config.DB_URI_FILE}": {e}')
+                f'Error opening uri file "{db_uri_file}": {e}')
+    return db_uri
 
-    if arg_config.SECRET_KEY is None and \
-            arg_config.SECRET_KEY_FILE is not None:
+
+def get_secret_key(secret_key, secret_key_file):
+    if secret_key is None and secret_key_file is not None:
         try:
-            with open(arg_config.SECRET_KEY_FILE) as f:
-                arg_config.SECRET_KEY = f.read()
+            with open(secret_key_file) as f:
+                return f.read()
         except FileNotFoundError:
             raise ConfigError(
                 f'Could not find secret key file '
-                f'"{arg_config.SECRET_KEY_FILE}".')
+                f'"{secret_key_file}".')
         except PermissionError:
             raise ConfigError(
                 f'Permission error when opening secret key file '
-                f'"{arg_config.SECRET_KEY_FILE}".')
+                f'"{secret_key_file}".')
         except Exception as e:
             raise ConfigError(
                 f'Error opening secret key file '
-                f'"{arg_config.SECRET_KEY_FILE}": {e}')
+                f'"{secret_key_file}": {e}')
+    return secret_key
+
+
+def main(argv):
+    arg_config = get_config_from_command_line(argv)
+
+    arg_config.DB_URI = get_db_uri(arg_config.DB_URI, arg_config.DB_URI_FILE)
+    arg_config.SECRET_KEY = get_secret_key(arg_config.SECRET_KEY,
+                                           arg_config.SECRET_KEY_FILE)
 
     if arg_config.DEBUG is None:
         arg_config.DEBUG = DEFAULT_TUDOR_DEBUG
