@@ -57,10 +57,28 @@ class Config(object):
         self.SECRET_KEY_FILE = secret_key_file
         self.args = args
 
+    def __repr__(self):
+        return f'Config({str(self)})'
+
+    def __str__(self):
+        return (f'DEBUG: {self.DEBUG}, '
+                f'HOST: {self.HOST}, '
+                f'PORT: {self.PORT}, '
+                f'DB_URI: {self.DB_URI}, '
+                f'DB_URI_FILE: {self.DB_URI_FILE}, '
+                f'UPLOAD_FOLDER: {self.UPLOAD_FOLDER}, '
+                f'ALLOWED_EXTENSIONS: {self.ALLOWED_EXTENSIONS}, '
+                f'SECRET_KEY: {self.SECRET_KEY}, '
+                f'SECRET_KEY_FILE: {self.SECRET_KEY_FILE}, '
+                f'args: {self.args}')
+
     @staticmethod
     def from_environ():
+        debug = environ.get('TUDOR_DEBUG')
+        if debug is not None:
+            debug = bool_from_str(debug)
         return Config(
-            debug=bool_from_str(environ.get('TUDOR_DEBUG')),
+            debug=debug,
             host=environ.get('TUDOR_HOST'),
             port=int_from_str(environ.get('TUDOR_PORT')),
             db_uri=environ.get('TUDOR_DB_URI'),
@@ -147,7 +165,7 @@ def get_config_from_command_line(argv, defaults=None):
     args = parser.parse_args(args=argv)
 
     arg_config = Config(
-        debug=args.debug,
+        debug=args.debug if args.debug else None,
         host=args.host,
         port=args.port,
         db_uri=args.db_uri,

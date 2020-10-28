@@ -310,11 +310,11 @@ class ConfigFromEnvironTest(unittest.TestCase):
         if 'TUDOR_SECRET_KEY' in os.environ:
             os.environ.pop('TUDOR_SECRET_KEY')
 
-    def test_from_environ_no_envvars_returns_none_or_false(self):
+    def test_from_environ_no_envvars_returns_none(self):
         # when
         result = Config.from_environ()
         # then
-        self.assertIs(result.DEBUG, False)
+        self.assertIsNone(result.DEBUG)
         self.assertIsNone(result.HOST)
         self.assertIsNone(result.PORT)
         self.assertIsNone(result.DB_URI)
