@@ -20,14 +20,12 @@ class MainFunctionTests(unittest.TestCase):
             mock_print.assert_any_call('DEBUG: False', file=sys.stderr)
             mock_print.assert_any_call('HOST: 127.0.0.1', file=sys.stderr)
             mock_print.assert_any_call('PORT: 8304', file=sys.stderr)
-            mock_print.assert_any_call('DB_URI: sqlite:////tmp/test.db',
-                                       file=sys.stderr)
             mock_print.assert_any_call('UPLOAD_FOLDER: /tmp/tudor/uploads',
                                        file=sys.stderr)
             mock_print.assert_any_call(
                 'ALLOWED_EXTENSIONS: txt,pdf,png,jpg,jpeg,gif',
                 file=sys.stderr)
-            assert mock_print.call_count == 8
+            self.assertEqual(mock_print.call_count, 7)
 
             # and
             mock_generate.assert_called_once_with(
