@@ -13,6 +13,13 @@ RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev && \
     pip install pg8000==1.16.5              --no-cache-dir && \
     apk --purge del .build-deps
 
+COPY requirements.txt \
+     ./
+
+RUN apk add --virtual .build-deps gcc musl-dev libffi-dev && \
+    pip install -r requirements.txt     --no-cache-dir && \
+    apk --purge del .build-deps
+
 COPY collections_util.py \
      conversions.py \
      exception.py \
@@ -31,10 +38,6 @@ COPY persistence persistence
 COPY static static
 COPY templates templates
 COPY view view
-
-RUN apk add --virtual .build-deps gcc musl-dev libffi-dev && \
-    pip install -r requirements.txt     --no-cache-dir && \
-    apk --purge del .build-deps
 
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \
