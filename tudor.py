@@ -192,10 +192,10 @@ def get_config_from_command_line(argv, defaults=None):
     return config
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
-                 upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
-                 secret_key=DEFAULT_TUDOR_SECRET_KEY,
-                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+def generate_app(db_uri=None,
+                 upload_folder=None,
+                 secret_key=None,
+                 allowed_extensions=None,
                  ll=None, vl=None, pl=None, flask_configs=None,
                  disable_admin_check=False):
     app = Flask(__name__)
