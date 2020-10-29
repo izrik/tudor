@@ -88,6 +88,17 @@ class Config(object):
             secret_key=environ.get('TUDOR_SECRET_KEY'),
             secret_key_file=environ.get('TUDOR_SECRET_KEY_FILE'))
 
+    @staticmethod
+    def from_defaults():
+        return Config(
+            debug=DEFAULT_TUDOR_DEBUG,
+            host=DEFAULT_TUDOR_HOST,
+            port=DEFAULT_TUDOR_PORT,
+            db_uri=DEFAULT_TUDOR_DB_URI,
+            upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
+            allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+            secret_key=DEFAULT_TUDOR_SECRET_KEY)
+
     @classmethod
     def combine(cls, first, second):
         if first is None:
@@ -763,20 +774,7 @@ def main(argv):
     arg_config.SECRET_KEY = get_secret_key(arg_config.SECRET_KEY,
                                            arg_config.SECRET_KEY_FILE)
 
-    if arg_config.DEBUG is None:
-        arg_config.DEBUG = DEFAULT_TUDOR_DEBUG
-    if arg_config.HOST is None:
-        arg_config.HOST = DEFAULT_TUDOR_HOST
-    if arg_config.PORT is None:
-        arg_config.PORT = DEFAULT_TUDOR_PORT
-    if arg_config.DB_URI is None:
-        arg_config.DB_URI = DEFAULT_TUDOR_DB_URI
-    if arg_config.UPLOAD_FOLDER is None:
-        arg_config.UPLOAD_FOLDER = DEFAULT_TUDOR_UPLOAD_FOLDER
-    if arg_config.ALLOWED_EXTENSIONS is None:
-        arg_config.ALLOWED_EXTENSIONS = DEFAULT_TUDOR_ALLOWED_EXTENSIONS
-    if arg_config.SECRET_KEY is None:
-        arg_config.SECRET_KEY = DEFAULT_TUDOR_SECRET_KEY
+    arg_config = Config.combine(arg_config, Config.from_defaults())
 
     print(f'__version__: {__version__}', file=sys.stderr)
     print(f'__revision__: {__revision__}', file=sys.stderr)
