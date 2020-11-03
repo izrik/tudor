@@ -214,6 +214,15 @@ def get_config_from_command_line(argv, defaults=None):
     return config
 
 
+def split_db_options(db_options):
+    import re
+    rv = {}
+    for opt in re.split(r'\s+', db_options):
+        k, v = opt.split('=', maxsplit=1)
+        rv[k.strip()] = v.strip()
+    return rv
+
+
 def generate_app(db_uri=None,
                  db_options=None,
                  upload_folder=None,
@@ -243,10 +252,7 @@ def generate_app(db_uri=None,
     if pl is None:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 
-        import re
-        opts = {k.strip(): v.strip()
-                for opt in re.split(r'\s+', db_options)
-                for k, v in opt.split('=', maxsplit=1)}
+        opts = split_db_options(db_options)
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = opts
 
         db = SQLAlchemy(app)

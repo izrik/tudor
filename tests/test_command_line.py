@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line, create_user, get_db_uri, ConfigError, \
-    get_secret_key
+    get_secret_key, split_db_options
 
 
 class CommandLineTests(unittest.TestCase):
@@ -682,3 +682,15 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         # and
         assert str(exc.exception) == \
                'Error opening secret key file "zxcv": something'
+
+    def test_split_db_options_returns_dict(self):
+        # when
+        result = split_db_options('abc=123 def=ghi path=/path/to/file.crt')
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertIn('abc', result)
+        self.assertEqual(result['abc'], '123')
+        self.assertIn('def', result)
+        self.assertEqual(result['def'], 'ghi')
+        self.assertIn('path', result)
+        self.assertEqual(result['path'], '/path/to/file.crt')
