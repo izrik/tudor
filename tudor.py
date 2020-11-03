@@ -242,7 +242,13 @@ def generate_app(db_uri=None,
 
     if pl is None:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = db_options
+
+        import re
+        opts = {k.strip(): v.strip()
+                for opt in re.split(r'\s+', db_options)
+                for k, v in opt.split('=', maxsplit=1)}
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = opts
+
         db = SQLAlchemy(app)
         pl = SqlAlchemyPersistenceLayer(db)
     app.pl = pl
