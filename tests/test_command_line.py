@@ -688,9 +688,32 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         result = split_db_options('abc=123 def=ghi path=/path/to/file.crt')
         # then
         self.assertIsInstance(result, dict)
+        self.assertEqual(len(result), 3)
         self.assertIn('abc', result)
         self.assertEqual(result['abc'], '123')
         self.assertIn('def', result)
         self.assertEqual(result['def'], 'ghi')
         self.assertIn('path', result)
         self.assertEqual(result['path'], '/path/to/file.crt')
+
+    def test_split_db_options_none_yields_empty_dict(self):
+        # when
+        result = split_db_options(None)
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result, {})
+
+
+    def test_split_db_options_empty_string_yields_empty_dict(self):
+        # when
+        result = split_db_options('')
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result, {})
+
+    def test_split_db_options_whitespace_yields_empty_dict(self):
+        # when
+        result = split_db_options('   ')
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result, {})

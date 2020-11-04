@@ -215,9 +215,14 @@ def get_config_from_command_line(argv, defaults=None):
 
 
 def split_db_options(db_options):
+    if db_options is None or db_options == '':
+        return {}
     import re
     rv = {}
     for opt in re.split(r'\s+', db_options):
+        opt = opt.strip()
+        if not opt:
+            continue
         k, v = opt.split('=', maxsplit=1)
         rv[k.strip()] = v.strip()
     return rv
