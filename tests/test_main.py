@@ -30,6 +30,7 @@ class MainFunctionTests(unittest.TestCase):
             # and
             mock_generate.assert_called_once_with(
                 db_uri='sqlite:////tmp/test.db',
+                db_options=None,
                 upload_folder='/tmp/tudor/uploads',
                 secret_key=None,
                 allowed_extensions='txt,pdf,png,jpg,jpeg,gif')
