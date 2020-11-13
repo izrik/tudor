@@ -6,12 +6,13 @@ WORKDIR /opt/tudor
 
 RUN apk add --no-cache bash
 
-RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev && \
+RUN apk add --virtual .build-deps gcc musl-dev libffi-dev mariadb-dev postgresql-dev && \
     pip install --upgrade pip setuptools    --no-cache-dir && \
     pip install gunicorn==19.7.1            --no-cache-dir && \
     pip install mysqlclient==1.4.4          --no-cache-dir && \
-    pip install pg8000==1.16.5              --no-cache-dir && \
+    pip install psycopg2==2.8.6             --no-cache-dir && \
     apk --purge del .build-deps
+RUN apk add libpq
 
 COPY requirements.txt \
      ./
