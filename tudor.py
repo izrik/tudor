@@ -802,7 +802,7 @@ def get_db_options(db_options, db_options_file):
                 f'"{db_options_file}".')
         except Exception as e:
             raise ConfigError(
-                f'Error opening db  file "{db_options_file}": {e}')
+                f'Error opening db options file "{db_options_file}": {e}')
     return db_options
 
 
