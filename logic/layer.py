@@ -945,7 +945,7 @@ class LogicLayer(object):
 
             for attachment in src['attachments']:
                 task_map = tasks_by_id[attachment['task_id']]
-                attachment.task = task_map['__object__']
+                attachment['__object__'].task = task_map['__object__']
 
         except werkzeug.exceptions.HTTPException:
             raise
