@@ -835,6 +835,8 @@ class LogicLayer(object):
         if 'options' not in src:
             src['options'] = []
 
+        # TODO: more fine-grained error handling, or at least error reporting
+
         try:
             tasks_by_id = {task['id']: task for task in src['tasks']}
             tags_by_id = {tag['id']: tag for tag in src['tags']}
