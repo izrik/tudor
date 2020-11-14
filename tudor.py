@@ -888,9 +888,11 @@ def main(argv):
             types_to_export = ('tasks', 'tags', 'notes', 'attachments',
                                'users', 'options')
             result = app.ll.do_export_data(types_to_export)
+            # TODO: replace jsonify with json.dumps
             print(jsonify(result))
     elif args.import_db:
         with app.app_context():
+            # TODO: wrap read() with json.loads
             app.ll.do_import_data(sys.stdin.read())
             print('Finished')
     else:

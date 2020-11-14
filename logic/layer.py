@@ -900,7 +900,8 @@ class LogicLayer(object):
                 if keep_id_numbers:
                     a.id = attachment['id']
                 attachment['__object__'] = a
-                db_objects.append(aa)
+                db_objects.append(aa)  # TODO: typo
+                # TODO: tests
 
             for user in src['users']:
                 email = user['email']
