@@ -42,33 +42,77 @@ DEFAULT_TUDOR_SECRET_KEY = None
 
 
 class Config(object):
-    def __init__(self, debug=None, host=None, port=None, db_uri=None,
-                 db_uri_file=None, upload_folder=None,
-                 allowed_extensions=None, secret_key=None,
-                 secret_key_file=None, args=None):
+    def __init__(self,
+                 debug=None,
+                 host=None,
+                 port=None,
+                 db_uri=None,
+                 db_uri_file=None,
+                 db_options=None,
+                 db_options_file=None,
+                 upload_folder=None,
+                 allowed_extensions=None,
+                 secret_key=None,
+                 secret_key_file=None,
+                 args=None):
         self.DEBUG = debug
         self.HOST = host
         self.PORT = port
         self.DB_URI = db_uri
         self.DB_URI_FILE = db_uri_file
+        self.DB_OPTIONS = db_options
+        self.DB_OPTIONS_FILE = db_options_file
         self.UPLOAD_FOLDER = upload_folder
         self.ALLOWED_EXTENSIONS = allowed_extensions
         self.SECRET_KEY = secret_key
         self.SECRET_KEY_FILE = secret_key_file
         self.args = args
 
+    def __repr__(self):
+        return f'Config({str(self)})'
+
+    def __str__(self):
+        return (f'DEBUG: {self.DEBUG}, '
+                f'HOST: {self.HOST}, '
+                f'PORT: {self.PORT}, '
+                f'DB_URI: {self.DB_URI}, '
+                f'DB_URI_FILE: {self.DB_URI_FILE}, '
+                f'DB_OPTIONS: {self.DB_OPTIONS}, '
+                f'DB_OPTIONS_FILE: {self.DB_OPTIONS_FILE}, '
+                f'UPLOAD_FOLDER: {self.UPLOAD_FOLDER}, '
+                f'ALLOWED_EXTENSIONS: {self.ALLOWED_EXTENSIONS}, '
+                f'SECRET_KEY: {self.SECRET_KEY}, '
+                f'SECRET_KEY_FILE: {self.SECRET_KEY_FILE}, '
+                f'args: {self.args}')
+
     @staticmethod
     def from_environ():
+        debug = environ.get('TUDOR_DEBUG')
+        if debug is not None:
+            debug = bool_from_str(debug)
         return Config(
-            debug=bool_from_str(environ.get('TUDOR_DEBUG')),
+            debug=debug,
             host=environ.get('TUDOR_HOST'),
             port=int_from_str(environ.get('TUDOR_PORT')),
             db_uri=environ.get('TUDOR_DB_URI'),
             db_uri_file=environ.get('TUDOR_DB_URI_FILE'),
+            db_options=environ.get('TUDOR_DB_OPTIONS'),
+            db_options_file=environ.get('TUDOR_DB_OPTIONS_FILE'),
             upload_folder=environ.get('TUDOR_UPLOAD_FOLDER'),
             allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS'),
             secret_key=environ.get('TUDOR_SECRET_KEY'),
             secret_key_file=environ.get('TUDOR_SECRET_KEY_FILE'))
+
+    @staticmethod
+    def from_defaults():
+        return Config(
+            debug=DEFAULT_TUDOR_DEBUG,
+            host=DEFAULT_TUDOR_HOST,
+            port=DEFAULT_TUDOR_PORT,
+            db_uri=DEFAULT_TUDOR_DB_URI,
+            upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
+            allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+            secret_key=DEFAULT_TUDOR_SECRET_KEY)
 
     @classmethod
     def combine(cls, first, second):
@@ -88,6 +132,9 @@ class Config(object):
             port=ifn(first.PORT, second.PORT),
             db_uri=ifn(first.DB_URI, second.DB_URI),
             db_uri_file=ifn(first.DB_URI_FILE, second.DB_URI_FILE),
+            db_options=ifn(first.DB_OPTIONS, second.DB_OPTIONS),
+            db_options_file=ifn(first.DB_OPTIONS_FILE,
+                                second.DB_OPTIONS_FILE),
             upload_folder=ifn(first.UPLOAD_FOLDER, second.UPLOAD_FOLDER),
             allowed_extensions=ifn(first.ALLOWED_EXTENSIONS,
                                    second.ALLOWED_EXTENSIONS),
@@ -112,6 +159,8 @@ def get_config_from_command_line(argv, defaults=None):
     parser.add_argument('--create-db', action='store_true')
     parser.add_argument('--db-uri', action='store')
     parser.add_argument('--db-uri-file', action='store', default=None)
+    parser.add_argument('--db-options', action='store')
+    parser.add_argument('--db-options-file', action='store', default=None)
     parser.add_argument('--upload-folder', action='store')
     parser.add_argument('--allowed-extensions', action='store')
     parser.add_argument('--secret-key', action='store')
@@ -147,11 +196,13 @@ def get_config_from_command_line(argv, defaults=None):
     args = parser.parse_args(args=argv)
 
     arg_config = Config(
-        debug=args.debug,
+        debug=args.debug if args.debug else None,
         host=args.host,
         port=args.port,
         db_uri=args.db_uri,
         db_uri_file=args.db_uri_file,
+        db_options=args.db_options,
+        db_options_file=args.db_options_file,
         upload_folder=args.upload_folder,
         secret_key=args.secret_key,
         secret_key_file=args.secret_key_file,
@@ -163,10 +214,25 @@ def get_config_from_command_line(argv, defaults=None):
     return config
 
 
-def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
-                 upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
-                 secret_key=DEFAULT_TUDOR_SECRET_KEY,
-                 allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
+def split_db_options(db_options):
+    if db_options is None or db_options == '':
+        return {}
+    import re
+    rv = {}
+    for opt in re.split(r'\s+', db_options):
+        opt = opt.strip()
+        if not opt:
+            continue
+        k, v = opt.split('=', maxsplit=1)
+        rv[k.strip()] = v.strip()
+    return rv
+
+
+def generate_app(db_uri=None,
+                 db_options=None,
+                 upload_folder=None,
+                 secret_key=None,
+                 allowed_extensions=None,
                  ll=None, vl=None, pl=None, flask_configs=None,
                  disable_admin_check=False):
     app = Flask(__name__)
@@ -190,6 +256,10 @@ def generate_app(db_uri=DEFAULT_TUDOR_DB_URI,
 
     if pl is None:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+
+        opts = split_db_options(db_options)
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = opts
+
         db = SQLAlchemy(app)
         pl = SqlAlchemyPersistenceLayer(db)
     app.pl = pl
@@ -718,6 +788,24 @@ def get_db_uri(db_uri, db_uri_file):
     return db_uri
 
 
+def get_db_options(db_options, db_options_file):
+    if db_options is None and db_options_file is not None:
+        try:
+            with open(db_options_file) as f:
+                return f.read()
+        except FileNotFoundError:
+            raise ConfigError(
+                f'Could not find db options file "{db_options_file}".')
+        except PermissionError:
+            raise ConfigError(
+                f'Permission error when opening db options file '
+                f'"{db_options_file}".')
+        except Exception as e:
+            raise ConfigError(
+                f'Error opening db options file "{db_options_file}": {e}')
+    return db_options
+
+
 def get_secret_key(secret_key, secret_key_file):
     if secret_key is None and secret_key_file is not None:
         try:
@@ -742,35 +830,28 @@ def main(argv):
     arg_config = get_config_from_command_line(argv)
 
     arg_config.DB_URI = get_db_uri(arg_config.DB_URI, arg_config.DB_URI_FILE)
+    arg_config.DB_OPTIONS = get_db_options(arg_config.DB_OPTIONS,
+                                           arg_config.DB_OPTIONS_FILE)
     arg_config.SECRET_KEY = get_secret_key(arg_config.SECRET_KEY,
                                            arg_config.SECRET_KEY_FILE)
 
-    if arg_config.DEBUG is None:
-        arg_config.DEBUG = DEFAULT_TUDOR_DEBUG
-    if arg_config.HOST is None:
-        arg_config.HOST = DEFAULT_TUDOR_HOST
-    if arg_config.PORT is None:
-        arg_config.PORT = DEFAULT_TUDOR_PORT
-    if arg_config.DB_URI is None:
-        arg_config.DB_URI = DEFAULT_TUDOR_DB_URI
-    if arg_config.UPLOAD_FOLDER is None:
-        arg_config.UPLOAD_FOLDER = DEFAULT_TUDOR_UPLOAD_FOLDER
-    if arg_config.ALLOWED_EXTENSIONS is None:
-        arg_config.ALLOWED_EXTENSIONS = DEFAULT_TUDOR_ALLOWED_EXTENSIONS
-    if arg_config.SECRET_KEY is None:
-        arg_config.SECRET_KEY = DEFAULT_TUDOR_SECRET_KEY
+    arg_config = Config.combine(arg_config, Config.from_defaults())
 
     print(f'__version__: {__version__}', file=sys.stderr)
     print(f'__revision__: {__revision__}', file=sys.stderr)
     print(f'DEBUG: {arg_config.DEBUG}', file=sys.stderr)
     print(f'HOST: {arg_config.HOST}', file=sys.stderr)
     print(f'PORT: {arg_config.PORT}', file=sys.stderr)
-    print(f'DB_URI: {arg_config.DB_URI}', file=sys.stderr)
     print(f'UPLOAD_FOLDER: {arg_config.UPLOAD_FOLDER}', file=sys.stderr)
     print(f'ALLOWED_EXTENSIONS: {arg_config.ALLOWED_EXTENSIONS}',
           file=sys.stderr)
+    if arg_config.DEBUG:
+        print(f'DB_URI: {arg_config.DB_URI}', file=sys.stderr)
+        print(f'DB_OPTIONS: {arg_config.DB_OPTIONS}', file=sys.stderr)
+        print(f'SECRET_KEY: {arg_config.SECRET_KEY}', file=sys.stderr)
 
     app = generate_app(db_uri=arg_config.DB_URI,
+                       db_options=arg_config.DB_OPTIONS,
                        upload_folder=arg_config.UPLOAD_FOLDER,
                        secret_key=arg_config.SECRET_KEY,
                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)

@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line, create_user, get_db_uri, ConfigError, \
-    get_secret_key
+    get_secret_key, split_db_options, get_db_options
 
 
 class CommandLineTests(unittest.TestCase):
@@ -310,11 +310,11 @@ class ConfigFromEnvironTest(unittest.TestCase):
         if 'TUDOR_SECRET_KEY' in os.environ:
             os.environ.pop('TUDOR_SECRET_KEY')
 
-    def test_from_environ_no_envvars_returns_none_or_false(self):
+    def test_from_environ_no_envvars_returns_none(self):
         # when
         result = Config.from_environ()
         # then
-        self.assertIs(result.DEBUG, False)
+        self.assertIsNone(result.DEBUG)
         self.assertIsNone(result.HOST)
         self.assertIsNone(result.PORT)
         self.assertIsNone(result.DB_URI)
@@ -601,7 +601,7 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
                'Error opening uri file "zxcv": something'
 
     @patch('tudor.open')
-    def test_get_secret_key_uri_returns_uri(self, _open):
+    def test_get_secret_key_object_returns_object(self, _open):
         # when
         result = get_secret_key('asdf', 'zxcv')
         # then
@@ -610,7 +610,7 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         _open.assert_not_called()
 
     @patch('tudor.open')
-    def test_get_secret_key_no_uri_returns_file(self, _open):
+    def test_get_secret_key_no_object_returns_file(self, _open):
         # given
         _f = MagicMock()
         _open.return_value = _f
@@ -625,7 +625,7 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         _f.read.assert_called_once_with()
 
     @patch('tudor.open')
-    def test_get_secret_key_neither_uri_nor_file_returns_none(self, _open):
+    def test_get_secret_key_neither_object_nor_file_returns_none(self, _open):
         # when
         result = get_secret_key(None, None)
         # then
@@ -634,7 +634,7 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         _open.assert_not_called()
 
     @patch('tudor.open')
-    def test_get_secret_key_no_file_returns_uri(self, _open):
+    def test_get_secret_key_no_file_returns_object(self, _open):
         # when
         result = get_secret_key('asdf', None)
         # then
@@ -682,3 +682,121 @@ class GetConfigFromCommandLineTest(unittest.TestCase):
         # and
         assert str(exc.exception) == \
                'Error opening secret key file "zxcv": something'
+
+    @patch('tudor.open')
+    def test_get_db_options_object_returns_object(self, _open):
+        # when
+        result = get_db_options('asdf', 'zxcv')
+        # then
+        assert result == 'asdf'
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_db_options_no_object_returns_file(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.return_value = 'qwer'
+        # when
+        result = get_db_options(None, 'zxcv')
+        # then
+        assert result == 'qwer'
+        # and
+        _open.assert_called_once_with('zxcv')
+        _f.read.assert_called_once_with()
+
+    @patch('tudor.open')
+    def test_get_db_options_neither_object_nor_file_returns_none(self, _open):
+        # when
+        result = get_db_options(None, None)
+        # then
+        assert result is None
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_db_options_no_file_returns_object(self, _open):
+        # when
+        result = get_db_options('asdf', None)
+        # then
+        assert result == 'asdf'
+        # and
+        _open.assert_not_called()
+
+    @patch('tudor.open')
+    def test_get_db_options_raises_when_open_raises_fnf(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = FileNotFoundError
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_db_options(None, 'zxcv')
+        # and
+        assert str(exc.exception) == 'Could not find db options file "zxcv".'
+
+    @patch('tudor.open')
+    def test_get_db_options_raises_when_open_raises_perms(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = PermissionError
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_db_options(None, 'zxcv')
+        # and
+        assert str(exc.exception) == \
+               'Permission error when opening db options file "zxcv".'
+
+    @patch('tudor.open')
+    def test_get_db_options_raises_when_open_raises_other(self, _open):
+        # given
+        _f = MagicMock()
+        _open.return_value = _f
+        _f.__enter__.return_value = _f
+        _f.read.side_effect = Exception('something')
+        # expect
+        with self.assertRaises(ConfigError) as exc:
+            get_db_options(None, 'zxcv')
+        # and
+        assert str(exc.exception) == \
+               'Error opening db options file "zxcv": something'
+
+    def test_split_db_options_returns_dict(self):
+        # when
+        result = split_db_options('abc=123 def=ghi path=/path/to/file.crt')
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(len(result), 3)
+        self.assertIn('abc', result)
+        self.assertEqual(result['abc'], '123')
+        self.assertIn('def', result)
+        self.assertEqual(result['def'], 'ghi')
+        self.assertIn('path', result)
+        self.assertEqual(result['path'], '/path/to/file.crt')
+
+    def test_split_db_options_none_yields_empty_dict(self):
+        # when
+        result = split_db_options(None)
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result, {})
+
+
+    def test_split_db_options_empty_string_yields_empty_dict(self):
+        # when
+        result = split_db_options('')
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result, {})
+
+    def test_split_db_options_whitespace_yields_empty_dict(self):
+        # when
+        result = split_db_options('   ')
+        # then
+        self.assertIsInstance(result, dict)
+        self.assertEqual(result, {})
