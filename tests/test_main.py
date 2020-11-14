@@ -15,7 +15,7 @@ class MainFunctionTests(unittest.TestCase):
             main([])
 
             # then
-            mock_print.assert_any_call('__version__: 0.5', file=sys.stderr)
+            mock_print.assert_any_call('__version__: 0.6', file=sys.stderr)
             # mock_print.assert_any_call('__revision__: unknown', file=sys.stderr)
             mock_print.assert_any_call('DEBUG: False', file=sys.stderr)
             mock_print.assert_any_call('HOST: 127.0.0.1', file=sys.stderr)
