@@ -835,126 +835,181 @@ class LogicLayer(object):
         if 'options' not in src:
             src['options'] = []
 
-        # TODO: more fine-grained error handling, or at least error reporting
+        class DataImportError(Exception):
+            def __init__(self, message, obj):
+                if obj:
+                    message = f'{message}: {obj}'
+                super(DataImportError).__init__(message)
+                self.obj = obj
+
+        # TODO: tests
 
         try:
-            tasks_by_id = {task['id']: task for task in src['tasks']}
-            tags_by_id = {tag['id']: tag for tag in src['tags']}
-            users_by_id = {user['id']: user for user in src['users']}
+            try:
+                tasks_by_id = {task['id']: task for task in src['tasks']}
+            except Exception as e:
+                raise DataImportError('Error collecting tasks')
+            try:
+                tags_by_id = {tag['id']: tag for tag in src['tags']}
+            except Exception as e:
+                raise DataImportError('Error collecting tags')
+            try:
+                users_by_id = {user['id']: user for user in src['users']}
+            except Exception as e:
+                raise DataImportError('Error collecting users')
 
             for task in src['tasks']:
-                summary = task['summary']
-                description = task.get('description', '')
-                is_done = task.get('is_done', False)
-                is_deleted = task.get('is_deleted', False)
-                deadline = task.get('deadline', None)
-                exp_dur_min = task.get('expected_duration_minutes')
-                expected_cost = task.get('expected_cost')
-                expected_cost = money_from_str(expected_cost)
-                order_num = task.get('order_num', None)
-                t = self.pl.create_task(
-                    summary=summary, description=description,
-                    is_done=is_done, is_deleted=is_deleted,
-                    deadline=deadline,
-                    expected_duration_minutes=exp_dur_min,
-                    expected_cost=expected_cost)
-                if keep_id_numbers:
-                    t.id = task['id']
-                t.order_num = order_num
-                task['__object__'] = t
+                try:
+                    summary = task['summary']
+                    description = task.get('description', '')
+                    is_done = task.get('is_done', False)
+                    is_deleted = task.get('is_deleted', False)
+                    deadline = task.get('deadline', None)
+                    exp_dur_min = task.get('expected_duration_minutes')
+                    expected_cost = task.get('expected_cost')
+                    expected_cost = money_from_str(expected_cost)
+                    order_num = task.get('order_num', None)
+                    t = self.pl.create_task(
+                        summary=summary, description=description,
+                        is_done=is_done, is_deleted=is_deleted,
+                        deadline=deadline,
+                        expected_duration_minutes=exp_dur_min,
+                        expected_cost=expected_cost)
+                    if keep_id_numbers:
+                        t.id = task['id']
+                    t.order_num = order_num
+                    task['__object__'] = t
+                except Exception as e:
+                    raise DataImportError('Error loading task', task)
                 db_objects.append(t)
 
-            task_ids = set(task['__object__'].id for task in src['tasks'])
+            try:
+                task_ids = set(task['__object__'].id for task in src['tasks'])
+            except Exception as e:
+                raise DataImportError('Error collecting task id\'s')
             if self.pl.count_tasks(task_id_in=task_ids) > 0:
                 raise werkzeug.exceptions.Conflict(
                     "Some specified task id's already exist in the "
                     "database")
 
             for tag in src['tags']:
-                value = tag['value']
-                description = tag.get('description', '')
-                t = self.pl.create_tag(value=value,
-                                       description=description)
-                if keep_id_numbers:
-                    t.id = tag['id']
-                tag['__object__'] = t
+                try:
+                    value = tag['value']
+                    description = tag.get('description', '')
+                    t = self.pl.create_tag(value=value,
+                                           description=description)
+                    if keep_id_numbers:
+                        t.id = tag['id']
+                    tag['__object__'] = t
+                except Exception as e:
+                    raise DataImportError('Error loading tag', tag)
                 db_objects.append(t)
 
             for note in src['notes']:
-                content = note['content']
-                timestamp = note['timestamp']
-                n = self.pl.create_note(content=content,
-                                        timestamp=timestamp)
-                if keep_id_numbers:
-                    n.id = note['id']
-                note['__object__'] = n
+                try:
+                    content = note['content']
+                    timestamp = note['timestamp']
+                    n = self.pl.create_note(content=content,
+                                            timestamp=timestamp)
+                    if keep_id_numbers:
+                        n.id = note['id']
+                    note['__object__'] = n
+                except Exception as e:
+                    raise DataImportError('Error loading note', note)
                 db_objects.append(n)
 
             for attachment in src['attachments']:
-                timestamp = attachment['timestamp']
-                path = attachment['path']
-                filename = attachment['filename']
-                description = attachment['description']
-                a = self.pl.create_attachment(path=path,
-                                              description=description,
-                                              timestamp=timestamp,
-                                              filename=filename)
-                if keep_id_numbers:
-                    a.id = attachment['id']
-                attachment['__object__'] = a
+                try:
+                    timestamp = attachment['timestamp']
+                    path = attachment['path']
+                    filename = attachment['filename']
+                    description = attachment['description']
+                    a = self.pl.create_attachment(path=path,
+                                                  description=description,
+                                                  timestamp=timestamp,
+                                                  filename=filename)
+                    if keep_id_numbers:
+                        a.id = attachment['id']
+                    attachment['__object__'] = a
+                except Exception as e:
+                    raise DataImportError('Error loading attachment',
+                                          attachment)
                 db_objects.append(a)
-                # TODO: tests
 
             for user in src['users']:
-                email = user['email']
-                hashed_password = user['hashed_password']
-                is_admin = user['is_admin']
-                u = self.pl.create_user(email=email,
-                                        hashed_password=hashed_password,
-                                        is_admin=is_admin)
-                if keep_id_numbers:
-                    u.id = user['id']
-                user['__object__'] = u
+                try:
+                    email = user['email']
+                    hashed_password = user['hashed_password']
+                    is_admin = user['is_admin']
+                    u = self.pl.create_user(email=email,
+                                            hashed_password=hashed_password,
+                                            is_admin=is_admin)
+                    if keep_id_numbers:
+                        u.id = user['id']
+                    user['__object__'] = u
+                except Exception as e:
+                    raise DataImportError('Error loading user', user)
                 db_objects.append(u)
 
             for option in src['options']:
-                key = option['key']
-                value = option['value']
-                o = self.pl.create_option(key, value)
-                option['__object__'] = o
+                try:
+                    key = option['key']
+                    value = option['value']
+                    o = self.pl.create_option(key, value)
+                    option['__object__'] = o
+                except Exception as e:
+                    raise DataImportError('Error loading option', option)
                 db_objects.append(o)
 
             #########
 
             for task in src['tasks']:
-                t = task['__object__']
-                if 'tag_ids' in task:
-                    for tag_id in task['tag_ids']:
-                        tag = tags_by_id[tag_id]['__object__']
-                        t.tags.append(tag)
-                if 'user_ids' in task:
-                    for user_id in task['user_ids']:
-                        user = users_by_id[user_id]['__object__']
-                        t.users.append(user)
-                if 'parent_id' in task and task['parent_id'] is not None:
-                    t.parent = tasks_by_id[task['parent_id']]['__object__']
+                try:
+                    t = task['__object__']
+                    if 'tag_ids' in task:
+                        for tag_id in task['tag_ids']:
+                            tag = tags_by_id[tag_id]['__object__']
+                            t.tags.append(tag)
+                    if 'user_ids' in task:
+                        for user_id in task['user_ids']:
+                            user = users_by_id[user_id]['__object__']
+                            t.users.append(user)
+                    if 'parent_id' in task and task['parent_id'] is not None:
+                        t.parent = \
+                            tasks_by_id[task['parent_id']]['__object__']
+                except Exception as e:
+                    raise DataImportError('Error connecting task', task)
+
 
             for note in src['notes']:
-                task_map = tasks_by_id[note['task_id']]
-                note['__object__'].task = task_map['__object__']
+                try:
+                    task_map = tasks_by_id[note['task_id']]
+                    note['__object__'].task = task_map['__object__']
+                except Exception as e:
+                    raise DataImportError('Error connecting note', note)
 
             for attachment in src['attachments']:
-                task_map = tasks_by_id[attachment['task_id']]
-                attachment['__object__'].task = task_map['__object__']
+                try:
+                    task_map = tasks_by_id[attachment['task_id']]
+                    attachment['__object__'].task = task_map['__object__']
+                except Exception as e:
+                    raise DataImportError('Error connecting attachment',
+                                          attachment)
 
-        except werkzeug.exceptions.HTTPException:
+            for dbo in db_objects:
+                self.pl.add(dbo)
+            self.pl.commit()
+
+        except werkzeug.exceptions.HTTPException as e:
+            self._logger.error(f'Exception while importing data: {e}')
             raise
-        except:
+        except DataImportError as e:
+            self._logger.error(f'Exception while importing data: {e}')
             raise werkzeug.exceptions.BadRequest('The data was incorrect')
+        except Exception as e:
+            self._logger.error(f'Exception while importing data: {e}')
+            raise werkzeug.exceptions.InternalServerError
 
-        for dbo in db_objects:
-            self.pl.add(dbo)
-        self.pl.commit()
 
     def get_task_crud_data(self, current_user):
         return self.load_no_hierarchy(current_user, include_done=True,
