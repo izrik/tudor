@@ -841,7 +841,7 @@ class LogicLayer(object):
                     message = f'{message}: {obj}'
                 if exc:
                     message = f'{message}: {exc}'
-                super(DataImportError).__init__(message)
+                super().__init__(message)
                 self.obj = obj
                 self.exc = exc
 
