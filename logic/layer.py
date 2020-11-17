@@ -836,11 +836,14 @@ class LogicLayer(object):
             src['options'] = []
 
         class DataImportError(Exception):
-            def __init__(self, message, obj):
+            def __init__(self, message, obj=None, exc=None):
                 if obj:
                     message = f'{message}: {obj}'
+                if exc:
+                    message = f'{message}: {exc}'
                 super(DataImportError).__init__(message)
                 self.obj = obj
+                self.exc = exc
 
         # TODO: tests
 
@@ -848,15 +851,15 @@ class LogicLayer(object):
             try:
                 tasks_by_id = {task['id']: task for task in src['tasks']}
             except Exception as e:
-                raise DataImportError('Error collecting tasks')
+                raise DataImportError('Error collecting tasks', exc=e)
             try:
                 tags_by_id = {tag['id']: tag for tag in src['tags']}
             except Exception as e:
-                raise DataImportError('Error collecting tags')
+                raise DataImportError('Error collecting tags', exc=e)
             try:
                 users_by_id = {user['id']: user for user in src['users']}
             except Exception as e:
-                raise DataImportError('Error collecting users')
+                raise DataImportError('Error collecting users', exc=e)
 
             for task in src['tasks']:
                 try:
@@ -880,13 +883,13 @@ class LogicLayer(object):
                     t.order_num = order_num
                     task['__object__'] = t
                 except Exception as e:
-                    raise DataImportError('Error loading task', task)
+                    raise DataImportError('Error loading task', task, exc=e)
                 db_objects.append(t)
 
             try:
                 task_ids = set(task['__object__'].id for task in src['tasks'])
             except Exception as e:
-                raise DataImportError('Error collecting task id\'s')
+                raise DataImportError('Error collecting task id\'s', exc=e)
             if self.pl.count_tasks(task_id_in=task_ids) > 0:
                 raise werkzeug.exceptions.Conflict(
                     "Some specified task id's already exist in the "
@@ -902,7 +905,7 @@ class LogicLayer(object):
                         t.id = tag['id']
                     tag['__object__'] = t
                 except Exception as e:
-                    raise DataImportError('Error loading tag', tag)
+                    raise DataImportError('Error loading tag', tag, exc=e)
                 db_objects.append(t)
 
             for note in src['notes']:
@@ -915,7 +918,7 @@ class LogicLayer(object):
                         n.id = note['id']
                     note['__object__'] = n
                 except Exception as e:
-                    raise DataImportError('Error loading note', note)
+                    raise DataImportError('Error loading note', note, exc=e)
                 db_objects.append(n)
 
             for attachment in src['attachments']:
@@ -933,7 +936,7 @@ class LogicLayer(object):
                     attachment['__object__'] = a
                 except Exception as e:
                     raise DataImportError('Error loading attachment',
-                                          attachment)
+                                          attachment, exc=e)
                 db_objects.append(a)
 
             for user in src['users']:
@@ -948,7 +951,7 @@ class LogicLayer(object):
                         u.id = user['id']
                     user['__object__'] = u
                 except Exception as e:
-                    raise DataImportError('Error loading user', user)
+                    raise DataImportError('Error loading user', user, exc=e)
                 db_objects.append(u)
 
             for option in src['options']:
@@ -958,7 +961,7 @@ class LogicLayer(object):
                     o = self.pl.create_option(key, value)
                     option['__object__'] = o
                 except Exception as e:
-                    raise DataImportError('Error loading option', option)
+                    raise DataImportError('Error loading option', option, e)
                 db_objects.append(o)
 
             #########
@@ -978,15 +981,14 @@ class LogicLayer(object):
                         t.parent = \
                             tasks_by_id[task['parent_id']]['__object__']
                 except Exception as e:
-                    raise DataImportError('Error connecting task', task)
-
+                    raise DataImportError('Error connecting task', task, exc=e)
 
             for note in src['notes']:
                 try:
                     task_map = tasks_by_id[note['task_id']]
                     note['__object__'].task = task_map['__object__']
                 except Exception as e:
-                    raise DataImportError('Error connecting note', note)
+                    raise DataImportError('Error connecting note', note, exc=e)
 
             for attachment in src['attachments']:
                 try:
@@ -994,7 +996,7 @@ class LogicLayer(object):
                     attachment['__object__'].task = task_map['__object__']
                 except Exception as e:
                     raise DataImportError('Error connecting attachment',
-                                          attachment)
+                                          attachment, exc=e)
 
             for dbo in db_objects:
                 self.pl.add(dbo)
@@ -1009,7 +1011,6 @@ class LogicLayer(object):
         except Exception as e:
             self._logger.error(f'Exception while importing data: {e}')
             raise werkzeug.exceptions.InternalServerError
-
 
     def get_task_crud_data(self, current_user):
         return self.load_no_hierarchy(current_user, include_done=True,
