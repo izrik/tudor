@@ -487,6 +487,51 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
+    def test_do_import_data_single_attachment(self):
+        # given
+        src = {
+            "format_version": 1,
+            "tasks": [{
+                "id": 1,
+                "summary": "summary"
+            }],
+            "attachments": [{
+                "id": 2,
+                "timestamp": "2020-01-01",
+                "path": "path",
+                "filename": "filename",
+                "description": "description",
+                "task_id": 1
+            }]}
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(src)
+
+        # then
+        self.assertEqual(1, self.pl.count_tasks())
+        task = self.pl.get_task(1)
+        self.assertIsNotNone(task)
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(1, self.pl.count_attachments())
+        attachment = self.pl.get_attachment(2)
+        self.assertIsNotNone(attachment)
+        self.assertEqual(datetime(2020, 1, 1), attachment.timestamp)
+        self.assertEqual('path', attachment.path)
+        self.assertEqual('filename', attachment.filename)
+        self.assertEqual('description', attachment.description)
+        self.assertEqual([attachment], list(task.attachments))
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
     def test_do_import_data_empty_users(self):
         # given
         src = '{"format_version":1,"users":[]}'
@@ -508,6 +553,41 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_notes())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+    def test_do_import_data_single_user(self):
+        # given
+        src = {
+            "format_version": 1,
+            "users": [{
+                "id": 1,
+                "email": "name@example.com",
+                "hashed_password": "hashed_password",
+                "is_admin": False
+            }]}
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(src)
+
+        # then
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(1, self.pl.count_users())
+        user = self.pl.get_user(1)
+        self.assertIsNotNone(user)
+        self.assertEqual(user.email, 'name@example.com')
+        self.assertEqual(user.hashed_password, 'hashed_password')
+        self.assertFalse(user.is_admin)
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_empty_options(self):
@@ -532,6 +612,84 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
+
+    def test_imports_task_with_a_user(self):
+        # given
+        src = {
+            "format_version": 1,
+            "tasks": [{
+                "id": 1,
+                "summary": "summary",
+                "user_ids": [2]
+            }],
+            "users": [{
+                "id": 2,
+                "email": "email",
+                "hashed_password": "hashed_password",
+                "is_admin": False}]}
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(src)
+        self.pl.commit()
+
+        # then
+        self.assertEqual(1, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(1, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+        # and
+        task = self.pl.get_task(1)
+        self.assertIsNotNone(task)
+        user = self.pl.get_user(2)
+        self.assertIsNotNone(user)
+        self.assertEqual(1, task.id)
+        self.assertEqual('summary', task.summary)
+        self.assertEqual([user], list(task.users))
+        self.assertEqual('email', user.email)
+        self.assertEqual('hashed_password', user.hashed_password)
+        self.assertFalse(user.is_admin)
+        self.assertEqual([task], list(user.tasks))
+
+    def test_do_import_data_single_option(self):
+        # given
+        src = {
+            "format_version": 1,
+            "options": [{
+                "key": "key",
+                "value": "value"}]}
+
+        # precondition
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(0, self.pl.count_options())
+
+        # when
+        self.ll.do_import_data(src)
+
+        # then
+        self.assertEqual(0, self.pl.count_tasks())
+        self.assertEqual(0, self.pl.count_tags())
+        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_attachments())
+        self.assertEqual(0, self.pl.count_users())
+        self.assertEqual(1, self.pl.count_options())
+        option = self.pl.get_option('key')
+        self.assertIsNotNone(option)
+        self.assertEqual(option.key, 'key')
+        self.assertEqual(option.value, 'value')
 
     def test_do_import_data_no_format_version_raises(self):
         # given
@@ -705,3 +863,89 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.ll._logger.error.assert_called_once_with(
             'Exception while importing data: Error loading task: '
             '{\'id\': 123}: \'summary\'')
+
+    def test_tag_missing_value_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'tags': [
+                {'id': 123,
+                 'description': 'desc'}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error loading tag: '
+            '{\'id\': 123, \'description\': \'desc\'}: \'value\'')
+
+    def test_note_missing_content_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'notes': [
+                {'id': 123}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error loading note: '
+            '{\'id\': 123}: \'content\'')
+
+    def test_attachment_missing_timestamp_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'attachments': [
+                {'id': 123}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error loading attachment: '
+            '{\'id\': 123}: \'timestamp\'')
+
+    def test_user_missing_email_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'users': [
+                {'id': 123}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error loading user: '
+            '{\'id\': 123}: \'email\'')
+
+    def test_option_missing_key_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'options': [
+                {'value': 'abc'}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error loading option: '
+            '{\'value\': \'abc\'}: \'key\'')
