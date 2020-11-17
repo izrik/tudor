@@ -734,7 +734,7 @@ class LogicLayer(object):
         user = self.pl.get_user(user_id)
         if user is None:
             raise werkzeug.exceptions.NotFound(
-                "No user found for the id '%s'".format(user_id))
+                f"No user found for the id '{user_id}'")
         if user != current_user and not current_user.is_admin:
             raise werkzeug.exceptions.Forbidden()
 
