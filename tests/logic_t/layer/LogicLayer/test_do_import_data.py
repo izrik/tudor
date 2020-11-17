@@ -3,6 +3,7 @@
 import unittest
 from datetime import datetime
 from decimal import Decimal
+from unittest.mock import Mock
 
 from flask import json
 from werkzeug.exceptions import Conflict, BadRequest
@@ -240,7 +241,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         t0 = self.pl.create_task('pre-existing')
         self.pl.add(t0)
         self.pl.commit()
-        src = '{"format_version":1,"tasks":[{"id": ' + str(t0.id) +\
+        src = '{"format_version":1,"tasks":[{"id": ' + str(t0.id) + \
               ',"summary":"summary"}]}'
 
         # precondition
@@ -639,3 +640,68 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
+
+    def test_task_missing_id_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'tasks': [
+                {'summary': 'this is a task'}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error collecting tasks: \'id\'')
+
+    def test_tag_missing_id_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'tags': [
+                {'value': 'this is a tag'}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error collecting tags: \'id\'')
+
+    def test_user_missing_id_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'users': [
+                {'email': 'name@example.com'}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error collecting users: \'id\'')
+
+    def test_task_missing_summary_raises(self):
+        # given
+        src = {
+            "format_version": 1,
+            'tasks': [
+                {'id': 123}]}
+        self.ll._logger = Mock()
+        # expect
+        with self.assertRaises(BadRequest) as e:
+            self.ll.do_import_data(src)
+        # and
+        self.assertEqual(e.exception.description, 'The data was incorrect')
+        # and
+        self.ll._logger.error.assert_called_once_with(
+            'Exception while importing data: Error loading task: '
+            '{\'id\': 123}: \'summary\'')
