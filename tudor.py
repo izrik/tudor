@@ -9,7 +9,7 @@ from os import environ
 
 import markdown
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from flask import Markup
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user
@@ -888,10 +888,13 @@ def main(argv):
             types_to_export = ('tasks', 'tags', 'notes', 'attachments',
                                'users', 'options')
             result = app.ll.do_export_data(types_to_export)
-            print(jsonify(result))
+            import json
+            print(json.dumps(result))
     elif args.import_db:
         with app.app_context():
-            app.ll.do_import_data(sys.stdin.read())
+            import json
+            data = json.load(sys.stdin)
+            app.ll.do_import_data(data)
             print('Finished')
     else:
         app.run(debug=arg_config.DEBUG, host=arg_config.HOST,
