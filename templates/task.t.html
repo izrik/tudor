@@ -226,7 +226,9 @@
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>Authorized Users</h2></div>
             <div class="info_panel_value">
+                <ul class="task_list_group">
                 {% for user in task.users %}
+                    <li class="task_list_item">
                     <a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.email }}</a>
                     {% if can_edit %}
                     {% if task.users.__len__() > 1 %}
@@ -235,99 +237,129 @@
                     </a>
                     {% endif %}
                     {% endif %}
+                    </li>
                 {% endfor %}
                 {% if can_edit %}
+                <li class="task_list_item">
                 <form action="{{ url_for('authorize_user_for_task', task_id=task.id) }}" method="post">
                     <input type="text" name="email" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                </li>
+                <li class="task_list_item">
                 <a href="{{ url_for('pick_user_to_authorize', task_id=task.id) }}">Pick a user</a>
+                </li>
                 {% endif %}
+                </ul>
             </div>
         </div>
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>Depends on</h2></div>
             <div class="info_panel_value">
+                <ul class="task_list_group">
                 {% for dependee in task.dependees %}
+                <li class="task_list_item">
                     <a href="{{ url_for('view_task', id=dependee.id) }}" {{ dependee.get_css_class_attr()|safe }}>{{ dependee.summary }} ({{ dependee.id }})</a>
                     {% if can_edit %}
                     <a href="{{ url_for('remove_dependee_from_task', task_id=task.id, dependee_id=dependee.id) }}">
                         <span class="glyphicon glyphicon-remove text-danger"></span>
                     </a>
                     {% endif %}
+                </li>
                 {% endfor %}
                 {% if can_edit %}
+                <li class="task_list_item">
                 <form action="{{ url_for('add_dependee_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="dependee_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                </li>
                 <!--<a href="{ { url_for('pick_dependee_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
+                </ul>
             </div>
         </div>
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>Is depended on by</h2></div>
             <div class="info_panel_value">
+                <ul class="task_list_group">
                 {% for dependant in task.dependants %}
+                <li class="task_list_item">
                     <a href="{{ url_for('view_task', id=dependant.id) }}" {{ dependant.get_css_class_attr()|safe }}>{{ dependant.summary }} ({{ dependant.id }})</a>
                     {% if can_edit %}
                     <a href="{{ url_for('remove_dependant_from_task', task_id=task.id, dependant_id=dependant.id) }}">
                         <span class="glyphicon glyphicon-remove text-danger"></span>
                     </a>
                     {% endif %}
+                </li>
                 {% endfor %}
                 {% if can_edit %}
+                <li class="task_list_item">
                 <form action="{{ url_for('add_dependant_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="dependant_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                </li>
                 <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
+                </ul>
             </div>
         </div>
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>Is prioritized before</h2></div>
             <div class="info_panel_value">
+                <ul class="task_list_group">
                 {% for ptask in task.prioritize_after %}
+                <li class="task_list_item">
                     <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
                     {% if can_edit %}
                     <a href="{{ url_for('remove_prioritize_after_from_task', task_id=task.id, prioritize_after_id=ptask.id) }}">
                         <span class="glyphicon glyphicon-remove text-danger"></span>
                     </a>
                     {% endif %}
+                </li>
                 {% endfor %}
                 {% if can_edit %}
+                <li class="task_list_item">
                 <form action="{{ url_for('add_prioritize_after_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="prioritize_after_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                </li>
                 <!--<a href="{ { url_for('pick_prioritize_after_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
+                </ul>
             </div>
         </div>
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>Is prioritized after</h2></div>
             <div class="info_panel_value">
+                <ul class="task_list_group">
                 {% for ptask in task.prioritize_before %}
+                <li class="task_list_item">
                     <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
                     {% if can_edit %}
                     <a href="{{ url_for('remove_prioritize_before_from_task', task_id=task.id, prioritize_before_id=ptask.id) }}">
                         <span class="glyphicon glyphicon-remove text-danger"></span>
                     </a>
                     {% endif %}
+                </li>
                 {% endfor %}
                 {% if can_edit %}
+                <li class="task_list_item">
                 <form action="{{ url_for('add_prioritize_before_to_task', task_id=task.id) }}" method="post">
                     <input type="text" name="prioritize_before_id" />
                     <input type="hidden" name="next_url"
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
+                </li>
                 <!--<a href="{ { url_for('pick_prioritize_before_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
+                </ul>
             </div>
         </div>
 </div>
