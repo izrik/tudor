@@ -95,6 +95,19 @@
 {% block content %}
 <div class="container">
 <div>
+
+    <ol class="breadcrumb">
+    {% macro breadcrumb_parent(t) -%}
+        {% if t.parent != None %}
+            {{  breadcrumb_parent(t.parent) }}
+            <li><a class="" href="{{ url_for('view_task', id=t.parent.id) }}">{{ t.parent.summary }}</a></li>
+        {% endif %}
+    {%- endmacro %}
+        {{  breadcrumb_parent(task) }}
+        <li class="active">{{ task.summary }}</li>
+    </ol>
+    <p></p>
+
 <div class="panel_container">
 <div class="info_panel">
 
