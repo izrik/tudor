@@ -857,6 +857,7 @@ def get_secret_key(secret_key, secret_key_file):
 
 
 def main(argv):
+    import os
     arg_config = get_config_from_command_line(argv)
 
     arg_config.DB_URI = get_db_uri(arg_config.DB_URI, arg_config.DB_URI_FILE)
@@ -869,6 +870,7 @@ def main(argv):
 
     print(f'__version__: {__version__}', file=sys.stderr)
     print(f'__revision__: {__revision__}', file=sys.stderr)
+    print(f'getcwd(): {os.getcwd()}', file=sys.stderr)
     print(f'DEBUG: {arg_config.DEBUG}', file=sys.stderr)
     print(f'HOST: {arg_config.HOST}', file=sys.stderr)
     print(f'PORT: {arg_config.PORT}', file=sys.stderr)
