@@ -89,6 +89,14 @@
     width: calc(-12px + min(798px, 70%))
 }
 
+.task_list_group {
+    padding-left: 0px;
+}
+
+.task_list_item {
+    display: block;
+}
+
 </style>
 
 {% endblock %}
@@ -194,13 +202,16 @@
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>Tags</h2></div>
             <div class="info_panel_value">
+                <ul class="task_list_group">
                 {% for tag in task.tags %}
+                    <li class="task_list_item">
                     <a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a>
                     {% if can_edit %}
                     <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=tag.id) }}">
                         <span class="glyphicon glyphicon-remove text-danger"></span>
                     </a>
                     {% endif %}
+                    </li>
                 {% endfor %}
                 {% if can_edit %}
                 <form action="{{ url_for('add_tag_to_task', id=task.id) }}" method="post">
@@ -209,6 +220,7 @@
                            value="{{ url_for('view_task', id=task.id) }}" />
                 </form>
                 {% endif %}
+                </ul>
             </div>
         </div>
         <div class="info_panel_row">
