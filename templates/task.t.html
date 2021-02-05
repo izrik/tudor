@@ -2,6 +2,27 @@
 {% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ task.summary if task.summary != None }} - {{ super() }}{% endblock %}
 {% block header_sub_text %}{{ task.summary if task.summary != None }}{% endblock %}
+{% block link_css %}
+
+<style>
+
+.task_description
+{
+    border-color: #000000;
+    padding: 10px; /* csslint allow: box-model */
+    width: 870px; /* csslint allow: box-model */
+    background-color: #9C1A1C;
+}
+
+.task_info {
+    max-width: 1em;
+    background-color: #86989B;
+    {#display: block;#}
+}
+
+</style>
+
+{% endblock %}
 {% block content %}
 <div class="container">
 <div>
@@ -10,10 +31,11 @@
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
     {% endif %}
     <p></p>
+<table>
+<tr><td style="vertical-align: top;">
     <table class="task_info">
         <tr><td>ID</td><td>{{ task.id }}</td></tr>
         <tr><td>Summary</td><td{{ task.get_css_class_attr()|safe }}>{{ task.summary|d }}</td></tr>
-        <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
         <tr><td>Deadline</td><td>{{ task.deadline|d }}</td></tr>
         <tr>
             <td>Done?</td>
@@ -196,6 +218,9 @@
             </td>
         </tr>
     </table>
+</td>
+    <td style="vertical-align: top;"><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td>
+</tr></table>
     <p></p>
     {% if can_edit %}
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
