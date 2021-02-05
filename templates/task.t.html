@@ -95,13 +95,14 @@
 {% block content %}
 <div class="container">
 <div>
-    {% set can_edit = ops.user_can_edit_task(task, current_user) %}
-    {% if can_edit %}
-    <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
-    {% endif %}
-    <p></p>
 <div class="panel_container">
 <div class="info_panel">
+
+        {% set can_edit = ops.user_can_edit_task(task, current_user) %}
+        {% if can_edit %}
+        <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
+        {% endif %}
+        <p></p>
 
         <div class="info_panel_row">
             <div class="info_panel_label"><h2>ID</h2></div>
