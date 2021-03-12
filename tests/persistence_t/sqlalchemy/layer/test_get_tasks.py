@@ -716,25 +716,52 @@ class SearchTermTest(PersistenceLayerTestBase):
         self.t2 = self.pl.create_task('t2', description='abc')
         self.t3 = self.pl.create_task('t3 abc', description='qwerty')
         self.t4 = self.pl.create_task('t4 abc', description='abc')
+        self.t5 = self.pl.create_task('t5', description='Qwerty')
+        self.t6 = self.pl.create_task('t6', description='Abc')
+        self.t7 = self.pl.create_task('t7 abc', description='Qwerty')
+        self.t8 = self.pl.create_task('t8 abc', description='Abc')
+        self.t9 = self.pl.create_task('t9 Abc', description='Qwerty')
+        self.t10 = self.pl.create_task('t10 Abc', description='Abc')
 
         self.pl.add(self.t1)
         self.pl.add(self.t2)
         self.pl.add(self.t3)
         self.pl.add(self.t4)
+        self.pl.add(self.t5)
+        self.pl.add(self.t6)
+        self.pl.add(self.t7)
+        self.pl.add(self.t8)
+        self.pl.add(self.t9)
+        self.pl.add(self.t10)
         self.pl.commit()
 
-    def test_specifying_search_term_yiels_all_tasks_that_match(self):
+    def test_specifying_search_term_yields_all_tasks_that_match(self):
         # when
         results = self.pl.get_tasks(summary_description_search_term='abc')
         # then
-        self.assertEqual({self.t2, self.t3, self.t4}, set(results))
+        self.assertEqual(
+            {self.t2, self.t3, self.t4, self.t6, self.t7, self.t8, self.t9,
+             self.t10},
+            set(results))
 
     def test_partial_word_matches(self):
         # when
         results = self.pl.get_tasks(summary_description_search_term='wer')
         # then
         results = list(results)
-        self.assertEqual({self.t1, self.t3}, set(results))
+        self.assertEqual(
+            {self.t1, self.t3, self.t5, self.t7, self.t9},
+            set(results))
+
+    def test_case_does_not_matter(self):
+        # when
+        results = self.pl.get_tasks(summary_description_search_term='ABC')
+        # then
+        self.assertEqual(
+            {self.t2, self.t3, self.t4, self.t6, self.t7, self.t8, self.t9,
+             self.t10},
+            set(results))
+
 
 
 class OrderNumberGreaterLessEqualTest(PersistenceLayerTestBase):
