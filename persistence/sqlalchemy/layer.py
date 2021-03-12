@@ -243,8 +243,8 @@ class SqlAlchemyPersistenceLayer(object):
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
             query = query.filter(
-                self.DbTask.summary.like(like_term) |
-                self.DbTask.description.like(like_term))
+                self.DbTask.summary.ilike(like_term) |
+                self.DbTask.description.ilike(like_term))
 
         if order_num_greq_than is not self.UNSPECIFIED:
             query = query.filter(self.DbTask.order_num >= order_num_greq_than)
