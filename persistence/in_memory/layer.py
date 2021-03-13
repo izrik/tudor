@@ -121,8 +121,10 @@ class InMemoryPersistenceLayer(object):
 
         if summary_description_search_term is not self.UNSPECIFIED:
             term = summary_description_search_term
+            term_lower = term.casefold()
             query = (_ for _ in query if
-                     term in _.summary or term in _.description)
+                     term_lower in _.summary.casefold() or
+                     term_lower in _.description.casefold())
 
         if order_num_greq_than is not self.UNSPECIFIED:
             query = (_ for _ in query if _.order_num >= order_num_greq_than)
