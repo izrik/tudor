@@ -764,22 +764,98 @@ class LogicLayer(object):
         self.pl.commit()
         return option
 
-    def do_reset_order_nums(self, current_user):
-        tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
-                            include_done=True, include_deleted=True)
-        tasks_h = self.sort_by_hierarchy(tasks_h)
+    def do_reset_order_nums(self, current_user, include_done_deleted=False):
 
-        k = len(tasks_h) + 1
-        for task in tasks_h:
-            if task is None:
-                continue
-            task.order_num = 2 * k
-            self.pl.add(task)
-            k -= 1
+        kwargs = {}
+        if not current_user.is_admin:
+            kwargs['is_public_or_users_contains'] = current_user
+        if not include_done_deleted:
+            # exclude from consideration tasks that are done or deleted or
+            # both (unless explicitly told otherwise)
+            kwargs['is_done'] = False
+            kwargs['is_deleted'] = False
+
+        tasks_to_order = list(self.pl.get_tasks(**kwargs))
+
+        # construct links
+        links = {task: [] for task in tasks_to_order}
+        # links[t] gives a list of all tasks that should be done before t
+
+        for parent in tasks_to_order:
+            # add a link from each parent task to each of its children
+            links[parent].extend(parent.children)
+            # add a link from each child task to its previous sibling, based on
+            # order_num
+            sorted_children = sorted(parent.children, key=lambda c: c.order_num,
+                                     reverse=True)
+            for i, child in enumerate(sorted_children):
+                if i == 0:
+                    continue
+                links[child].append(sorted_children[i - 1])
+
+        for task in tasks_to_order:
+            # add a link from a task to each of its dependees
+            links[task].extend(task.dependees)
+            # add a link from a task to each of its prioritize_before's
+            links[task].extend(task.prioritize_before)
+
+        deadlined_roots = sorted(
+            (t for t in tasks_to_order
+             if t.parent is None and len(t.dependants) == 0 and
+             len(t.prioritize_after) == 0 and t.deadline is not None),
+            key=lambda t: t.deadline)
+
+        non_deadlined_roots = sorted(
+            (t for t in tasks_to_order
+             if t.parent is None and len(t.dependants) == 0 and
+             len(t.prioritize_after) == 0 and t.deadline is None),
+            key=lambda t: t.order_num, reverse=True)
+
+        if deadlined_roots:
+            # add a link from each non-deadline task to the last deadline task
+            last = deadlined_roots[-1]
+            for task in non_deadlined_roots:
+                links[task].append(last)
+
+            # add a link from each deadlined task to the next deadline task
+            # before it
+            for i, task in enumerate(deadlined_roots):
+                if i == 0:
+                    continue
+                links[task].append(deadlined_roots[i - 1])
+
+        # TODO: double-check for cycles
+
+        # preserve existing order as much as possible
+        for _, tasks in links.iteritems():
+            tasks.sort(key=lambda t: t.order_num, reverse=True)
+
+        # topological sort via DFS of roots
+        visited = set()
+
+        def depth_first_search(task):
+            if task in visited:
+                return
+            visited.add(task)
+            for link in links[task]:
+                for t in depth_first_search(link):
+                    yield t
+            yield task
+
+        ordered_roots = deadlined_roots + non_deadlined_roots
+        order = []
+        for root in ordered_roots:
+            order.extend(depth_first_search(root))
+
+        # set new order numbers
+        k = len(order) * 2 + 2
+        for task in order:
+            task.order_num = k
+            k -= 2
 
         self.pl.commit()
 
-        return tasks_h
+        return order
 
     def do_export_data(self, types_to_export):
         results = {'format_version': 1}
