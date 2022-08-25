@@ -7,7 +7,7 @@ from numbers import Number
 from dateutil.parser import parse as dparse
 import werkzeug.exceptions
 from werkzeug.exceptions import Forbidden
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 import logging_util
 from conversions import int_from_str, money_from_str
