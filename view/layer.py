@@ -387,10 +387,18 @@ class ViewLayer(object):
     def attachment(self, request, current_user, attachment_id, name):
         att = self.ll.pl_get_attachment(attachment_id)
         if att is None:
+            self._logger.error(
+                f'Error getting attachment "{attachment_id}" from the PL.')
             raise NotFound(
                 "No attachment found for the id '{}'".format(attachment_id))
 
-        return self.send_from_directory(self.ll.upload_folder, att.path)
+        try:
+            return self.send_from_directory(self.ll.upload_folder, att.path)
+        except Exception as e:
+            self._logger.error(
+                f'Error while sending attachment from directory, '
+                f'{attachment_id}, {att.path}, {self.ll.upload_folder}: {e}')
+            raise
 
     def task_up(self, request, current_user, task_id):
         show_deleted = request.cookies.get('show_deleted')
