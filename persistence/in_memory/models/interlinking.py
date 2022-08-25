@@ -1,10 +1,10 @@
-import collections
+import collections.abc
 
 import logging_util
 from persistence.in_memory.models.changeable import Changeable
 
 
-class InterlinkedSet(collections.MutableSet):
+class InterlinkedSet(collections.abc.MutableSet):
     _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedSet')
 
     __change_field__ = None

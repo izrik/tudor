@@ -1,4 +1,4 @@
-FROM python:3.7.4-alpine3.10
+FROM python:3.10.6-alpine3.16
 
 RUN mkdir -p /opt/tudor
 
