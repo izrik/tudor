@@ -7,13 +7,13 @@ import traceback
 from functools import wraps
 from os import environ
 
-import markdown
 from datetime import datetime
 from flask import Flask, request
 from flask import Markup
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
+import pycmarkgfm
 
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
@@ -578,7 +578,7 @@ def generate_app(db_uri=None,
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
-        output = markdown.markdown(s, extensions=['gfm'])
+        output = pycmarkgfm.gfm_to_html(s)
         moutput = Markup(output)
         return moutput
 
