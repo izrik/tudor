@@ -33,6 +33,7 @@
 
 .info_panel {
     width: calc(12px + min(450px, 30%));
+    background-color: #1c9c1a;
 }
 
 .info_panel_row {
@@ -97,6 +98,9 @@
     display: block;
 }
 
+.note_panel {
+    background-color: #1a1c9c;
+}
 </style>
 
 {% endblock %}
@@ -444,7 +448,7 @@
     </p>
     <p><a class="btn btn-default" href="{{ url_for('view_task_hierarchy', id=task.id) }}">hierarchy view</a></p>
 </div>
-<div>
+<div class="note_panel">
     <h4>Notes</h4>
     <table class="task_notes">
         <thead>
