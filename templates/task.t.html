@@ -114,7 +114,8 @@
         {{  breadcrumb_parent(task) }}
         <li class="active">{{ task.summary }}</li>
     </ol>
-    <p></p>
+    <h1 class="info_panel_value {{ task.get_css_class()|safe }}">{{ task.summary|d }}</h1>
+    <p><br/></p>
 
 <div class="panel_container">
 <div class="info_panel">
