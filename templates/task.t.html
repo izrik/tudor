@@ -363,6 +363,29 @@
                 </ul>
             </div>
         </div>
+        <div class="info_panel_row">
+            <div class="info_panel_label"><h2>Attachments</h2></div>
+            <div class="list-group">
+                {% for att in task.attachments %}
+                <a class="list-group-item" href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">
+                    <h5><span class="glyphicon glyphicon-file"></span>&nbsp;{{ att.filename if att.filename != None }} ({{ att.id }})</h5>
+                    <h6>{{ att.timestamp }}</h6>
+                    <p>{{ att.description }}</p>
+                </a>
+                {% endfor %}
+                <div class="list-group-item">
+                    <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <p style="margin-top: 15px"><input type="file" name="filename" /></p>
+                        <p>
+                            <input type="text" name="description" maxlength="100" />
+                            <input type="submit" value="Attach" />
+                        </p>
+                    </form>
+                </div>
+            </div>
+
+        </div>
     <p></p>
     {% if can_edit %}
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
@@ -454,42 +477,6 @@
     </table>
 
 </div>
-<div>
-    <h4>Attachments</h4>
-    <table class="task_attachments">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Timestamp</th>
-            <th>Filename</th>
-            <th>Description</th>
-        </tr>
-        </thead>
-        {% for att in task.attachments %}
-        <tr>
-            <td>{{ att.id }}</td>
-            <td>{{ att.timestamp }}</td>
-            <td><a href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">{{ att.filename if att.filename != None }}</a></td>
-            <td>{{ att.description }}</td>
-        </tr>
-        {% endfor %}
-        {% if can_edit %}
-        <tr>
-            <td></td>
-            <td></td>
-            <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="task_id" value="{{ task.id }}">
-                <td>
-                    <input type="file" name="filename" />
-                </td>
-                <td>
-                    <input type="text" name="description" maxlength="100" />
-                    <input type="submit" value="Attach" />
-                </td>
-            </form>
-        </tr>
-        {% endif %}
-    </table>
-</div>
+
 </div>
 {% endblock %}
