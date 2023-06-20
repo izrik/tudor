@@ -392,13 +392,8 @@
     <p></p>
     <a class="btn btn-danger btn-xs" href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a>
     {% endif %}
-</div>
-<div class="task_body_panel">
-    <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
-</div>
-</div>
-</div>
-<div>
+
+
     <h4>Child Tasks</h4>
     {% if show_hierarchy %}
         {{ render_task_table(descendants, task, cycle,
@@ -426,6 +421,11 @@
     <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
     {% endif %}
 
+</div>
+<div class="task_body_panel">
+    <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
+</div>
+</div>
 </div>
 <div>
     <p>
