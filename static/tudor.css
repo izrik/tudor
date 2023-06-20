@@ -28,6 +28,9 @@ thead {
     border: 1px solid #e9e9e9;
 }
 
+.task_notes {
+    width: 100%;
+}
 .task_notes td {
     border: 1px solid #e9e9e9;
 }
