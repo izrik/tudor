@@ -8,7 +8,7 @@
                 show_done_links=True, show_delete_links=True,
                 show_new_task_form=False, new_task_parent=None,
                 indent=True) -%}
-    <table class="task_children">
+    <table class="task_children col-md-12">
         {% set odd_even = cycle(['odd', 'even']).__next__ %}
         <thead>
         <tr>
