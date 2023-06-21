@@ -19,19 +19,10 @@
     {#display: block;#}
 }
 
-.panel_container {
-    flex-wrap: nowrap;
-    height: 100%;
-    -moz-box-align: initial;
-    align-items: initial;
-
-    display: flex;
-    max-width: 100%;
-    position: relative;
+.top_panel {
 }
 
 .info_panel {
-    width: calc(12px + min(450px, 30%));
     background-color: #f5f5f5;
     padding: 10px;
     border: solid 1px #cccccc;
@@ -89,7 +80,6 @@
 }
 
 .task_body_panel {
-    width: calc(-12px + min(798px, 70%))
 }
 
 .task_list_group {
@@ -108,8 +98,7 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-<div>
-
+<div class="top_panel">
     <ol class="breadcrumb">
     {% macro breadcrumb_parent(t) -%}
         {% if t.parent != None %}
@@ -122,9 +111,8 @@
     </ol>
     <h1 class="info_panel_value {{ task.get_css_class()|safe }}">{{ task.summary|d }}</h1>
     <p><br/></p>
-
-<div class="panel_container">
-<div class="info_panel">
+</div>
+<div class="info_panel col-md-4">
 
         {% set can_edit = ops.user_can_edit_task(task, current_user) %}
         {% if can_edit %}
@@ -444,12 +432,10 @@
     <p><a class="btn btn-default" href="{{ url_for('view_task_hierarchy', id=task.id) }}">hierarchy view</a></p>
 
 </div>
-<div class="task_body_panel">
+<div class="task_body_panel col-md-8">
     <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
 </div>
-</div>
-</div>
-<div class="note_panel">
+<div class="note_panel col-md-12">
     <h4>Notes</h4>
     <table class="task_notes">
         <thead>
