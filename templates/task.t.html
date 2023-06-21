@@ -90,6 +90,9 @@
     display: block;
 }
 
+.child_task_section {
+}
+
 .note_panel {
     padding: 10px;
 }
@@ -97,6 +100,9 @@
 
 {% endblock %}
 {% block content %}
+
+{% set can_edit = ops.user_can_edit_task(task, current_user) %}
+
 <div class="container">
 <div class="top_panel">
     <ol class="breadcrumb">
@@ -112,9 +118,47 @@
     <h1 class="info_panel_value {{ task.get_css_class()|safe }}">{{ task.summary|d }}</h1>
     <p><br/></p>
 </div>
+
+<div class="task_body_panel col-md-8">
+    <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
+
+    <div class="child_task_section">
+    <hr/>
+    {%  if (show_hierarchy and descendants) or
+            (not show_hierarchy and pager.items) %}
+    <h4>Child Tasks</h4>
+    {% if show_hierarchy %}
+        {{ render_task_table(descendants, task, cycle,
+            page_url=url_for('view_task', id=task.id),
+            child_task_view='view_task',
+            show_move_links=True,
+            show_new_task_form=False, new_task_parent=task) }}
+    {% else %}
+        {% if pager.pages > 1 %}
+            {% include 'page_links.fragment.html' %}
+        {% endif %}
+
+        {{ render_task_table(pager.items, task, cycle,
+            page_url=url_for('view_task', id=task.id),
+            child_task_view='view_task',
+            show_move_links=True,
+            show_new_task_form=False, new_task_parent=task, show_order_num=True) }}
+
+        {% if pager.pages > 1 %}
+            {% include 'page_links.fragment.html' %}
+        {% endif %}
+    {% endif %} {# show_hierarchy #}
+    {% endif %}  {# descendants or pager.items #}
+
+        {% if can_edit %}
+        <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
+        {% endif %}
+    </div>
+
+</div>
+
 <div class="info_panel col-md-4">
 
-        {% set can_edit = ops.user_can_edit_task(task, current_user) %}
         {% if can_edit %}
         <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
         {% endif %}
@@ -387,34 +431,6 @@
     <a class="btn btn-danger btn-xs" href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a>
     {% endif %}
 
-
-    <h4>Child Tasks</h4>
-    {% if show_hierarchy %}
-        {{ render_task_table(descendants, task, cycle,
-            page_url=url_for('view_task', id=task.id),
-            child_task_view='view_task',
-            show_move_links=True,
-            show_new_task_form=False, new_task_parent=task) }}
-    {% else %}
-        {% if pager.pages > 1 %}
-            {% include 'page_links.fragment.html' %}
-        {% endif %}
-
-        {{ render_task_table(pager.items, task, cycle,
-            page_url=url_for('view_task', id=task.id),
-            child_task_view='view_task',
-            show_move_links=True,
-            show_new_task_form=False, new_task_parent=task, show_order_num=True) }}
-
-        {% if pager.pages > 1 %}
-            {% include 'page_links.fragment.html' %}
-        {% endif %}
-    {% endif %}
-
-    {% if can_edit %}
-    <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
-    {% endif %}
-
     <p>
         {%- if show_deleted %}
         <a href="{{ url_for('show_hide_deleted', show_deleted=0, next=url_for('view_task', id=task.id)) }}">hide deleted</a>
@@ -432,9 +448,7 @@
     <p><a class="btn btn-default" href="{{ url_for('view_task_hierarchy', id=task.id) }}">hierarchy view</a></p>
 
 </div>
-<div class="task_body_panel col-md-8">
-    <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
-</div>
+
 <div class="note_panel col-md-12">
     <h4>Notes</h4>
     <table class="task_notes">
