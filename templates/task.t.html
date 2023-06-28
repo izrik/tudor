@@ -40,16 +40,6 @@
 }
 
 .info_panel_label {
-
-    position: relative;
-    -moz-box-flex: 1;
-    flex-grow: 1;
-    box-sizing: border-box;
-    padding-right: 24px;
-    min-width: 90px;
-    width: 33.33%;
-    padding-top: 8px;
-    max-width: 120px;
     line-height: 1;
 
     {#background-color: #3A7734;#}
@@ -70,13 +60,6 @@
 
 .info_panel_value {
     {#background-color: #86989B;#}
-
-    -moz-box-flex: 1;
-    flex-grow: 1;
-    width: 66.67%;
-    box-sizing: border-box;
-    margin-top: 2px;
-    margin-bottom: 2px;
 }
 
 .task_body_panel {
@@ -197,20 +180,20 @@
         <p></p>
 
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>ID</h2></div>
-            <div class="info_panel_value">{{ task.id }}</div>
+            <div class="info_panel_label col-xs-4"><h2>ID</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.id }}</div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Summary</h2></div>
-            <div class="info_panel_value {{ task.get_css_class()|safe }}">{{ task.summary|d }}</div>
+            <div class="info_panel_label col-xs-4"><h2>Summary</h2></div>
+            <div class="info_panel_value col-xs-8 {{ task.get_css_class()|safe }}">{{ task.summary|d }}</div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Deadline</h2></div>
-            <div class="info_panel_value">{{ task.deadline|d }}</div>
+            <div class="info_panel_label col-xs-4"><h2>Deadline</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.deadline|d }}</div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Done?</h2></div>
-            <div class="info_panel_value">{{ task.is_done }}
+            <div class="info_panel_label col-xs-4"><h2>Done?</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.is_done }}
                 {% if can_edit %}
                 <small>
                     {% if task.is_done %}
@@ -223,8 +206,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Deleted?</h2></div>
-            <div class="info_panel_value">{{ task.is_deleted }}
+            <div class="info_panel_label col-xs-4"><h2>Deleted?</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.is_deleted }}
                 {% if can_edit %}
                 <small>
                     {% if task.is_deleted %}
@@ -237,20 +220,20 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Order #</h2></div>
-            <div class="info_panel_value">{{ task.order_num if task.order_num != None }}</div>
+            <div class="info_panel_label col-xs-4"><h2>Order #</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.order_num if task.order_num != None }}</div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Expected duration</h2></div>
-            <div class="info_panel_value">{{ task.get_expected_duration_for_viewing() }}</div>
+            <div class="info_panel_label col-xs-4"><h2>Expected duration</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.get_expected_duration_for_viewing() }}</div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Expected cost</h2></div>
-            <div class="info_panel_value">${{ task.get_expected_cost_for_viewing() }}</div>
+            <div class="info_panel_label col-xs-4"><h2>Expected cost</h2></div>
+            <div class="info_panel_value col-xs-8">${{ task.get_expected_cost_for_viewing() }}</div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Parent Task</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Parent Task</h2></div>
+            <div class="info_panel_value col-xs-8">
                 {% if task.parent_id != None %}
                 <a href="{{ url_for('view_task', id=task.parent_id) }}" {{ task.parent.get_css_class_attr()|safe }}>{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
                 {% else %}
@@ -259,8 +242,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Public?</h2></div>
-            <div class="info_panel_value">{{ task.is_public }}
+            <div class="info_panel_label col-xs-4"><h2>Public?</h2></div>
+            <div class="info_panel_value col-xs-8">{{ task.is_public }}
                 <!--<small>-->
                     <!--{ % if task.is_public %}-->
                         <!--<a href="{ { url_for('task_make_private', id=task.id, next=url_for('view_task', id=task.id)) }}">(make private)</a>-->
@@ -271,8 +254,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Tags</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Tags</h2></div>
+            <div class="info_panel_value col-xs-8">
                 <ul class="task_list_group">
                 {% for tag in task.tags %}
                     <li class="task_list_item">
@@ -295,8 +278,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Authorized Users</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Authorized Users</h2></div>
+            <div class="info_panel_value col-xs-8">
                 <ul class="task_list_group">
                 {% for user in task.users %}
                     <li class="task_list_item">
@@ -326,8 +309,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Depends on</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Depends on</h2></div>
+            <div class="info_panel_value col-xs-8">
                 <ul class="task_list_group">
                 {% for dependee in task.dependees %}
                 <li class="task_list_item">
@@ -353,8 +336,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Is depended on by</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Is depended on by</h2></div>
+            <div class="info_panel_value col-xs-8">
                 <ul class="task_list_group">
                 {% for dependant in task.dependants %}
                 <li class="task_list_item">
@@ -380,8 +363,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Is prioritized before</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Is prioritized before</h2></div>
+            <div class="info_panel_value col-xs-8">
                 <ul class="task_list_group">
                 {% for ptask in task.prioritize_after %}
                 <li class="task_list_item">
@@ -407,8 +390,8 @@
             </div>
         </div>
         <div class="info_panel_row">
-            <div class="info_panel_label"><h2>Is prioritized after</h2></div>
-            <div class="info_panel_value">
+            <div class="info_panel_label col-xs-4"><h2>Is prioritized after</h2></div>
+            <div class="info_panel_value col-xs-8">
                 <ul class="task_list_group">
                 {% for ptask in task.prioritize_before %}
                 <li class="task_list_item">
