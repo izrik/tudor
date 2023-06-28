@@ -125,6 +125,10 @@
 <div class="task_body_panel col-md-8">
     <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
 
+    {% if can_edit %}
+    <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
+    {% endif %}
+
     <div class="attachment_section">
     {%  if task.attachments %}
         <h4>Attachments</h4>
