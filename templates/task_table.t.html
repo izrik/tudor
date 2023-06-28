@@ -59,7 +59,7 @@
                         else child.depth)
                             if indent
                             else 0 %}
-            <td style="padding-left: {{depth*1.5}}em" {{ child.get_css_class_attr()|safe }}>
+            <td class="task_table_summary {{ child.get_css_class()|safe }}">
                 <a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.summary }}</a>
             </td>
             {% if show_deadline %}

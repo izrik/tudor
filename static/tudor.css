@@ -16,6 +16,10 @@ thead {
     background-color: #d0d0d0;
 }
 
+.task_table_summary {
+    /*padding-left: { {depth*1.5} }em*/
+}
+
 .tasks .odd, .task_children .odd, tr.odd {
     background-color: #f0f0f0;
 }
