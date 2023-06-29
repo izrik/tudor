@@ -1,3 +1,4 @@
+import os.path
 import sys
 import unittest
 from unittest.mock import patch
@@ -10,13 +11,15 @@ class MainFunctionTests(unittest.TestCase):
         with patch('tudor.print') as mock_print, \
                 patch('tudor.generate_app') as mock_generate:
             app = mock_generate.return_value
+            folder = os.path.dirname(__file__)
 
             # when
             main([])
 
             # then
-            mock_print.assert_any_call('__version__: 0.7', file=sys.stderr)
-            # mock_print.assert_any_call('__revision__: unknown', file=sys.stderr)
+            mock_print.assert_any_call('__version__: 0.9', file=sys.stderr)
+            mock_print.assert_any_call('__revision__: unknown', file=sys.stderr)
+            mock_print.assert_any_call(f'getcwd(): {folder}', file=sys.stderr)
             mock_print.assert_any_call('DEBUG: False', file=sys.stderr)
             mock_print.assert_any_call('HOST: 127.0.0.1', file=sys.stderr)
             mock_print.assert_any_call('PORT: 8304', file=sys.stderr)
@@ -25,7 +28,7 @@ class MainFunctionTests(unittest.TestCase):
             mock_print.assert_any_call(
                 'ALLOWED_EXTENSIONS: txt,pdf,png,jpg,jpeg,gif',
                 file=sys.stderr)
-            self.assertEqual(mock_print.call_count, 7)
+            self.assertEqual(mock_print.call_count, 8)
 
             # and
             mock_generate.assert_called_once_with(
