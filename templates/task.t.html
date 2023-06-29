@@ -182,13 +182,13 @@ a.attachment_list_item {
         <h4>Attachments</h4>
         <div class="attachment_list">
             {% for att in task.attachments %}
-            <a class="attachment_list_item" href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">
-                <div class="attachment_header "><span class="glyphicon glyphicon-file"></span>&nbsp;{{ att.filename if att.filename != None }} ({{ att.id }})</div>
-                <div class="attachment_timestamp ">{{ att.timestamp }}</div>
-                <div class="attachment_description ">{{ att.description }}</div>
+            <a class="attachment_list_item row" href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">
+                <div class="attachment_header col-md-3"><span class="glyphicon glyphicon-file"></span>&nbsp;{{ att.filename if att.filename != None }} ({{ att.id }})</div>
+                <div class="attachment_timestamp col-md-4">{{ att.timestamp }}</div>
+                <div class="attachment_description col-md-5">{{ att.description }}</div>
             </a>
             {% endfor %}
-            <div class="attachment_list_item">
+            <div class="attachment_list_item row">
                 <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="task_id" value="{{ task.id }}">
                     <p style="margin-top: 15px"><input type="file" name="filename" /></p>
