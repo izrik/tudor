@@ -72,6 +72,81 @@
 .note_panel {
     padding: 10px;
 }
+
+.attachment_list {
+    padding-left: 0;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+}
+
+.attachment_list_item {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    box-sizing: border-box;
+    text-decoration: none;
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #555;
+}
+
+.attachment_list_item:focus,
+.attachment_list_item:hover {
+    color: #555;
+    text-decoration: none;
+    background-color: #f5f5f5;
+}
+
+a.attachment_list_item {
+    text-decoration: none;
+}
+
+.attachment_list_item:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.attachment_list_item:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.attachment_header {
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+.attachment_timestamp {
+    font-size: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+.attachment_description {
+    margin: 0 0 10px;
+    box-sizing: border-box;
+}
+
 </style>
 
 {% endblock %}
@@ -105,15 +180,15 @@
     <div class="attachment_section">
     {%  if task.attachments %}
         <h4>Attachments</h4>
-        <div class="list-group">
+        <div class="attachment_list">
             {% for att in task.attachments %}
-            <a class="list-group-item" href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">
-                <h5><span class="glyphicon glyphicon-file"></span>&nbsp;{{ att.filename if att.filename != None }} ({{ att.id }})</h5>
-                <h6>{{ att.timestamp }}</h6>
-                <p>{{ att.description }}</p>
+            <a class="attachment_list_item" href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">
+                <div class="attachment_header "><span class="glyphicon glyphicon-file"></span>&nbsp;{{ att.filename if att.filename != None }} ({{ att.id }})</div>
+                <div class="attachment_timestamp ">{{ att.timestamp }}</div>
+                <div class="attachment_description ">{{ att.description }}</div>
             </a>
             {% endfor %}
-            <div class="list-group-item">
+            <div class="attachment_list_item">
                 <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="task_id" value="{{ task.id }}">
                     <p style="margin-top: 15px"><input type="file" name="filename" /></p>
