@@ -44,10 +44,9 @@ class MainFunctionTests(unittest.TestCase):
                 allowed_extensions='txt,pdf,png,jpg,jpeg,gif')
 
             app.run.assert_called_once_with(debug=False, host="127.0.0.1",
-                port=8304)
+                                            port=8304)
             # and
             app.pl.create_all.assert_not_called()
             app.bcrypt.generate_password_hash.assert_not_called()
             app.ll.do_export_data.assert_not_called()
             app.ll.do_import_data.assert_not_called()
-
