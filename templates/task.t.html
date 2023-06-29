@@ -248,21 +248,18 @@ a.attachment_list_item {
         {% endif %}
         <p></p>
 
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">ID</div>
-            <div class="info_panel_value col-xs-8">{{ task.id }}</div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Summary</div>
-            <div class="info_panel_value col-xs-8 {{ task.get_css_class()|safe }}">{{ task.summary|d }}</div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Deadline</div>
-            <div class="info_panel_value col-xs-8">{{ task.deadline|d }}</div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Done?</div>
-            <div class="info_panel_value col-xs-8">{{ task.is_done }}
+    <dl class="dl-horizontal">
+            <dt>ID</dt>
+            <dd>{{ task.id }}</dd>
+
+            <dt>Summary</dt>
+            <dd class="{{ task.get_css_class()|safe }}">{{ task.summary|d }}</dd>
+
+            <dt>Deadline</dt>
+            <dd>{{ task.deadline|d }}</dd>
+
+            <dt>Done?</dt>
+            <dd>{{ task.is_done }}
                 {% if can_edit %}
                 <small>
                     {% if task.is_done %}
@@ -272,11 +269,10 @@ a.attachment_list_item {
                     {% endif %}
                 </small>
                 {% endif %}
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Deleted?</div>
-            <div class="info_panel_value col-xs-8">{{ task.is_deleted }}
+            </dd>
+
+            <dt>Deleted?</dt>
+            <dd>{{ task.is_deleted }}
                 {% if can_edit %}
                 <small>
                     {% if task.is_deleted %}
@@ -286,33 +282,28 @@ a.attachment_list_item {
                     {% endif %}
                 </small>
                 {% endif %}
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Order #</div>
-            <div class="info_panel_value col-xs-8">{{ task.order_num if task.order_num != None }}</div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Expected duration</div>
-            <div class="info_panel_value col-xs-8">{{ task.get_expected_duration_for_viewing() }}</div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Expected cost</div>
-            <div class="info_panel_value col-xs-8">${{ task.get_expected_cost_for_viewing() }}</div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Parent Task</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Order #</dt>
+            <dd>{{ task.order_num if task.order_num != None }}</dd>
+
+            <dt>Expected duration</dt>
+            <dd>{{ task.get_expected_duration_for_viewing() }}</dd>
+
+            <dt>Expected cost</dt>
+            <dd>${{ task.get_expected_cost_for_viewing() }}</dd>
+
+            <dt>Parent Task</dt>
+            <dd>
                 {% if task.parent_id != None %}
                 <a href="{{ url_for('view_task', id=task.parent_id) }}" {{ task.parent.get_css_class_attr()|safe }}>{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
                 {% else %}
                 None
                 {% endif %}
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Public?</div>
-            <div class="info_panel_value col-xs-8">{{ task.is_public }}
+            </dd>
+
+            <dt>Public?</dt>
+            <dd>{{ task.is_public }}
                 <!--<small>-->
                     <!--{ % if task.is_public %}-->
                         <!--<a href="{ { url_for('task_make_private', id=task.id, next=url_for('view_task', id=task.id)) }}">(make private)</a>-->
@@ -320,11 +311,10 @@ a.attachment_list_item {
                         <!--<a href="{ { url_for('task_make_public', id=task.id, next=url_for('view_task', id=task.id)) }}">(make public)</a>-->
                     <!--{ % endif %}-->
                 <!--</small>-->
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Tags</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Tags</dt>
+            <dd>
                 <ul class="task_list_group">
                 {% for tag in task.tags %}
                     <li class="task_list_item">
@@ -344,11 +334,10 @@ a.attachment_list_item {
                 </form>
                 {% endif %}
                 </ul>
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Authorized Users</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Authorized Users</dt>
+            <dd>
                 <ul class="task_list_group">
                 {% for user in task.users %}
                     <li class="task_list_item">
@@ -375,11 +364,10 @@ a.attachment_list_item {
                 </li>
                 {% endif %}
                 </ul>
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Depends on</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Depends on</dt>
+            <dd>
                 <ul class="task_list_group">
                 {% for dependee in task.dependees %}
                 <li class="task_list_item">
@@ -402,11 +390,10 @@ a.attachment_list_item {
                 <!--<a href="{ { url_for('pick_dependee_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
                 </ul>
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Is depended on by</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Is depended on by</dt>
+            <dd>
                 <ul class="task_list_group">
                 {% for dependant in task.dependants %}
                 <li class="task_list_item">
@@ -429,11 +416,10 @@ a.attachment_list_item {
                 <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
                 </ul>
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Is prioritized before</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Is prioritized before</dt>
+            <dd>
                 <ul class="task_list_group">
                 {% for ptask in task.prioritize_after %}
                 <li class="task_list_item">
@@ -456,11 +442,10 @@ a.attachment_list_item {
                 <!--<a href="{ { url_for('pick_prioritize_after_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
                 </ul>
-            </div>
-        </div>
-        <div class="info_panel_row">
-            <div class="info_panel_label col-xs-4">Is prioritized after</div>
-            <div class="info_panel_value col-xs-8">
+            </dd>
+
+            <dt>Is prioritized after</dt>
+            <dd>
                 <ul class="task_list_group">
                 {% for ptask in task.prioritize_before %}
                 <li class="task_list_item">
@@ -483,8 +468,8 @@ a.attachment_list_item {
                 <!--<a href="{ { url_for('pick_prioritize_before_to_add', task_id=task.id) } }">Pick a task</a>-->
                 {% endif %}
                 </ul>
-            </div>
-        </div>
+            </dd>
+    </dl>
     <p></p>
     {% if can_edit %}
     <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
