@@ -63,7 +63,7 @@ class Config(object):
         self.DB_OPTIONS = db_options
         self.DB_OPTIONS_FILE = db_options_file
         self.UPLOAD_FOLDER = upload_folder
-        self.ALLOWED_EXTENSIONS = allowed_extensions
+        self.ALLOWED_EXTENSIONS = allowed_extensions  # TODO: remove this
         self.SECRET_KEY = secret_key
         self.SECRET_KEY_FILE = secret_key_file
         self.args = args
@@ -875,6 +875,7 @@ def main(argv):
     print(f'HOST: {arg_config.HOST}', file=sys.stderr)
     print(f'PORT: {arg_config.PORT}', file=sys.stderr)
     print(f'UPLOAD_FOLDER: {arg_config.UPLOAD_FOLDER}', file=sys.stderr)
+    # TODO: remove this
     print(f'ALLOWED_EXTENSIONS: {arg_config.ALLOWED_EXTENSIONS}',
           file=sys.stderr)
     if arg_config.DEBUG:
