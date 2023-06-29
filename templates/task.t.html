@@ -2,208 +2,218 @@
 {% from 'task_table.t.html' import render_task_table %}
 {% block title %}{{ task.summary if task.summary != None }} - {{ super() }}{% endblock %}
 {% block header_sub_text %}{{ task.summary if task.summary != None }}{% endblock %}
+{% block link_css %}
+
+<style>
+
+.task_description
+{
+    border-color: #000000;
+    padding: 10px; /* csslint allow: box-model */
+    {#width: 870px; /* csslint allow: box-model */#}
+}
+
+.task_info {
+    max-width: 1em;
+    background-color: #86989B;
+    {#display: block;#}
+}
+
+.top_panel {
+}
+
+.info_panel {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border: solid 1px #cccccc;
+    border-radius: 4px;
+}
+
+.info_panel input {
+    width: 5em;
+}
+
+.info_panel_row {
+    display: flex;
+    flex-wrap: wrap;
+    {#margin-bottom: 16px;#}
+    word-break: break-word;
+
+    {#background-color: #11557C;#}
+
+}
+
+.info_panel_label {
+    {#background-color: #3A7734;#}
+
+    font-size: 0.857143em;
+    font-style: inherit;
+    line-height: 1.33333;
+    font-weight: 600;
+}
+
+.info_panel_value {
+    {#background-color: #86989B;#}
+}
+
+.task_body_panel {
+}
+
+.task_list_group {
+    padding-left: 0px;
+}
+
+.task_list_item {
+    display: block;
+}
+
+.child_task_section {
+}
+
+.attachment_section {
+}
+
+.note_panel {
+    padding: 10px;
+}
+
+.note_panel form textarea {
+    width: 100%;
+}
+
+.attachment_list {
+    padding-left: 0;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #333;
+}
+
+.attachment_list_item {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    box-sizing: border-box;
+    text-decoration: none;
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: -1px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #555;
+}
+
+.attachment_list_item:focus,
+.attachment_list_item:hover {
+    color: #555;
+    text-decoration: none;
+    background-color: #f5f5f5;
+}
+
+a.attachment_list_item {
+    text-decoration: none;
+}
+
+.attachment_list_item:first-child {
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.attachment_list_item:last-child {
+    margin-bottom: 0;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.attachment_header {
+    font-size: 14px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+.attachment_timestamp {
+    font-size: 12px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: inherit;
+    font-weight: 500;
+    line-height: 1.1;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+.attachment_description {
+    margin: 0 0 10px;
+    box-sizing: border-box;
+}
+
+</style>
+
+{% endblock %}
 {% block content %}
+
+{% set can_edit = ops.user_can_edit_task(task, current_user) %}
+
 <div class="container">
-<div>
-    {% set can_edit = ops.user_can_edit_task(task, current_user) %}
-    {% if can_edit %}
-    <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
-    {% endif %}
-    <p></p>
-    <table class="task_info">
-        <tr><td>ID</td><td>{{ task.id }}</td></tr>
-        <tr><td>Summary</td><td{{ task.get_css_class_attr()|safe }}>{{ task.summary|d }}</td></tr>
-        <tr><td>Description</td><td><div class="task_description">{{ task.description|gfm if task.description != None }}</div></td></tr>
-        <tr><td>Deadline</td><td>{{ task.deadline|d }}</td></tr>
-        <tr>
-            <td>Done?</td>
-            <td>{{ task.is_done }}
-                {% if can_edit %}
-                <small>
-                    {% if task.is_done %}
-                        <a href="{{ url_for('task_undo', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as not done)</a>
-                    {% else %}
-                        <a href="{{ url_for('task_done', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as done)</a>
-                    {% endif %}
-                </small>
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Deleted?</td>
-            <td>{{ task.is_deleted }}
-                {% if can_edit %}
-                <small>
-                    {% if task.is_deleted %}
-                        <a href="{{ url_for('undelete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(undelete)</a>
-                    {% else %}
-                        <a href="{{ url_for('delete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(delete)</a>
-                    {% endif %}
-                </small>
-                {% endif %}
-            </td>
-        </tr>
-        <tr><td>Order #</td><td>{{ task.order_num if task.order_num != None }}</td></tr>
-        <tr><td>Expected duration</td><td>{{ task.get_expected_duration_for_viewing() }}</td></tr>
-        <tr><td>Expected cost</td><td>${{ task.get_expected_cost_for_viewing() }}</td></tr>
-        <tr>
-            <td>Parent Task</td>
-            <td>
-                {% if task.parent_id != None %}
-                <a href="{{ url_for('view_task', id=task.parent_id) }}" {{ task.parent.get_css_class_attr()|safe }}>{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
-                {% else %}
-                None
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Public?</td>
-            <td>{{ task.is_public }}
-                <!--<small>-->
-                    <!--{ % if task.is_public %}-->
-                        <!--<a href="{ { url_for('task_make_private', id=task.id, next=url_for('view_task', id=task.id)) }}">(make private)</a>-->
-                    <!--{ % else %}-->
-                        <!--<a href="{ { url_for('task_make_public', id=task.id, next=url_for('view_task', id=task.id)) }}">(make public)</a>-->
-                    <!--{ % endif %}-->
-                <!--</small>-->
-            </td>
-        </tr>
-        <tr>
-            <td>Tags</td>
-            <td>
-                {% for tag in task.tags %}
-                    <a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a>
-                    {% if can_edit %}
-                    <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=tag.id) }}">
-                        <span class="glyphicon glyphicon-remove text-danger"></span>
-                    </a>
-                    {% endif %}
-                {% endfor %}
-                {% if can_edit %}
-                <form action="{{ url_for('add_tag_to_task', id=task.id) }}" method="post">
-                    <input type="text" name="value" />
-                    <input type="hidden" name="next_url"
-                           value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Authorized Users</td>
-            <td>
-                {% for user in task.users %}
-                    <a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.email }}</a>
-                    {% if can_edit %}
-                    {% if task.users.__len__() > 1 %}
-                    <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=user.id) }}">
-                        <span class="glyphicon glyphicon-remove text-danger"></span>
-                    </a>
-                    {% endif %}
-                    {% endif %}
-                {% endfor %}
-                {% if can_edit %}
-                <form action="{{ url_for('authorize_user_for_task', task_id=task.id) }}" method="post">
-                    <input type="text" name="email" />
-                    <input type="hidden" name="next_url"
-                           value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-                <a href="{{ url_for('pick_user_to_authorize', task_id=task.id) }}">Pick a user</a>
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Depends on</td>
-            <td>
-                {% for dependee in task.dependees %}
-                    <a href="{{ url_for('view_task', id=dependee.id) }}" {{ dependee.get_css_class_attr()|safe }}>{{ dependee.summary }} ({{ dependee.id }})</a>
-                    {% if can_edit %}
-                    <a href="{{ url_for('remove_dependee_from_task', task_id=task.id, dependee_id=dependee.id) }}">
-                        <span class="glyphicon glyphicon-remove text-danger"></span>
-                    </a>
-                    {% endif %}
-                {% endfor %}
-                {% if can_edit %}
-                <form action="{{ url_for('add_dependee_to_task', task_id=task.id) }}" method="post">
-                    <input type="text" name="dependee_id" />
-                    <input type="hidden" name="next_url"
-                           value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-                <!--<a href="{ { url_for('pick_dependee_to_add', task_id=task.id) } }">Pick a task</a>-->
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Is depended on by</td>
-            <td>
-                {% for dependant in task.dependants %}
-                    <a href="{{ url_for('view_task', id=dependant.id) }}" {{ dependant.get_css_class_attr()|safe }}>{{ dependant.summary }} ({{ dependant.id }})</a>
-                    {% if can_edit %}
-                    <a href="{{ url_for('remove_dependant_from_task', task_id=task.id, dependant_id=dependant.id) }}">
-                        <span class="glyphicon glyphicon-remove text-danger"></span>
-                    </a>
-                    {% endif %}
-                {% endfor %}
-                {% if can_edit %}
-                <form action="{{ url_for('add_dependant_to_task', task_id=task.id) }}" method="post">
-                    <input type="text" name="dependant_id" />
-                    <input type="hidden" name="next_url"
-                           value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-                <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Is prioritized before</td>
-            <td>
-                {% for ptask in task.prioritize_after %}
-                    <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
-                    {% if can_edit %}
-                    <a href="{{ url_for('remove_prioritize_after_from_task', task_id=task.id, prioritize_after_id=ptask.id) }}">
-                        <span class="glyphicon glyphicon-remove text-danger"></span>
-                    </a>
-                    {% endif %}
-                {% endfor %}
-                {% if can_edit %}
-                <form action="{{ url_for('add_prioritize_after_to_task', task_id=task.id) }}" method="post">
-                    <input type="text" name="prioritize_after_id" />
-                    <input type="hidden" name="next_url"
-                           value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-                <!--<a href="{ { url_for('pick_prioritize_after_to_add', task_id=task.id) } }">Pick a task</a>-->
-                {% endif %}
-            </td>
-        </tr>
-        <tr>
-            <td>Is prioritized after</td>
-            <td>
-                {% for ptask in task.prioritize_before %}
-                    <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
-                    {% if can_edit %}
-                    <a href="{{ url_for('remove_prioritize_before_from_task', task_id=task.id, prioritize_before_id=ptask.id) }}">
-                        <span class="glyphicon glyphicon-remove text-danger"></span>
-                    </a>
-                    {% endif %}
-                {% endfor %}
-                {% if can_edit %}
-                <form action="{{ url_for('add_prioritize_before_to_task', task_id=task.id) }}" method="post">
-                    <input type="text" name="prioritize_before_id" />
-                    <input type="hidden" name="next_url"
-                           value="{{ url_for('view_task', id=task.id) }}" />
-                </form>
-                <!--<a href="{ { url_for('pick_prioritize_before_to_add', task_id=task.id) } }">Pick a task</a>-->
-                {% endif %}
-            </td>
-        </tr>
-    </table>
-    <p></p>
-    {% if can_edit %}
-    <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
-    <p></p>
-    <a class="btn btn-danger btn-xs" href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a>
-    {% endif %}
+<div class="top_panel">
+    <ol class="breadcrumb">
+    {% macro breadcrumb_parent(t) -%}
+        {% if t.parent != None %}
+            {{  breadcrumb_parent(t.parent) }}
+            <li><a class="" href="{{ url_for('view_task', id=t.parent.id) }}">{{ t.parent.summary }}</a></li>
+        {% endif %}
+    {%- endmacro %}
+        {{  breadcrumb_parent(task) }}
+        <li class="active">{{ task.summary }}</li>
+    </ol>
+    <h1 class="info_panel_value {{ task.get_css_class()|safe }}">{{ task.summary|d }}</h1>
+    <p><br/></p>
 </div>
-<div>
+
+<div class="task_body_panel col-md-8">
+    <div class="task_description">{{ task.description|gfm if task.description != None }}</div>
+
+    {% if can_edit %}
+    <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
+    {% endif %}
+
+    <div class="attachment_section">
+    {%  if task.attachments %}
+        <h4>Attachments</h4>
+        <div class="attachment_list">
+            {% for att in task.attachments %}
+            <a class="attachment_list_item row" href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">
+                <div class="attachment_header col-md-3"><span class="glyphicon glyphicon-file"></span>&nbsp;{{ att.filename if att.filename != None }} ({{ att.id }})</div>
+                <div class="attachment_timestamp col-md-4">{{ att.timestamp }}</div>
+                <div class="attachment_description col-md-5">{{ att.description }}</div>
+            </a>
+            {% endfor %}
+            <div class="attachment_list_item row">
+                <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <p style="margin-top: 15px"><input type="file" name="filename" /></p>
+                    <p>
+                        <input type="text" name="description" maxlength="100" />
+                        <input type="submit" value="Attach" />
+                    </p>
+                </form>
+            </div>
+        </div>
+    {%  endif %}
+    </div>
+
+    <div class="child_task_section">
+    <hr/>
+    {%  if (show_hierarchy and descendants) or
+            (not show_hierarchy and pager.items) %}
     <h4>Child Tasks</h4>
     {% if show_hierarchy %}
         {{ render_task_table(descendants, task, cycle,
@@ -225,14 +235,252 @@
         {% if pager.pages > 1 %}
             {% include 'page_links.fragment.html' %}
         {% endif %}
-    {% endif %}
+    {% endif %} {# show_hierarchy #}
+    {% endif %}  {# descendants or pager.items #}
 
-    {% if can_edit %}
-    <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
-    {% endif %}
+        {% if can_edit %}
+        <p><a class="btn btn-default" href="{{ url_for('new_task', parent_id=task.id) }}"><span class="glyphicon glyphicon-plus"></span> New Child Task</a></p>
+        {% endif %}
+    </div>
 
 </div>
-<div>
+
+<div class="info_panel col-md-4">
+
+        {% if can_edit %}
+        <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
+        {% endif %}
+        <p></p>
+
+    <dl class="dl-horizontal">
+            <dt>ID</dt>
+            <dd>{{ task.id }}</dd>
+
+            <dt>Summary</dt>
+            <dd class="{{ task.get_css_class()|safe }}">{{ task.summary|d }}</dd>
+
+            <dt>Deadline</dt>
+            <dd>{{ task.deadline|d }}</dd>
+
+            <dt>Done?</dt>
+            <dd>{{ task.is_done }}
+                {% if can_edit %}
+                <small>
+                    {% if task.is_done %}
+                        <a href="{{ url_for('task_undo', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as not done)</a>
+                    {% else %}
+                        <a href="{{ url_for('task_done', id=task.id, next=url_for('view_task', id=task.id)) }}">(mark as done)</a>
+                    {% endif %}
+                </small>
+                {% endif %}
+            </dd>
+
+            <dt>Deleted?</dt>
+            <dd>{{ task.is_deleted }}
+                {% if can_edit %}
+                <small>
+                    {% if task.is_deleted %}
+                        <a href="{{ url_for('undelete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(undelete)</a>
+                    {% else %}
+                        <a href="{{ url_for('delete_task', id=task.id, next=url_for('view_task', id=task.id)) }}">(delete)</a>
+                    {% endif %}
+                </small>
+                {% endif %}
+            </dd>
+
+            <dt>Order #</dt>
+            <dd>{{ task.order_num if task.order_num != None }}</dd>
+
+            <dt>Expected duration</dt>
+            <dd>{{ task.get_expected_duration_for_viewing() }}</dd>
+
+            <dt>Expected cost</dt>
+            <dd>${{ task.get_expected_cost_for_viewing() }}</dd>
+
+            <dt>Parent Task</dt>
+            <dd>
+                {% if task.parent_id != None %}
+                <a href="{{ url_for('view_task', id=task.parent_id) }}" {{ task.parent.get_css_class_attr()|safe }}>{{ task.parent.summary if task.parent != None }} ({{ task.parent_id if task.parent_id != None }})</a>
+                {% else %}
+                None
+                {% endif %}
+            </dd>
+
+            <dt>Public?</dt>
+            <dd>{{ task.is_public }}
+                <!--<small>-->
+                    <!--{ % if task.is_public %}-->
+                        <!--<a href="{ { url_for('task_make_private', id=task.id, next=url_for('view_task', id=task.id)) }}">(make private)</a>-->
+                    <!--{ % else %}-->
+                        <!--<a href="{ { url_for('task_make_public', id=task.id, next=url_for('view_task', id=task.id)) }}">(make public)</a>-->
+                    <!--{ % endif %}-->
+                <!--</small>-->
+            </dd>
+
+            <dt>Tags</dt>
+            <dd>
+                <ul class="task_list_group">
+                {% for tag in task.tags %}
+                    <li class="task_list_item">
+                    <a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a>
+                    {% if can_edit %}
+                    <a href="{{ url_for('delete_tag_from_task', id=task.id, tag_id=tag.id) }}">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </a>
+                    {% endif %}
+                    </li>
+                {% endfor %}
+                {% if can_edit %}
+                <form action="{{ url_for('add_tag_to_task', id=task.id) }}" method="post">
+                    <input type="text" name="value" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                {% endif %}
+                </ul>
+            </dd>
+
+            <dt>Authorized Users</dt>
+            <dd>
+                <ul class="task_list_group">
+                {% for user in task.users %}
+                    <li class="task_list_item">
+                    <a href="{{ url_for('view_user', user_id=user.id) }}">{{ user.email }}</a>
+                    {% if can_edit %}
+                    {% if task.users.__len__() > 1 %}
+                    <a href="{{ url_for('deauthorize_user_for_task', task_id=task.id, user_id=user.id) }}">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </a>
+                    {% endif %}
+                    {% endif %}
+                    </li>
+                {% endfor %}
+                {% if can_edit %}
+                <li class="task_list_item">
+                <form action="{{ url_for('authorize_user_for_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="email" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                </li>
+                <li class="task_list_item">
+                <a href="{{ url_for('pick_user_to_authorize', task_id=task.id) }}">Pick a user</a>
+                </li>
+                {% endif %}
+                </ul>
+            </dd>
+
+            <dt>Depends on</dt>
+            <dd>
+                <ul class="task_list_group">
+                {% for dependee in task.dependees %}
+                <li class="task_list_item">
+                    <a href="{{ url_for('view_task', id=dependee.id) }}" {{ dependee.get_css_class_attr()|safe }}>{{ dependee.summary }} ({{ dependee.id }})</a>
+                    {% if can_edit %}
+                    <a href="{{ url_for('remove_dependee_from_task', task_id=task.id, dependee_id=dependee.id) }}">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                {% if can_edit %}
+                <li class="task_list_item">
+                <form action="{{ url_for('add_dependee_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="dependee_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                </li>
+                <!--<a href="{ { url_for('pick_dependee_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
+                </ul>
+            </dd>
+
+            <dt>Is depended on by</dt>
+            <dd>
+                <ul class="task_list_group">
+                {% for dependant in task.dependants %}
+                <li class="task_list_item">
+                    <a href="{{ url_for('view_task', id=dependant.id) }}" {{ dependant.get_css_class_attr()|safe }}>{{ dependant.summary }} ({{ dependant.id }})</a>
+                    {% if can_edit %}
+                    <a href="{{ url_for('remove_dependant_from_task', task_id=task.id, dependant_id=dependant.id) }}">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                {% if can_edit %}
+                <li class="task_list_item">
+                <form action="{{ url_for('add_dependant_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="dependant_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                </li>
+                <!--<a href="{ { url_for('pick_dependant_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
+                </ul>
+            </dd>
+
+            <dt>Is prioritized before</dt>
+            <dd>
+                <ul class="task_list_group">
+                {% for ptask in task.prioritize_after %}
+                <li class="task_list_item">
+                    <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
+                    {% if can_edit %}
+                    <a href="{{ url_for('remove_prioritize_after_from_task', task_id=task.id, prioritize_after_id=ptask.id) }}">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                {% if can_edit %}
+                <li class="task_list_item">
+                <form action="{{ url_for('add_prioritize_after_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="prioritize_after_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                </li>
+                <!--<a href="{ { url_for('pick_prioritize_after_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
+                </ul>
+            </dd>
+
+            <dt>Is prioritized after</dt>
+            <dd>
+                <ul class="task_list_group">
+                {% for ptask in task.prioritize_before %}
+                <li class="task_list_item">
+                    <a href="{{ url_for('view_task', id=ptask.id) }}" {{ ptask.get_css_class_attr()|safe }}>{{ ptask.summary }} ({{ ptask.id }})</a>
+                    {% if can_edit %}
+                    <a href="{{ url_for('remove_prioritize_before_from_task', task_id=task.id, prioritize_before_id=ptask.id) }}">
+                        <span class="glyphicon glyphicon-remove text-danger"></span>
+                    </a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+                {% if can_edit %}
+                <li class="task_list_item">
+                <form action="{{ url_for('add_prioritize_before_to_task', task_id=task.id) }}" method="post">
+                    <input type="text" name="prioritize_before_id" />
+                    <input type="hidden" name="next_url"
+                           value="{{ url_for('view_task', id=task.id) }}" />
+                </form>
+                </li>
+                <!--<a href="{ { url_for('pick_prioritize_before_to_add', task_id=task.id) } }">Pick a task</a>-->
+                {% endif %}
+                </ul>
+            </dd>
+    </dl>
+    <p></p>
+    {% if can_edit %}
+    <a class="btn btn-primary" href="{{ url_for('edit_task', id=task.id) }}">Edit</a>
+    <p></p>
+    <a class="btn btn-danger btn-xs" href="{{ url_for('convert_task_to_tag', id=task.id) }}">Convert to tag</a>
+    {% endif %}
+
     <p>
         {%- if show_deleted %}
         <a href="{{ url_for('show_hide_deleted', show_deleted=0, next=url_for('view_task', id=task.id)) }}">hide deleted</a>
@@ -248,76 +496,33 @@
         {% endif -%}
     </p>
     <p><a class="btn btn-default" href="{{ url_for('view_task_hierarchy', id=task.id) }}">hierarchy view</a></p>
+
 </div>
-<div>
+
+<div class="note_panel col-md-12">
     <h4>Notes</h4>
-    <table class="task_notes">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Timestamp</th>
-            <th>Content</th>
-        </tr>
-        </thead>
+    <div class="task_notes list-group">
         {% for note in task.notes %}
-        <tr>
-            <td>{{ note.id }}</td>
-            <td>{{ note.timestamp }}</td>
-            <td class="note_content">{{ note.content|gfm if note.content != None }}</td>
-        </tr>
+        <div class="list-group-item row">
+            <div class="col-md-1">{{ note.id }}</div>
+            <div class="col-md-3">{{ note.timestamp }}</div>
+            <div class="note_content col-md-8">{{ note.content|gfm if note.content != None }}</div>
+        </div>
         {% endfor %}
         {% if can_edit %}
-        <tr>
-            <td></td>
-            <td></td>
-            <td>
+        <div class="list-group-item row">
+            <div class="col-md-12">
                 <form action="{{ url_for('new_note') }}" method="post">
                     <input type="hidden" name="task_id" value="{{ task.id }}" />
                     <textarea name="content"></textarea><br/>
                     <input type="submit" value="Add New Note">
                 </form>
-            </td>
-        </tr>
+            </div>
+        </div>
         {% endif %}
-    </table>
+    </div>
 
 </div>
-<div>
-    <h4>Attachments</h4>
-    <table class="task_attachments">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Timestamp</th>
-            <th>Filename</th>
-            <th>Description</th>
-        </tr>
-        </thead>
-        {% for att in task.attachments %}
-        <tr>
-            <td>{{ att.id }}</td>
-            <td>{{ att.timestamp }}</td>
-            <td><a href="{{ url_for('get_attachment', aid=att.id, x=att.filename) }}">{{ att.filename if att.filename != None }}</a></td>
-            <td>{{ att.description }}</td>
-        </tr>
-        {% endfor %}
-        {% if can_edit %}
-        <tr>
-            <td></td>
-            <td></td>
-            <form action="{{ url_for('new_attachment') }}" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="task_id" value="{{ task.id }}">
-                <td>
-                    <input type="file" name="filename" />
-                </td>
-                <td>
-                    <input type="text" name="description" maxlength="100" />
-                    <input type="submit" value="Attach" />
-                </td>
-            </form>
-        </tr>
-        {% endif %}
-    </table>
-</div>
+
 </div>
 {% endblock %}

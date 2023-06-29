@@ -371,7 +371,8 @@ class ViewLayer(object):
         task_id = request.form['task_id']
 
         f = request.files['filename']
-        if f is None or not f.filename or not self.ll.allowed_file(f.filename):
+        if f is None or not f.filename:
+            # or not self.ll.allowed_file(f.filename):
             raise BadRequest('Invalid file')
 
         if 'description' in request.form:
