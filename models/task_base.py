@@ -28,11 +28,16 @@ class TaskBase(object):
     FIELD_NOTES = 'NOTES'
     FIELD_ATTACHMENTS = 'ATTACHMENTS'
     FIELD_IS_PUBLIC = 'IS_PUBLIC'
+    FIELD_DATE_CREATED = 'DATE_CREATED'
+    FIELD_DATE_LAST_UPDATED = 'DATE_LAST_UPDATED'
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,
-                 is_public=False):
+                 is_public=False,
+                 date_created=None,
+                 date_last_updated=None):
+        import datetime
         self._logger.debug('TaskBase.__init__ %s', self)
 
         self.summary = summary
@@ -44,6 +49,13 @@ class TaskBase(object):
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
         self.is_public = not not is_public
+        current_datetime = datetime.datetime.utcnow()
+        if date_created is None:
+            date_created = current_datetime
+        self.date_created = date_created
+        if date_last_updated is None:
+            date_last_updated = current_datetime
+        self.date_last_updated = date_last_updated
 
     @property
     def object_type(self):
@@ -91,6 +103,10 @@ class TaskBase(object):
             d['parent'] = self.parent
         if fields is None or self.FIELD_IS_PUBLIC in fields:
             d['is_public'] = self.is_public
+        if fields is None or self.FIELD_DATE_CREATED in fields:
+            d['date_created'] = self.date_created
+        if fields is None or self.FIELD_DATE_LAST_UPDATED in fields:
+            d['date_last_updated'] = self.date_last_updated
 
         if fields is None or self.FIELD_CHILDREN in fields:
             d['children'] = list(self.children)
@@ -162,12 +178,17 @@ class TaskBase(object):
                                           None)
         expected_cost = d.get('expected_cost', None)
         is_public = d.get('is_public', False)
+        date_created = d.get('date_created', None)
+        date_last_updated = d.get('date_last_updated', None)
 
         task = cls(summary=summary, description=description,
                    is_done=is_done, is_deleted=is_deleted,
                    deadline=deadline,
                    expected_duration_minutes=expected_duration_minutes,
-                   expected_cost=expected_cost, is_public=is_public, lazy=lazy)
+                   expected_cost=expected_cost, is_public=is_public,
+                   date_created=date_created,
+                   date_last_updated=date_last_updated,
+                   lazy=lazy)
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
@@ -236,6 +257,10 @@ class TaskBase(object):
             assign(self.attachments, d['attachments'])
         if 'is_public' in d:
             self.is_public = d['is_public']
+        if 'date_created' in d:
+            self.date_created = d['date_created']
+        if 'date_last_updated' in d:
+            self.date_last_updated = d['date_last_updated']
 
     def get_expected_cost_for_export(self):
         value = money_from_str(self.expected_cost)

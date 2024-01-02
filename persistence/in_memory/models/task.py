@@ -1,4 +1,3 @@
-
 import logging_util
 from models.task_base import TaskBase
 from persistence.in_memory.models.changeable import Changeable
@@ -20,14 +19,21 @@ class Task(Changeable, TaskBase):
     _expected_cost = None
     _parent = None
     _is_public = None
+    _date_created = None
+    _date_last_updated = None
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,
-                 is_public=False, lazy=None):
+                 is_public=False,
+                 date_created=None,
+                 date_last_updated=None,
+                 lazy=None):
         super(Task, self).__init__(
             summary, description, is_done, is_deleted, deadline,
-            expected_duration_minutes, expected_cost, is_public)
+            expected_duration_minutes, expected_cost, is_public,
+            date_created,
+            date_last_updated)
 
         self._logger.debug('Task.__init__ %s', self)
 
@@ -259,6 +265,35 @@ class Task(Changeable, TaskBase):
             self._is_public = value
             self._on_attr_changed(self.FIELD_IS_PUBLIC, self.OP_SET,
                                   self._is_public)
+
+    @property
+    def date_created(self):
+        return self._date_created
+
+    @date_created.setter
+    def date_created(self, value):
+        if value != self._date_created:
+            self._logger.debug('%s: %s -> %s', self, self.date_created, value)
+            self._on_attr_changing(self.FIELD_DATE_CREATED,
+                                   self._date_created)
+            self._date_created = value
+            self._on_attr_changed(self.FIELD_DATE_CREATED, self.OP_SET,
+                                  self._date_created)
+
+    @property
+    def date_last_updated(self):
+        return self._date_last_updated
+
+    @date_last_updated.setter
+    def date_last_updated(self, value):
+        if value != self._date_last_updated:
+            self._logger.debug(
+                '%s: %s -> %s', self, self.date_last_updated, value)
+            self._on_attr_changing(self.FIELD_DATE_LAST_UPDATED,
+                                   self._date_last_updated)
+            self._date_last_updated = value
+            self._on_attr_changed(self.FIELD_DATE_LAST_UPDATED, self.OP_SET,
+                                  self._date_last_updated)
 
     def contains_dependency_cycle(self, visited=None):
         self._logger.debug('%s', self)

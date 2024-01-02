@@ -52,10 +52,16 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
             backref='prioritize_after')
 
+        date_created = db.Column(db.DateTime)
+        date_last_updated = db.Column(db.DateTime)
+
         def __init__(self, summary, description='', is_done=False,
                      is_deleted=False, deadline=None,
                      expected_duration_minutes=None, expected_cost=None,
-                     is_public=False, lazy=None):
+                     is_public=False,
+                     date_created=None,
+                     date_last_updated=None,
+                     lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
@@ -63,7 +69,9 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 self, summary=summary, description=description,
                 is_done=is_done, is_deleted=is_deleted, deadline=deadline,
                 expected_duration_minutes=expected_duration_minutes,
-                expected_cost=expected_cost, is_public=is_public)
+                expected_cost=expected_cost, is_public=is_public,
+                date_created=date_created,
+                date_last_updated=date_last_updated)
 
         @classmethod
         def from_dict(cls, d, lazy=None):

@@ -34,8 +34,8 @@ def auto_migrate(pl, desired_version, *, _fs=None, _print=None):
             with _fs.open(filename) as f:
                 script = f.read()
                 _print(f'Running migration script for v{current_version}')
-                pl.session.execute(script)
-                pl.session.commit()
+                pl.execute(script)
+                pl.commit()
         else:
             _print(f'No migration script found for v{current_version}')
             pl.execute("update option "
