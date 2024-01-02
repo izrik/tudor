@@ -1,4 +1,3 @@
-
 import collections
 from numbers import Number
 
@@ -109,6 +108,21 @@ class SqlAlchemyPersistenceLayer(object):
         self._logger.debug('begin')
         self.db.session.rollback()
         self._logger.debug('end')
+
+    def execute(self, *args, **kwargs):
+        self.db.session.execute(*args, **kwargs)
+
+    def get_schema_version(self):
+        try:
+            dbopt = self.query(self.DbOption).get('__version__')
+        except Exception as e:
+            print(f'got exception {e}')
+            return None
+        else:
+            return dbopt
+
+    def query(self, *args, **kwargs):
+        return self.db.session.query(*args, **kwargs)
 
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)

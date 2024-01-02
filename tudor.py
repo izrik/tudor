@@ -17,6 +17,7 @@ import pycmarkgfm
 
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
+from persistence.migration import auto_migrate
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
@@ -773,6 +774,7 @@ def make_task_private(pl, task_id, printer=default_printer,
                                                          task.summary))
                 for child in task.children:
                     recurse(child)
+
             recurse(task)
         else:
             task.is_public = False
@@ -888,6 +890,23 @@ def main(argv):
                        upload_folder=arg_config.UPLOAD_FOLDER,
                        secret_key=arg_config.SECRET_KEY,
                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
+
+    print('Checking database schema version')
+    from packaging.version import parse
+    current = app.pl.get_schema_version()
+    if current:
+        current = current.value
+    if not current:
+        current = '0.0'
+    current = parse(parse(current).base_version)
+    desired = parse(parse(__version__).base_version)
+    if current < desired:
+        print(f'Wrong DB schema version. Expected {desired.public} but got '
+              f'{current.public}. Will auto-migrate.')
+        auto_migrate(app.pl, desired.public)
+        print('Migration complete.')
+    else:
+        print('Database schema version is up-to-date.')
 
     args = arg_config.args
 
