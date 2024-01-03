@@ -30,6 +30,12 @@ class ExportDataTest(unittest.TestCase):
         # when
         result = self.ll.do_export_data(types_to_export)
         # then
+        self.assertIn('date_created', result['tasks'][0])
+        self.assertIsNotNone(result['tasks'][0]['date_created'])
+        del result['tasks'][0]['date_created']
+        self.assertIn('date_last_updated', result['tasks'][0])
+        self.assertIsNotNone(result['tasks'][0]['date_last_updated'])
+        del result['tasks'][0]['date_last_updated']
         self.assertEqual(result, {
             'format_version': 1,
             'tasks': [{
@@ -53,7 +59,6 @@ class ExportDataTest(unittest.TestCase):
                 'user_ids': [],
                 'note_ids': [],
                 'attachment_ids': [],
-
             }],
             'tags': [{
                 'id': tag.id,

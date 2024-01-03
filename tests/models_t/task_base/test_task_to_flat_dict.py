@@ -44,7 +44,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         # when
         d = task.to_flat_dict(fields=None)
         # then
-        self.assertEqual(20, len(d))
+        self.assertEqual(22, len(d))
         self.assertIn('id', d)
         self.assertEqual(456, d['id'])
         self.assertIn('summary', d)

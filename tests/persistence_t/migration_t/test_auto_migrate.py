@@ -48,9 +48,9 @@ def test_upgrade_script_not_present():
     auto_migrate(pl, '0.2', _fs=fs, _print=_print)
     # then
     pl.get_schema_version.assert_called()
-    pl.session.execute.assert_called_with(
+    pl.execute.assert_called_with(
         "update option set value = '0.2' where key = '__version__';")
-    pl.session.commit.assert_called()
+    pl.commit.assert_called()
 
 
 def test_invalid_desired_version_1():
@@ -123,9 +123,9 @@ def test_upgrade_script_present():
     auto_migrate(pl, '0.2', _fs=fs, _print=_print)
     # then
     pl.get_schema_version.assert_called()
-    assert pl.session.execute.call_count == 2
-    assert call('do the thing;') in pl.session.execute.mock_calls
+    assert pl.execute.call_count == 2
+    assert call('do the thing;') in pl.execute.mock_calls
     set_version = "update option set value = '0.2' " \
                   "where key = '__version__';"
-    assert call(set_version) in pl.session.execute.mock_calls
-    pl.session.commit.assert_called()
+    assert call(set_version) in pl.execute.mock_calls
+    pl.commit.assert_called()

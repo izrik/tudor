@@ -3,7 +3,7 @@ import sys
 import unittest
 from unittest.mock import patch
 
-from tudor import main, __revision__
+from tudor import main, __revision__, __version__
 
 
 class MainFunctionTests(unittest.TestCase):
@@ -11,6 +11,9 @@ class MainFunctionTests(unittest.TestCase):
         with patch('tudor.print') as mock_print, \
                 patch('tudor.generate_app') as mock_generate:
             app = mock_generate.return_value
+            from models.option_base import OptionBase
+            app.pl.get_schema_version.return_value = \
+                OptionBase('__version__', __version__)
             folder = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..'))
 
@@ -33,7 +36,7 @@ class MainFunctionTests(unittest.TestCase):
             mock_print.assert_any_call(
                 'ALLOWED_EXTENSIONS: txt,pdf,png,jpg,jpeg,gif',
                 file=sys.stderr)
-            self.assertEqual(mock_print.call_count, 8)
+            self.assertEqual(mock_print.call_count, 10)
 
             # and
             mock_generate.assert_called_once_with(
