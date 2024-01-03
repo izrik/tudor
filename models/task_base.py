@@ -37,25 +37,19 @@ class TaskBase(object):
                  is_public=False,
                  date_created=None,
                  date_last_updated=None):
-        import datetime
         self._logger.debug('TaskBase.__init__ %s', self)
 
         self.summary = summary
         self.description = description
         self.is_done = not not is_done
         self.is_deleted = not not is_deleted
-        self.deadline = self._clean_deadline(deadline)
+        self.deadline = self._clean_datetime(deadline)
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
         self.is_public = not not is_public
-        current_datetime = datetime.datetime.utcnow()
-        if date_created is None:
-            date_created = current_datetime
-        self.date_created = date_created
-        if date_last_updated is None:
-            date_last_updated = current_datetime
-        self.date_last_updated = date_last_updated
+        self.date_created = self._clean_datetime(date_created)
+        self.date_last_updated = self._clean_datetime(date_last_updated)
 
     @property
     def object_type(self):
@@ -71,10 +65,10 @@ class TaskBase(object):
                                                     self.id, id(self))
 
     @staticmethod
-    def _clean_deadline(deadline):
-        if isinstance(deadline, str):
-            return dparse(deadline)
-        return deadline
+    def _clean_datetime(dt):
+        if isinstance(dt, str):
+            return dparse(dt)
+        return dt
 
     def to_dict(self, fields=None):
 
@@ -104,9 +98,9 @@ class TaskBase(object):
         if fields is None or self.FIELD_IS_PUBLIC in fields:
             d['is_public'] = self.is_public
         if fields is None or self.FIELD_DATE_CREATED in fields:
-            d['date_created'] = self.date_created
+            d['date_created'] = str_from_datetime(self.date_created)
         if fields is None or self.FIELD_DATE_LAST_UPDATED in fields:
-            d['date_last_updated'] = self.date_last_updated
+            d['date_last_updated'] = str_from_datetime(self.date_last_updated)
 
         if fields is None or self.FIELD_CHILDREN in fields:
             d['children'] = list(self.children)
@@ -230,7 +224,7 @@ class TaskBase(object):
         if 'order_num' in d:
             self.order_num = d['order_num']
         if 'deadline' in d:
-            self.deadline = self._clean_deadline(d['deadline'])
+            self.deadline = self._clean_datetime(d['deadline'])
         if 'expected_duration_minutes' in d:
             self.expected_duration_minutes = d['expected_duration_minutes']
         if 'expected_cost' in d:

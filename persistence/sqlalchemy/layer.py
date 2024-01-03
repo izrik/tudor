@@ -155,12 +155,22 @@ class SqlAlchemyPersistenceLayer(object):
     def create_task(self, summary, description='', is_done=False,
                     is_deleted=False, deadline=None,
                     expected_duration_minutes=None, expected_cost=None,
-                    is_public=False, lazy=None):
+                    is_public=False,
+                    date_created=None,
+                    date_last_updated=None,
+                    lazy=None):
+        if date_created is None:
+            from datetime import datetime
+            date_created = datetime.utcnow()
+        if date_last_updated is None:
+            date_last_updated = date_created
         return self.DbTask(summary=summary, description=description,
                            is_done=is_done, is_deleted=is_deleted,
                            deadline=deadline,
                            expected_duration_minutes=expected_duration_minutes,
                            expected_cost=expected_cost, is_public=is_public,
+                           date_created=date_created,
+                           date_last_updated=date_last_updated,
                            lazy=lazy)
 
     def get_task(self, task_id):

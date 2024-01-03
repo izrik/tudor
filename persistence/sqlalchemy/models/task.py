@@ -71,7 +71,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                 expected_duration_minutes=expected_duration_minutes,
                 expected_cost=expected_cost, is_public=is_public,
                 date_created=date_created,
-                date_last_updated=date_last_updated)
+                date_last_updated=date_last_updated,
+            )
 
         @classmethod
         def from_dict(cls, d, lazy=None):

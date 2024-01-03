@@ -96,11 +96,16 @@ class LogicLayer(object):
                         order_num=None, parent_id=None, is_public=None):
         self._logger.debug('begin')
         self._logger.debug('creating the new task')
+        date_created = datetime.utcnow()
+        date_last_updated = date_created
         task = self.pl.create_task(
             summary=summary, description=description, is_done=is_done,
             is_deleted=is_deleted, deadline=deadline,
             expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, is_public=is_public)
+            expected_cost=expected_cost, is_public=is_public,
+            date_created=date_created,
+            date_last_updated=date_last_updated,
+        )
 
         if order_num is None:
             self._logger.debug('order_num not set, calculating')
@@ -343,6 +348,8 @@ class LogicLayer(object):
 
         task.is_public = is_public
 
+        task.date_last_updated = datetime.utcnow()
+
         self.pl.commit()
 
         return task
@@ -424,7 +431,7 @@ class LogicLayer(object):
                                           self.pl.DESCENDING]]))
             if next_task.order_num > task.order_num:
                 new_order_num = next_task.order_num
-                task.order_num, next_task.order_num =\
+                task.order_num, next_task.order_num = \
                     new_order_num, task.order_num
 
             # TODO: remove all redundant add()'s everywhere
@@ -486,7 +493,7 @@ class LogicLayer(object):
                                           self.pl.DESCENDING]]))
             if next_task.order_num < task.order_num:
                 new_order_num = next_task.order_num
-                task.order_num, next_task.order_num =\
+                task.order_num, next_task.order_num = \
                     new_order_num, task.order_num
 
             self.pl.add(task)
