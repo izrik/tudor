@@ -175,6 +175,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = True
+        task.date_last_updated = datetime.utcnow()
         self.pl.commit()
         return task
 
@@ -185,6 +186,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = False
+        task.date_last_updated = datetime.utcnow()
         self.pl.commit()
         return task
 
@@ -195,6 +197,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = True
+        task.date_last_updated = datetime.utcnow()
         self.pl.commit()
         return task
 
@@ -205,6 +208,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = False
+        task.date_last_updated = datetime.utcnow()
         self.pl.commit()
         return task
 
@@ -403,6 +407,7 @@ class LogicLayer(object):
             self.pl.add(tasks[i])
 
     def do_move_task_up(self, id, show_deleted, current_user):
+        update_timestamp = datetime.utcnow()
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
@@ -424,17 +429,22 @@ class LogicLayer(object):
         if higher_siblings:
             next_task = higher_siblings[0]
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(
-                    self.pl.get_tasks(parent_id=task.parent_id,
-                                      order_by=[[
-                                          self.pl.ORDER_NUM,
-                                          self.pl.DESCENDING]]))
+                tasks_to_reorder = self.pl.get_tasks(
+                    parent_id=task.parent_id,
+                    order_by=[[
+                        self.pl.ORDER_NUM,
+                        self.pl.DESCENDING]])
+                self.reorder_tasks(tasks_to_reorder)
+                for ttr in tasks_to_reorder:
+                    ttr.date_last_updated = update_timestamp
             if next_task.order_num > task.order_num:
                 new_order_num = next_task.order_num
                 task.order_num, next_task.order_num = \
                     new_order_num, task.order_num
 
             # TODO: remove all redundant add()'s everywhere
+            task.date_last_updated = update_timestamp
+            next_task.date_last_updated = update_timestamp
             self.pl.add(task)
             self.pl.add(next_task)
 
@@ -457,7 +467,7 @@ class LogicLayer(object):
         top_task = list(self.pl.get_tasks(**kwargs))
         if top_task and top_task[0] is not task:
             task.order_num = top_task[0].order_num + 1
-
+            task.date_last_updated = datetime.utcnow()
             self.pl.add(task)
 
         self.pl.commit()
@@ -465,6 +475,7 @@ class LogicLayer(object):
         return task
 
     def do_move_task_down(self, id, show_deleted, current_user):
+        update_timestamp = datetime.utcnow()
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
@@ -486,16 +497,21 @@ class LogicLayer(object):
         if lower_siblings:
             next_task = lower_siblings[0]
             if task.order_num == next_task.order_num:
-                self.reorder_tasks(
-                    self.pl.get_tasks(parent_id=task.parent_id,
-                                      order_by=[[
-                                          self.pl.ORDER_NUM,
-                                          self.pl.DESCENDING]]))
+                tasks_to_reorder = self.pl.get_tasks(
+                    parent_id=task.parent_id,
+                    order_by=[[
+                        self.pl.ORDER_NUM,
+                        self.pl.DESCENDING]])
+                self.reorder_tasks(tasks_to_reorder)
+                for ttr in tasks_to_reorder:
+                    ttr.date_last_updated = update_timestamp
             if next_task.order_num < task.order_num:
                 new_order_num = next_task.order_num
                 task.order_num, next_task.order_num = \
                     new_order_num, task.order_num
 
+            task.date_last_updated = update_timestamp
+            next_task.date_last_updated = update_timestamp
             self.pl.add(task)
             self.pl.add(next_task)
 
@@ -519,7 +535,7 @@ class LogicLayer(object):
         bottom_task = list(self.pl.get_tasks(**kwargs))
         if bottom_task and bottom_task[0] is not task:
             task.order_num = bottom_task[0].order_num - 2
-
+            task.date_last_updated = datetime.utcnow()
             self.pl.add(task)
 
         self.pl.commit()
@@ -527,6 +543,7 @@ class LogicLayer(object):
         return task
 
     def do_long_order_change(self, task_to_move_id, target_id, current_user):
+        update_timestamp = datetime.utcnow()
         task_to_move = self.pl.get_task(task_to_move_id)
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
@@ -557,15 +574,18 @@ class LogicLayer(object):
         k = len(siblings) * 2
         for s in siblings2:
             s.order_num = k
+            s.date_last_updated = update_timestamp
             k -= 2
 
         task_to_move.order_num = target.order_num + 1
+        task_to_move.date_last_updated = update_timestamp
         siblings2 = sorted(siblings, key=lambda t: t.order_num,
                            reverse=True)
 
         k = len(siblings) * 2
         for s in siblings2:
             s.order_num = k
+            s.date_last_updated = update_timestamp
             k -= 2
             self.pl.add(s)
 
@@ -772,6 +792,7 @@ class LogicLayer(object):
         return option
 
     def do_reset_order_nums(self, current_user):
+        update_timestamp = datetime.utcnow()
         tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
                             include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
@@ -781,6 +802,7 @@ class LogicLayer(object):
             if task is None:
                 continue
             task.order_num = 2 * k
+            task.date_last_updated = update_timestamp
             self.pl.add(task)
             k -= 1
 
@@ -1024,7 +1046,6 @@ class LogicLayer(object):
                                       include_deleted=True)
 
     def do_submit_task_crud(self, crud_data, current_user):
-
         if current_user is None:
             # guest users not allowed
             raise ValueError('current_user cannot be None.')
@@ -1032,6 +1053,8 @@ class LogicLayer(object):
             # guest users not allowed
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')
+
+        current_timestamp = datetime.utcnow()
 
         # TODO: only load tasks that are specified in crud_data
         tasks = self.load_no_hierarchy(current_user, include_done=True,
@@ -1063,18 +1086,37 @@ class LogicLayer(object):
             cost = money_from_str(cost)
             parent_id = int_from_str(parent_id)
 
+            changed = False
             # TODO: clarify when None means "None" and when it means "Don't set
             # this value".
-            if summary is not None:
+            if summary is not None and task.summary != summary:
                 task.summary = summary
-            task.deadline = deadline
-            task.is_done = is_done
-            task.is_deleted = is_deleted
-            if order_num is not None:
+                changed = True
+            if task.deadline != deadline:
+                task.deadline = deadline
+                changed = True
+            if task.is_done != is_done:
+                task.is_done = is_done
+                changed = True
+            if task.is_deleted != is_deleted:
+                task.is_deleted = is_deleted
+                changed = True
+            if order_num is not None and task.order_num != order_num:
                 task.order_num = order_num
-            task.expected_duration_minutes = duration
-            task.expected_cost = cost
-            task.parent = self.pl.get_task(parent_id)
+                changed = True
+            if task.expected_duration_minutes != duration:
+                task.expected_duration_minutes = duration
+                changed = True
+            if task.expected_cost != cost:
+                task.expected_cost = cost
+                changed = True
+            new_parent = self.pl.get_task(parent_id)
+            if task.parent != new_parent:
+                task.parent = new_parent
+                changed = True
+
+            if changed:
+                task.date_last_updated = current_timestamp
 
             self.pl.add(task)
 
@@ -1142,11 +1184,13 @@ class LogicLayer(object):
         tag = self.pl.create_tag(task.summary, task.description)
         self.pl.add(tag)
 
+        current_timestamp = datetime.utcnow()
         for child in list(task.children):
             child.tags.append(tag)
             child.parent = task.parent
             for tag2 in task.tags:
                 child.tags.append(tag2)
+            child.date_last_updated = current_timestamp
             self.pl.add(child)
 
         task.parent = None
