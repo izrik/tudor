@@ -1,4 +1,3 @@
-
 import collections
 from numbers import Number
 
@@ -110,6 +109,21 @@ class SqlAlchemyPersistenceLayer(object):
         self.db.session.rollback()
         self._logger.debug('end')
 
+    def execute(self, *args, **kwargs):
+        self.db.session.execute(*args, **kwargs)
+
+    def get_schema_version(self):
+        try:
+            dbopt = self.query(self.DbOption).get('__version__')
+        except Exception as e:
+            print(f'got exception {e}')
+            return None
+        else:
+            return dbopt
+
+    def query(self, *args, **kwargs):
+        return self.db.session.query(*args, **kwargs)
+
     def _is_db_object(self, obj):
         return isinstance(obj, self.db.Model)
 
@@ -141,12 +155,22 @@ class SqlAlchemyPersistenceLayer(object):
     def create_task(self, summary, description='', is_done=False,
                     is_deleted=False, deadline=None,
                     expected_duration_minutes=None, expected_cost=None,
-                    is_public=False, lazy=None):
+                    is_public=False,
+                    date_created=None,
+                    date_last_updated=None,
+                    lazy=None):
+        if date_created is None:
+            from datetime import datetime
+            date_created = datetime.utcnow()
+        if date_last_updated is None:
+            date_last_updated = date_created
         return self.DbTask(summary=summary, description=description,
                            is_done=is_done, is_deleted=is_deleted,
                            deadline=deadline,
                            expected_duration_minutes=expected_duration_minutes,
                            expected_cost=expected_cost, is_public=is_public,
+                           date_created=date_created,
+                           date_last_updated=date_last_updated,
                            lazy=lazy)
 
     def get_task(self, task_id):

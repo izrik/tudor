@@ -28,22 +28,28 @@ class TaskBase(object):
     FIELD_NOTES = 'NOTES'
     FIELD_ATTACHMENTS = 'ATTACHMENTS'
     FIELD_IS_PUBLIC = 'IS_PUBLIC'
+    FIELD_DATE_CREATED = 'DATE_CREATED'
+    FIELD_DATE_LAST_UPDATED = 'DATE_LAST_UPDATED'
 
     def __init__(self, summary, description='', is_done=False,
                  is_deleted=False, deadline=None,
                  expected_duration_minutes=None, expected_cost=None,
-                 is_public=False):
+                 is_public=False,
+                 date_created=None,
+                 date_last_updated=None):
         self._logger.debug('TaskBase.__init__ %s', self)
 
         self.summary = summary
         self.description = description
         self.is_done = not not is_done
         self.is_deleted = not not is_deleted
-        self.deadline = self._clean_deadline(deadline)
+        self.deadline = self._clean_datetime(deadline)
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
         self.is_public = not not is_public
+        self.date_created = self._clean_datetime(date_created)
+        self.date_last_updated = self._clean_datetime(date_last_updated)
 
     @property
     def object_type(self):
@@ -59,10 +65,10 @@ class TaskBase(object):
                                                     self.id, id(self))
 
     @staticmethod
-    def _clean_deadline(deadline):
-        if isinstance(deadline, str):
-            return dparse(deadline)
-        return deadline
+    def _clean_datetime(dt):
+        if isinstance(dt, str):
+            return dparse(dt)
+        return dt
 
     def to_dict(self, fields=None):
 
@@ -91,6 +97,10 @@ class TaskBase(object):
             d['parent'] = self.parent
         if fields is None or self.FIELD_IS_PUBLIC in fields:
             d['is_public'] = self.is_public
+        if fields is None or self.FIELD_DATE_CREATED in fields:
+            d['date_created'] = str_from_datetime(self.date_created)
+        if fields is None or self.FIELD_DATE_LAST_UPDATED in fields:
+            d['date_last_updated'] = str_from_datetime(self.date_last_updated)
 
         if fields is None or self.FIELD_CHILDREN in fields:
             d['children'] = list(self.children)
@@ -162,12 +172,17 @@ class TaskBase(object):
                                           None)
         expected_cost = d.get('expected_cost', None)
         is_public = d.get('is_public', False)
+        date_created = d.get('date_created', None)
+        date_last_updated = d.get('date_last_updated', None)
 
         task = cls(summary=summary, description=description,
                    is_done=is_done, is_deleted=is_deleted,
                    deadline=deadline,
                    expected_duration_minutes=expected_duration_minutes,
-                   expected_cost=expected_cost, is_public=is_public, lazy=lazy)
+                   expected_cost=expected_cost, is_public=is_public,
+                   date_created=date_created,
+                   date_last_updated=date_last_updated,
+                   lazy=lazy)
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
@@ -209,7 +224,7 @@ class TaskBase(object):
         if 'order_num' in d:
             self.order_num = d['order_num']
         if 'deadline' in d:
-            self.deadline = self._clean_deadline(d['deadline'])
+            self.deadline = self._clean_datetime(d['deadline'])
         if 'expected_duration_minutes' in d:
             self.expected_duration_minutes = d['expected_duration_minutes']
         if 'expected_cost' in d:
@@ -236,6 +251,10 @@ class TaskBase(object):
             assign(self.attachments, d['attachments'])
         if 'is_public' in d:
             self.is_public = d['is_public']
+        if 'date_created' in d:
+            self.date_created = d['date_created']
+        if 'date_last_updated' in d:
+            self.date_last_updated = d['date_last_updated']
 
     def get_expected_cost_for_export(self):
         value = money_from_str(self.expected_cost)

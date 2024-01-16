@@ -27,6 +27,8 @@ class TaskTest(unittest.TestCase):
         self.assertIsNone(task.expected_duration_minutes)
         self.assertIsNone(task.expected_cost)
         self.assertFalse(task.is_public)
+        self.assertIsNone(task.date_created)
+        self.assertIsNone(task.date_last_updated)
 
     def test_constructor_sets_fields(self):
         # when
@@ -38,7 +40,10 @@ class TaskTest(unittest.TestCase):
             deadline='2038-01-19',
             expected_duration_minutes=5,
             expected_cost=7,
-            is_public=True)
+            is_public=True,
+            date_created='2024-01-01',
+            date_last_updated='2024-01-02',
+        )
         # then
         self.assertEqual('description', task.description)
         self.assertTrue(task.is_done)
@@ -47,6 +52,8 @@ class TaskTest(unittest.TestCase):
         self.assertEqual(5, task.expected_duration_minutes)
         self.assertEqual(7, task.expected_cost)
         self.assertTrue(task.is_public)
+        self.assertEqual(datetime(2024, 1, 1), task.date_created)
+        self.assertEqual(datetime(2024, 1, 2), task.date_last_updated)
 
     def test_to_dict_returns_correct_values(self):
         # given
@@ -58,7 +65,10 @@ class TaskTest(unittest.TestCase):
             deadline='2038-01-19',
             expected_duration_minutes=5,
             expected_cost=7,
-            is_public=True)
+            is_public=True,
+            date_created='2024-01-01',
+            date_last_updated='2024-01-02',
+        )
         # when
         result = task.to_dict()
         # then
@@ -78,6 +88,10 @@ class TaskTest(unittest.TestCase):
         self.assertEqual(Decimal('7.00'), result['expected_cost'])
         self.assertIn('is_public', result)
         self.assertTrue(result['is_public'])
+        self.assertIn('date_created', result)
+        self.assertEqual('2024-01-01 00:00:00', result['date_created'])
+        self.assertIn('date_last_updated', result)
+        self.assertEqual('2024-01-02 00:00:00', result['date_last_updated'])
 
     def test_to_dict_returns_other_values_not_in_the_constructor(self):
         # given
@@ -89,11 +103,14 @@ class TaskTest(unittest.TestCase):
             deadline='2038-01-19',
             expected_duration_minutes=5,
             expected_cost=7,
-            is_public=True)
+            is_public=True,
+            date_created='2024-01-01',
+            date_last_updated='2024-01-02',
+        )
         # when
         result = task.to_dict()
         # then
-        self.assertEqual(20, len(result))
+        self.assertEqual(22, len(result))
         self.assertIn('id', result)
         self.assertIsNone(result['id'])
         self.assertIn('order_num', result)
