@@ -12,4 +12,6 @@ fi
 
 echo "Running version $VERSION..."
 
-docker run --rm -it "$@" "tudor:$VERSION"
+PORT=${PORT:-8080}
+
+docker run --rm -it -p $PORT:8080 "$@" "tudor:$VERSION"

@@ -17,7 +17,7 @@ COPY requirements.txt \
      ./
 
 RUN apk add --virtual .build-deps gcc musl-dev libffi-dev g++ && \
-    pip install -r requirements.txt     --no-cache-dir && \
+    pip install --use-pep517 -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
 
 COPY collections_util.py \
