@@ -18,6 +18,7 @@ thead {
 
 .task_table_summary {
     /*padding-left: { {depth*1.5} }em*/
+    padding-left: inherit;
 }
 
 .tasks .odd, .task_children .odd, tr.odd {
