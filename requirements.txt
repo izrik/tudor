@@ -1,4 +1,5 @@
 SQLAlchemy==1.4.40
+packaging==24.2
 pycmarkgfm==1.2.0
 python-dateutil==2.8.2
 Flask==2.3.2
