@@ -347,6 +347,13 @@ def generate_app(db_uri=None,
     def setup_options():
         return {'opts': Options}
 
+    # Error pages
+
+    @app.errorhandler(404)
+    def handle_not_found(e):
+        from flask import render_template
+        return render_template('error_404_not_found.html'), 404
+
     # View Functions
 
     @login_required
