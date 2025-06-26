@@ -1,0 +1,20 @@
+{% extends "base.t.html" %}
+{% block title %}401 Unauthorized - {{ super() }}{% endblock %}
+{% block header_sub_text %}{% endblock %}
+{% block content %}
+<div class="container">
+<div>
+    <h1>Unauthorized</h1>
+
+    <p>The server could not verify that you are authorized to access the URL requested. You either supplied the wrong credentials (e.g. a bad password), or your browser doesn't understand how to supply the credentials required.</p>
+</div>
+  <form action="{{ url_for('login', next=request.path) }}" method="post" class="form-horizontal">
+    <h2>Login</h2>
+    <input type="text" id="email" name="email" class="input-xlarge"
+        placeholder="Enter Email Address" required>
+    <input type="password" id="password" name="password" class="input-xlarge"
+        placeholder="Enter Password" required>
+    <button type="submit" class="btn btn-success">Signin</button>
+  </form>
+</div>
+{% endblock %}
