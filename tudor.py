@@ -410,6 +410,9 @@ def generate_app(db_uri=None,
     def view_task(id):
         return vl.task(request, Options.get_user(), id)
 
+    def clone_task(id):
+        return vl.task_clone(request, Options.get_user(), id)
+
     def view_task_hierarchy(id):
         return vl.task_hierarchy(request, Options.get_user(), id)
 
@@ -744,6 +747,7 @@ def generate_app(db_uri=None,
         '/task/<int:task_id>/remove_prioritize_after/'
         '<int:prioritize_after_id>', None, remove_prioritize_after_from_task,
         methods=['GET', 'POST'])
+    app.add_url_rule('/task/<int:id>/clone', None, clone_task)
 
     return app
 
