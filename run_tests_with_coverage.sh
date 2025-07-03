@@ -5,4 +5,4 @@ logging_util
 
 coverage run --source=$SOURCES --branch -m unittest discover -s tests -p '*.py' -t . "$@" && \
     coverage html && \
-    csslint static/
+    csslint --exclude-list=static/bootstrap.min.css,static/bootstrap.css static/
