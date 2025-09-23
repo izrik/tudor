@@ -1,5 +1,11 @@
 FROM python:3.11.4-alpine3.18
 
+ARG VERSION=unknown
+ARG REVISION=unknown
+
+LABEL Name=tudor
+LABEL Version=$VERSION
+
 RUN mkdir -p /opt/tudor
 
 WORKDIR /opt/tudor
@@ -42,5 +48,8 @@ COPY view view
 EXPOSE 8080
 ENV TUDOR_PORT=8080 \
     TUDOR_HOST=0.0.0.0
+
+RUN echo "__version__ = '$VERSION'" > __version__.py
+ENV TUDOR_REVISION="$REVISION"
 
 CMD ["/opt/tudor/start.sh"]
