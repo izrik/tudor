@@ -18,6 +18,6 @@ docker run --rm -it \
   -p "$PORT:8080" \
   -e TUDOR_PORT="8080" \
   -e TUDOR_SECRET_KEY=7RJK2cdY3T2xKgt1 \
-  -e TUDOR_DB_URI=postgresql://postgres@host.docker.internal:5432/tudor \
+  -e TUDOR_DB_URI=postgresql://issues:yJSvdka43czJ1typ@host.docker.internal:5432/issues \
   "$@" \
   "tudor:$VERSION"
