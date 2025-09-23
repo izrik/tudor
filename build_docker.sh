@@ -9,8 +9,16 @@ if [[ -z "$VERSION" ]]; then
   exit 1
 fi
 
+REVISION="$(git describe --dirty --always --abbrev=40)"
+
 echo "Building version $VERSION..."
-docker build -t tudor:latest .
+echo "  Revision: $REVISION"
+docker build \
+  -t tudor:latest \
+  --build-arg VERSION="$VERSION" \
+  --build-arg REVISION="$REVISION" \
+  .
 
 docker tag tudor:latest "tudor:$VERSION"
 docker tag tudor:latest "izrik/tudor:$VERSION"
+echo "To push, use: docker push izrik/tudor:$VERSION"

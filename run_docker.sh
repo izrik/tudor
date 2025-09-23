@@ -14,4 +14,10 @@ echo "Running version $VERSION..."
 
 PORT=${PORT:-8080}
 
-docker run --rm -it -p $PORT:8080 "$@" "tudor:$VERSION"
+docker run --rm -it \
+  -p "$PORT:8080" \
+  -e TUDOR_PORT="8080" \
+  -e TUDOR_SECRET_KEY=7RJK2cdY3T2xKgt1 \
+  -e TUDOR_DB_URI=postgresql://postgres@host.docker.internal:5432/tudor \
+  "$@" \
+  "tudor:$VERSION"
