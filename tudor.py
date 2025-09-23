@@ -6,6 +6,7 @@ import sys
 import traceback
 from functools import wraps
 from os import environ
+import os
 
 from datetime import datetime
 from flask import Flask, request
@@ -21,7 +22,6 @@ from persistence.migration import auto_migrate
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
-__version__ = '0.9'
 try:
     import git
 
@@ -29,9 +29,14 @@ try:
         __revision__ = git.Repo('.').git.describe(tags=True, dirty=True,
                                                   always=True, abbrev=40)
     except git.InvalidGitRepositoryError:
-        __revision__ = 'unknown'
+        __revision__ = os.getenv('TUDOR_REVISION', 'unknown')
 except ImportError:
-    __revision__ = 'unknown'
+    __revision__ = os.getenv('TUDOR_REVISION', 'unknown')
+
+try:
+    from __version__ import __version__
+except ImportError:
+    __version__ = 'unknown'
 
 DEFAULT_TUDOR_DEBUG = False
 DEFAULT_TUDOR_HOST = '127.0.0.1'
