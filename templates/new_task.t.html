@@ -40,11 +40,11 @@
             <tr><td>Expected cost</td><td><input type="text" name="expected_cost" value="{{ expected_cost if expected_cost != None else '' }}" /></td></tr>
             <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ parent_id if parent_id != None }}" /></td></tr>
             <tr><td>Public?</td><td><input type="checkbox" name="is_public" /></td></tr>
-             <tr><td>Tags</td><td><input type="text" name="tags" value="{{ tags if tags != None}}" /></td></tr>
-             {% if is_clone %}
-             <tr><td>Clone child tasks?</td><td><input type="checkbox" name="clone_children" /></td></tr>
-             <input type="hidden" name="clone_id" value="{{ clone_id }}" />
-             {% endif %}
+            <tr><td>Tags</td><td><input type="text" name="tags" value="{{ tags if tags != None}}" /></td></tr>
+            {% if is_clone %}
+            <tr><td>Clone child tasks?</td><td><input type="checkbox" name="clone_children" /></td></tr>
+            <input type="hidden" name="clone_id" value="{{ clone_id }}" />
+            {% endif %}
          </table>
         <p></p>
         <input class="btn btn-primary" type="submit" value="Save"/>
