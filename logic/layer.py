@@ -140,6 +140,34 @@ class LogicLayer(object):
         self._logger.debug('end')
         return task
 
+    def clone_task_children_recursive(self, original_task_id, new_parent_id, current_user):
+        self._logger.debug('cloning children of task %d to new parent %d', original_task_id, new_parent_id)
+        original_task = self.pl.get_task(original_task_id)
+        if not original_task:
+            self._logger.warning('original task %d not found', original_task_id)
+            return
+        children = list(self.pl.get_tasks(parent_id=original_task_id))
+        for child in children:
+            self._logger.debug('cloning child task %d', child.id)
+            new_child = self.create_new_task(
+                summary=child.summary,
+                description=child.description,
+                is_done=False,
+                is_deleted=False,
+                deadline=child.deadline,
+                expected_duration_minutes=child.expected_duration_minutes,
+                expected_cost=child.expected_cost,
+                order_num=child.order_num,
+                parent_id=new_parent_id,
+                is_public=child.is_public,
+                current_user=current_user
+            )
+            # copy tags
+            for tag in child.tags:
+                self.do_add_tag_to_task(new_child, tag.value, current_user)
+            # recursively clone grandchildren
+            self.clone_task_children_recursive(child.id, new_child.id, current_user)
+
     def get_lowest_order_num(self):
         self._logger.debug('getting lowest order task')
         tasks = self.pl.get_tasks(
