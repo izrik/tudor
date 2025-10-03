@@ -807,23 +807,6 @@ class ViewLayer(object):
         data = self.ll.get_task_data(task_id, current_user)
         task = data["task"]
 
-        summary = task.summary + ' (copy)'
-        description = task.description
-        deadline = task.deadline
-        is_done = False
-        is_deleted = False
-        order_num = task.order_num
-        expected_duration_minutes = task.expected_duration_minutes
-        expected_cost = task.expected_cost
-        parent_id = task.parent_id
-        tags = ','.join(tag.value.strip() for tag in task.tags)
+        tag_list = ','.join(tag.value.strip() for tag in task.tags)
 
-        prev_url = self.get_form_or_arg(request, 'prev_url')
-
-        return self.render_template(
-            'new_task.t.html', prev_url=prev_url, summary=summary,
-            description=description, deadline=deadline, is_done=is_done,
-            is_deleted=is_deleted, order_num=order_num,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, parent_id=parent_id, tags=tags,
-            form_action='../new')
+        return self.render_template("clone_task.t.html", task=task, tag_list=tag_list)

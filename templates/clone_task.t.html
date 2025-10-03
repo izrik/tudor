@@ -1,0 +1,40 @@
+{% extends "base.t.html" %}
+{% block title %}Cloning "{{ task.summary if task.summary != None }}" (ID {{task.id}}) - {{ super() }}{% endblock %}
+{% block link_css %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/css/bootstrap-markdown.min.css" rel="stylesheet"/>
+{% endblock %}
+{% block header_sub_text %}Cloning "{{ task.summary if task.summary != None }}" (ID {{task.id}}){% endblock %}
+{% block content %}
+<div class="container">
+<div>
+    <form action="../new" method="post" enctype="multipart/form-data">
+        <input class="btn btn-primary" type="submit" value="Create Clone"/>
+        <a class="btn btn-info" href="{{ url_for('view_task', id=task.id) }}">Back</a>
+        <p></p>
+        <textarea name="description" rows="12" data-provide="markdown" data-resize="vertical">{{ task.description if task.description != None }}</textarea>
+        <table>
+            <tr><td>ID</td><td>(Not yet assigned)</td></tr>
+            <tr><td>Summary</td><td><input type="text" name="summary" value="{{ task.summary if task.summary != None }} (copy)" /></td></tr>
+            <tr><td>Deadline</td><td><input type="text" name="deadline" value="{{ task.deadline if task.deadline != None }}"></td></tr>
+            <tr><td>Done?</td><td><input type="checkbox" name="is_done" /></td></tr>
+            <tr><td>Deleted?</td><td><input type="checkbox" name="is_deleted"/></td></tr>
+            <tr><td>Order #</td><td><input type="text" name="order_num" value="{{ task.order_num if task.order_num != None }}" /></td></tr>
+            <tr><td>Expected duration (in minutes)</td><td><input type="text" name="expected_duration_minutes" value="{{ task.expected_duration_minutes if task.expected_duration_minutes != None }}" /></td></tr>
+            <tr><td>Expected cost</td><td><input type="text" name="expected_cost" value="{{ task.get_expected_cost_for_viewing() }}" /></td></tr>
+            <tr><td>Parent ID</td><td><input type="text" name="parent_id" value="{{ task.parent_id if task.parent_id != None }}" /></td></tr>
+            <tr><td>Public?</td><td><input type="checkbox" name="is_public" {% if task.is_public %} checked {% endif %} /></td></tr>
+            <tr><td>Tags</td><td><input type="text" name="tags" value="{{ tag_list }}" /></td></tr>
+        </table>
+        <p></p>
+        <input class="btn btn-primary" type="submit" value="Create Clone"/>
+        <a class="btn btn-info" href="{{ url_for('view_task', id=task.id) }}">Back</a>
+    </form>
+</div>
+</div>
+{% endblock %}
+
+{% block endbody %}
+    {{ super() }}
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-markdown/2.8.0/js/bootstrap-markdown.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/markdown.js/0.5.0/markdown.min.js"></script>
+{% endblock %}
