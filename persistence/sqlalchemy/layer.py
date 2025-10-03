@@ -1,7 +1,7 @@
 import collections
 from numbers import Number
 
-from sqlalchemy import or_
+from sqlalchemy import or_, select, exists, false, func
 
 from persistence.sqlalchemy.models.attachment import generate_attachment_class
 from persistence.sqlalchemy.models.note import generate_note_class
@@ -114,7 +114,8 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_schema_version(self):
         try:
-            dbopt = self.query(self.DbOption).get('__version__')
+            stmt = select(self.DbOption).where(self.DbOption.key == '__version__')
+            dbopt = self.db.session.execute(stmt).scalar_one_or_none()
         except Exception as e:
             print(f'got exception {e}')
             return None
@@ -122,6 +123,7 @@ class SqlAlchemyPersistenceLayer(object):
             return dbopt
 
     def query(self, *args, **kwargs):
+        # For backward compatibility, but deprecated in SQLAlchemy 2.0
         return self.db.session.query(*args, **kwargs)
 
     def _is_db_object(self, obj):
@@ -150,6 +152,7 @@ class SqlAlchemyPersistenceLayer(object):
 
     @property
     def task_query(self):
+        # Deprecated in SQLAlchemy 2.0, but keeping for compatibility
         return self.DbTask.query
 
     def create_task(self, summary, description='', is_done=False,
@@ -179,7 +182,8 @@ class SqlAlchemyPersistenceLayer(object):
     def _get_db_task(self, task_id):
         if task_id is None:
             return None
-        return self.task_query.get(task_id)
+        stmt = select(self.DbTask).where(self.DbTask.id == task_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def _get_tasks_query(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                          parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -198,45 +202,43 @@ class SqlAlchemyPersistenceLayer(object):
           (e.g. [ORDER_NUM, ASCENDING]). Default direction is ASCENDING if not
            specified."""
 
-        query = self.task_query
+        query = select(self.DbTask)
 
         if is_done is not self.UNSPECIFIED:
-            query = query.filter_by(is_done=is_done)
+            query = query.where(self.DbTask.is_done == is_done)
 
         if is_deleted is not self.UNSPECIFIED:
-            query = query.filter_by(is_deleted=is_deleted)
+            query = query.where(self.DbTask.is_deleted == is_deleted)
 
         if is_public is not self.UNSPECIFIED:
-            query = query.filter_by(is_public=is_public)
+            query = query.where(self.DbTask.is_public == is_public)
 
         if parent_id is not self.UNSPECIFIED:
             if parent_id is None:
-                query = query.filter(self.DbTask.parent_id.is_(None))
+                query = query.where(self.DbTask.parent_id.is_(None))
             else:
-                query = query.filter_by(parent_id=parent_id)
+                query = query.where(self.DbTask.parent_id == parent_id)
 
         if parent_id_in is not self.UNSPECIFIED:
             if parent_id_in:
-                query = query.filter(self.DbTask.parent_id.in_(parent_id_in))
+                query = query.where(self.DbTask.parent_id.in_(parent_id_in))
             else:
                 # avoid performance penalty
-                query = query.filter(False)
+                query = query.where(false())
 
         if users_contains is not self.UNSPECIFIED:
-            query = query.filter(self.DbTask.users.contains(users_contains))
+            query = query.where(self.DbTask.users.any(id=users_contains.id))
 
         if is_public_or_users_contains is not self.UNSPECIFIED:
             db_user = is_public_or_users_contains
-            query_m1 = query.outerjoin(
+            query = query.outerjoin(
                 self.users_tasks_table,
-                self.users_tasks_table.c.task_id == self.DbTask.id)
-            query_m2 = query_m1.filter(
+                self.users_tasks_table.c.task_id == self.DbTask.id).where(
                 or_(
                     self.users_tasks_table.c.user_id == db_user.id,
                     self.DbTask.is_public
                 )
             )
-            query = query_m2
 
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
@@ -244,9 +246,9 @@ class SqlAlchemyPersistenceLayer(object):
             # that always returns an empty set, without the performance
             # penalty.
             if task_id_in:
-                query = query.filter(self.DbTask.id.in_(task_id_in))
+                query = query.where(self.DbTask.id.in_(task_id_in))
             else:
-                query = query.filter(False)
+                query = query.where(false())
 
         if task_id_not_in is not self.UNSPECIFIED:
             # Using notin_ on an empty set works but is expensive for some db
@@ -254,28 +256,28 @@ class SqlAlchemyPersistenceLayer(object):
             # rows. In the case of an empty collection, just use the same query
             # object again, so we won't incur the performance penalty.
             if task_id_not_in:
-                query = query.filter(self.DbTask.id.notin_(task_id_not_in))
+                query = query.where(self.DbTask.id.notin_(task_id_not_in))
             else:
                 query = query
 
         if deadline_is_not_none:
-            query = query.filter(self.DbTask.deadline.isnot(None))
+            query = query.where(self.DbTask.deadline.isnot(None))
 
         if tags_contains is not self.UNSPECIFIED:
-            query = query.filter(self.DbTask.tags.contains(tags_contains))
+            query = query.where(self.DbTask.tags.any(id=tags_contains.id))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
-            query = query.filter(
+            query = query.where(
                 self.DbTask.summary.ilike(like_term) |
                 self.DbTask.description.ilike(like_term))
 
         if order_num_greq_than is not self.UNSPECIFIED:
-            query = query.filter(self.DbTask.order_num >= order_num_greq_than)
+            query = query.where(self.DbTask.order_num >= order_num_greq_than)
 
         if order_num_lesseq_than is not self.UNSPECIFIED:
-            query = query.filter(self.DbTask.order_num <=
-                                 order_num_lesseq_than)
+            query = query.where(self.DbTask.order_num <=
+                                  order_num_lesseq_than)
 
         if order_by is not self.UNSPECIFIED:
             if not is_iterable(order_by):
@@ -323,9 +325,9 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-            limit=limit)
-        return (_ for _ in query)
+             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+             limit=limit)
+        return (_ for _ in self.db.session.execute(query).scalars())
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -382,7 +384,7 @@ class SqlAlchemyPersistenceLayer(object):
                     order_num_greq_than=UNSPECIFIED,
                     order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
                     limit=UNSPECIFIED):
-        return self._get_tasks_query(
+        query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
             task_id_in=task_id_in, task_id_not_in=task_id_not_in,
@@ -392,10 +394,13 @@ class SqlAlchemyPersistenceLayer(object):
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-            limit=limit).count()
+            limit=limit)
+        count_query = select(func.count()).select_from(query.subquery())
+        return self.db.session.execute(count_query).scalar()
 
     @property
     def tag_query(self):
+        # Deprecated in SQLAlchemy 2.0
         return self.DbTag.query
 
     def create_tag(self, value, description=None, lazy=None):
@@ -404,7 +409,8 @@ class SqlAlchemyPersistenceLayer(object):
     def _get_db_tag(self, tag_id):
         if tag_id is None:
             raise ValueError('tag_id cannot be None')
-        return self.tag_query.get(tag_id)
+        stmt = select(self.DbTag).where(self.DbTag.id == tag_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def get_tag(self, tag_id):
         if tag_id is None:
@@ -412,22 +418,25 @@ class SqlAlchemyPersistenceLayer(object):
         return self._get_db_tag(tag_id)
 
     def _get_tags_query(self, value=UNSPECIFIED, limit=None):
-        query = self.DbTag.query
+        query = select(self.DbTag)
         if value is not self.UNSPECIFIED:
-            query = query.filter_by(value=value)
+            query = query.where(self.DbTag.value == value)
         if limit is not None:
             query = query.limit(limit)
         return query
 
     def get_tags(self, value=UNSPECIFIED, limit=None):
         query = self._get_tags_query(value=value, limit=limit)
-        return (_ for _ in query)
+        return (_ for _ in self.db.session.execute(query).scalars())
 
     def count_tags(self, value=UNSPECIFIED, limit=None):
-        return self._get_tags_query(value=value, limit=limit).count()
+        query = self._get_tags_query(value=value, limit=limit)
+        count_query = select(func.count()).select_from(query.subquery())
+        return self.db.session.execute(count_query).scalar()
 
     def get_tag_by_value(self, value):
-        return self._get_tags_query(value=value).first()
+        query = self._get_tags_query(value=value)
+        return self.db.session.execute(query).scalars().first()
 
     @property
     def note_query(self):
@@ -453,7 +462,7 @@ class SqlAlchemyPersistenceLayer(object):
                 query = query.filter(self.DbNote.id.in_(note_id_in))
             else:
                 # performance improvement
-                query = query.filter(False)
+                query = query.where(false())
         return query
 
     def get_notes(self, note_id_in=UNSPECIFIED):
@@ -490,7 +499,7 @@ class SqlAlchemyPersistenceLayer(object):
                 query = query.filter(
                     self.DbAttachment.id.in_(attachment_id_in))
             else:
-                query = query.filter(False)
+                query = query.where(false())
         return query
 
     def get_attachments(self, attachment_id_in=UNSPECIFIED):
@@ -540,7 +549,7 @@ class SqlAlchemyPersistenceLayer(object):
                 query = query.filter(self.DbUser.email.in_(email_in))
             else:
                 # avoid performance penalty
-                query = query.filter(False)
+                query = query.where(false())
         return query
 
     def get_users(self, email_in=UNSPECIFIED):
@@ -574,7 +583,7 @@ class SqlAlchemyPersistenceLayer(object):
                 query = query.filter(self.DbOption.key.in_(key_in))
             else:
                 # avoid performance penalty
-                query = query.filter(False)
+                query = query.where(false())
         return query
 
     def get_options(self, key_in=UNSPECIFIED):
