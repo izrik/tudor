@@ -223,6 +223,12 @@ class ViewLayer(object):
                 self._logger.debug('adding tag "%s"', tag_name)
                 self.ll.do_add_tag_to_task(task, tag_name, current_user)
 
+        clone_id = self.get_form_or_arg(request, 'clone_id') or None
+        clone_children = self.get_form_or_arg(request, 'clone_children') or None
+        if clone_id and clone_children:
+            self._logger.debug('cloning children of task %s to new task %s', clone_id, task.id)
+            self.ll.clone_task_children_recursive(int(clone_id), task.id, current_user)
+
         self._logger.debug('getting next_url')
         next_url = self.get_form_or_arg(request, 'next_url')
         if not next_url:
@@ -826,4 +832,4 @@ class ViewLayer(object):
             is_deleted=is_deleted, order_num=order_num,
             expected_duration_minutes=expected_duration_minutes,
             expected_cost=expected_cost, parent_id=parent_id, tags=tags,
-            form_action='../new')
+            form_action='../new', is_clone=True, clone_id=task_id)
