@@ -4,9 +4,6 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
 class InternalsTest(PersistenceLayerTestBase):
-    def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
 
     # def test_added_domain_objects_are_added_to_list_of_added_objects(self):
     #     # given

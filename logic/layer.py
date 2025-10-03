@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from datetime import datetime
+from datetime import datetime, UTC
 from numbers import Number
 
 from dateutil.parser import parse as dparse
@@ -96,7 +96,7 @@ class LogicLayer(object):
                         order_num=None, parent_id=None, is_public=None):
         self._logger.debug('begin')
         self._logger.debug('creating the new task')
-        date_created = datetime.utcnow()
+        date_created = datetime.now(UTC)
         date_last_updated = date_created
         task = self.pl.create_task(
             summary=summary, description=description, is_done=is_done,
@@ -203,7 +203,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = True
-        task.date_last_updated = datetime.utcnow()
+        task.date_last_updated = datetime.now(UTC)
         self.pl.commit()
         return task
 
@@ -214,7 +214,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = False
-        task.date_last_updated = datetime.utcnow()
+        task.date_last_updated = datetime.now(UTC)
         self.pl.commit()
         return task
 
@@ -225,7 +225,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = True
-        task.date_last_updated = datetime.utcnow()
+        task.date_last_updated = datetime.now(UTC)
         self.pl.commit()
         return task
 
@@ -236,7 +236,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = False
-        task.date_last_updated = datetime.utcnow()
+        task.date_last_updated = datetime.now(UTC)
         self.pl.commit()
         return task
 
@@ -318,7 +318,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.NotFound()
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(UTC)
         note = self.pl.create_note(content, timestamp)
         note.task = task
         self.pl.add(note)
@@ -380,7 +380,7 @@ class LogicLayer(object):
 
         task.is_public = is_public
 
-        task.date_last_updated = datetime.utcnow()
+        task.date_last_updated = datetime.now(UTC)
 
         self.pl.commit()
 
@@ -435,7 +435,7 @@ class LogicLayer(object):
             self.pl.add(tasks[i])
 
     def do_move_task_up(self, id, show_deleted, current_user):
-        update_timestamp = datetime.utcnow()
+        update_timestamp = datetime.now(UTC)
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
@@ -495,7 +495,7 @@ class LogicLayer(object):
         top_task = list(self.pl.get_tasks(**kwargs))
         if top_task and top_task[0] is not task:
             task.order_num = top_task[0].order_num + 1
-            task.date_last_updated = datetime.utcnow()
+            task.date_last_updated = datetime.now(UTC)
             self.pl.add(task)
 
         self.pl.commit()
@@ -503,7 +503,7 @@ class LogicLayer(object):
         return task
 
     def do_move_task_down(self, id, show_deleted, current_user):
-        update_timestamp = datetime.utcnow()
+        update_timestamp = datetime.now(UTC)
         task = self.pl.get_task(id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
@@ -563,7 +563,7 @@ class LogicLayer(object):
         bottom_task = list(self.pl.get_tasks(**kwargs))
         if bottom_task and bottom_task[0] is not task:
             task.order_num = bottom_task[0].order_num - 2
-            task.date_last_updated = datetime.utcnow()
+            task.date_last_updated = datetime.now(UTC)
             self.pl.add(task)
 
         self.pl.commit()
@@ -571,7 +571,7 @@ class LogicLayer(object):
         return task
 
     def do_long_order_change(self, task_to_move_id, target_id, current_user):
-        update_timestamp = datetime.utcnow()
+        update_timestamp = datetime.now(UTC)
         task_to_move = self.pl.get_task(task_to_move_id)
         if task_to_move is None:
             raise werkzeug.exceptions.NotFound(
@@ -820,7 +820,7 @@ class LogicLayer(object):
         return option
 
     def do_reset_order_nums(self, current_user):
-        update_timestamp = datetime.utcnow()
+        update_timestamp = datetime.now(UTC)
         tasks_h = self.load(current_user, root_task_id=None, max_depth=None,
                             include_done=True, include_deleted=True)
         tasks_h = self.sort_by_hierarchy(tasks_h)
@@ -1082,7 +1082,7 @@ class LogicLayer(object):
             # TODO: use a better exception type for unauthorized operations
             raise TypeError('Invalid user type.')
 
-        current_timestamp = datetime.utcnow()
+        current_timestamp = datetime.now(UTC)
 
         # TODO: only load tasks that are specified in crud_data
         tasks = self.load_no_hierarchy(current_user, include_done=True,
@@ -1212,7 +1212,7 @@ class LogicLayer(object):
         tag = self.pl.create_tag(task.summary, task.description)
         self.pl.add(tag)
 
-        current_timestamp = datetime.utcnow()
+        current_timestamp = datetime.now(UTC)
         for child in list(task.children):
             child.tags.append(tag)
             child.parent = task.parent

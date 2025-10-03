@@ -1,4 +1,5 @@
 import collections
+from datetime import datetime, UTC
 from numbers import Number
 
 from sqlalchemy import or_, select, exists, false, func
@@ -164,7 +165,7 @@ class SqlAlchemyPersistenceLayer(object):
                     lazy=None):
         if date_created is None:
             from datetime import datetime
-            date_created = datetime.utcnow()
+            date_created = datetime.now(UTC)
         if date_last_updated is None:
             date_last_updated = date_created
         return self.DbTask(summary=summary, description=description,
@@ -280,9 +281,11 @@ class SqlAlchemyPersistenceLayer(object):
                                   order_num_lesseq_than)
 
         if order_by is not self.UNSPECIFIED:
+            last_direction = self.ASCENDING
             if not is_iterable(order_by):
                 db_field = self.get_db_field_by_order_field(order_by)
                 query = query.order_by(db_field)
+                last_direction = self.ASCENDING
             else:
                 for ordering in order_by:
                     direction = self.ASCENDING
@@ -300,6 +303,12 @@ class SqlAlchemyPersistenceLayer(object):
                     else:
                         raise Exception(
                             'Unknown order_by direction: {}'.format(direction))
+                    last_direction = direction
+            # Add id as tiebreaker
+            if last_direction is self.DESCENDING:
+                query = query.order_by(self.DbTask.id.desc())
+            else:
+                query = query.order_by(self.DbTask.id.asc())
 
         if limit is not self.UNSPECIFIED:
             query = query.limit(limit)
@@ -368,7 +377,7 @@ class SqlAlchemyPersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
-        pager = query.paginate(page=page_num, per_page=tasks_per_page)
+        pager = self.db.paginate(query, page=page_num, per_page=tasks_per_page)
         items = list(pager.items)
         return Pager(page=pager.page, per_page=pager.per_page,
                      items=items, total=pager.total,
@@ -448,7 +457,8 @@ class SqlAlchemyPersistenceLayer(object):
     def _get_db_note(self, note_id):
         if note_id is None:
             raise ValueError('note_id acannot be None')
-        return self.note_query.get(note_id)
+        stmt = select(self.DbNote).where(self.DbNote.id == note_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def get_note(self, note_id):
         if note_id is None:
@@ -456,10 +466,10 @@ class SqlAlchemyPersistenceLayer(object):
         return self._get_db_note(note_id)
 
     def _get_notes_query(self, note_id_in=UNSPECIFIED):
-        query = self.note_query
+        query = select(self.DbNote)
         if note_id_in is not self.UNSPECIFIED:
             if note_id_in:
-                query = query.filter(self.DbNote.id.in_(note_id_in))
+                query = query.where(self.DbNote.id.in_(note_id_in))
             else:
                 # performance improvement
                 query = query.where(false())
@@ -467,10 +477,12 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_notes(self, note_id_in=UNSPECIFIED):
         query = self._get_notes_query(note_id_in=note_id_in)
-        return (_ for _ in query)
+        return (_ for _ in self.db.session.execute(query).scalars())
 
     def count_notes(self, note_id_in=UNSPECIFIED):
-        return self._get_notes_query(note_id_in=note_id_in).count()
+        query = self._get_notes_query(note_id_in=note_id_in)
+        count_query = select(func.count()).select_from(query.subquery())
+        return self.db.session.execute(count_query).scalar()
 
     @property
     def attachment_query(self):
@@ -485,7 +497,8 @@ class SqlAlchemyPersistenceLayer(object):
     def _get_db_attachment(self, attachment_id):
         if attachment_id is None:
             raise ValueError('attachment_id acannot be None')
-        return self.attachment_query.get(attachment_id)
+        stmt = select(self.DbAttachment).where(self.DbAttachment.id == attachment_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def get_attachment(self, attachment_id):
         if attachment_id is None:
@@ -493,10 +506,10 @@ class SqlAlchemyPersistenceLayer(object):
         return self._get_db_attachment(attachment_id)
 
     def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
-        query = self.attachment_query
+        query = select(self.DbAttachment)
         if attachment_id_in is not self.UNSPECIFIED:
             if attachment_id_in:
-                query = query.filter(
+                query = query.where(
                     self.DbAttachment.id.in_(attachment_id_in))
             else:
                 query = query.where(false())
@@ -504,11 +517,13 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_attachments(self, attachment_id_in=UNSPECIFIED):
         query = self._get_attachments_query(attachment_id_in=attachment_id_in)
-        return (_ for _ in query)
+        return (_ for _ in self.db.session.execute(query).scalars())
 
     def count_attachments(self, attachment_id_in=UNSPECIFIED):
-        return self._get_attachments_query(
-            attachment_id_in=attachment_id_in).count()
+        query = self._get_attachments_query(
+            attachment_id_in=attachment_id_in)
+        count_query = select(func.count()).select_from(query.subquery())
+        return self.db.session.execute(count_query).scalar()
 
     @property
     def user_query(self):
@@ -532,7 +547,8 @@ class SqlAlchemyPersistenceLayer(object):
     def _get_db_user(self, user_id):
         if user_id is None:
             raise ValueError('user_id acannot be None')
-        return self.user_query.get(user_id)
+        stmt = select(self.DbUser).where(self.DbUser.id == user_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def get_user(self, user_id):
         if user_id is None:
@@ -540,13 +556,14 @@ class SqlAlchemyPersistenceLayer(object):
         return self._get_db_user(user_id)
 
     def get_user_by_email(self, email):
-        return self.user_query.filter_by(email=email).first()
+        stmt = select(self.DbUser).where(self.DbUser.email == email)
+        return self.db.session.execute(stmt).scalars().first()
 
     def _get_users_query(self, email_in=UNSPECIFIED):
-        query = self.user_query
+        query = select(self.DbUser)
         if email_in is not self.UNSPECIFIED:
             if email_in:
-                query = query.filter(self.DbUser.email.in_(email_in))
+                query = query.where(self.DbUser.email.in_(email_in))
             else:
                 # avoid performance penalty
                 query = query.where(false())
@@ -554,10 +571,12 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_users(self, email_in=UNSPECIFIED):
         query = self._get_users_query(email_in=email_in)
-        return (_ for _ in query)
+        return (_ for _ in self.db.session.execute(query).scalars())
 
     def count_users(self, email_in=UNSPECIFIED):
-        return self._get_users_query(email_in=email_in).count()
+        query = self._get_users_query(email_in=email_in)
+        count_query = select(func.count()).select_from(query.subquery())
+        return self.db.session.execute(count_query).scalar()
 
     @property
     def option_query(self):
@@ -569,7 +588,8 @@ class SqlAlchemyPersistenceLayer(object):
     def _get_db_option(self, key):
         if key is None:
             raise ValueError('key acannot be None')
-        return self.option_query.get(key)
+        stmt = select(self.DbOption).where(self.DbOption.key == key)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def get_option(self, key):
         if key is None:
@@ -577,10 +597,10 @@ class SqlAlchemyPersistenceLayer(object):
         return self._get_db_option(key)
 
     def _get_options_query(self, key_in=UNSPECIFIED):
-        query = self.option_query
+        query = select(self.DbOption)
         if key_in is not self.UNSPECIFIED:
             if key_in:
-                query = query.filter(self.DbOption.key.in_(key_in))
+                query = query.where(self.DbOption.key.in_(key_in))
             else:
                 # avoid performance penalty
                 query = query.where(false())
@@ -588,7 +608,9 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_options(self, key_in=UNSPECIFIED):
         query = self._get_options_query(key_in=key_in)
-        return (_ for _ in query)
+        return (_ for _ in self.db.session.execute(query).scalars())
 
     def count_options(self, key_in=UNSPECIFIED):
-        return self._get_options_query(key_in=key_in).count()
+        query = self._get_options_query(key_in=key_in)
+        count_query = select(func.count()).select_from(query.subquery())
+        return self.db.session.execute(count_query).scalar()

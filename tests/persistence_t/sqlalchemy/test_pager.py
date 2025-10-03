@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class PagerTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
         self.t1 = self.pl.create_task('t1')
         self.t1.order_num = 11
         self.t2 = self.pl.create_task('t2')
