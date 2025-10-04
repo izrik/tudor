@@ -8,10 +8,11 @@ class PaginatedTasksTest(PersistenceLayerTestBase):
     def setUp(self):
         self._logger = logging.getLogger('test')
         self._logger.debug('setUp generate_app')
-        self.pl = self.generate_pl()
+        super().setUp()
         self._logger.debug('setUp create_all')
-        self.pl.db.drop_all()
-        self.pl.create_all()
+        with self.app.app_context():
+            self.pl.db.drop_all()
+            self.pl.create_all()
         self._logger.debug('setUp create objects')
 
         self.t1 = self.pl.create_task('t1')
@@ -227,8 +228,7 @@ class PaginatedTasksTest(PersistenceLayerTestBase):
 
 class PaginatedTasksNullTasksPerPageTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
         self.pl.add(self.pl.create_task('t1'))
         self.pl.add(self.pl.create_task('t2'))
         self.pl.add(self.pl.create_task('t3'))

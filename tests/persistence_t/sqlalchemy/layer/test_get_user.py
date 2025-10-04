@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class GetUserTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     def test_get_user_none_raises(self):
         # expect

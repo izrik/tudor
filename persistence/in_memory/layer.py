@@ -1,4 +1,5 @@
 
+from datetime import datetime, UTC
 from itertools import islice
 from numbers import Number
 
@@ -65,7 +66,7 @@ class InMemoryPersistenceLayer(object):
                     lazy=None):
         if date_created is None:
             from datetime import datetime
-            date_created = datetime.utcnow()
+            date_created = datetime.now(UTC)
         if date_last_updated is None:
             date_last_updated = date_created
         return Task(summary=summary, description=description, is_done=is_done,

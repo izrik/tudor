@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class BridgeTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     def test_str_is_not_db_object(self):
         # expect

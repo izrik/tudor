@@ -5,8 +5,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class GetUsersTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
         self.user1 = self.pl.create_user('admin@example.com', is_admin=True)
         self.pl.add(self.user1)
         self.user2 = self.pl.create_user('name@example.com')

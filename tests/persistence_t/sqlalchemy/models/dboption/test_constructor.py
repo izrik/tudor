@@ -3,7 +3,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class DbOptionConstructorTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
+        super().setUp()
 
     def test_none_lazy_is_allowed(self):
         # when

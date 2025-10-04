@@ -8,7 +8,7 @@ from functools import wraps
 from os import environ
 import os
 
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import Flask, request
 from flask import Markup
 from flask_bcrypt import Bcrypt
@@ -432,7 +432,7 @@ def generate_app(db_uri=None,
     @login_required
     def new_attachment():
         return vl.attachment_new(request, Options.get_user(),
-                                 timestamp=datetime.utcnow())
+                                 timestamp=datetime.now(UTC))
 
     @login_required
     def get_attachment(aid, x):

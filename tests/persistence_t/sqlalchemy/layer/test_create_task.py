@@ -4,9 +4,6 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
 class CreateTaskTest(PersistenceLayerTestBase):
-    def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
 
     def test_has_sensible_defaults(self):
         # when

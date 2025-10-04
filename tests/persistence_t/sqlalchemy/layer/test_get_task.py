@@ -3,9 +3,6 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 
 class GetTaskTest(PersistenceLayerTestBase):
-    def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
 
     def test_none_returns_none(self):
         # when

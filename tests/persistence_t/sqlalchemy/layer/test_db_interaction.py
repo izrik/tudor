@@ -6,8 +6,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class DatabaseInteractionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     def test_adding_task_does_not_create_id(self):
         # given

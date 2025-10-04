@@ -3,8 +3,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class DbOptionFromDictTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     def test_empty_yields_empty_dboption(self):
         # when

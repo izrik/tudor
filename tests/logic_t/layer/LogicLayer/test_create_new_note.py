@@ -2,7 +2,7 @@
 
 import unittest
 
-from datetime import datetime
+from datetime import datetime, UTC
 from werkzeug.exceptions import NotFound, Forbidden
 
 from models.object_types import ObjectTypes
@@ -66,7 +66,7 @@ class CreateNewNoteTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.object_type, ObjectTypes.Note)
         self.assertEqual('content', result.content)
-        time_delta = (datetime.utcnow() - result.timestamp)
+        time_delta = (datetime.now(UTC) - result.timestamp)
         self.assertLessEqual(time_delta.total_seconds(), 1)
 
     # TODO: content of None?
