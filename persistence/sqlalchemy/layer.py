@@ -281,11 +281,9 @@ class SqlAlchemyPersistenceLayer(object):
                                   order_num_lesseq_than)
 
         if order_by is not self.UNSPECIFIED:
-            last_direction = self.ASCENDING
             if not is_iterable(order_by):
                 db_field = self.get_db_field_by_order_field(order_by)
                 query = query.order_by(db_field)
-                last_direction = self.ASCENDING
             else:
                 for ordering in order_by:
                     direction = self.ASCENDING
@@ -303,12 +301,6 @@ class SqlAlchemyPersistenceLayer(object):
                     else:
                         raise Exception(
                             'Unknown order_by direction: {}'.format(direction))
-                    last_direction = direction
-            # Add id as tiebreaker
-            if last_direction is self.DESCENDING:
-                query = query.order_by(self.DbTask.id.desc())
-            else:
-                query = query.order_by(self.DbTask.id.asc())
 
         if limit is not self.UNSPECIFIED:
             query = query.limit(limit)
