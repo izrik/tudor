@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class GetTagsTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
         self.t1 = self.pl.create_tag('t1')
         self.pl.add(self.t1)
         self.t2 = self.pl.create_tag('t2')

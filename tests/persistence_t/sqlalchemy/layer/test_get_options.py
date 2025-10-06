@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class GetOptionsTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
         self.option1 = self.pl.create_option('option1', 'value1')
         self.pl.add(self.option1)
         self.option2 = self.pl.create_option('option2', 'value2')

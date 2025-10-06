@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class GetNotesTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
         self.n1 = self.pl.create_note('n1')
         self.pl.add(self.n1)
         self.n2 = self.pl.create_note('n2')

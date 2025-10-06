@@ -8,7 +8,7 @@ from functools import wraps
 from os import environ
 import os
 
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import Flask, request
 from flask import Markup
 from flask_bcrypt import Bcrypt
@@ -432,7 +432,7 @@ def generate_app(db_uri=None,
     @login_required
     def new_attachment():
         return vl.attachment_new(request, Options.get_user(),
-                                 timestamp=datetime.utcnow())
+                                 timestamp=datetime.now(UTC))
 
     @login_required
     def get_attachment(aid, x):
@@ -914,20 +914,21 @@ def main(argv):
 
     print('Checking database schema version')
     from packaging.version import parse
-    current = app.pl.get_schema_version()
-    if current:
-        current = current.value
-    if not current:
-        current = '0.0'
-    current = parse(parse(current).base_version)
-    desired = parse(parse(__version__).base_version)
-    if current < desired:
-        print(f'Wrong DB schema version. Expected {desired.public} but got '
-              f'{current.public}. Will auto-migrate.')
-        auto_migrate(app.pl, desired.public)
-        print('Migration complete.')
-    else:
-        print('Database schema version is up-to-date.')
+    with app.app_context():
+        current = app.pl.get_schema_version()
+        if current:
+            current = current.value
+        if not current:
+            current = '0.0'
+        current = parse(parse(current).base_version)
+        desired = parse(parse(__version__).base_version)
+        if current < desired:
+            print(f'Wrong DB schema version. Expected {desired.public} but got '
+                  f'{current.public}. Will auto-migrate.')
+            auto_migrate(app.pl, desired.public)
+            print('Migration complete.')
+        else:
+            print('Database schema version is up-to-date.')
 
     args = arg_config.args
 

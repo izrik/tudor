@@ -4,8 +4,7 @@ from tests.persistence_t.sqlalchemy.util import PersistenceLayerTestBase
 
 class DbOnlyDeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     def test_deleting_task_reduces_count(self):
         # given
@@ -594,8 +593,7 @@ class DbOnlyDeletionTest(PersistenceLayerTestBase):
 
 class DeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     def test_deleting_task_removes_all_children(self):
         # given
@@ -1106,8 +1104,7 @@ class DeletionTest(PersistenceLayerTestBase):
 
 class AddDeleteTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     # def test_add_after_add_silently_ignored(self):
     #     # given
@@ -1231,8 +1228,7 @@ class AddDeleteTest(PersistenceLayerTestBase):
 
 class DbDeletionTest(PersistenceLayerTestBase):
     def setUp(self):
-        self.pl = self.generate_pl()
-        self.pl.create_all()
+        super().setUp()
 
     # def test_delete_of_db_only_object_gets_dbobj_from_db(self):
     #     dbtask = self.pl.DbTask('task')
