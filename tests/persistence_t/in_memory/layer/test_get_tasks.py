@@ -553,10 +553,10 @@ class LimitTest(InMemoryTestBase):
         self.assertEqual(0, len(list(results)))
 
     def test_get_tasks_limit_negative_returns_all(self):
-        # when
-        results = self.pl.get_tasks(limit=-1)
-        # then
-        self.assertEqual(3, len(list(results)))
+        # expect
+        self.assertRaises(Exception,
+                          self.pl.get_tasks,
+                          limit=-1)
 
 
 class DeadLineIsNotNoneTest(InMemoryTestBase):

@@ -12,7 +12,7 @@ class GetOptionTest(PersistenceLayerTestBase):
 
     def test_get_option_non_existent_yields_none(self):
         # expect
-        self.assertIsNone(self.pl.get_option(1))
+        self.assertIsNone(self.pl.get_option('nonexistent'))
 
     def test_get_option_existing_yields_that_option(self):
         # given
@@ -33,7 +33,7 @@ class GetOptionTest(PersistenceLayerTestBase):
 
     def test_get_db_option_non_existent_yields_none(self):
         # expect
-        self.assertIsNone(self.pl._get_db_option(1))
+        self.assertIsNone(self.pl._get_db_option('nonexistent'))
 
     def test_get_db_option_existing_yields_that_dboption(self):
         # given
