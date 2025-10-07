@@ -1,4 +1,5 @@
 
+import logging_util
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
@@ -6,6 +7,7 @@ from .object_types import ObjectTypes
 
 
 class AttachmentBase(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'AttachmentBase')
 
     FIELD_ID = 'ID'
     FIELD_PATH = 'PATH'
@@ -56,32 +58,24 @@ class AttachmentBase(object):
             d['filename'] = self.filename
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
-        if fields is None or self.FIELD_TASK in fields:
-            d['task'] = self.task
 
         return d
 
     def to_flat_dict(self, fields=None):
         d = self.to_dict(fields=fields)
-        if 'task' in d and d['task'] is not None:
-            d['task_id'] = d['task'].id
-            del d['task']
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         attachment_id = d.get('id', None)
         timestamp = d.get('timestamp', None)
         path = d.get('path')
         filename = d.get('filename', None)
         description = d.get('description', None)
-        task = d.get('task')
 
-        attachment = cls(path, description, timestamp, filename, lazy=lazy)
+        attachment = cls(path, description, timestamp, filename)
         if attachment_id is not None:
             attachment.id = attachment_id
-        if not lazy:
-            attachment.task = task
         return attachment
 
     def update_from_dict(self, d):
@@ -95,5 +89,3 @@ class AttachmentBase(object):
             self.filename = d['filename']
         if 'description' in d:
             self.description = d['description']
-        if 'task' in d:
-            self.task = d['task']

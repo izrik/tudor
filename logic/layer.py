@@ -127,15 +127,12 @@ class LogicLayer(object):
                 self._logger.debug('User (%d) not authorized for parent (%d)',
                                    current_user.id, parent_id)
                 raise werkzeug.exceptions.Forbidden()
-            task.parent = parent
-
-        self._logger.debug('authorizing the current user for this task')
-        task.users.append(current_user)
+            self.pl.set_task_parent(task.id, parent.id if parent else None)
 
         self._logger.debug('adding the task to the session')
-        self.pl.add(task)
-        self._logger.debug('committing')
-        self.pl.commit()
+        self.pl.save(task)
+        self._logger.debug('authorizing the current user for this task')
+        self.pl.associate_user_with_task(task.id, current_user.id)
 
         self._logger.debug('end')
         return task

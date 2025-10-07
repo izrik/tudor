@@ -1,9 +1,11 @@
 
+import logging_util
 from collections_util import assign
 from models.object_types import ObjectTypes
 
 
 class TagBase(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'TagBase')
 
     FIELD_ID = 'ID'
     FIELD_VALUE = 'VALUE'
@@ -40,35 +42,24 @@ class TagBase(object):
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
 
-        if fields is None or self.FIELD_TASKS in fields:
-            d['tasks'] = list(self.tasks)
-
         return d
 
     def to_flat_dict(self, fields=None):
         d = self.to_dict(fields=fields)
-        if 'tasks' in d:
-            items = d['tasks']
-            del d['tasks']
-            d['task_ids'] = [item.id for item in items]
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
-        logger = cls._logger
-        logger.debug('d: %s', d)
+    def from_dict(cls, d):
+        cls._logger.debug('d: %s', d)
 
         tag_id = d.get('id', None)
         value = d.get('value')
         description = d.get('description', None)
 
-        tag = cls(value, description, lazy=lazy)
+        tag = cls(value, description)
         if tag_id is not None:
             tag.id = tag_id
-        if not lazy:
-            if 'tasks' in d:
-                assign(tag.tasks, d['tasks'])
-        logger.debug('tag: %s', tag)
+        cls._logger.debug('tag: %s', tag)
         return tag
 
     def update_from_dict(self, d):
@@ -79,5 +70,3 @@ class TagBase(object):
             self.value = d['value']
         if 'description' in d:
             self.description = d['description']
-        if 'tasks' in d:
-            assign(self.tasks, d['tasks'])

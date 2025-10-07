@@ -78,6 +78,15 @@ class SqlAlchemyPersistenceLayer(object):
         self._db_by_domain = {}
         self._domain_by_db = {}
 
+    def save(self, obj):
+        self._logger.debug('begin, obj: %s', obj)
+        if not self._is_db_object(obj):
+            raise Exception(
+                'The object is not compatible with the PL: {}'.format(obj))
+        self.db.session.add(obj)
+        self.db.session.commit()
+        self._logger.debug('end')
+
     def add(self, dbobj):
         self._logger.debug('begin, dbobj: %s', dbobj)
         if not self._is_db_object(dbobj):
@@ -178,7 +187,10 @@ class SqlAlchemyPersistenceLayer(object):
                            lazy=lazy)
 
     def get_task(self, task_id):
-        return self._get_db_task(task_id)
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            return None
+        return self.DbTask.from_dict(db_task.to_dict())
 
     def _get_db_task(self, task_id):
         if task_id is None:
@@ -218,33 +230,6 @@ class SqlAlchemyPersistenceLayer(object):
         if is_public is not self.UNSPECIFIED:
             query = query.where(self.DbTask.is_public == is_public)
 
-        if parent_id is not self.UNSPECIFIED:
-            if parent_id is None:
-                query = query.where(self.DbTask.parent_id.is_(None))
-            else:
-                query = query.where(self.DbTask.parent_id == parent_id)
-
-        if parent_id_in is not self.UNSPECIFIED:
-            if parent_id_in:
-                query = query.where(self.DbTask.parent_id.in_(parent_id_in))
-            else:
-                # avoid performance penalty
-                query = query.where(false())
-
-        if users_contains is not self.UNSPECIFIED:
-            query = query.where(self.DbTask.users.any(id=users_contains.id))
-
-        if is_public_or_users_contains is not self.UNSPECIFIED:
-            db_user = is_public_or_users_contains
-            query = query.outerjoin(
-                self.users_tasks_table,
-                self.users_tasks_table.c.task_id == self.DbTask.id).where(
-                or_(
-                    self.users_tasks_table.c.user_id == db_user.id,
-                    self.DbTask.is_public
-                )
-            )
-
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
             # engines. In the case of an empty collection, just use a query
@@ -267,9 +252,6 @@ class SqlAlchemyPersistenceLayer(object):
 
         if deadline_is_not_none:
             query = query.where(self.DbTask.deadline.isnot(None))
-
-        if tags_contains is not self.UNSPECIFIED:
-            query = query.where(self.DbTask.tags.any(id=tags_contains.id))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
@@ -330,9 +312,9 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-             limit=limit)
-        return (_ for _ in self.db.session.execute(query).scalars())
+              order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+              limit=limit)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(query).scalars())
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -610,3 +592,89 @@ class SqlAlchemyPersistenceLayer(object):
         query = self._get_options_query(key_in=key_in)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
+
+    # Relationship getters
+    def get_task_tags(self, task_id):
+        stmt = select(self.DbTag).join(self.tags_tasks_table).where(self.tags_tasks_table.c.task_id == task_id)
+        return (self.DbTag.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_users(self, task_id):
+        stmt = select(self.DbUser).join(self.users_tasks_table).where(self.users_tasks_table.c.task_id == task_id)
+        return (self.DbUser.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_children(self, task_id):
+        stmt = select(self.DbTask).where(self.DbTask.parent_id == task_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_parent(self, task_id):
+        db_task = self._get_db_task(task_id)
+        if db_task and db_task.parent_id:
+            return self.get_task(db_task.parent_id)
+        return None
+
+    def get_task_dependees(self, task_id):
+        stmt = select(self.DbTask).join(self.task_dependencies_table, self.task_dependencies_table.c.dependee_id == self.DbTask.id).where(self.task_dependencies_table.c.dependant_id == task_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_dependants(self, task_id):
+        stmt = select(self.DbTask).join(self.task_dependencies_table, self.task_dependencies_table.c.dependant_id == self.DbTask.id).where(self.task_dependencies_table.c.dependee_id == task_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_prioritize_before(self, task_id):
+        stmt = select(self.DbTask).join(self.task_prioritize_table, self.task_prioritize_table.c.prioritize_before_id == self.DbTask.id).where(self.task_prioritize_table.c.prioritize_after_id == task_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_prioritize_after(self, task_id):
+        stmt = select(self.DbTask).join(self.task_prioritize_table, self.task_prioritize_table.c.prioritize_after_id == self.DbTask.id).where(self.task_prioritize_table.c.prioritize_before_id == task_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_notes(self, task_id):
+        stmt = select(self.DbNote).where(self.DbNote.task_id == task_id)
+        return (self.DbNote.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_attachments(self, task_id):
+        stmt = select(self.DbAttachment).where(self.DbAttachment.task_id == task_id)
+        return (self.DbAttachment.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_tag_tasks(self, tag_id):
+        stmt = select(self.DbTask).join(self.tags_tasks_table).where(self.tags_tasks_table.c.tag_id == tag_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_user_tasks(self, user_id):
+        stmt = select(self.DbTask).join(self.users_tasks_table).where(self.users_tasks_table.c.user_id == user_id)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(stmt).scalars())
+
+    # Relationship setters
+    def associate_tag_with_task(self, task_id, tag_id):
+        self.db.session.execute(self.tags_tasks_table.insert().values(tag_id=tag_id, task_id=task_id))
+        self.db.session.commit()
+
+    def associate_user_with_task(self, task_id, user_id):
+        self.db.session.execute(self.users_tasks_table.insert().values(user_id=user_id, task_id=task_id))
+        self.db.session.commit()
+
+    def set_task_parent(self, task_id, parent_id):
+        db_task = self._get_db_task(task_id)
+        if db_task:
+            db_task.parent_id = parent_id
+            self.db.session.commit()
+
+    def associate_dependee_with_task(self, task_id, dependee_id):
+        self.db.session.execute(self.task_dependencies_table.insert().values(dependee_id=dependee_id, dependant_id=task_id))
+        self.db.session.commit()
+
+    def associate_prioritize_before_with_task(self, task_id, before_id):
+        self.db.session.execute(self.task_prioritize_table.insert().values(prioritize_before_id=before_id, prioritize_after_id=task_id))
+        self.db.session.commit()
+
+    def associate_note_with_task(self, task_id, note_id):
+        db_note = self._get_db_note(note_id)
+        if db_note:
+            db_note.task_id = task_id
+            self.db.session.commit()
+
+    def associate_attachment_with_task(self, task_id, attachment_id):
+        db_attachment = self._get_db_attachment(attachment_id)
+        if db_attachment:
+            db_attachment.task_id = task_id
+            self.db.session.commit()
