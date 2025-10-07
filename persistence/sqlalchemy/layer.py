@@ -203,6 +203,10 @@ class SqlAlchemyPersistenceLayer(object):
           (e.g. [ORDER_NUM, ASCENDING]). Default direction is ASCENDING if not
            specified."""
 
+        if limit is not self.UNSPECIFIED:
+            if limit < 0:
+                raise Exception('limit must not be negative')
+
         query = select(self.DbTask)
 
         if is_done is not self.UNSPECIFIED:

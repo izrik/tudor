@@ -165,7 +165,9 @@ class InMemoryPersistenceLayer(object):
                         raise Exception(
                             'Unknown order_by direction: {}'.format(direction))
 
-        if limit is not self.UNSPECIFIED and limit >= 0:
+        if limit is not self.UNSPECIFIED:
+            if limit < 0:
+                raise Exception('limit must not be negative')
             query = islice(query, limit)
 
         return query
