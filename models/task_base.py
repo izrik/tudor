@@ -1,3 +1,4 @@
+import logging_util
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime, money_from_str
@@ -6,6 +7,7 @@ from models.object_types import ObjectTypes
 
 
 class TaskBase(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'TaskBase')
     depth = 0
 
     FIELD_ID = 'ID'
@@ -93,33 +95,12 @@ class TaskBase(object):
             d['expected_cost'] = self.expected_cost
         if fields is None or self.FIELD_ORDER_NUM in fields:
             d['order_num'] = self.order_num
-        if fields is None or self.FIELD_PARENT in fields:
-            d['parent'] = self.parent
         if fields is None or self.FIELD_IS_PUBLIC in fields:
             d['is_public'] = self.is_public
         if fields is None or self.FIELD_DATE_CREATED in fields:
             d['date_created'] = str_from_datetime(self.date_created)
         if fields is None or self.FIELD_DATE_LAST_UPDATED in fields:
             d['date_last_updated'] = str_from_datetime(self.date_last_updated)
-
-        if fields is None or self.FIELD_CHILDREN in fields:
-            d['children'] = list(self.children)
-        if fields is None or self.FIELD_DEPENDEES in fields:
-            d['dependees'] = list(self.dependees)
-        if fields is None or self.FIELD_DEPENDANTS in fields:
-            d['dependants'] = list(self.dependants)
-        if fields is None or self.FIELD_PRIORITIZE_BEFORE in fields:
-            d['prioritize_before'] = list(self.prioritize_before)
-        if fields is None or self.FIELD_PRIORITIZE_AFTER in fields:
-            d['prioritize_after'] = list(self.prioritize_after)
-        if fields is None or self.FIELD_TAGS in fields:
-            d['tags'] = list(self.tags)
-        if fields is None or self.FIELD_USERS in fields:
-            d['users'] = list(self.users)
-        if fields is None or self.FIELD_NOTES in fields:
-            d['notes'] = list(self.notes)
-        if fields is None or self.FIELD_ATTACHMENTS in fields:
-            d['attachments'] = list(self.attachments)
 
         return d
 
@@ -137,30 +118,12 @@ class TaskBase(object):
         if 'dependants' in d:
             d['dependant_ids'] = [x.id for x in d['dependants']]
             del d['dependants']
-        if 'prioritize_before' in d:
-            d['prioritize_before_ids'] = [x.id for x in d['prioritize_before']]
-            del d['prioritize_before']
-        if 'prioritize_after' in d:
-            d['prioritize_after_ids'] = [x.id for x in d['prioritize_after']]
-            del d['prioritize_after']
-        if 'tags' in d:
-            d['tag_ids'] = [x.id for x in d['tags']]
-            del d['tags']
-        if 'users' in d:
-            d['user_ids'] = [x.id for x in d['users']]
-            del d['users']
-        if 'notes' in d:
-            d['note_ids'] = [x.id for x in d['notes']]
-            del d['notes']
-        if 'attachments' in d:
-            d['attachment_ids'] = [x.id for x in d['attachments']]
-            del d['attachments']
         if 'expected_cost' in d and d['expected_cost'] is not None:
             d['expected_cost'] = str(d['expected_cost'])
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         task_id = d.get('id', None)
         summary = d.get('summary')
         description = d.get('description', '')
@@ -176,37 +139,15 @@ class TaskBase(object):
         date_last_updated = d.get('date_last_updated', None)
 
         task = cls(summary=summary, description=description,
-                   is_done=is_done, is_deleted=is_deleted,
-                   deadline=deadline,
-                   expected_duration_minutes=expected_duration_minutes,
-                   expected_cost=expected_cost, is_public=is_public,
-                   date_created=date_created,
-                   date_last_updated=date_last_updated,
-                   lazy=lazy)
+                    is_done=is_done, is_deleted=is_deleted,
+                    deadline=deadline,
+                    expected_duration_minutes=expected_duration_minutes,
+                    expected_cost=expected_cost, is_public=is_public,
+                    date_created=date_created,
+                    date_last_updated=date_last_updated)
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
-        if not lazy:
-            if 'parent' in d:
-                task.parent = d['parent']
-            if 'children' in d:
-                assign(task.children, d['children'])
-            if 'tags' in d:
-                assign(task.tags, d['tags'])
-            if 'users' in d:
-                assign(task.users, d['users'])
-            if 'dependees' in d:
-                assign(task.dependees, d['dependees'])
-            if 'dependants' in d:
-                assign(task.dependants, d['dependants'])
-            if 'prioritize_before' in d:
-                assign(task.prioritize_before, d['prioritize_before'])
-            if 'prioritize_after' in d:
-                assign(task.prioritize_after, d['prioritize_after'])
-            if 'notes' in d:
-                assign(task.notes, d['notes'])
-            if 'attachments' in d:
-                assign(task.attachments, d['attachments'])
         return task
 
     def update_from_dict(self, d):
@@ -229,26 +170,6 @@ class TaskBase(object):
             self.expected_duration_minutes = d['expected_duration_minutes']
         if 'expected_cost' in d:
             self.expected_cost = d['expected_cost']
-        if 'parent' in d:
-            self.parent = d['parent']
-        if 'children' in d:
-            assign(self.children, d['children'])
-        if 'tags' in d:
-            assign(self.tags, d['tags'])
-        if 'users' in d:
-            assign(self.users, d['users'])
-        if 'dependees' in d:
-            assign(self.dependees, d['dependees'])
-        if 'dependants' in d:
-            assign(self.dependants, d['dependants'])
-        if 'prioritize_before' in d:
-            assign(self.prioritize_before, d['prioritize_before'])
-        if 'prioritize_after' in d:
-            assign(self.prioritize_after, d['prioritize_after'])
-        if 'notes' in d:
-            assign(self.notes, d['notes'])
-        if 'attachments' in d:
-            assign(self.attachments, d['attachments'])
         if 'is_public' in d:
             self.is_public = d['is_public']
         if 'date_created' in d:
@@ -262,13 +183,7 @@ class TaskBase(object):
             return None
         return '{:.2f}'.format(value)
 
-    def get_tag_values(self):
-        for tag in self.tags:
-            yield tag.value
 
-    def is_user_authorized(self, user):
-        self._logger.debug('%s', self)
-        return user in self.users
 
     def get_css_class(self):
         if self.is_deleted and self.is_done:
