@@ -119,6 +119,21 @@ class InMemoryPersistenceLayer(object):
         if is_public is not self.UNSPECIFIED:
             query = (_ for _ in query if _.is_public == is_public)
 
+        if parent_id is not self.UNSPECIFIED:
+            if parent_id is None:
+                query = (_ for _ in query if self._task_parent.get(_.id) is None)
+            else:
+                query = (_ for _ in query if self._task_parent.get(_.id) == parent_id)
+
+        if parent_id_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if self._task_parent.get(_.id) in parent_id_in)
+
+        if users_contains is not self.UNSPECIFIED:
+            query = (_ for _ in query if users_contains.id in self._task_users.get(_.id, set()))
+
+        if is_public_or_users_contains is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.is_public or is_public_or_users_contains.id in self._task_users.get(_.id, set()))
+
         if task_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in task_id_in)
 
@@ -127,6 +142,9 @@ class InMemoryPersistenceLayer(object):
 
         if deadline_is_not_none:
             query = (_ for _ in query if _.deadline is not None)
+
+        if tags_contains is not self.UNSPECIFIED:
+            query = (_ for _ in query if tags_contains.id in self._task_tags.get(_.id, set()))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             term = summary_description_search_term
