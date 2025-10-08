@@ -95,24 +95,3 @@ class UserFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, User)
         self.assertEqual([task], list(result.tasks))
-
-    def test_lazy_overrides_non_lazy_tasks(self):
-        # given
-        task = Task('task')
-        task2 = Task('task2')
-        # when
-        result = User.from_dict({'tasks': [task]},
-                                lazy={'tasks': [task2]})
-        # then
-        self.assertIsInstance(result, User)
-        self.assertEqual([task2], list(result.tasks))
-
-    def test_any_lazy_overrides_all_non_lazy_properties(self):
-        # given
-        task = Task('task')
-        # when
-        result = User.from_dict({'tasks': [task]},
-                                lazy={'x': 123})
-        # then
-        self.assertIsInstance(result, User)
-        self.assertEqual([], list(result.tasks))

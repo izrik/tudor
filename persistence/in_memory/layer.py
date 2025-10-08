@@ -76,8 +76,7 @@ class InMemoryPersistenceLayer(object):
                     expected_duration_minutes=None, expected_cost=None,
                     is_public=False,
                     date_created=None,
-                    date_last_updated=None,
-                    lazy=None):
+                    date_last_updated=None):
         if date_created is None:
             from datetime import datetime
             date_created = datetime.now(UTC)
@@ -88,8 +87,7 @@ class InMemoryPersistenceLayer(object):
                     expected_duration_minutes=expected_duration_minutes,
                     expected_cost=expected_cost, is_public=is_public,
                     date_created=date_created,
-                    date_last_updated=date_last_updated,
-                    lazy=lazy)
+                    date_last_updated=date_last_updated)
 
     def get_task(self, task_id):
         stored = self._tasks_by_id.get(task_id)
@@ -270,8 +268,8 @@ class InMemoryPersistenceLayer(object):
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)))
 
-    def create_tag(self, value, description=None, lazy=None):
-        return Tag(value=value, description=description, lazy=lazy)
+    def create_tag(self, value, description=None):
+        return Tag(value=value, description=description)
 
     def get_tag(self, tag_id):
         if tag_id is None:
@@ -296,9 +294,9 @@ class InMemoryPersistenceLayer(object):
         return len(list(self.get_tags(value=value, limit=limit)))
 
     def create_attachment(self, path, description=None, timestamp=None,
-                          filename=None, lazy=None):
+                          filename=None):
         return Attachment(path=path, description=description,
-                          timestamp=timestamp, filename=filename, lazy=lazy)
+                          timestamp=timestamp, filename=filename)
 
     def get_attachment(self, attachment_id):
         if attachment_id is None:
@@ -315,8 +313,8 @@ class InMemoryPersistenceLayer(object):
         return len(
             list(self.get_attachments(attachment_id_in=attachment_id_in)))
 
-    def create_note(self, content, timestamp=None, lazy=None):
-        return Note(content=content, timestamp=timestamp, lazy=lazy)
+    def create_note(self, content, timestamp=None):
+        return Note(content=content, timestamp=timestamp)
 
     def get_note(self, note_id):
         if note_id is None:
@@ -420,10 +418,9 @@ class InMemoryPersistenceLayer(object):
     def associate_attachment_with_task(self, task_id, attachment_id):
         self._task_attachments.setdefault(task_id, set()).add(attachment_id)
 
-    def create_user(self, email, hashed_password=None, is_admin=False,
-                    lazy=None):
+    def create_user(self, email, hashed_password=None, is_admin=False):
         return User(email=email, hashed_password=hashed_password,
-                    is_admin=is_admin, lazy=lazy)
+                    is_admin=is_admin)
 
     _guest_user = None
 

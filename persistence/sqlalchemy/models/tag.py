@@ -16,17 +16,13 @@ def generate_tag_class(db, tags_tasks_table):
         tasks = db.relationship('DbTask', secondary=tags_tasks_table,
                                 back_populates='tags')
 
-        def __init__(self, value, description=None, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
+        def __init__(self, value, description=None):
             db.Model.__init__(self)
             TagBase.__init__(self, value, description)
 
         @classmethod
-        def from_dict(cls, d, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
-            return super(DbTag, cls).from_dict(d=d, lazy=None)
+        def from_dict(cls, d):
+            return super(DbTag, cls).from_dict(d=d)
 
         def clear_relationships(self):
             self.tasks = []

@@ -14,14 +14,9 @@ class Tag(Changeable, TagBase):
 
     _tasks = None
 
-    def __init__(self, value, description=None, lazy=None):
+    def __init__(self, value, description=None):
         super(Tag, self).__init__(value=value, description=description)
         self._logger.debug('Tag.__init__ %s', self)
-
-        if lazy is None:
-            lazy = {}
-
-        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
 
     @property
     def id(self):

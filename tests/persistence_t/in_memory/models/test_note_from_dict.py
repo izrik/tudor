@@ -83,17 +83,6 @@ class NoteFromDictTest(unittest.TestCase):
             Note.from_dict,
             {'task': 1})
 
-    def test_lazy_overrides_non_lazy_task(self):
-        # given
-        task = Task('task')
-        task2 = Task('task2')
-        # when
-        result = Note.from_dict({'task': task},
-                                lazy={'task': lambda: task2})
-        # then
-        self.assertIsInstance(result, Note)
-        self.assertIs(task2, result.task)
-
     def test_task_id_none_is_ignored(self):
         # when
         result = Note.from_dict({'task_id': None})

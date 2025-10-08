@@ -81,24 +81,3 @@ class TagFromDictTest(unittest.TestCase):
         # then
         self.assertEqual(result.object_type, ObjectTypes.Tag)
         self.assertEqual([task], list(result.tasks))
-
-    def test_lazy_overrides_non_lazy_tasks(self):
-        # given
-        task = Task('task')
-        task2 = Task('task2')
-        # when
-        result = Tag.from_dict({'tasks': [task]},
-                               lazy={'tasks': [task2]})
-        # then
-        self.assertEqual(result.object_type, ObjectTypes.Tag)
-        self.assertEqual([task2], list(result.tasks))
-
-    def test_any_lazy_overrides_all_non_lazy_properties(self):
-        # given
-        task = Task('task')
-        # when
-        result = Tag.from_dict({'tasks': [task]},
-                               lazy={'x': 123})
-        # then
-        self.assertEqual(result.object_type, ObjectTypes.Tag)
-        self.assertEqual([], list(result.tasks))

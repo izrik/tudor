@@ -25,19 +25,13 @@ class Task(Changeable, TaskBase):
                  expected_duration_minutes=None, expected_cost=None,
                  is_public=False,
                  date_created=None,
-                 date_last_updated=None,
-                 lazy=None):
+                 date_last_updated=None):
         super(Task, self).__init__(
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost, is_public,
             date_created,
             date_last_updated)
-
         self._logger.debug('Task.__init__ %s', self)
-
-        if lazy is None:
-            lazy = {}
-
 
 
     @property

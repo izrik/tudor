@@ -94,33 +94,3 @@ class DbUserFromDictTest(PersistenceLayerTestBase):
         # then
         self.assertIsInstance(result, self.pl.DbUser)
         self.assertEqual([task], list(result.tasks))
-
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbUser.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbUser)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.email)
-        self.assertIsNone(result.hashed_password)
-        self.assertFalse(result.is_admin)
-        self.assertEqual([], list(result.tasks))
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbUser.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbUser)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.email)
-        self.assertIsNone(result.hashed_password)
-        self.assertFalse(result.is_admin)
-        self.assertEqual([], list(result.tasks))
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbUser.from_dict,
-            {},
-            lazy={'tasks': None})

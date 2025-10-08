@@ -60,10 +60,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                      expected_duration_minutes=None, expected_cost=None,
                      is_public=False,
                      date_created=None,
-                     date_last_updated=None,
-                     lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
+                     date_last_updated=None):
             db.Model.__init__(self)
             TaskBase.__init__(
                 self, summary=summary, description=description,
@@ -75,10 +72,8 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             )
 
         @classmethod
-        def from_dict(cls, d, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
-            return super(DbTask, cls).from_dict(d=d, lazy=None)
+        def from_dict(cls, d):
+            return super(DbTask, cls).from_dict(d=d)
 
         def clear_relationships(self):
             self._logger.debug('%s', self)

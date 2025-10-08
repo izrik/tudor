@@ -170,8 +170,7 @@ class SqlAlchemyPersistenceLayer(object):
                     expected_duration_minutes=None, expected_cost=None,
                     is_public=False,
                     date_created=None,
-                    date_last_updated=None,
-                    lazy=None):
+                    date_last_updated=None):
         if date_created is None:
             from datetime import datetime
             date_created = datetime.now(UTC)
@@ -183,8 +182,7 @@ class SqlAlchemyPersistenceLayer(object):
                            expected_duration_minutes=expected_duration_minutes,
                            expected_cost=expected_cost, is_public=is_public,
                            date_created=date_created,
-                           date_last_updated=date_last_updated,
-                           lazy=lazy)
+                           date_last_updated=date_last_updated)
 
     def get_task(self, task_id):
         db_task = self._get_db_task(task_id)
@@ -420,8 +418,8 @@ class SqlAlchemyPersistenceLayer(object):
         # Deprecated in SQLAlchemy 2.0
         return self.DbTag.query
 
-    def create_tag(self, value, description=None, lazy=None):
-        return self.DbTag(value=value, description=description, lazy=lazy)
+    def create_tag(self, value, description=None):
+        return self.DbTag(value=value, description=description)
 
     def _get_db_tag(self, tag_id):
         if tag_id is None:
@@ -459,8 +457,8 @@ class SqlAlchemyPersistenceLayer(object):
     def note_query(self):
         return self.DbNote.query
 
-    def create_note(self, content, timestamp=None, lazy=None):
-        return self.DbNote(content=content, timestamp=timestamp, lazy=lazy)
+    def create_note(self, content, timestamp=None):
+        return self.DbNote(content=content, timestamp=timestamp)
 
     def _get_db_note(self, note_id):
         if note_id is None:
@@ -497,10 +495,9 @@ class SqlAlchemyPersistenceLayer(object):
         return self.DbAttachment.query
 
     def create_attachment(self, path, description=None, timestamp=None,
-                          filename=None, lazy=None):
+                          filename=None):
         return self.DbAttachment(path=path, description=description,
-                                 timestamp=timestamp, filename=filename,
-                                 lazy=lazy)
+                                 timestamp=timestamp, filename=filename)
 
     def _get_db_attachment(self, attachment_id):
         if attachment_id is None:
@@ -537,10 +534,9 @@ class SqlAlchemyPersistenceLayer(object):
     def user_query(self):
         return self.DbUser.query
 
-    def create_user(self, email, hashed_password=None, is_admin=False,
-                    lazy=None):
+    def create_user(self, email, hashed_password=None, is_admin=False):
         return self.DbUser(email=email, hashed_password=hashed_password,
-                           is_admin=is_admin, lazy=lazy)
+                           is_admin=is_admin)
 
     _guest_user = None
 

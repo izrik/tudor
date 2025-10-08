@@ -40,27 +40,3 @@ class DbOptionFromDictTest(PersistenceLayerTestBase):
         # then
         self.assertIsInstance(result, self.pl.DbOption)
         self.assertEqual('something', result.value)
-
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbOption.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbOption)
-        self.assertIsNone(result.key)
-        self.assertIsNone(result.value)
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbOption.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbOption)
-        self.assertIsNone(result.key)
-        self.assertIsNone(result.value)
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbOption.from_dict,
-            {},
-            lazy={'tasks': None})
