@@ -213,17 +213,6 @@ class TaskFromDictTest(unittest.TestCase):
             Task.from_dict,
             {'parent': 1})
 
-    def test_lazy_overrides_non_lazy_parent(self):
-        # given
-        parent = Task('parent')
-        parent2 = Task('parent2')
-        # when
-        result = Task.from_dict({'parent': parent},
-                                lazy={'parent': lambda: parent2})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertIs(parent2, result.parent)
-
     def test_parent_id_none_is_ignored(self):
         # when
         result = Task.from_dict({'parent_id': None})
@@ -273,17 +262,6 @@ class TaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, Task)
         self.assertEqual([c1], list(result.children))
 
-    def test_lazy_overrides_non_lazy_children(self):
-        # given
-        child = Task('child')
-        child2 = Task('child2')
-        # when
-        result = Task.from_dict({'children': [child]},
-                                lazy={'children': [child2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([child2], list(result.children))
-
     def test_tags_none_yields_empty(self):
         # when
         result = Task.from_dict({'tags': None})
@@ -306,17 +284,6 @@ class TaskFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, Task)
         self.assertEqual([tag], list(result.tags))
-
-    def test_lazy_overrides_non_lazy_tags(self):
-        # given
-        tag = Tag('tag')
-        tag2 = Tag('tag2')
-        # when
-        result = Task.from_dict({'tags': [tag]},
-                                lazy={'tags': [tag2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([tag2], list(result.tags))
 
     def test_users_none_yields_empty(self):
         # when
@@ -341,17 +308,6 @@ class TaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, Task)
         self.assertEqual([user], list(result.users))
 
-    def test_lazy_overrides_non_lazy_users(self):
-        # given
-        user = User('user')
-        user2 = User('user2')
-        # when
-        result = Task.from_dict({'users': [user]},
-                                lazy={'users': [user2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([user2], list(result.users))
-
     def test_dependees_none_yields_empty(self):
         # when
         result = Task.from_dict({'dependees': None})
@@ -374,17 +330,6 @@ class TaskFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, Task)
         self.assertEqual([task], list(result.dependees))
-
-    def test_lazy_overrides_non_lazy_dependees(self):
-        # given
-        dependee = Task('dependee')
-        dependee2 = Task('dependee2')
-        # when
-        result = Task.from_dict({'dependees': [dependee]},
-                                lazy={'dependees': [dependee2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([dependee2], list(result.dependees))
 
     def test_dependants_none_yields_empty(self):
         # when
@@ -409,17 +354,6 @@ class TaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, Task)
         self.assertEqual([task], list(result.dependants))
 
-    def test_lazy_overrides_non_lazy_dependants(self):
-        # given
-        dependant = Task('dependant')
-        dependant2 = Task('dependant2')
-        # when
-        result = Task.from_dict({'dependants': [dependant]},
-                                lazy={'dependants': [dependant2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([dependant2], list(result.dependants))
-
     def test_prioritize_before_none_yields_empty(self):
         # when
         result = Task.from_dict({'prioritize_before': None})
@@ -442,18 +376,6 @@ class TaskFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, Task)
         self.assertEqual([task], list(result.prioritize_before))
-
-    def test_lazy_overrides_non_lazy_prioritize_befores(self):
-        # given
-        prioritize_before = Task('prioritize_before')
-        prioritize_before2 = Task('prioritize_before2')
-        # when
-        result = Task.from_dict(
-            {'prioritize_before': [prioritize_before]},
-            lazy={'prioritize_before': [prioritize_before2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([prioritize_before2], list(result.prioritize_before))
 
     def test_prioritize_after_none_yields_empty(self):
         # when
@@ -478,17 +400,6 @@ class TaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, Task)
         self.assertEqual([task], list(result.prioritize_after))
 
-    def test_lazy_overrides_non_lazy_prioritize_afters(self):
-        # given
-        prioritize_after = Task('prioritize_after')
-        prioritize_after2 = Task('prioritize_after2')
-        # when
-        result = Task.from_dict({'prioritize_after': [prioritize_after]},
-                                lazy={'prioritize_after': [prioritize_after2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([prioritize_after2], list(result.prioritize_after))
-
     def test_notes_none_yields_empty(self):
         # when
         result = Task.from_dict({'notes': None})
@@ -512,17 +423,6 @@ class TaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, Task)
         self.assertEqual([note], list(result.notes))
 
-    def test_lazy_overrides_non_lazy_notes(self):
-        # given
-        note = Note('note')
-        note2 = Note('note2')
-        # when
-        result = Task.from_dict({'notes': [note]},
-                                lazy={'notes': [note2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([note2], list(result.notes))
-
     def test_attachments_none_yields_empty(self):
         # when
         result = Task.from_dict({'attachments': None})
@@ -545,26 +445,3 @@ class TaskFromDictTest(unittest.TestCase):
         # then
         self.assertIsInstance(result, Task)
         self.assertEqual([attachment], list(result.attachments))
-
-    def test_lazy_overrides_non_lazy_attachments(self):
-        # given
-        attachment = Attachment('attachment')
-        attachment2 = Attachment('attachment2')
-        # when
-        result = Task.from_dict({'attachments': [attachment]},
-                                lazy={'attachments': [attachment2]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([attachment2], list(result.attachments))
-
-    def test_lazy_overrides_all_non_lazy_properties(self):
-        # given
-        attachment = Attachment('attachment')
-        note = Note('note')
-        # when
-        result = Task.from_dict({'attachments': [attachment]},
-                                lazy={'notes': [note]})
-        # then
-        self.assertIsInstance(result, Task)
-        self.assertEqual([], list(result.attachments))
-        self.assertEqual([note], list(result.notes))

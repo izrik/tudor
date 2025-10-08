@@ -17,20 +17,15 @@ def generate_user_class(db, users_tasks_table):
         tasks = db.relationship('DbTask', secondary=users_tasks_table,
                                 back_populates='users')
 
-        def __init__(self, email, hashed_password=None, is_admin=False,
-                     lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
+        def __init__(self, email, hashed_password=None, is_admin=False):
             db.Model.__init__(self)
             UserBase.__init__(self, email=email,
                               hashed_password=hashed_password,
                               is_admin=is_admin)
 
         @classmethod
-        def from_dict(cls, d, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
-            return super(DbUser, cls).from_dict(d=d, lazy=None)
+        def from_dict(cls, d):
+            return super(DbUser, cls).from_dict(d=d)
 
         def clear_relationships(self):
             self.tasks = []

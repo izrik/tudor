@@ -1,4 +1,5 @@
 
+import logging_util
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
@@ -6,6 +7,7 @@ from models.object_types import ObjectTypes
 
 
 class NoteBase(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'NoteBase')
 
     FIELD_ID = 'ID'
     FIELD_CONTENT = 'CONTENT'
@@ -15,6 +17,7 @@ class NoteBase(object):
     def __init__(self, content, timestamp=None):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
+        self.task_id = None
 
     @property
     def object_type(self):
@@ -49,30 +52,26 @@ class NoteBase(object):
             d['timestamp'] = str_from_datetime(self.timestamp)
         if fields is None or self.FIELD_CONTENT in fields:
             d['content'] = self.content
-        if fields is None or self.FIELD_TASK in fields:
-            d['task'] = self.task
+        if fields is None or 'task_id' in (fields or []):
+            d['task_id'] = getattr(self, 'task_id', None)
 
         return d
 
     def to_flat_dict(self, fields=None):
         d = self.to_dict(fields=fields)
-        if 'task' in d and d['task'] is not None:
-            d['task_id'] = d['task'].id
-            del d['task']
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         note_id = d.get('id', None)
         content = d.get('content')
         timestamp = d.get('timestamp', None)
-        task = d.get('task')
 
-        note = cls(content, timestamp, lazy=lazy)
+        note = cls(content, timestamp)
         if note_id is not None:
             note.id = note_id
-        if not lazy:
-            note.task = task
+        if 'task_id' in d:
+            note.task_id = d['task_id']
         return note
 
     def update_from_dict(self, d):
@@ -82,5 +81,5 @@ class NoteBase(object):
             self.content = d['content']
         if 'timestamp' in d:
             self.timestamp = self._clean_timestamp(d['timestamp'])
-        if 'task' in d:
-            self.task = d['task']
+        if 'task_id' in d:
+            self.task_id = d['task_id']

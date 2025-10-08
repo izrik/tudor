@@ -10,28 +10,21 @@ class InterlinkedSet(collections.abc.MutableSet):
     __change_field__ = None
     __attr_counterpart__ = None
 
-    def __init__(self, container, lazy=None):
+    def __init__(self, container):
         self._logger.debug('__init__')
         if container is None:
             raise ValueError('container cannot be None')
 
         self.container = container
         self.set = set()
-        self._lazy = lazy
 
     def __repr__(self):
         self._logger.debug('__repr__')
         cls = type(self).__name__
-        if self._lazy:
-            return '{}(<lazy>)'.format(cls)
         return '{}({})'.format(cls, self.set)
 
     def _populate(self):
         self._logger.debug('_populate')
-        if self._lazy:
-            self._logger.debug('populating the collection')
-            self.set.update(self._lazy)
-            self._lazy = None
 
     @property
     def c(self):
@@ -60,8 +53,6 @@ class InterlinkedSet(collections.abc.MutableSet):
 
     def __str__(self):
         self._logger.debug('__str__')
-        if self._lazy:
-            return 'set(<lazy>)'
         return str(self.set)
 
     def _add(self, item):

@@ -127,15 +127,12 @@ class LogicLayer(object):
                 self._logger.debug('User (%d) not authorized for parent (%d)',
                                    current_user.id, parent_id)
                 raise werkzeug.exceptions.Forbidden()
-            task.parent = parent
-
-        self._logger.debug('authorizing the current user for this task')
-        task.users.append(current_user)
+            self.pl.set_task_parent(task.id, parent.id if parent else None)
 
         self._logger.debug('adding the task to the session')
-        self.pl.add(task)
-        self._logger.debug('committing')
-        self.pl.commit()
+        self.pl.save(task)
+        self._logger.debug('authorizing the current user for this task')
+        self.pl.associate_user_with_task(task.id, current_user.id)
 
         self._logger.debug('end')
         return task
@@ -321,7 +318,7 @@ class LogicLayer(object):
         timestamp = datetime.now(UTC)
         note = self.pl.create_note(content, timestamp)
         note.task = task
-        self.pl.add(note)
+        self.pl.save(note)
         self.pl.commit()
         return note
 
@@ -422,7 +419,7 @@ class LogicLayer(object):
                                         filename=filename)
         att.task = task
 
-        self.pl.add(att)
+        self.pl.save(att)
         self.pl.commit()
 
         return att
@@ -432,7 +429,7 @@ class LogicLayer(object):
         N = len(tasks)
         for i in range(N):
             tasks[i].order_num = 2 * (N - i)
-            self.pl.add(tasks[i])
+            self.pl.save(tasks[i])
 
     def do_move_task_up(self, id, show_deleted, current_user):
         update_timestamp = datetime.now(UTC)
@@ -473,8 +470,8 @@ class LogicLayer(object):
             # TODO: remove all redundant add()'s everywhere
             task.date_last_updated = update_timestamp
             next_task.date_last_updated = update_timestamp
-            self.pl.add(task)
-            self.pl.add(next_task)
+            self.pl.save(task)
+            self.pl.save(next_task)
 
         self.pl.commit()
 
@@ -496,7 +493,7 @@ class LogicLayer(object):
         if top_task and top_task[0] is not task:
             task.order_num = top_task[0].order_num + 1
             task.date_last_updated = datetime.now(UTC)
-            self.pl.add(task)
+            self.pl.save(task)
 
         self.pl.commit()
 
@@ -540,8 +537,8 @@ class LogicLayer(object):
 
             task.date_last_updated = update_timestamp
             next_task.date_last_updated = update_timestamp
-            self.pl.add(task)
-            self.pl.add(next_task)
+            self.pl.save(task)
+            self.pl.save(next_task)
 
         self.pl.commit()
 
@@ -564,7 +561,7 @@ class LogicLayer(object):
         if bottom_task and bottom_task[0] is not task:
             task.order_num = bottom_task[0].order_num - 2
             task.date_last_updated = datetime.now(UTC)
-            self.pl.add(task)
+            self.pl.save(task)
 
         self.pl.commit()
 
@@ -615,7 +612,7 @@ class LogicLayer(object):
             s.order_num = k
             s.date_last_updated = update_timestamp
             k -= 2
-            self.pl.add(s)
+            self.pl.save(s)
 
         self.pl.commit()
 
@@ -636,11 +633,7 @@ class LogicLayer(object):
 
         tag = self.get_or_create_tag(value)
 
-        if tag not in task.tags:
-            task.tags.append(tag)
-            self.pl.add(task)
-
-        self.pl.commit()
+        self.pl.associate_tag_with_task(task.id, tag.id)
 
         return tag
 
@@ -648,7 +641,7 @@ class LogicLayer(object):
         tag = self.pl.get_tag_by_value(value)
         if tag is None:
             tag = self.pl.create_tag(value)
-            self.pl.add(tag)
+            self.pl.save(tag)
             self.pl.commit()
         return tag
 
@@ -665,12 +658,7 @@ class LogicLayer(object):
 
         tag = self.pl.get_tag(tag_id)
         if tag is not None:
-            if tag in task.tags:
-                task.tags.remove(tag)
-                self.pl.add(task)
-                self.pl.add(tag)
-
-        self.pl.commit()
+            self.pl.disassociate_tag_from_task(task.id, tag.id)
 
         return tag
 
@@ -767,8 +755,8 @@ class LogicLayer(object):
                 "task inaccessible.")
 
         task.users.remove(user_to_deauthorize)
-        self.pl.add(task)
-        self.pl.add(user_to_deauthorize)
+        self.pl.save(task)
+        self.pl.save(user_to_deauthorize)
 
         self.pl.commit()
 
@@ -781,7 +769,7 @@ class LogicLayer(object):
                 "A user already exists with the email address '{}'".format(
                     email))
         user = self.pl.create_user(email=email, is_admin=is_admin)
-        self.pl.add(user)
+        self.pl.save(user)
         self.pl.commit()
         return user
 
@@ -807,7 +795,7 @@ class LogicLayer(object):
             option.value = value
         else:
             option = self.pl.create_option(key, value)
-        self.pl.add(option)
+        self.pl.save(option)
         self.pl.commit()
         return option
 
@@ -831,7 +819,7 @@ class LogicLayer(object):
                 continue
             task.order_num = 2 * k
             task.date_last_updated = update_timestamp
-            self.pl.add(task)
+            self.pl.save(task)
             k -= 1
 
         self.pl.commit()
@@ -1056,7 +1044,7 @@ class LogicLayer(object):
                                           attachment, exc=e)
 
             for dbo in db_objects:
-                self.pl.add(dbo)
+                self.pl.save(dbo)
             self.pl.commit()
 
         except werkzeug.exceptions.HTTPException as e:
@@ -1146,7 +1134,7 @@ class LogicLayer(object):
             if changed:
                 task.date_last_updated = current_timestamp
 
-            self.pl.add(task)
+            self.pl.save(task)
 
         self.pl.commit()
 
@@ -1179,7 +1167,7 @@ class LogicLayer(object):
                 "No tag found for the id '{}'".format(tag_id))
         tag.value = value
         tag.description = description
-        self.pl.add(tag)
+        self.pl.save(tag)
         self.pl.commit()
         return tag
 
@@ -1210,7 +1198,7 @@ class LogicLayer(object):
                     task.summary))
 
         tag = self.pl.create_tag(task.summary, task.description)
-        self.pl.add(tag)
+        self.pl.save(tag)
 
         current_timestamp = datetime.now(UTC)
         for child in list(task.children):
@@ -1219,7 +1207,7 @@ class LogicLayer(object):
             for tag2 in task.tags:
                 child.tags.append(tag2)
             child.date_last_updated = current_timestamp
-            self.pl.add(child)
+            self.pl.save(child)
 
         task.parent = None
 
@@ -1459,8 +1447,8 @@ class LogicLayer(object):
 
         if dependee in task.dependees:
             task.dependees.remove(dependee)
-            self.pl.add(task)
-            self.pl.add(dependee)
+            self.pl.save(task)
+            self.pl.save(dependee)
 
         self.pl.commit()
 
@@ -1550,8 +1538,8 @@ class LogicLayer(object):
 
         if prioritize_before in task.prioritize_before:
             task.prioritize_before.remove(prioritize_before)
-            self.pl.add(task)
-            self.pl.add(prioritize_before)
+            self.pl.save(task)
+            self.pl.save(prioritize_before)
 
         self.pl.commit()
 
