@@ -148,6 +148,8 @@ class TaskBase(object):
         if task_id is not None:
             task.id = task_id
         task.order_num = order_num
+        if 'parent_id' in d:
+            task.parent_id = d['parent_id']
         return task
 
     def update_from_dict(self, d):

@@ -72,6 +72,23 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
         self.assertIsInstance(result, self.pl.DbTask)
         self.assertEqual('abc', result.description)
 
+    def test_parent_id_none_yields_none(self):
+        # when
+        result = self.pl.DbTask.from_dict({'parent_id': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbTask)
+        self.assertIsNone(result.parent_id)
+
+    def test_parent_id_not_none_yields_same(self):
+        # given
+        parent = self.pl.DbTask('parent')
+        self.pl.save(parent)
+        # when
+        result = self.pl.DbTask.from_dict({'parent_id': parent.id})
+        # then
+        self.assertIsInstance(result, self.pl.DbTask)
+        self.assertEqual(parent.id, result.parent_id)
+
     def test_is_done_none_is_becomes_false(self):
         # when
         result = self.pl.DbTask.from_dict({'is_done': None})
