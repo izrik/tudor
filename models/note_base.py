@@ -17,6 +17,7 @@ class NoteBase(object):
     def __init__(self, content, timestamp=None):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
+        self.task_id = None
 
     @property
     def object_type(self):
@@ -51,6 +52,8 @@ class NoteBase(object):
             d['timestamp'] = str_from_datetime(self.timestamp)
         if fields is None or self.FIELD_CONTENT in fields:
             d['content'] = self.content
+        if fields is None or 'task_id' in (fields or []):
+            d['task_id'] = getattr(self, 'task_id', None)
 
         return d
 
@@ -78,3 +81,5 @@ class NoteBase(object):
             self.content = d['content']
         if 'timestamp' in d:
             self.timestamp = self._clean_timestamp(d['timestamp'])
+        if 'task_id' in d:
+            self.task_id = d['task_id']

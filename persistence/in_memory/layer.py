@@ -392,9 +392,17 @@ class InMemoryPersistenceLayer(object):
         self._task_tags.setdefault(task_id, set()).add(tag_id)
         self._tag_tasks.setdefault(tag_id, set()).add(task_id)
 
+    def disassociate_tag_from_task(self, task_id, tag_id):
+        self._task_tags.get(task_id, set()).discard(tag_id)
+        self._tag_tasks.get(tag_id, set()).discard(task_id)
+
     def associate_user_with_task(self, task_id, user_id):
         self._task_users.setdefault(task_id, set()).add(user_id)
         self._user_tasks.setdefault(user_id, set()).add(task_id)
+
+    def disassociate_user_from_task(self, task_id, user_id):
+        self._task_users.get(task_id, set()).discard(user_id)
+        self._user_tasks.get(user_id, set()).discard(task_id)
 
     def set_task_parent(self, task_id, parent_id):
         old_parent = self._task_parent.get(task_id)

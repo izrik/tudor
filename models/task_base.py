@@ -49,6 +49,7 @@ class TaskBase(object):
         self.expected_duration_minutes = expected_duration_minutes
         self.expected_cost = money_from_str(expected_cost)
         self.order_num = 0
+        self.parent_id = None
         self.is_public = not not is_public
         self.date_created = self._clean_datetime(date_created)
         self.date_last_updated = self._clean_datetime(date_last_updated)
@@ -95,6 +96,8 @@ class TaskBase(object):
             d['expected_cost'] = self.expected_cost
         if fields is None or self.FIELD_ORDER_NUM in fields:
             d['order_num'] = self.order_num
+        if fields is None or 'parent_id' in (fields or []):
+            d['parent_id'] = getattr(self, 'parent_id', None)
         if fields is None or self.FIELD_IS_PUBLIC in fields:
             d['is_public'] = self.is_public
         if fields is None or self.FIELD_DATE_CREATED in fields:
@@ -178,6 +181,8 @@ class TaskBase(object):
             self.date_created = d['date_created']
         if 'date_last_updated' in d:
             self.date_last_updated = d['date_last_updated']
+        if 'parent_id' in d:
+            self.parent_id = d['parent_id']
 
     def get_expected_cost_for_export(self):
         value = money_from_str(self.expected_cost)
