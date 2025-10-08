@@ -230,6 +230,36 @@ class SqlAlchemyPersistenceLayer(object):
         if is_public is not self.UNSPECIFIED:
             query = query.where(self.DbTask.is_public == is_public)
 
+        if parent_id is not self.UNSPECIFIED:
+            if parent_id is None:
+                query = query.where(self.DbTask.parent_id.is_(None))
+            else:
+                query = query.where(self.DbTask.parent_id == parent_id)
+
+        if parent_id_in is not self.UNSPECIFIED:
+            if parent_id_in:
+                query = query.where(self.DbTask.parent_id.in_(parent_id_in))
+            else:
+                # avoid performance penalty
+                query = query.where(false())
+
+        if users_contains is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.users.any(id=users_contains.id))
+
+        if is_public_or_users_contains is not self.UNSPECIFIED:
+            db_user = is_public_or_users_contains
+            query = query.outerjoin(
+                self.users_tasks_table,
+                self.users_tasks_table.c.task_id == self.DbTask.id).where(
+                or_(
+                    self.users_tasks_table.c.user_id == db_user.id,
+                    self.DbTask.is_public
+                )
+            )
+
+        if tags_contains is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.tags.any(id=tags_contains.id))
+
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
             # engines. In the case of an empty collection, just use a query
