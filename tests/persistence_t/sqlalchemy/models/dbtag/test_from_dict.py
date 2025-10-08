@@ -13,7 +13,7 @@ class DbTagFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.id)
         self.assertIsNone(result.value)
         self.assertIsNone(result.description)
-        self.assertEqual([], list(result.tasks))
+        self.assertEqual([], list(self.pl.get_tag_tasks(result.id)))
 
     def test_id_none_is_ignored(self):
         # when

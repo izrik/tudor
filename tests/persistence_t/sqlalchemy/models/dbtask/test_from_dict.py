@@ -22,14 +22,13 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.deadline)
         self.assertIsNone(result.expected_duration_minutes)
         self.assertIsNone(result.expected_cost)
-        self.assertEqual([], list(result.tags))
-        self.assertEqual([], list(result.users))
-        self.assertIsNone(result.parent)
-        self.assertIsNone(result.parent_id)
-        self.assertEqual([], list(result.dependees))
-        self.assertEqual([], list(result.dependants))
-        self.assertEqual([], list(result.prioritize_before))
-        self.assertEqual([], list(result.prioritize_after))
+        self.assertEqual([], list(self.pl.get_task_tags(result.id)))
+        self.assertEqual([], list(self.pl.get_task_users(result.id)))
+        self.assertIsNone(self.pl.get_task_parent(result.id))
+        self.assertEqual([], list(self.pl.get_task_dependees(result.id)))
+        self.assertEqual([], list(self.pl.get_task_dependants(result.id)))
+        self.assertEqual([], list(self.pl.get_task_prioritize_before(result.id)))
+        self.assertEqual([], list(self.pl.get_task_prioritize_after(result.id)))
 
     def test_id_none_is_ignored(self):
         # when

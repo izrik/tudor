@@ -14,39 +14,39 @@ class TaskTagsTest(unittest.TestCase):
 
     def test_no_tags_yields_no_tags(self):
         # given
-        t1 = Task('t1')
+        t1 = self.pl.create_task('t1')
+        self.pl.save(t1)
 
         # when
-        result = set(t1.get_tag_values())
+        result = set(tag.value for tag in self.pl.get_task_tags(t1.id))
 
         # then
         self.assertEqual(set(), result)
 
     def test_tasks_with_tags_return_those_tags_values(self):
         # given
-        t1 = Task('t1')
-        tag1 = Tag('tag1')
-        t1.tags.append(tag1)
-        t2 = Task('t2')
-        tag2 = Tag('tag2')
-        t2.tags.append(tag1)
-        t2.tags.append(tag2)
+        t1 = self.pl.create_task('t1')
+        tag1 = self.pl.create_tag('tag1')
+        t2 = self.pl.create_task('t2')
+        tag2 = self.pl.create_tag('tag2')
 
-        self.pl.create_all()
-        self.pl.add(t1)
-        self.pl.add(t2)
-        self.pl.add(tag1)
-        self.pl.add(tag2)
-        self.pl.commit()
+        self.pl.save(t1)
+        self.pl.save(t2)
+        self.pl.save(tag1)
+        self.pl.save(tag2)
+
+        self.pl.associate_tag_with_task(t1.id, tag1.id)
+        self.pl.associate_tag_with_task(t2.id, tag1.id)
+        self.pl.associate_tag_with_task(t2.id, tag2.id)
 
         # when
-        result = set(t1.get_tag_values())
+        result = set(tag.value for tag in self.pl.get_task_tags(t1.id))
 
         # then
         self.assertEqual({tag1.value}, result)
 
         # when
-        result = set(t2.get_tag_values())
+        result = set(tag.value for tag in self.pl.get_task_tags(t2.id))
 
         # then
         self.assertEqual({tag1.value, tag2.value}, result)
