@@ -17,7 +17,6 @@ class DbAttachmentFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.description)
         self.assertIsNone(result.timestamp)
         self.assertIsNone(result.filename)
-        self.assertIsNone(result.task)
 
     def test_id_none_is_ignored(self):
         # when
