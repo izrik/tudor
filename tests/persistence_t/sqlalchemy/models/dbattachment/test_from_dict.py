@@ -17,6 +17,7 @@ class DbAttachmentFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.description)
         self.assertIsNone(result.timestamp)
         self.assertIsNone(result.filename)
+        self.assertIsNone(result.task_id)
 
     def test_id_none_is_ignored(self):
         # when
@@ -89,18 +90,19 @@ class DbAttachmentFromDictTest(PersistenceLayerTestBase):
         self.assertIsInstance(result, self.pl.DbAttachment)
         self.assertEqual('abc', result.filename)
 
-    def test_task_none_yields_empty(self):
+    def test_task_id_none_yields_none(self):
         # when
-        result = self.pl.DbAttachment.from_dict({'task': None})
+        result = self.pl.DbAttachment.from_dict({'task_id': None})
         # then
         self.assertIsInstance(result, self.pl.DbAttachment)
-        self.assertIsNone(result.task)
+        self.assertIsNone(result.task_id)
 
-    def test_task_not_none_yields_same(self):
+    def test_task_id_not_none_yields_same(self):
         # given
         task = self.pl.DbTask('task')
+        self.pl.save(task)
         # when
-        result = self.pl.DbAttachment.from_dict({'task': task})
+        result = self.pl.DbAttachment.from_dict({'task_id': task.id})
         # then
         self.assertIsInstance(result, self.pl.DbAttachment)
-        self.assertIs(task, result.task)
+        self.assertEqual(task.id, result.task_id)

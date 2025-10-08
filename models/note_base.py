@@ -67,6 +67,8 @@ class NoteBase(object):
         note = cls(content, timestamp)
         if note_id is not None:
             note.id = note_id
+        if 'task_id' in d:
+            note.task_id = d['task_id']
         return note
 
     def update_from_dict(self, d):

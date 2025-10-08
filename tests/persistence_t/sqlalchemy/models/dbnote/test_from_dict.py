@@ -59,4 +59,20 @@ class DbNoteFromDictTest(PersistenceLayerTestBase):
         self.assertIsInstance(result, self.pl.DbNote)
         self.assertEqual(datetime(2017, 1, 1), result.timestamp)
 
+    def test_task_id_none_yields_none(self):
+        # when
+        result = self.pl.DbNote.from_dict({'task_id': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertIsNone(result.task_id)
+
+    def test_task_id_not_none_yields_same(self):
+        # given
+        task = self.pl.DbTask('task')
+        self.pl.save(task)
+        # when
+        result = self.pl.DbNote.from_dict({'task_id': task.id})
+        # then
+        self.assertIsInstance(result, self.pl.DbNote)
+        self.assertEqual(task.id, result.task_id)
 

@@ -76,6 +76,8 @@ class AttachmentBase(object):
         attachment = cls(path, description, timestamp, filename)
         if attachment_id is not None:
             attachment.id = attachment_id
+        if 'task_id' in d:
+            attachment.task_id = d['task_id']
         return attachment
 
     def update_from_dict(self, d):
