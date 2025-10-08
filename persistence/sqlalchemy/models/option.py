@@ -12,17 +12,13 @@ def generate_option_class(db):
         key = db.Column(db.String(100), primary_key=True)
         value = db.Column(db.String(100), nullable=True)
 
-        def __init__(self, key, value, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
+        def __init__(self, key, value):
             db.Model.__init__(self)
             OptionBase.__init__(self, key, value)
 
         @classmethod
-        def from_dict(cls, d, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
-            return super(DbOption, cls).from_dict(d=d, lazy=None)
+        def from_dict(cls, d):
+            return super(DbOption, cls).from_dict(d=d)
 
         def clear_relationships(self):
             pass

@@ -114,17 +114,6 @@ class AttachmentFromDictTest(unittest.TestCase):
             Attachment.from_dict,
             {'task': 1})
 
-    def test_lazy_overrides_non_lazy_task(self):
-        # given
-        task = Task('task')
-        task2 = Task('task2')
-        # when
-        result = Attachment.from_dict({'task': task},
-                                      lazy={'task': lambda: task2})
-        # then
-        self.assertEqual(result.object_type, ObjectTypes.Attachment)
-        self.assertIs(task2, result.task)
-
     def test_task_id_none_is_ignored(self):
         # when
         result = Attachment.from_dict({'task_id': None})

@@ -15,16 +15,10 @@ class Attachment(Changeable, AttachmentBase):
 
     _task = None
 
-    def __init__(self, path, description=None, timestamp=None, filename=None,
-                 lazy=None):
+    def __init__(self, path, description=None, timestamp=None, filename=None):
         super(Attachment, self).__init__(path, description, timestamp,
                                          filename)
         self._logger.debug('Attachment.__init__ %s', self)
-
-        if lazy is None:
-            lazy = {}
-
-        self._task_lazy = lazy.get('task')
 
     @property
     def id(self):
@@ -91,11 +85,7 @@ class Attachment(Changeable, AttachmentBase):
         return None
 
     def _populate_task(self):
-        if self._task_lazy:
-            self._logger.debug('populating task from lazy %s', self)
-            value = self._task_lazy()
-            self._task_lazy = None
-            self.task = value
+        pass
 
     @property
     def task(self):

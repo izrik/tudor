@@ -43,7 +43,7 @@ class OptionBase(object):
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         key = d.get('key')
         value = d.get('value', None)
         return cls(key, value)

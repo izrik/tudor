@@ -13,15 +13,11 @@ class User(Changeable, UserBase):
     _hashed_password = None
     _is_admin = None
 
-    def __init__(self, email, hashed_password=None, is_admin=False, lazy=None):
+    def __init__(self, email, hashed_password=None, is_admin=False):
         super(User, self).__init__(email=email,
                                    hashed_password=hashed_password,
                                    is_admin=is_admin)
-
-        if lazy is None:
-            lazy = {}
-
-        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
+        self._tasks = InterlinkedTasks(self)
 
     @property
     def id(self):

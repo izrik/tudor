@@ -22,18 +22,14 @@ def generate_attachment_class(db):
                                                   order_by=timestamp))
 
         def __init__(self, path, description=None, timestamp=None,
-                     filename=None, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
+                     filename=None):
             db.Model.__init__(self)
             AttachmentBase.__init__(self, path, description, timestamp,
                                     filename)
 
         @classmethod
-        def from_dict(cls, d, lazy=None):
-            if lazy:
-                raise ValueError('parameter \'lazy\' must be None or empty')
-            return super(DbAttachment, cls).from_dict(d=d, lazy=None)
+        def from_dict(cls, d):
+            return super(DbAttachment, cls).from_dict(d=d)
 
         def clear_relationships(self):
             self.task = None

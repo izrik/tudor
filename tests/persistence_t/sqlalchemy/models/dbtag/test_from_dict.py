@@ -79,31 +79,3 @@ class DbTagFromDictTest(PersistenceLayerTestBase):
         # then
         self.assertIsInstance(result, self.pl.DbTag)
         self.assertEqual([task], list(result.tasks))
-
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbTag.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbTag)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.value)
-        self.assertIsNone(result.description)
-        self.assertEqual([], list(result.tasks))
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbTag.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbTag)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.value)
-        self.assertIsNone(result.description)
-        self.assertEqual([], list(result.tasks))
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbTag.from_dict,
-            {},
-            lazy={'tasks': None})

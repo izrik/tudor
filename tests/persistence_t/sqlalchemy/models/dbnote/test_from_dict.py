@@ -75,31 +75,3 @@ class DbNoteFromDictTest(PersistenceLayerTestBase):
         # then
         self.assertIsInstance(result, self.pl.DbNote)
         self.assertIs(task, result.task)
-
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbNote.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbNote)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.content)
-        self.assertIsNone(result.timestamp)
-        self.assertIsNone(result.task)
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbNote.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbNote)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.content)
-        self.assertIsNone(result.timestamp)
-        self.assertIsNone(result.task)
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbNote.from_dict,
-            {},
-            lazy={'tasks': None})
