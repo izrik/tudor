@@ -675,8 +675,20 @@ class SqlAlchemyPersistenceLayer(object):
         self.db.session.execute(self.tags_tasks_table.insert().values(tag_id=tag_id, task_id=task_id))
         self.db.session.commit()
 
+    def disassociate_tag_from_task(self, task_id, tag_id):
+        self.db.session.execute(self.tags_tasks_table.delete().where(
+            (self.tags_tasks_table.c.tag_id == tag_id) & (self.tags_tasks_table.c.task_id == task_id)
+        ))
+        self.db.session.commit()
+
     def associate_user_with_task(self, task_id, user_id):
         self.db.session.execute(self.users_tasks_table.insert().values(user_id=user_id, task_id=task_id))
+        self.db.session.commit()
+
+    def disassociate_user_from_task(self, task_id, user_id):
+        self.db.session.execute(self.users_tasks_table.delete().where(
+            (self.users_tasks_table.c.user_id == user_id) & (self.users_tasks_table.c.task_id == task_id)
+        ))
         self.db.session.commit()
 
     def set_task_parent(self, task_id, parent_id):

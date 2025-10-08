@@ -23,6 +23,7 @@ class AttachmentBase(object):
         self.path = path
         self.filename = filename
         self.description = description
+        self.task_id = None
 
     @property
     def object_type(self):
@@ -58,6 +59,8 @@ class AttachmentBase(object):
             d['filename'] = self.filename
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
+        if fields is None or 'task_id' in (fields or []):
+            d['task_id'] = getattr(self, 'task_id', None)
 
         return d
 
@@ -91,3 +94,5 @@ class AttachmentBase(object):
             self.filename = d['filename']
         if 'description' in d:
             self.description = d['description']
+        if 'task_id' in d:
+            self.task_id = d['task_id']
