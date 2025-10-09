@@ -24,6 +24,15 @@ class OptionBase(object):
         return '{}(key={}, value={}, id=[{}])'.format(
             cls, repr(self.key), repr(self.value), id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, OptionBase):
+            return False
+        return (self.key == other.key and
+                self.value == other.value)
+
+    def __hash__(self):
+        return hash((self.key, self.value))
+
     @property
     def id(self):
         return self.key

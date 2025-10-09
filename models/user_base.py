@@ -35,6 +35,16 @@ class UserBase(object):
         return '{}({}, user id={}, id=[{}])'.format(cls, repr(self.email),
                                                     self.id, id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, UserBase):
+            return False
+        return (self.email == other.email and
+                self.hashed_password == other.hashed_password and
+                self.is_admin == other.is_admin)
+
+    def __hash__(self):
+        return hash((self.email, self.hashed_password, self.is_admin))
+
     def to_dict(self, fields=None):
 
         d = {}

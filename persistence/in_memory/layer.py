@@ -20,9 +20,9 @@ class InMemoryPersistenceLayer(object):
                                               'InMemoryPersistenceLayer')
 
     def __init__(self):
-        self._added_objects = set()
-        self._deleted_objects = set()
-        self._changed_objects = set()
+        self._added_objects = []
+        self._deleted_objects = []
+        self._changed_objects = []
         self._values_by_object = {}
 
         self._tasks = []  # TODO: change these to sets
@@ -460,8 +460,43 @@ class InMemoryPersistenceLayer(object):
     def save(self, obj):
         if obj.id is None:
             obj.id = self._get_next_id(obj.object_type)
-        self.add(obj)
-        self.commit()
+            self.add(obj)
+            self.commit()
+        else:
+            # update existing
+            tt = self._get_object_type(obj)
+            if tt == ObjectTypes.Task:
+                self._tasks_by_id[obj.id] = obj
+                for i, t in enumerate(self._tasks):
+                    if t.id == obj.id:
+                        self._tasks[i] = obj
+                        break
+            elif tt == ObjectTypes.Tag:
+                self._tags_by_id[obj.id] = obj
+                for i, t in enumerate(self._tags):
+                    if t.id == obj.id:
+                        self._tags[i] = obj
+                        break
+            elif tt == ObjectTypes.Note:
+                self._notes_by_id[obj.id] = obj
+                for i, n in enumerate(self._notes):
+                    if n.id == obj.id:
+                        self._notes[i] = obj
+                        break
+            elif tt == ObjectTypes.Attachment:
+                self._attachments_by_id[obj.id] = obj
+                for i, a in enumerate(self._attachments):
+                    if a.id == obj.id:
+                        self._attachments[i] = obj
+                        break
+            elif tt == ObjectTypes.User:
+                self._users_by_id[obj.id] = obj
+                for i, u in enumerate(self._users):
+                    if u.id == obj.id:
+                        self._users[i] = obj
+                        break
+            elif tt == ObjectTypes.Option:
+                self._options[obj.key] = obj
 
     def add(self, obj):
         if obj in self._added_objects:
@@ -475,7 +510,7 @@ class InMemoryPersistenceLayer(object):
             return
         d = obj.to_dict()
         self._values_by_object[obj] = d
-        self._added_objects.add(obj)
+        self._added_objects.append(obj)
 
     def delete(self, obj):
         if obj in self._deleted_objects:
@@ -483,10 +518,10 @@ class InMemoryPersistenceLayer(object):
         if obj in self._added_objects:
             raise Exception(
                 'The object (id={}) has already been added.'.format(obj.id))
-        self._deleted_objects.add(obj)
+        self._deleted_objects.append(obj)
 
     def commit(self):
-        for domobj in list(self._added_objects):
+        for domobj in self._added_objects[:]:
             tt = self._get_object_type(domobj)
             if tt != ObjectTypes.Option and domobj.id is None:
                 domobj.id = self._get_next_id(tt)
@@ -691,3 +726,34 @@ class InMemoryPersistenceLayer(object):
                 'Unknown object type: {}, {}, "{}"'.format(
                     domobj, type(domobj).__name__, tt))
         return tt
+
+    def get_task_children(self, task_id):
+        return [t for t in self._tasks if t.parent_id == task_id]
+
+    def get_task_parent(self, task_id):
+        task = self._tasks_by_id.get(task_id)
+        if task and task.parent_id:
+            return self.get_task(task.parent_id)
+        return None
+
+    def get_task_dependees(self, task_id):
+        # Not implemented for simplicity
+        return []
+
+    def get_task_dependants(self, task_id):
+        # Not implemented
+        return []
+
+    def get_task_prioritize_before(self, task_id):
+        # Not implemented
+        return []
+
+    def get_task_prioritize_after(self, task_id):
+        # Not implemented
+        return []
+
+    def get_task_notes(self, task_id):
+        return [n for n in self._notes if n.task_id == task_id]
+
+    def get_task_attachments(self, task_id):
+        return [a for a in self._attachments if a.task_id == task_id]

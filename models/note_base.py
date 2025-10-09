@@ -35,6 +35,16 @@ class NoteBase(object):
         return '{}({}, note id={}, id=[{}])'.format(
             cls, repr(self.content), self.id, id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, NoteBase):
+            return False
+        return (self.content == other.content and
+                self.timestamp == other.timestamp and
+                self.task_id == other.task_id)
+
+    def __hash__(self):
+        return hash((self.content, self.timestamp, self.task_id))
+
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:

@@ -67,6 +67,28 @@ class TaskBase(object):
         return '{}({}, task id={}, id=[{}])'.format(cls, repr(self.summary),
                                                     self.id, id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, TaskBase):
+            return False
+        return (self.summary == other.summary and
+                self.description == other.description and
+                self.is_done == other.is_done and
+                self.is_deleted == other.is_deleted and
+                self.deadline == other.deadline and
+                self.expected_duration_minutes == other.expected_duration_minutes and
+                self.expected_cost == other.expected_cost and
+                self.order_num == other.order_num and
+                self.parent_id == other.parent_id and
+                self.is_public == other.is_public and
+                self.date_created == other.date_created and
+                self.date_last_updated == other.date_last_updated)
+
+    def __hash__(self):
+        return hash((self.summary, self.description, self.is_done, self.is_deleted,
+                     self.deadline, self.expected_duration_minutes, self.expected_cost,
+                     self.order_num, self.parent_id, self.is_public,
+                     self.date_created, self.date_last_updated))
+
     @staticmethod
     def _clean_datetime(dt):
         if isinstance(dt, str):

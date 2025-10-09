@@ -30,6 +30,15 @@ class TagBase(object):
         return '{}({}, tag id={}, id=[{}])'.format(cls, repr(self.value),
                                                    self.id, id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, TagBase):
+            return False
+        return (self.value == other.value and
+                self.description == other.description)
+
+    def __hash__(self):
+        return hash((self.value, self.description))
+
     def to_dict(self, fields=None):
 
         self._logger.debug('%s', self)
