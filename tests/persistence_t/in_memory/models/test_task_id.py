@@ -13,13 +13,13 @@ class TaskIdTest(unittest.TestCase):
 
     def test_constructor_default_id_is_none(self):
         # when
-        task = Task('summary')
+        task = IMTask('summary')
         # then
         self.assertIsNone(task.id)
 
     def test_pl_add_does_not_assign_id(self):
         # given
-        task = Task('summary')
+        task = IMTask('summary')
         # when
         self.pl.add(task)
         # then
@@ -27,7 +27,7 @@ class TaskIdTest(unittest.TestCase):
 
     def test_pl_commit_assigns_non_null_id(self):
         # given
-        task = Task('summary')
+        task = IMTask('summary')
         self.pl.add(task)
         # when
         self.pl.commit()

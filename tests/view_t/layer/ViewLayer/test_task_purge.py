@@ -17,11 +17,11 @@ class TaskPurgeTest(unittest.TestCase):
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=IMUser)
 
     def test_purges_deleted_task(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.is_deleted = True
         self.ll.pl_get_task.return_value = task
         request = generate_mock_request(method="GET")
@@ -57,7 +57,7 @@ class TaskPurgeTest(unittest.TestCase):
 
     def test_task_not_deleted_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.is_deleted = False
         self.ll.pl_get_task.return_value = task
         request = generate_mock_request(method="GET")

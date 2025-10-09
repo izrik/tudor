@@ -17,7 +17,7 @@ class LogoutTest(unittest.TestCase):
         self.ls = Mock(spec=DefaultLoginSource)
         self.vl = ViewLayer(self.ll, None, renderer=self.r,
                             login_src=self.ls)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=IMUser)
 
     def test_logs_out_user(self):
         # given

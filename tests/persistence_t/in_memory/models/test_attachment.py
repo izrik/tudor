@@ -34,7 +34,7 @@ class AttachmentCleanTimestampTest(unittest.TestCase):
 class AttachmentClearRelationshipsTest(unittest.TestCase):
     def test_clearing_nullifies_task(self):
         # given
-        task = Task('task')
+        task = IMTask('task')
         attachment = Attachment('attachment')
         attachment.task = task
         # precondition
