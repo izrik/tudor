@@ -96,3 +96,22 @@ class AttachmentBase(object):
             self.description = d['description']
         if 'task_id' in d:
             self.task_id = d['task_id']
+
+
+class Attachment2(AttachmentBase):
+    def __init__(self, path, description='', timestamp=None,
+                 filename=None, task_id=None):
+        super().__init__(path=path, description=description,
+                         timestamp=timestamp, filename=filename)
+        self.task_id = task_id
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value

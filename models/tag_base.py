@@ -70,3 +70,19 @@ class TagBase(object):
             self.value = d['value']
         if 'description' in d:
             self.description = d['description']
+
+
+class Tag2(TagBase):
+    def __init__(self, value, description=None):
+        super().__init__(value=value, description=description)
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value

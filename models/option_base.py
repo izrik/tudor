@@ -53,3 +53,19 @@ class OptionBase(object):
             self.key = d['key']
         if 'value' in d:
             self.value = d['value']
+
+
+class Option2(OptionBase):
+    def __init__(self, key, value):
+        super().__init__(key=key, value=value)
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value
