@@ -718,6 +718,8 @@ class SqlAlchemyPersistenceLayer(object):
         if db_attachment:
             db_attachment.task_id = task_id
             self.db.session.commit()
+
+
 def generate_task_class(pl, tags_tasks_table, users_tasks_table,
                         task_dependencies_table, task_prioritize_table):
     db = pl.db
@@ -804,6 +806,33 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             self.prioritize_after = []
 
     return DbTask
+
+
+def generate_tag_class(db, tags_tasks_table):
+    class DbTag(db.Model, TagBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTag')
+
+        __tablename__ = 'tag'
+
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
+
+        tasks = db.relationship('DbTask', secondary=tags_tasks_table,
+                                back_populates='tags')
+
+        def __init__(self, value, description=None):
+            db.Model.__init__(self)
+            TagBase.__init__(self, value, description)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbTag, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.tasks = []
+
+    return DbTag
 
 
 def generate_note_class(db):
