@@ -4,13 +4,15 @@ from numbers import Number
 
 from sqlalchemy import or_, select, exists, false, func
 
-from persistence.sqlalchemy.models.attachment import generate_attachment_class
-from persistence.sqlalchemy.models.note import generate_note_class
-from persistence.sqlalchemy.models.option import generate_option_class
-from persistence.sqlalchemy.models.tag import generate_tag_class
-from persistence.sqlalchemy.models.task import generate_task_class
-from persistence.sqlalchemy.models.user import generate_user_class
+
 from persistence.pager import Pager
+
+from models.attachment_base import AttachmentBase
+from models.note_base import NoteBase
+from models.option_base import OptionBase
+from models.tag_base import TagBase
+from models.task_base import TaskBase
+from models.user_base import UserBase
 
 import logging_util
 
@@ -23,6 +25,237 @@ def as_iterable(x):
     if is_iterable(x):
         return x
     return (x,)
+
+
+def generate_tag_class(db, tags_tasks_table):
+    class DbTag(db.Model, TagBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTag')
+
+        __tablename__ = 'tag'
+
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
+
+        tasks = db.relationship('DbTask', secondary=tags_tasks_table,
+                                back_populates='tags')
+
+        def __init__(self, value, description=None):
+            db.Model.__init__(self)
+            TagBase.__init__(self, value, description)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbTag, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.tasks = []
+
+    return DbTag
+
+
+def generate_task_class(pl, tags_tasks_table, users_tasks_table,
+                        task_dependencies_table, task_prioritize_table):
+    db = pl.db
+
+    class DbTask(db.Model, TaskBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTask')
+
+        __tablename__ = 'task'
+
+        id = db.Column(db.Integer, primary_key=True)
+        summary = db.Column(db.String(100))
+        description = db.Column(db.String(4000))
+        is_done = db.Column(db.Boolean)
+        is_deleted = db.Column(db.Boolean)
+        order_num = db.Column(db.Integer, nullable=False, default=0)
+        deadline = db.Column(db.DateTime)
+        expected_duration_minutes = db.Column(db.Integer)
+        expected_cost = db.Column(db.Numeric)
+        is_public = db.Column(db.Boolean)
+        tags = db.relationship('DbTag', secondary=tags_tasks_table,
+                               back_populates="tasks")
+
+        users = db.relationship('DbUser', secondary=users_tasks_table,
+                                back_populates="tasks")
+
+        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                              nullable=True)
+        parent = db.relationship('DbTask', remote_side=[id],
+                                 backref=db.backref('children',
+                                                    lazy='dynamic'))
+
+        # self depends on self.dependees
+        # self.dependants depend on self
+        dependees = db.relationship(
+            'DbTask', secondary=task_dependencies_table,
+            primaryjoin=task_dependencies_table.c.dependant_id == id,
+            secondaryjoin=task_dependencies_table.c.dependee_id == id,
+            backref='dependants')
+
+        # self is after self.prioritize_before's
+        # self has lower priority than self.prioritize_before's
+        # self is before self.prioritize_after's
+        # self has higher priority than self.prioritize_after's
+        prioritize_before = db.relationship(
+            'DbTask', secondary=task_prioritize_table,
+            primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
+            secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
+            backref='prioritize_after')
+
+        date_created = db.Column(db.DateTime)
+        date_last_updated = db.Column(db.DateTime)
+
+        def __init__(self, summary, description='', is_done=False,
+                     is_deleted=False, deadline=None,
+                     expected_duration_minutes=None, expected_cost=None,
+                     is_public=False,
+                     date_created=None,
+                     date_last_updated=None):
+            db.Model.__init__(self)
+            TaskBase.__init__(
+                self, summary=summary, description=description,
+                is_done=is_done, is_deleted=is_deleted, deadline=deadline,
+                expected_duration_minutes=expected_duration_minutes,
+                expected_cost=expected_cost, is_public=is_public,
+                date_created=date_created,
+                date_last_updated=date_last_updated,
+            )
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbTask, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self._logger.debug('%s', self)
+            self.parent = None
+            self.children = []
+            self.tags = []
+            self.users = []
+            self.notes = []
+            self.attachments = []
+            self.dependees = []
+            self.dependants = []
+            self.prioritize_before = []
+            self.prioritize_after = []
+
+    return DbTask
+
+
+def generate_note_class(db):
+    class DbNote(db.Model, NoteBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbNote')
+
+        __tablename__ = 'note'
+
+        id = db.Column(db.Integer, primary_key=True)
+        content = db.Column(db.String(4000))
+        timestamp = db.Column(db.DateTime)
+
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+        task = db.relationship('DbTask',
+                               backref=db.backref('notes', lazy='dynamic',
+                                                  order_by=timestamp))
+
+        def __init__(self, content, timestamp=None):
+            db.Model.__init__(self)
+            NoteBase.__init__(self, content, timestamp)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbNote, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.task = None
+
+    return DbNote
+
+
+def generate_attachment_class(db):
+    class DbAttachment(db.Model, AttachmentBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbAttachment')
+
+        __tablename__ = 'attachment'
+
+        id = db.Column(db.Integer, primary_key=True)
+        path = db.Column(db.String(1000), nullable=False)
+        timestamp = db.Column(db.DateTime)
+        filename = db.Column(db.String(100))
+        description = db.Column(db.String(100), default=None)
+
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+        task = db.relationship('DbTask',
+                               backref=db.backref('attachments',
+                                                  lazy='dynamic',
+                                                  order_by=timestamp))
+
+        def __init__(self, path, description=None, timestamp=None,
+                     filename=None):
+            db.Model.__init__(self)
+            AttachmentBase.__init__(self, path, description, timestamp,
+                                    filename)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbAttachment, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.task = None
+
+    return DbAttachment
+
+
+def generate_user_class(db, users_tasks_table):
+    class DbUser(db.Model, UserBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbUser')
+
+        __tablename__ = 'user'
+
+        id = db.Column(db.Integer, primary_key=True)
+        email = db.Column(db.String(100), nullable=False, unique=True)
+        hashed_password = db.Column(db.String(100))
+        is_admin = db.Column(db.Boolean, nullable=False, default=False)
+
+        tasks = db.relationship('DbTask', secondary=users_tasks_table,
+                                back_populates='users')
+
+        def __init__(self, email, hashed_password=None, is_admin=False):
+            db.Model.__init__(self)
+            UserBase.__init__(self, email=email,
+                              hashed_password=hashed_password,
+                              is_admin=is_admin)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbUser, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.tasks = []
+
+    return DbUser
+
+
+def generate_option_class(db):
+    class DbOption(db.Model, OptionBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbOption')
+
+        __tablename__ = 'option'
+
+        key = db.Column(db.String(100), primary_key=True)
+        value = db.Column(db.String(100), nullable=True)
+
+        def __init__(self, key, value):
+            db.Model.__init__(self)
+            OptionBase.__init__(self, key, value)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbOption, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            pass
+
+    return DbOption
 
 
 class SqlAlchemyPersistenceLayer(object):
@@ -716,3 +949,30 @@ class SqlAlchemyPersistenceLayer(object):
         if db_attachment:
             db_attachment.task_id = task_id
             self.db.session.commit()
+
+
+def generate_tag_class(db, tags_tasks_table):
+    class DbTag(db.Model, TagBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTag')
+
+        __tablename__ = 'tag'
+
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
+
+        tasks = db.relationship('DbTask', secondary=tags_tasks_table,
+                                back_populates='tags')
+
+        def __init__(self, value, description=None):
+            db.Model.__init__(self)
+            TagBase.__init__(self, value, description)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbTag, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.tasks = []
+
+    return DbTag
