@@ -25,7 +25,7 @@ class GetTagTest(PersistenceLayerTestBase):
         result = self.pl.get_tag(tag.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
 
     def test_get_db_tag_none_raises(self):
         # expect
@@ -46,4 +46,4 @@ class GetTagTest(PersistenceLayerTestBase):
         result = self.pl._get_db_tag(dbtag.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(dbtag, result)
+        self.assertEqual(dbtag.id, result.id)

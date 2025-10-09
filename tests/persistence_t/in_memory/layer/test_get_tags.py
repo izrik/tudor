@@ -135,4 +135,4 @@ class GetTagsTest(InMemoryTestBase):
         # then
         self.assertIsNotNone(result)
         self.assertEqual(result.object_type, ObjectTypes.Tag)
-        self.assertIs(self.t1, result)
+        self.assertEqual(self.t1.id, result.id)

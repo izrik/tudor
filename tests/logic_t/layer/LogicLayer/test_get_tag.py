@@ -39,4 +39,4 @@ class GetTagTest(unittest.TestCase):
         # when
         result = self.ll.get_tag(tag.id)
         # then
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)

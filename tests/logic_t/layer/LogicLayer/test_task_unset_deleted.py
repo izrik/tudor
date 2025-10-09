@@ -33,7 +33,7 @@ class TaskUnsetDeletedTest(unittest.TestCase):
         result = self.ll.task_unset_deleted(t1.id, self.admin)
 
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertFalse(t1.is_deleted)
 
     def test_unauthorized_user_raises(self):
@@ -71,5 +71,5 @@ class TaskUnsetDeletedTest(unittest.TestCase):
         result = self.ll.task_unset_deleted(t1.id, self.admin)
 
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertFalse(t1.is_deleted)

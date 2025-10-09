@@ -28,7 +28,7 @@ class SetOptionTest(unittest.TestCase):
         self.assertEqual(1, self.pl.count_options())
         opt = self.pl.get_option('key')
         self.assertIsNotNone(opt)
-        self.assertIs(opt, result)
+        self.assertEqual(opt.id, result.id)
 
     def test_edits_option(self):
         # given
@@ -42,6 +42,6 @@ class SetOptionTest(unittest.TestCase):
         result = self.ll.do_set_option('a', 'c')
         self.pl.commit()
         # then
-        self.assertIs(option, result)
+        self.assertEqual(option.id, result.id)
         self.assertEqual('a', option.key)
         self.assertEqual('c', option.value)

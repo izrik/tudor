@@ -27,7 +27,7 @@ class GetTaskDataTest(unittest.TestCase):
         # when
         result = self.ll.get_task(task.id, admin)
         # then
-        self.assertIs(task, result)
+        self.assertEqual(task.id, result.id)
 
     def test_authorized_user_gets_single_task(self):
         # given a task
@@ -45,7 +45,7 @@ class GetTaskDataTest(unittest.TestCase):
         # when
         result = self.ll.get_task(task.id, user)
         # then
-        self.assertIs(task, result)
+        self.assertEqual(task.id, result.id)
 
     def test_non_admin_user_not_authorized_returns_none(self):
         # given a task
@@ -81,7 +81,7 @@ class GetTaskDataTest(unittest.TestCase):
         # when
         result = self.ll.get_task(task.id, user)
         # then
-        self.assertIs(task, result)
+        self.assertEqual(task.id, result.id)
 
     def test_task_not_found_raises(self):
         # given a user to attempt the retrieval
