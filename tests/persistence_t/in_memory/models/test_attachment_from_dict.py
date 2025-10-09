@@ -4,8 +4,8 @@ import unittest
 from datetime import datetime
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.attachment import IMAttachment
+from persistence.in_memory.models.task import IMTask
 
 
 class AttachmentFromDictTest(unittest.TestCase):

@@ -2,8 +2,8 @@
 import unittest
 
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.tag import IMTag
+from persistence.in_memory.models.task import IMTask
 
 
 class TagFromDictTest(unittest.TestCase):

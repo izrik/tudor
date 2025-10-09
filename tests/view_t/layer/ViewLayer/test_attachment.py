@@ -4,8 +4,8 @@ from unittest.mock import Mock
 from werkzeug.exceptions import NotFound
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.user import User
+from persistence.in_memory.models.attachment import IMAttachment
+from persistence.in_memory.models.user import IMUser
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer

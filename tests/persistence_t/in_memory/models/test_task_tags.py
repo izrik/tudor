@@ -2,8 +2,8 @@
 
 import unittest
 
-from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.tag import IMTag
+from persistence.in_memory.models.task import IMTask
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 
 

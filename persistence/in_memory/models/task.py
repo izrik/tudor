@@ -3,8 +3,8 @@ from models.task_base import TaskBase
 from persistence.in_memory.models.changeable import Changeable
 
 
-class Task(Changeable, TaskBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Task')
+class IMTask(Changeable, TaskBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMTask')
 
     _id = None
     _summary = None
@@ -26,7 +26,7 @@ class Task(Changeable, TaskBase):
                  is_public=False,
                  date_created=None,
                  date_last_updated=None):
-        super(Task, self).__init__(
+        super(IMTask, self).__init__(
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost, is_public,
             date_created,

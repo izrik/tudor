@@ -4,8 +4,8 @@ from models.attachment_base import AttachmentBase
 from persistence.in_memory.models.changeable import Changeable
 
 
-class Attachment(Changeable, AttachmentBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Attachment')
+class IMAttachment(Changeable, AttachmentBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMAttachment')
 
     _id = None
     _timestamp = None
@@ -16,7 +16,7 @@ class Attachment(Changeable, AttachmentBase):
     _task = None
 
     def __init__(self, path, description=None, timestamp=None, filename=None):
-        super(Attachment, self).__init__(path, description, timestamp,
+        super(IMAttachment, self).__init__(path, description, timestamp,
                                          filename)
         self._logger.debug('Attachment.__init__ %s', self)
 

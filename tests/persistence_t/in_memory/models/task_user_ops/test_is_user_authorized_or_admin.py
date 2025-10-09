@@ -2,9 +2,9 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 from models.task_user_ops import TaskUserOps
-from persistence.in_memory.models.user import User
+from persistence.in_memory.models.user import IMUser
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 
 

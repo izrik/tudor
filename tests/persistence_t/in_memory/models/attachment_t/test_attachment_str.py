@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.attachment import IMAttachment
 
 
 class AttachmentStrTest(unittest.TestCase):

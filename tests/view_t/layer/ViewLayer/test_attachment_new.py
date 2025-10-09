@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from werkzeug.exceptions import BadRequest
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.util import MockFileObject
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
