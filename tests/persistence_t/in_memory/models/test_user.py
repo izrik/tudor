@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.user import User
+from persistence.in_memory.models.user import IMUser
 
 
 class UserTest(unittest.TestCase):

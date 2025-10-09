@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 
 
 class TaskReprTest(unittest.TestCase):

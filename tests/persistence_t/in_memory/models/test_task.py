@@ -5,7 +5,7 @@ from datetime import datetime
 
 from decimal import Decimal
 
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 
 
 class TaskTest(unittest.TestCase):

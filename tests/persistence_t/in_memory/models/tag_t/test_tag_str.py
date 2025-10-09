@@ -2,7 +2,7 @@
 
 import unittest
 
-from persistence.in_memory.models.tag import Tag
+from persistence.in_memory.models.tag import IMTag
 
 
 class TagStrTest(unittest.TestCase):

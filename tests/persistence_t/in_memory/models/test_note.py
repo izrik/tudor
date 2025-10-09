@@ -3,8 +3,8 @@
 import unittest
 from datetime import datetime
 
-from persistence.in_memory.models.note import Note, NoteBase
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.note import IMNote, NoteBase
+from persistence.in_memory.models.task import IMTask
 
 
 class NoteCleanTimestampTest(unittest.TestCase):

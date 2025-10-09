@@ -4,8 +4,8 @@ from models.note_base import NoteBase
 from persistence.in_memory.models.changeable import Changeable
 
 
-class Note(Changeable, NoteBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Note')
+class IMNote(Changeable, NoteBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMNote')
 
     _id = None
     _content = ''
@@ -14,7 +14,7 @@ class Note(Changeable, NoteBase):
     _task = None
 
     def __init__(self, content, timestamp=None):
-        super(Note, self).__init__(content, timestamp)
+        super(IMNote, self).__init__(content, timestamp)
         self._logger.debug('Note.__init__ %s', self)
 
     @property
