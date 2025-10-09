@@ -75,6 +75,23 @@ class UserBase(object):
         if 'is_admin' in d:
             self.is_admin = d['is_admin']
 
+
+class User2(UserBase):
+    def __init__(self, email, hashed_password, is_admin=False):
+        super().__init__(email=email, hashed_password=hashed_password,
+                         is_admin=is_admin)
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value
+
     def is_active(self):
         return True
 

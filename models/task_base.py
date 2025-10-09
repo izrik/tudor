@@ -190,8 +190,6 @@ class TaskBase(object):
             return None
         return '{:.2f}'.format(value)
 
-
-
     def get_css_class(self):
         if self.is_deleted and self.is_done:
             return 'done-deleted'
@@ -218,3 +216,31 @@ class TaskBase(object):
         if self.expected_cost is None:
             return ''
         return '{:.2f}'.format(self.expected_cost)
+
+
+class Task2(TaskBase):
+    def __init__(self, summary, description='', is_done=False,
+                 is_deleted=False, deadline=None,
+                 expected_duration_minutes=None, expected_cost=None,
+                 order_num=0, parent_id=None, is_public=False,
+                 date_created=None, date_last_updated=None):
+        super().__init__(summary=summary, description=description,
+                         is_done=is_done, is_deleted=is_deleted,
+                         deadline=deadline,
+                         expected_duration_minutes=expected_duration_minutes,
+                         expected_cost=expected_cost, is_public=is_public,
+                         date_created=date_created,
+                         date_last_updated=date_last_updated)
+        self.order_num = order_num
+        self.parent_id = parent_id
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value
