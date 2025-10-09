@@ -7,12 +7,12 @@ from sqlalchemy import or_, select, exists, false, func
 
 from persistence.pager import Pager
 
-from models.attachment_base import AttachmentBase
-from models.note_base import NoteBase
-from models.option_base import OptionBase
-from models.tag_base import TagBase
-from models.task_base import TaskBase
-from models.user_base import UserBase
+from models.attachment_base import AttachmentBase, Attachment2
+from models.note_base import NoteBase, Note2
+from models.option_base import OptionBase, Option2
+from models.tag_base import TagBase, Tag2
+from models.task_base import TaskBase, Task2
+from models.user_base import UserBase, User2
 
 import logging_util
 
@@ -82,11 +82,33 @@ class SqlAlchemyPersistenceLayer(object):
 
     def save(self, obj):
         self._logger.debug('begin, obj: %s', obj)
-        if not self._is_db_object(obj):
+        if isinstance(obj, Task2):
+            if obj.id is None:
+                db_obj = self.DbTask(summary=obj.summary, description=obj.description, is_done=obj.is_done, is_deleted=obj.is_deleted, deadline=obj.deadline, expected_duration_minutes=obj.expected_duration_minutes, expected_cost=obj.expected_cost, order_num=obj.order_num, parent_id=obj.parent_id, is_public=obj.is_public, date_created=obj.date_created, date_last_updated=obj.date_last_updated)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.id
+            else:
+                db_obj = self._get_db_task(obj.id)
+                db_obj.summary = obj.summary
+                db_obj.description = obj.description
+                db_obj.is_done = obj.is_done
+                db_obj.is_deleted = obj.is_deleted
+                db_obj.deadline = obj.deadline
+                db_obj.expected_duration_minutes = obj.expected_duration_minutes
+                db_obj.expected_cost = obj.expected_cost
+                db_obj.order_num = obj.order_num
+                db_obj.parent_id = obj.parent_id
+                db_obj.is_public = obj.is_public
+                db_obj.date_created = obj.date_created
+                db_obj.date_last_updated = obj.date_last_updated
+                self.db.session.commit()
+        elif self._is_db_object(obj):
+            self.db.session.add(obj)
+            self.db.session.commit()
+        else:
             raise Exception(
                 'The object is not compatible with the PL: {}'.format(obj))
-        self.db.session.add(obj)
-        self.db.session.commit()
         self._logger.debug('end')
 
     def add(self, dbobj):
@@ -190,7 +212,7 @@ class SqlAlchemyPersistenceLayer(object):
         db_task = self._get_db_task(task_id)
         if db_task is None:
             return None
-        return self.DbTask.from_dict(db_task.to_dict())
+        return to_task2(db_task)
 
     def _get_db_task(self, task_id):
         if task_id is None:
@@ -949,5 +971,17 @@ def generate_option_class(db):
             pass
 
     return DbOption
+
+
+def to_task2(db_task):
+    task2 = Task2(summary=db_task.summary, description=db_task.description, is_done=db_task.is_done, is_deleted=db_task.is_deleted, deadline=db_task.deadline, expected_duration_minutes=db_task.expected_duration_minutes, expected_cost=db_task.expected_cost, order_num=db_task.order_num, parent_id=db_task.parent_id, is_public=db_task.is_public, date_created=db_task.date_created, date_last_updated=db_task.date_last_updated)
+    task2.id = db_task.id
+    return task2
+
+
+def to_tag2(db_tag):
+    tag2 = Tag2(value=db_tag.value, description=db_tag.description)
+    tag2.id = db_tag.id
+    return tag2
 
 
