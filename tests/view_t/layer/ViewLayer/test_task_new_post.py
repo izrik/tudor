@@ -15,7 +15,7 @@ class TaskNewPostTest(unittest.TestCase):
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=IMUser)
 
     def test_creates_new_task(self):
         # given

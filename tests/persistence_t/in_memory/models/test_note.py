@@ -34,7 +34,7 @@ class NoteCleanTimestampTest(unittest.TestCase):
 class NoteClearRelationshipsTest(unittest.TestCase):
     def test_clearing_nullifies_task(self):
         # given
-        task = Task('task')
+        task = IMTask('task')
         note = Note('note')
         note.task = task
         # precondition

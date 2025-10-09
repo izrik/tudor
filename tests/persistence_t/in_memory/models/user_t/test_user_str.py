@@ -8,12 +8,12 @@ from persistence.in_memory.models.user import IMUser
 class UserStrTest(unittest.TestCase):
     def test_generates_str_string(self):
         # given
-        user = User(email='name@example.com')
+        user = IMUser(email='name@example.com')
         user.id = 123
         #when
         r = str(user)
         # then
-        fmt = 'User(\'name@example.com\', user id=123, id=[{}])'
+        fmt = 'IMUser(\'name@example.com\', user id=123, id=[{}])'
         expected = fmt.format(id(user))
         self.assertEqual(expected, r)
 

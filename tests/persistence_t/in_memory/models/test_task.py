@@ -12,13 +12,13 @@ class TaskTest(unittest.TestCase):
 
     def test_constructor_sets_summary(self):
         # when
-        task = Task('summary')
+        task = IMTask('summary')
         # then
         self.assertEqual('summary', task.summary)
 
     def test_constructor_has_sensible_defaults(self):
         # when
-        task = Task('summary')
+        task = IMTask('summary')
         # then
         self.assertEqual('', task.description)
         self.assertFalse(task.is_done)
@@ -32,7 +32,7 @@ class TaskTest(unittest.TestCase):
 
     def test_constructor_sets_fields(self):
         # when
-        task = Task(
+        task = IMTask(
             summary='summary',
             description='description',
             is_done=True,
@@ -57,7 +57,7 @@ class TaskTest(unittest.TestCase):
 
     def test_to_dict_returns_correct_values(self):
         # given
-        task = Task(
+        task = IMTask(
             summary='summary',
             description='description',
             is_done=True,
@@ -95,7 +95,7 @@ class TaskTest(unittest.TestCase):
 
     def test_to_dict_returns_other_values_not_in_the_constructor(self):
         # given
-        task = Task(
+        task = IMTask(
             summary='summary',
             description='description',
             is_done=True,

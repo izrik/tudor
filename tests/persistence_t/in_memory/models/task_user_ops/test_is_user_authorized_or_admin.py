@@ -15,8 +15,8 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
 
     def test_unauthorized_nonadmin_cannot_access_task(self):
         # given
-        task = Task('task')
-        user = User('name@example.org')
+        task = IMTask('task')
+        user = IMUser('name@example.org')
         self.pl.add(task)
         self.pl.add(user)
         self.pl.commit()
@@ -27,8 +27,8 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
 
     def test_authorized_nonadmin_can_access_task(self):
         # given
-        task = Task('task')
-        user = User('name@example.org')
+        task = IMTask('task')
+        user = IMUser('name@example.org')
         self.pl.add(task)
         self.pl.add(user)
         task.users.append(user)
@@ -40,8 +40,8 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
 
     def test_unauthorized_admin_can_access_task(self):
         # given
-        task = Task('task')
-        user = User('name@example.org', None, True)
+        task = IMTask('task')
+        user = IMUser('name@example.org', None, True)
         self.pl.add(task)
         self.pl.add(user)
         self.pl.commit()
@@ -52,8 +52,8 @@ class IsUserAuthorizedOrAdminTest(unittest.TestCase):
 
     def test_authorized_admin_can_access_task(self):
         # given
-        task = Task('task')
-        user = User('name@example.org', None, True)
+        task = IMTask('task')
+        user = IMUser('name@example.org', None, True)
         self.pl.add(task)
         self.pl.add(user)
         task.users.append(user)
