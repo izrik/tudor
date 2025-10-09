@@ -38,6 +38,19 @@ class AttachmentBase(object):
         return '{}({}, attachment id={}, id=[{}])'.format(
             cls, repr(self.path), self.id, id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, AttachmentBase):
+            return False
+        return (self.path == other.path and
+                self.description == other.description and
+                self.timestamp == other.timestamp and
+                self.filename == other.filename and
+                self.task_id == other.task_id)
+
+    def __hash__(self):
+        return hash((self.path, self.description, self.timestamp,
+                     self.filename, self.task_id))
+
     @staticmethod
     def _clean_timestamp(timestamp):
         if timestamp is None:
