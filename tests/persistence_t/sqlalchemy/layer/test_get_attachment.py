@@ -25,7 +25,7 @@ class GetAttachmentTest(PersistenceLayerTestBase):
         result = self.pl.get_attachment(attachment.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(attachment, result)
+        self.assertEqual(attachment.id, result.id)
 
     def test_get_db_attachment_none_raises(self):
         # expect
@@ -46,4 +46,4 @@ class GetAttachmentTest(PersistenceLayerTestBase):
         result = self.pl._get_db_attachment(dbattachment.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(dbattachment, result)
+        self.assertEqual(dbattachment.id, result.id)

@@ -29,4 +29,4 @@ class GetNoteTest(InMemoryTestBase):
         result = self.pl.get_note(note.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(note, result)
+        self.assertEqual(note.id, result.id)

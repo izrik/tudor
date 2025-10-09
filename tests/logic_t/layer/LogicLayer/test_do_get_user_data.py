@@ -23,7 +23,7 @@ class GetUserDataTest(unittest.TestCase):
         # when
         result = self.ll.do_get_user_data(user.id, admin)
         # then returns the user
-        self.assertIs(user, result)
+        self.assertEqual(user.id, result.id)
 
     def test_user_not_found_raises(self):
         # given only an admin user to attempt the retrieval
@@ -46,7 +46,7 @@ class GetUserDataTest(unittest.TestCase):
         # when
         result = self.ll.do_get_user_data(user.id, user)
         # then returns the user
-        self.assertIs(user, result)
+        self.assertEqual(user.id, result.id)
 
     def test_current_user_not_self_and_not_admin_raises(self):
         # given a user to get

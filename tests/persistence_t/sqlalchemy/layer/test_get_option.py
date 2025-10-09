@@ -25,7 +25,7 @@ class GetOptionTest(PersistenceLayerTestBase):
         result = self.pl.get_option(option.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(option, result)
+        self.assertEqual(option.id, result.id)
 
     def test_get_db_option_none_raises(self):
         # expect
@@ -46,4 +46,4 @@ class GetOptionTest(PersistenceLayerTestBase):
         result = self.pl._get_db_option(dboption.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(dboption, result)
+        self.assertEqual(dboption.id, result.id)

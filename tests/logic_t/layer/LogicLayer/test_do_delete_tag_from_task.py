@@ -56,7 +56,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.assertNotIn(tag, task.tags)
         self.assertNotIn(task, tag.tasks)
         # and
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
 
     def test_non_authorized_admin_removes_tag(self):
         # given
@@ -79,7 +79,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.assertNotIn(tag, task.tags)
         self.assertNotIn(task, tag.tasks)
         # and
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
 
     def test_authorized_admin_removes_tag(self):
         # given
@@ -103,7 +103,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.assertNotIn(tag, task.tags)
         self.assertNotIn(task, tag.tasks)
         # and
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
 
     def test_authorized_user_removes_tag(self):
         # given
@@ -127,7 +127,7 @@ class DeleteTagFromTaskTest(unittest.TestCase):
         self.assertNotIn(tag, task.tags)
         self.assertNotIn(task, tag.tasks)
         # and
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
 
     def test_non_authorized_user_raises(self):
         # given

@@ -50,7 +50,7 @@ class GetUsersTest(PersistenceLayerTestBase):
         # then
         self.assertIsNotNone(result)
         self.assertEqual(result.object_type, ObjectTypes.User)
-        self.assertIs(self.user1, result)
+        self.assertEqual(self.user1.id, result.id)
 
     def test_get_users_without_params_returns_all_users(self):
         # when
