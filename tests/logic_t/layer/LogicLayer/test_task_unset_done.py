@@ -33,7 +33,7 @@ class TaskUnsetDoneTest(unittest.TestCase):
         result = self.ll.task_unset_done(t1.id, self.admin)
 
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertFalse(t1.is_done)
 
     def test_unauthorized_user_raises(self):
@@ -71,5 +71,5 @@ class TaskUnsetDoneTest(unittest.TestCase):
         result = self.ll.task_unset_done(t1.id, self.admin)
 
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertFalse(t1.is_done)

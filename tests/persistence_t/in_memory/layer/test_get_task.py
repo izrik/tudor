@@ -31,4 +31,5 @@ class GetTaskTest(InMemoryTestBase):
         result = self.pl.get_task(1)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(task, result)
+        self.assertEqual(task.id, result.id)
+        self.assertEqual(task.summary, result.summary)

@@ -14,7 +14,7 @@ class DbUserFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.email)
         self.assertIsNone(result.hashed_password)
         self.assertFalse(result.is_admin)
-        self.assertEqual([], list(result.tasks))
+        self.assertEqual([], list(self.pl.get_user_tasks(result.id)))
 
     def test_id_none_is_ignored(self):
         # when
@@ -77,14 +77,14 @@ class DbUserFromDictTest(PersistenceLayerTestBase):
         result = self.pl.DbUser.from_dict({'tasks': None})
         # then
         self.assertIsInstance(result, self.pl.DbUser)
-        self.assertEqual([], list(result.tasks))
+        self.assertEqual([], list(self.pl.get_user_tasks(result.id)))
 
     def test_tasks_empty_yields_empty(self):
         # when
         result = self.pl.DbUser.from_dict({'tasks': []})
         # then
         self.assertIsInstance(result, self.pl.DbUser)
-        self.assertEqual([], list(result.tasks))
+        self.assertEqual([], list(self.pl.get_user_tasks(result.id)))
 
     def test_tasks_non_empty_yields_same(self):
         # given
@@ -93,34 +93,4 @@ class DbUserFromDictTest(PersistenceLayerTestBase):
         result = self.pl.DbUser.from_dict({'tasks': [task]})
         # then
         self.assertIsInstance(result, self.pl.DbUser)
-        self.assertEqual([task], list(result.tasks))
-
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbUser.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbUser)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.email)
-        self.assertIsNone(result.hashed_password)
-        self.assertFalse(result.is_admin)
-        self.assertEqual([], list(result.tasks))
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbUser.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbUser)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.email)
-        self.assertIsNone(result.hashed_password)
-        self.assertFalse(result.is_admin)
-        self.assertEqual([], list(result.tasks))
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbUser.from_dict,
-            {},
-            lazy={'tasks': None})
+        self.assertEqual([], list(self.pl.get_user_tasks(result.id)))

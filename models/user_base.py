@@ -1,9 +1,11 @@
 
+import logging_util
 from collections_util import assign
 from models.object_types import ObjectTypes
 
 
 class UserBase(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'UserBase')
 
     FIELD_ID = 'ID'
     FIELD_EMAIL = 'EMAIL'
@@ -33,6 +35,16 @@ class UserBase(object):
         return '{}({}, user id={}, id=[{}])'.format(cls, repr(self.email),
                                                     self.id, id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, UserBase):
+            return False
+        return (self.email == other.email and
+                self.hashed_password == other.hashed_password and
+                self.is_admin == other.is_admin)
+
+    def __hash__(self):
+        return hash((self.email, self.hashed_password, self.is_admin))
+
     def to_dict(self, fields=None):
 
         d = {}
@@ -45,31 +57,22 @@ class UserBase(object):
         if fields is None or self.FIELD_IS_ADMIN in fields:
             d['is_admin'] = self.is_admin
 
-        if fields is None or self.FIELD_TASKS in fields:
-            d['tasks'] = list(self.tasks)
-
         return d
 
     def to_flat_dict(self, fields=None):
         d = self.to_dict(fields=fields)
-        if 'tasks' in d:
-            d['task_ids'] = [item.id for item in d['tasks']]
-            del d['tasks']
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         user_id = d.get('id', None)
         email = d.get('email')
         hashed_password = d.get('hashed_password', None)
         is_admin = d.get('is_admin', False)
 
-        user = cls(email, hashed_password, is_admin, lazy=lazy)
+        user = cls(email, hashed_password, is_admin)
         if user_id is not None:
             user.id = user_id
-        if not lazy:
-            if 'tasks' in d:
-                assign(user.tasks, d['tasks'])
         return user
 
     def update_from_dict(self, d):
@@ -81,8 +84,23 @@ class UserBase(object):
             self.hashed_password = d['hashed_password']
         if 'is_admin' in d:
             self.is_admin = d['is_admin']
-        if 'tasks' in d:
-            assign(self.tasks, d['tasks'])
+
+
+class User2(UserBase):
+    def __init__(self, email, hashed_password, is_admin=False):
+        super().__init__(email=email, hashed_password=hashed_password,
+                         is_admin=is_admin)
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value
 
     def is_active(self):
         return True

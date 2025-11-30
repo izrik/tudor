@@ -32,7 +32,7 @@ class TaskSetDoneTest(unittest.TestCase):
         result = self.ll.task_set_done(t1.id, self.admin)
 
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertTrue(t1.is_done)
 
     def test_unauthorized_user_raises(self):
@@ -69,5 +69,5 @@ class TaskSetDoneTest(unittest.TestCase):
         result = self.ll.task_set_done(t1.id, self.admin)
 
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertTrue(t1.is_done)

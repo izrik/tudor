@@ -4,13 +4,15 @@ from numbers import Number
 
 from sqlalchemy import or_, select, exists, false, func
 
-from persistence.sqlalchemy.models.attachment import generate_attachment_class
-from persistence.sqlalchemy.models.note import generate_note_class
-from persistence.sqlalchemy.models.option import generate_option_class
-from persistence.sqlalchemy.models.tag import generate_tag_class
-from persistence.sqlalchemy.models.task import generate_task_class
-from persistence.sqlalchemy.models.user import generate_user_class
+
 from persistence.pager import Pager
+
+from models.attachment_base import AttachmentBase, Attachment2
+from models.note_base import NoteBase, Note2
+from models.option_base import OptionBase, Option2
+from models.tag_base import TagBase, Tag2
+from models.task_base import TaskBase, Task2
+from models.user_base import UserBase, User2
 
 import logging_util
 
@@ -77,6 +79,96 @@ class SqlAlchemyPersistenceLayer(object):
 
         self._db_by_domain = {}
         self._domain_by_db = {}
+
+    def save(self, obj):
+        self._logger.debug('begin, obj: %s', obj)
+        if isinstance(obj, Task2):
+            if obj.id is None:
+                db_obj = self.DbTask(summary=obj.summary, description=obj.description, is_done=obj.is_done, is_deleted=obj.is_deleted, deadline=obj.deadline, expected_duration_minutes=obj.expected_duration_minutes, expected_cost=obj.expected_cost, order_num=obj.order_num, parent_id=obj.parent_id, is_public=obj.is_public, date_created=obj.date_created, date_last_updated=obj.date_last_updated)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.id
+            else:
+                db_obj = self._get_db_task(obj.id)
+                db_obj.summary = obj.summary
+                db_obj.description = obj.description
+                db_obj.is_done = obj.is_done
+                db_obj.is_deleted = obj.is_deleted
+                db_obj.deadline = obj.deadline
+                db_obj.expected_duration_minutes = obj.expected_duration_minutes
+                db_obj.expected_cost = obj.expected_cost
+                db_obj.order_num = obj.order_num
+                db_obj.parent_id = obj.parent_id
+                db_obj.is_public = obj.is_public
+                db_obj.date_created = obj.date_created
+                db_obj.date_last_updated = obj.date_last_updated
+                self.db.session.commit()
+        elif isinstance(obj, Tag2):
+            if obj.id is None:
+                db_obj = self.DbTag(value=obj.value, description=obj.description)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.id
+            else:
+                db_obj = self._get_db_tag(obj.id)
+                db_obj.value = obj.value
+                db_obj.description = obj.description
+                self.db.session.commit()
+        elif isinstance(obj, Note2):
+            if obj.id is None:
+                db_obj = self.DbNote(content=obj.content, timestamp=obj.timestamp, task_id=obj.task_id)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.id
+            else:
+                db_obj = self._get_db_note(obj.id)
+                db_obj.content = obj.content
+                db_obj.timestamp = obj.timestamp
+                db_obj.task_id = obj.task_id
+                self.db.session.commit()
+        elif isinstance(obj, Attachment2):
+            if obj.id is None:
+                db_obj = self.DbAttachment(path=obj.path, description=obj.description, timestamp=obj.timestamp, filename=obj.filename, task_id=obj.task_id)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.id
+            else:
+                db_obj = self._get_db_attachment(obj.id)
+                db_obj.path = obj.path
+                db_obj.description = obj.description
+                db_obj.timestamp = obj.timestamp
+                db_obj.filename = obj.filename
+                db_obj.task_id = obj.task_id
+                self.db.session.commit()
+        elif isinstance(obj, User2):
+            if obj.id is None:
+                db_obj = self.DbUser(email=obj.email, hashed_password=obj.hashed_password, is_admin=obj.is_admin)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.id
+            else:
+                db_obj = self._get_db_user(obj.id)
+                db_obj.email = obj.email
+                db_obj.hashed_password = obj.hashed_password
+                db_obj.is_admin = obj.is_admin
+                self.db.session.commit()
+        elif isinstance(obj, Option2):
+            if obj.id is None:
+                db_obj = self.DbOption(key=obj.key, value=obj.value)
+                self.db.session.add(db_obj)
+                self.db.session.commit()
+                obj.id = db_obj.key
+            else:
+                db_obj = self._get_db_option(obj.id)
+                db_obj.value = obj.value
+                self.db.session.commit()
+        elif self._is_db_object(obj):
+            self.db.session.add(obj)
+            self.db.session.commit()
+        else:
+            raise Exception(
+                'The object is not compatible with the PL: {}'.format(obj))
+        self._logger.debug('end')
 
     def add(self, dbobj):
         self._logger.debug('begin, dbobj: %s', dbobj)
@@ -161,8 +253,7 @@ class SqlAlchemyPersistenceLayer(object):
                     expected_duration_minutes=None, expected_cost=None,
                     is_public=False,
                     date_created=None,
-                    date_last_updated=None,
-                    lazy=None):
+                    date_last_updated=None):
         if date_created is None:
             from datetime import datetime
             date_created = datetime.now(UTC)
@@ -174,11 +265,13 @@ class SqlAlchemyPersistenceLayer(object):
                            expected_duration_minutes=expected_duration_minutes,
                            expected_cost=expected_cost, is_public=is_public,
                            date_created=date_created,
-                           date_last_updated=date_last_updated,
-                           lazy=lazy)
+                           date_last_updated=date_last_updated)
 
     def get_task(self, task_id):
-        return self._get_db_task(task_id)
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            return None
+        return to_task2(db_task)
 
     def _get_db_task(self, task_id):
         if task_id is None:
@@ -245,6 +338,9 @@ class SqlAlchemyPersistenceLayer(object):
                 )
             )
 
+        if tags_contains is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.tags.any(id=tags_contains.id))
+
         if task_id_in is not self.UNSPECIFIED:
             # Using in_ on an empty set works but is expensive for some db
             # engines. In the case of an empty collection, just use a query
@@ -267,9 +363,6 @@ class SqlAlchemyPersistenceLayer(object):
 
         if deadline_is_not_none:
             query = query.where(self.DbTask.deadline.isnot(None))
-
-        if tags_contains is not self.UNSPECIFIED:
-            query = query.where(self.DbTask.tags.any(id=tags_contains.id))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
@@ -330,9 +423,9 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-             limit=limit)
-        return (_ for _ in self.db.session.execute(query).scalars())
+              order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
+              limit=limit)
+        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(query).scalars())
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -408,8 +501,8 @@ class SqlAlchemyPersistenceLayer(object):
         # Deprecated in SQLAlchemy 2.0
         return self.DbTag.query
 
-    def create_tag(self, value, description=None, lazy=None):
-        return self.DbTag(value=value, description=description, lazy=lazy)
+    def create_tag(self, value, description=None):
+        return self.DbTag(value=value, description=description)
 
     def _get_db_tag(self, tag_id):
         if tag_id is None:
@@ -420,7 +513,10 @@ class SqlAlchemyPersistenceLayer(object):
     def get_tag(self, tag_id):
         if tag_id is None:
             raise ValueError('tag_id cannot be None')
-        return self._get_db_tag(tag_id)
+        db_tag = self._get_db_tag(tag_id)
+        if db_tag is None:
+            return None
+        return to_tag2(db_tag)
 
     def _get_tags_query(self, value=UNSPECIFIED, limit=None):
         query = select(self.DbTag)
@@ -432,7 +528,7 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_tags(self, value=UNSPECIFIED, limit=None):
         query = self._get_tags_query(value=value, limit=limit)
-        return (_ for _ in self.db.session.execute(query).scalars())
+        return (to_tag2(_) for _ in self.db.session.execute(query).scalars())
 
     def count_tags(self, value=UNSPECIFIED, limit=None):
         query = self._get_tags_query(value=value, limit=limit)
@@ -447,8 +543,8 @@ class SqlAlchemyPersistenceLayer(object):
     def note_query(self):
         return self.DbNote.query
 
-    def create_note(self, content, timestamp=None, lazy=None):
-        return self.DbNote(content=content, timestamp=timestamp, lazy=lazy)
+    def create_note(self, content, timestamp=None):
+        return self.DbNote(content=content, timestamp=timestamp)
 
     def _get_db_note(self, note_id):
         if note_id is None:
@@ -459,7 +555,10 @@ class SqlAlchemyPersistenceLayer(object):
     def get_note(self, note_id):
         if note_id is None:
             raise ValueError('note_id acannot be None')
-        return self._get_db_note(note_id)
+        db_note = self._get_db_note(note_id)
+        if db_note is None:
+            return None
+        return to_note2(db_note)
 
     def _get_notes_query(self, note_id_in=UNSPECIFIED):
         query = select(self.DbNote)
@@ -473,7 +572,7 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_notes(self, note_id_in=UNSPECIFIED):
         query = self._get_notes_query(note_id_in=note_id_in)
-        return (_ for _ in self.db.session.execute(query).scalars())
+        return (to_note2(_) for _ in self.db.session.execute(query).scalars())
 
     def count_notes(self, note_id_in=UNSPECIFIED):
         query = self._get_notes_query(note_id_in=note_id_in)
@@ -485,10 +584,9 @@ class SqlAlchemyPersistenceLayer(object):
         return self.DbAttachment.query
 
     def create_attachment(self, path, description=None, timestamp=None,
-                          filename=None, lazy=None):
+                          filename=None):
         return self.DbAttachment(path=path, description=description,
-                                 timestamp=timestamp, filename=filename,
-                                 lazy=lazy)
+                                 timestamp=timestamp, filename=filename)
 
     def _get_db_attachment(self, attachment_id):
         if attachment_id is None:
@@ -499,7 +597,10 @@ class SqlAlchemyPersistenceLayer(object):
     def get_attachment(self, attachment_id):
         if attachment_id is None:
             raise ValueError('attachment_id acannot be None')
-        return self._get_db_attachment(attachment_id)
+        db_attachment = self._get_db_attachment(attachment_id)
+        if db_attachment is None:
+            return None
+        return to_attachment2(db_attachment)
 
     def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
         query = select(self.DbAttachment)
@@ -513,7 +614,7 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_attachments(self, attachment_id_in=UNSPECIFIED):
         query = self._get_attachments_query(attachment_id_in=attachment_id_in)
-        return (_ for _ in self.db.session.execute(query).scalars())
+        return (to_attachment2(_) for _ in self.db.session.execute(query).scalars())
 
     def count_attachments(self, attachment_id_in=UNSPECIFIED):
         query = self._get_attachments_query(
@@ -525,10 +626,9 @@ class SqlAlchemyPersistenceLayer(object):
     def user_query(self):
         return self.DbUser.query
 
-    def create_user(self, email, hashed_password=None, is_admin=False,
-                    lazy=None):
+    def create_user(self, email, hashed_password=None, is_admin=False):
         return self.DbUser(email=email, hashed_password=hashed_password,
-                           is_admin=is_admin, lazy=lazy)
+                           is_admin=is_admin)
 
     _guest_user = None
 
@@ -549,11 +649,17 @@ class SqlAlchemyPersistenceLayer(object):
     def get_user(self, user_id):
         if user_id is None:
             raise ValueError('user_id acannot be None')
-        return self._get_db_user(user_id)
+        db_user = self._get_db_user(user_id)
+        if db_user is None:
+            return None
+        return to_user2(db_user)
 
     def get_user_by_email(self, email):
         stmt = select(self.DbUser).where(self.DbUser.email == email)
-        return self.db.session.execute(stmt).scalars().first()
+        db_user = self.db.session.execute(stmt).scalars().first()
+        if db_user is None:
+            return None
+        return to_user2(db_user)
 
     def _get_users_query(self, email_in=UNSPECIFIED):
         query = select(self.DbUser)
@@ -567,7 +673,7 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_users(self, email_in=UNSPECIFIED):
         query = self._get_users_query(email_in=email_in)
-        return (_ for _ in self.db.session.execute(query).scalars())
+        return (to_user2(_) for _ in self.db.session.execute(query).scalars())
 
     def count_users(self, email_in=UNSPECIFIED):
         query = self._get_users_query(email_in=email_in)
@@ -590,7 +696,10 @@ class SqlAlchemyPersistenceLayer(object):
     def get_option(self, key):
         if key is None:
             raise ValueError('key acannot be None')
-        return self._get_db_option(key)
+        db_option = self._get_db_option(key)
+        if db_option is None:
+            return None
+        return to_option2(db_option)
 
     def _get_options_query(self, key_in=UNSPECIFIED):
         query = select(self.DbOption)
@@ -604,9 +713,376 @@ class SqlAlchemyPersistenceLayer(object):
 
     def get_options(self, key_in=UNSPECIFIED):
         query = self._get_options_query(key_in=key_in)
-        return (_ for _ in self.db.session.execute(query).scalars())
+        return (to_option2(_) for _ in self.db.session.execute(query).scalars())
 
     def count_options(self, key_in=UNSPECIFIED):
         query = self._get_options_query(key_in=key_in)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
+
+    # Relationship getters
+    def get_task_tags(self, task_id):
+        stmt = select(self.DbTag).join(self.tags_tasks_table).where(self.tags_tasks_table.c.task_id == task_id)
+        return (to_tag2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_users(self, task_id):
+        stmt = select(self.DbUser).join(self.users_tasks_table).where(self.users_tasks_table.c.task_id == task_id)
+        return (to_user2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_children(self, task_id):
+        stmt = select(self.DbTask).where(self.DbTask.parent_id == task_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_parent(self, task_id):
+        db_task = self._get_db_task(task_id)
+        if db_task and db_task.parent_id:
+            return self.get_task(db_task.parent_id)
+        return None
+
+    def get_task_dependees(self, task_id):
+        stmt = select(self.DbTask).join(self.task_dependencies_table, self.task_dependencies_table.c.dependee_id == self.DbTask.id).where(self.task_dependencies_table.c.dependant_id == task_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_dependants(self, task_id):
+        stmt = select(self.DbTask).join(self.task_dependencies_table, self.task_dependencies_table.c.dependant_id == self.DbTask.id).where(self.task_dependencies_table.c.dependee_id == task_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_prioritize_before(self, task_id):
+        stmt = select(self.DbTask).join(self.task_prioritize_table, self.task_prioritize_table.c.prioritize_before_id == self.DbTask.id).where(self.task_prioritize_table.c.prioritize_after_id == task_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_prioritize_after(self, task_id):
+        stmt = select(self.DbTask).join(self.task_prioritize_table, self.task_prioritize_table.c.prioritize_after_id == self.DbTask.id).where(self.task_prioritize_table.c.prioritize_before_id == task_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_notes(self, task_id):
+        stmt = select(self.DbNote).where(self.DbNote.task_id == task_id)
+        return (to_note2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_task_attachments(self, task_id):
+        stmt = select(self.DbAttachment).where(self.DbAttachment.task_id == task_id)
+        return (to_attachment2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_tag_tasks(self, tag_id):
+        stmt = select(self.DbTask).join(self.tags_tasks_table).where(self.tags_tasks_table.c.tag_id == tag_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    def get_user_tasks(self, user_id):
+        stmt = select(self.DbTask).join(self.users_tasks_table).where(self.users_tasks_table.c.user_id == user_id)
+        return (to_task2(_) for _ in self.db.session.execute(stmt).scalars())
+
+    # Relationship setters
+    def associate_tag_with_task(self, task_id, tag_id):
+        self.db.session.execute(self.tags_tasks_table.insert().values(tag_id=tag_id, task_id=task_id))
+        self.db.session.commit()
+
+    def disassociate_tag_from_task(self, task_id, tag_id):
+        self.db.session.execute(self.tags_tasks_table.delete().where(
+            (self.tags_tasks_table.c.tag_id == tag_id) & (self.tags_tasks_table.c.task_id == task_id)
+        ))
+        self.db.session.commit()
+
+    def associate_user_with_task(self, task_id, user_id):
+        self.db.session.execute(self.users_tasks_table.insert().values(user_id=user_id, task_id=task_id))
+        self.db.session.commit()
+
+    def disassociate_user_from_task(self, task_id, user_id):
+        self.db.session.execute(self.users_tasks_table.delete().where(
+            (self.users_tasks_table.c.user_id == user_id) & (self.users_tasks_table.c.task_id == task_id)
+        ))
+        self.db.session.commit()
+
+    def set_task_parent(self, task_id, parent_id):
+        db_task = self._get_db_task(task_id)
+        if db_task:
+            db_task.parent_id = parent_id
+            self.db.session.commit()
+
+    def associate_dependee_with_task(self, task_id, dependee_id):
+        self.db.session.execute(self.task_dependencies_table.insert().values(dependee_id=dependee_id, dependant_id=task_id))
+        self.db.session.commit()
+
+    def associate_prioritize_before_with_task(self, task_id, before_id):
+        self.db.session.execute(self.task_prioritize_table.insert().values(prioritize_before_id=before_id, prioritize_after_id=task_id))
+        self.db.session.commit()
+
+    def associate_note_with_task(self, task_id, note_id):
+        db_note = self._get_db_note(note_id)
+        if db_note:
+            db_note.task_id = task_id
+            self.db.session.commit()
+
+    def associate_attachment_with_task(self, task_id, attachment_id):
+        db_attachment = self._get_db_attachment(attachment_id)
+        if db_attachment:
+            db_attachment.task_id = task_id
+            self.db.session.commit()
+
+
+def generate_task_class(pl, tags_tasks_table, users_tasks_table,
+                        task_dependencies_table, task_prioritize_table):
+    db = pl.db
+
+    class DbTask(db.Model, TaskBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTask')
+
+        __tablename__ = 'task'
+
+        id = db.Column(db.Integer, primary_key=True)
+        summary = db.Column(db.String(100))
+        description = db.Column(db.String(4000))
+        is_done = db.Column(db.Boolean)
+        is_deleted = db.Column(db.Boolean)
+        order_num = db.Column(db.Integer, nullable=False, default=0)
+        deadline = db.Column(db.DateTime)
+        expected_duration_minutes = db.Column(db.Integer)
+        expected_cost = db.Column(db.Numeric)
+        is_public = db.Column(db.Boolean)
+        tags = db.relationship('DbTag', secondary=tags_tasks_table,
+                               back_populates="tasks")
+
+        users = db.relationship('DbUser', secondary=users_tasks_table,
+                                back_populates="tasks")
+
+        parent_id = db.Column(db.Integer, db.ForeignKey('task.id'),
+                              nullable=True)
+        parent = db.relationship('DbTask', remote_side=[id],
+                                 backref=db.backref('children',
+                                                    lazy='dynamic'))
+
+        # self depends on self.dependees
+        # self.dependants depend on self
+        dependees = db.relationship(
+            'DbTask', secondary=task_dependencies_table,
+            primaryjoin=task_dependencies_table.c.dependant_id == id,
+            secondaryjoin=task_dependencies_table.c.dependee_id == id,
+            backref='dependants')
+
+        # self is after self.prioritize_before's
+        # self has lower priority than self.prioritize_before's
+        # self is before self.prioritize_after's
+        # self has higher priority than self.prioritize_after's
+        prioritize_before = db.relationship(
+            'DbTask', secondary=task_prioritize_table,
+            primaryjoin=task_prioritize_table.c.prioritize_after_id == id,
+            secondaryjoin=task_prioritize_table.c.prioritize_before_id == id,
+            backref='prioritize_after')
+
+        date_created = db.Column(db.DateTime)
+        date_last_updated = db.Column(db.DateTime)
+
+        def __init__(self, summary, description='', is_done=False,
+                     is_deleted=False, deadline=None,
+                     expected_duration_minutes=None, expected_cost=None,
+                     is_public=False,
+                     date_created=None,
+                     date_last_updated=None):
+            db.Model.__init__(self)
+            TaskBase.__init__(
+                self, summary=summary, description=description,
+                is_done=is_done, is_deleted=is_deleted, deadline=deadline,
+                expected_duration_minutes=expected_duration_minutes,
+                expected_cost=expected_cost, is_public=is_public,
+                date_created=date_created,
+                date_last_updated=date_last_updated,
+            )
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbTask, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self._logger.debug('%s', self)
+            self.parent = None
+            self.children = []
+            self.tags = []
+            self.users = []
+            self.notes = []
+            self.attachments = []
+            self.dependees = []
+            self.dependants = []
+            self.prioritize_before = []
+            self.prioritize_after = []
+
+    return DbTask
+
+
+def generate_tag_class(db, tags_tasks_table):
+    class DbTag(db.Model, TagBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbTag')
+
+        __tablename__ = 'tag'
+
+        id = db.Column(db.Integer, primary_key=True)
+        value = db.Column(db.String(100), nullable=False, unique=True)
+        description = db.Column(db.String(4000), nullable=True)
+
+        tasks = db.relationship('DbTask', secondary=tags_tasks_table,
+                                back_populates='tags')
+
+        def __init__(self, value, description=None):
+            db.Model.__init__(self)
+            TagBase.__init__(self, value, description)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbTag, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.tasks = []
+
+    return DbTag
+
+
+def generate_note_class(db):
+    class DbNote(db.Model, NoteBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbNote')
+
+        __tablename__ = 'note'
+
+        id = db.Column(db.Integer, primary_key=True)
+        content = db.Column(db.String(4000))
+        timestamp = db.Column(db.DateTime)
+
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+        task = db.relationship('DbTask',
+                               backref=db.backref('notes', lazy='dynamic',
+                                                  order_by=timestamp))
+
+        def __init__(self, content, timestamp=None):
+            db.Model.__init__(self)
+            NoteBase.__init__(self, content, timestamp)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbNote, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.task = None
+
+    return DbNote
+
+
+def generate_attachment_class(db):
+    class DbAttachment(db.Model, AttachmentBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbAttachment')
+
+        __tablename__ = 'attachment'
+
+        id = db.Column(db.Integer, primary_key=True)
+        path = db.Column(db.String(1000), nullable=False)
+        timestamp = db.Column(db.DateTime)
+        filename = db.Column(db.String(100))
+        description = db.Column(db.String(100), default=None)
+
+        task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
+        task = db.relationship('DbTask',
+                               backref=db.backref('attachments',
+                                                  lazy='dynamic',
+                                                  order_by=timestamp))
+
+        def __init__(self, path, description=None, timestamp=None,
+                     filename=None):
+            db.Model.__init__(self)
+            AttachmentBase.__init__(self, path, description, timestamp,
+                                    filename)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbAttachment, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.task = None
+
+    return DbAttachment
+
+
+def generate_user_class(db, users_tasks_table):
+    class DbUser(db.Model, UserBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbUser')
+
+        __tablename__ = 'user'
+
+        id = db.Column(db.Integer, primary_key=True)
+        email = db.Column(db.String(100), nullable=False, unique=True)
+        hashed_password = db.Column(db.String(100))
+        is_admin = db.Column(db.Boolean, nullable=False, default=False)
+
+        tasks = db.relationship('DbTask', secondary=users_tasks_table,
+                                back_populates='users')
+
+        def __init__(self, email, hashed_password=None, is_admin=False):
+            db.Model.__init__(self)
+            UserBase.__init__(self, email=email,
+                              hashed_password=hashed_password,
+                              is_admin=is_admin)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbUser, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            self.tasks = []
+
+    return DbUser
+
+
+def generate_option_class(db):
+    class DbOption(db.Model, OptionBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbOption')
+
+        __tablename__ = 'option'
+
+        key = db.Column(db.String(100), primary_key=True)
+        value = db.Column(db.String(100), nullable=True)
+
+        def __init__(self, key, value):
+            db.Model.__init__(self)
+            OptionBase.__init__(self, key, value)
+
+        @classmethod
+        def from_dict(cls, d):
+            return super(DbOption, cls).from_dict(d=d)
+
+        def clear_relationships(self):
+            pass
+
+    return DbOption
+
+
+def to_task2(db_task):
+    task2 = Task2(summary=db_task.summary, description=db_task.description, is_done=db_task.is_done, is_deleted=db_task.is_deleted, deadline=db_task.deadline, expected_duration_minutes=db_task.expected_duration_minutes, expected_cost=db_task.expected_cost, order_num=db_task.order_num, parent_id=db_task.parent_id, is_public=db_task.is_public, date_created=db_task.date_created, date_last_updated=db_task.date_last_updated)
+    task2.id = db_task.id
+    return task2
+
+
+def to_tag2(db_tag):
+    tag2 = Tag2(value=db_tag.value, description=db_tag.description)
+    tag2.id = db_tag.id
+    return tag2
+
+
+def to_note2(db_note):
+    note2 = Note2(content=db_note.content, timestamp=db_note.timestamp, task_id=db_note.task_id)
+    note2.id = db_note.id
+    return note2
+
+
+def to_attachment2(db_attachment):
+    attachment2 = Attachment2(path=db_attachment.path, description=db_attachment.description, timestamp=db_attachment.timestamp, filename=db_attachment.filename, task_id=db_attachment.task_id)
+    attachment2.id = db_attachment.id
+    return attachment2
+
+
+def to_user2(db_user):
+    user2 = User2(email=db_user.email, hashed_password=db_user.hashed_password, is_admin=db_user.is_admin)
+    user2.id = db_user.id
+    return user2
+
+
+def to_option2(db_option):
+    option2 = Option2(key=db_option.key, value=db_option.value)
+    option2.id = db_option.key
+    return option2
+
+

@@ -2,14 +2,14 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 
 
 class TaskCssTest(unittest.TestCase):
 
     def test_normal_gives_correct_css_class(self):
         # given
-        t1 = Task('t1')
+        t1 = IMTask('t1')
 
         # when
         result = t1.get_css_class()
@@ -19,7 +19,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_done_gives_correct_css_class(self):
         # given
-        t1 = Task('t1', is_done=True)
+        t1 = IMTask('t1', is_done=True)
 
         # when
         result = t1.get_css_class()
@@ -29,7 +29,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_deleted_gives_correct_css_class(self):
         # given
-        t1 = Task('t1', is_deleted=True)
+        t1 = IMTask('t1', is_deleted=True)
 
         # when
         result = t1.get_css_class()
@@ -39,7 +39,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_done_deleted_gives_correct_css_class(self):
         # given
-        t1 = Task('t1', is_done=True, is_deleted=True)
+        t1 = IMTask('t1', is_done=True, is_deleted=True)
 
         # when
         result = t1.get_css_class()
@@ -49,7 +49,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_normal_gives_correct_css_attr(self):
         # given
-        t1 = Task('t1')
+        t1 = IMTask('t1')
 
         # when
         result = t1.get_css_class_attr()
@@ -59,7 +59,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_done_gives_correct_css_attr(self):
         # given
-        t1 = Task('t1', is_done=True)
+        t1 = IMTask('t1', is_done=True)
 
         # when
         result = t1.get_css_class_attr()
@@ -69,7 +69,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_deleted_gives_correct_css_attr(self):
         # given
-        t1 = Task('t1', is_deleted=True)
+        t1 = IMTask('t1', is_deleted=True)
 
         # when
         result = t1.get_css_class_attr()
@@ -79,7 +79,7 @@ class TaskCssTest(unittest.TestCase):
 
     def test_done_deleted_gives_correct_css_attr(self):
         # given
-        t1 = Task('t1', is_done=True, is_deleted=True)
+        t1 = IMTask('t1', is_done=True, is_deleted=True)
 
         # when
         result = t1.get_css_class_attr()

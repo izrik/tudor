@@ -55,15 +55,15 @@ class CommandLineTests(unittest.TestCase):
         t2 = self.pl.create_task('t2', is_public=False)
         t2.id = 2
         self.pl.add(t2)
-        t2.parent = t1
+        t2.parent_id = t1.id
         t3 = self.pl.create_task('t3', is_public=False)
         t3.id = 3
         self.pl.add(t3)
-        t3.parent = t2
+        t3.parent_id = t2.id
         t4 = self.pl.create_task('t4', is_public=False)
         t4.id = 4
         self.pl.add(t4)
-        t4.parent = t1
+        t4.parent_id = t1.id
         t5 = self.pl.create_task('t5', is_public=False)
         t5.id = 5
         self.pl.add(t5)
@@ -109,6 +109,7 @@ class CommandLineTests(unittest.TestCase):
         # when
         make_task_private(self.pl, task.id, printer=printer)
         # then
+        task = self.pl.get_task(task.id)
         self.assertFalse(task.is_public)
         # and
         self.assertEqual(['Made task 1, "task", private'], output)
@@ -135,15 +136,15 @@ class CommandLineTests(unittest.TestCase):
         t2 = self.pl.create_task('t2', is_public=True)
         t2.id = 2
         self.pl.add(t2)
-        t2.parent = t1
+        t2.parent_id = t1.id
         t3 = self.pl.create_task('t3', is_public=True)
         t3.id = 3
         self.pl.add(t3)
-        t3.parent = t2
+        t3.parent_id = t2.id
         t4 = self.pl.create_task('t4', is_public=True)
         t4.id = 4
         self.pl.add(t4)
-        t4.parent = t1
+        t4.parent_id = t1.id
         t5 = self.pl.create_task('t5', is_public=True)
         t5.id = 5
         self.pl.add(t5)
@@ -162,6 +163,11 @@ class CommandLineTests(unittest.TestCase):
         # when
         make_task_private(self.pl, t1.id, printer=printer, descendants=True)
         # then
+        t1 = self.pl.get_task(t1.id)
+        t2 = self.pl.get_task(t2.id)
+        t3 = self.pl.get_task(t3.id)
+        t4 = self.pl.get_task(t4.id)
+        t5 = self.pl.get_task(t5.id)
         self.assertFalse(t1.is_public)
         self.assertFalse(t2.is_public)
         self.assertFalse(t3.is_public)

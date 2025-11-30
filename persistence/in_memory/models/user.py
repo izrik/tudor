@@ -5,23 +5,19 @@ from persistence.in_memory.models.changeable import Changeable
 from persistence.in_memory.models.interlinking import ManyToManySet
 
 
-class User(Changeable, UserBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'User')
+class IMUser(Changeable, UserBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMUser')
 
     _id = None
     _email = None
     _hashed_password = None
     _is_admin = None
 
-    def __init__(self, email, hashed_password=None, is_admin=False, lazy=None):
-        super(User, self).__init__(email=email,
-                                   hashed_password=hashed_password,
-                                   is_admin=is_admin)
-
-        if lazy is None:
-            lazy = {}
-
-        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
+    def __init__(self, email, hashed_password=None, is_admin=False):
+        super(IMUser, self).__init__(email=email,
+                                    hashed_password=hashed_password,
+                                    is_admin=is_admin)
+        self._tasks = InterlinkedTasks(self)
 
     @property
     def id(self):

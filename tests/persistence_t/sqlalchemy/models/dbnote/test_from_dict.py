@@ -16,7 +16,6 @@ class DbNoteFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.id)
         self.assertIsNone(result.content)
         self.assertIsNone(result.timestamp)
-        self.assertIsNone(result.task)
 
     def test_id_none_is_ignored(self):
         # when
@@ -60,46 +59,20 @@ class DbNoteFromDictTest(PersistenceLayerTestBase):
         self.assertIsInstance(result, self.pl.DbNote)
         self.assertEqual(datetime(2017, 1, 1), result.timestamp)
 
-    def test_task_none_yields_empty(self):
+    def test_task_id_none_yields_none(self):
         # when
-        result = self.pl.DbNote.from_dict({'task': None})
+        result = self.pl.DbNote.from_dict({'task_id': None})
         # then
         self.assertIsInstance(result, self.pl.DbNote)
-        self.assertIsNone(result.task)
+        self.assertIsNone(result.task_id)
 
-    def test_task_not_none_yields_same(self):
+    def test_task_id_not_none_yields_same(self):
         # given
         task = self.pl.DbTask('task')
+        self.pl.save(task)
         # when
-        result = self.pl.DbNote.from_dict({'task': task})
+        result = self.pl.DbNote.from_dict({'task_id': task.id})
         # then
         self.assertIsInstance(result, self.pl.DbNote)
-        self.assertIs(task, result.task)
+        self.assertEqual(task.id, result.task_id)
 
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbNote.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbNote)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.content)
-        self.assertIsNone(result.timestamp)
-        self.assertIsNone(result.task)
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbNote.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbNote)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.content)
-        self.assertIsNone(result.timestamp)
-        self.assertIsNone(result.task)
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbNote.from_dict,
-            {},
-            lazy={'tasks': None})

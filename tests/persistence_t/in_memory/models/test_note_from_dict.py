@@ -3,16 +3,16 @@ import unittest
 
 from datetime import datetime
 
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.note import IMNote
+from persistence.in_memory.models.task import IMTask
 
 
 class NoteFromDictTest(unittest.TestCase):
     def test_empty_yields_empty_dbnote(self):
         # when
-        result = Note.from_dict({})
+        result = IMNote.from_dict({})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.id)
         self.assertIsNone(result.content)
         self.assertIsNone(result.timestamp)
@@ -20,102 +20,91 @@ class NoteFromDictTest(unittest.TestCase):
 
     def test_id_none_is_ignored(self):
         # when
-        result = Note.from_dict({'id': None})
+        result = IMNote.from_dict({'id': None})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.id)
 
     def test_valid_id_gets_set(self):
         # when
-        result = Note.from_dict({'id': 123})
+        result = IMNote.from_dict({'id': 123})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertEqual(123, result.id)
 
     def test_content_none_is_ignored(self):
         # when
-        result = Note.from_dict({'content': None})
+        result = IMNote.from_dict({'content': None})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.content)
 
     def test_valid_content_gets_set(self):
         # when
-        result = Note.from_dict({'content': 'abc'})
+        result = IMNote.from_dict({'content': 'abc'})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertEqual('abc', result.content)
 
     def test_timestamp_none_becomes_none(self):
         # when
-        result = Note.from_dict({'timestamp': None})
+        result = IMNote.from_dict({'timestamp': None})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.timestamp)
 
     def test_valid_timestamp_gets_set(self):
         # when
-        result = Note.from_dict({'timestamp': datetime(2017, 1, 1)})
+        result = IMNote.from_dict({'timestamp': datetime(2017, 1, 1)})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertEqual(datetime(2017, 1, 1), result.timestamp)
 
     def test_task_none_is_ignored(self):
         # when
-        result = Note.from_dict({'task': None})
+        result = IMNote.from_dict({'task': None})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.task)
 
     def test_valid_task_gets_set(self):
         # given
-        task = Task('task')
+        task = IMTask('task')
         # when
-        result = Note.from_dict({'task': task})
+        result = IMNote.from_dict({'task': task})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIs(task, result.task)
 
     def test_int_task_raises(self):
         # expect
         self.assertRaises(
             Exception,
-            Note.from_dict,
+            IMNote.from_dict,
             {'task': 1})
-
-    def test_lazy_overrides_non_lazy_task(self):
-        # given
-        task = Task('task')
-        task2 = Task('task2')
-        # when
-        result = Note.from_dict({'task': task},
-                                lazy={'task': lambda: task2})
-        # then
-        self.assertIsInstance(result, Note)
-        self.assertIs(task2, result.task)
 
     def test_task_id_none_is_ignored(self):
         # when
-        result = Note.from_dict({'task_id': None})
+        result = IMNote.from_dict({'task_id': None})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.task_id)
 
     def test_valid_task_id_is_ignored(self):
         # given
-        task = Task('task')
+        task = IMTask('task')
         # when
-        result = Note.from_dict({'task_id': task.id})
+        result = IMNote.from_dict({'task_id': task.id})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.task_id)
 
     def test_non_int_task_id_is_ignored(self):
         # given
-        task = Task('task')
+        task = IMTask('task')
         # when
-        result = Note.from_dict({'task_id': task})
+        result = IMNote.from_dict({'task_id': task})
         # then
-        self.assertIsInstance(result, Note)
+        self.assertIsInstance(result, IMNote)
         self.assertIsNone(result.task_id)
         self.assertIsNone(result.task)

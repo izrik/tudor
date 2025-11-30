@@ -31,5 +31,5 @@ class DeleteOptionTest(unittest.TestCase):
         result = self.ll.do_delete_option('key')
         self.pl.commit()
         # then
-        self.assertIs(opt, result)
+        self.assertEqual(opt.id, result.id)
         self.assertEqual(0, self.pl.count_options())

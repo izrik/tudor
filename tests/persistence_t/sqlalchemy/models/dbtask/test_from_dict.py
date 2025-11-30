@@ -22,14 +22,13 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
         self.assertIsNone(result.deadline)
         self.assertIsNone(result.expected_duration_minutes)
         self.assertIsNone(result.expected_cost)
-        self.assertEqual([], list(result.tags))
-        self.assertEqual([], list(result.users))
-        self.assertIsNone(result.parent)
-        self.assertIsNone(result.parent_id)
-        self.assertEqual([], list(result.dependees))
-        self.assertEqual([], list(result.dependants))
-        self.assertEqual([], list(result.prioritize_before))
-        self.assertEqual([], list(result.prioritize_after))
+        self.assertEqual([], list(self.pl.get_task_tags(result.id)))
+        self.assertEqual([], list(self.pl.get_task_users(result.id)))
+        self.assertIsNone(self.pl.get_task_parent(result.id))
+        self.assertEqual([], list(self.pl.get_task_dependees(result.id)))
+        self.assertEqual([], list(self.pl.get_task_dependants(result.id)))
+        self.assertEqual([], list(self.pl.get_task_prioritize_before(result.id)))
+        self.assertEqual([], list(self.pl.get_task_prioritize_after(result.id)))
 
     def test_id_none_is_ignored(self):
         # when
@@ -72,6 +71,23 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
         # then
         self.assertIsInstance(result, self.pl.DbTask)
         self.assertEqual('abc', result.description)
+
+    def test_parent_id_none_yields_none(self):
+        # when
+        result = self.pl.DbTask.from_dict({'parent_id': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbTask)
+        self.assertIsNone(result.parent_id)
+
+    def test_parent_id_not_none_yields_same(self):
+        # given
+        parent = self.pl.DbTask('parent')
+        self.pl.save(parent)
+        # when
+        result = self.pl.DbTask.from_dict({'parent_id': parent.id})
+        # then
+        self.assertIsInstance(result, self.pl.DbTask)
+        self.assertEqual(parent.id, result.parent_id)
 
     def test_is_done_none_is_becomes_false(self):
         # when
@@ -466,57 +482,3 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
         # then
         self.assertIsInstance(result, self.pl.DbTask)
         self.assertEqual([attachment], list(result.attachments))
-
-    def test_none_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbTask.from_dict({}, lazy=None)
-        # then
-        self.assertIsInstance(result, self.pl.DbTask)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.summary)
-        self.assertEqual('', result.description)
-        self.assertFalse(result.is_done)
-        self.assertFalse(result.is_deleted)
-        self.assertEqual(0, result.order_num)
-        self.assertIsNone(result.deadline)
-        self.assertIsNone(result.expected_duration_minutes)
-        self.assertIsNone(result.expected_cost)
-        self.assertEqual([], list(result.tags))
-        self.assertEqual([], list(result.users))
-        self.assertIsNone(result.parent)
-        self.assertIsNone(result.parent_id)
-        self.assertEqual([], list(result.dependees))
-        self.assertEqual([], list(result.dependants))
-        self.assertEqual([], list(result.prioritize_before))
-        self.assertEqual([], list(result.prioritize_after))
-
-    def test_empty_lazy_does_not_raise(self):
-        # when
-        result = self.pl.DbTask.from_dict({}, lazy={})
-        # then
-        self.assertIsInstance(result, self.pl.DbTask)
-        self.assertIsNone(result.id)
-        self.assertIsNone(result.summary)
-        self.assertEqual('', result.description)
-        self.assertFalse(result.is_done)
-        self.assertFalse(result.is_deleted)
-        self.assertEqual(0, result.order_num)
-        self.assertIsNone(result.deadline)
-        self.assertIsNone(result.expected_duration_minutes)
-        self.assertIsNone(result.expected_cost)
-        self.assertEqual([], list(result.tags))
-        self.assertEqual([], list(result.users))
-        self.assertIsNone(result.parent)
-        self.assertIsNone(result.parent_id)
-        self.assertEqual([], list(result.dependees))
-        self.assertEqual([], list(result.dependants))
-        self.assertEqual([], list(result.prioritize_before))
-        self.assertEqual([], list(result.prioritize_after))
-
-    def test_non_none_lazy_raises(self):
-        # expect
-        self.assertRaises(
-            ValueError,
-            self.pl.DbTask.from_dict,
-            {},
-            lazy={'attachments': None})

@@ -2,18 +2,18 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
-from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.user import User
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.attachment import Attachment
+from persistence.in_memory.models.task import IMTask
+from persistence.in_memory.models.tag import IMTag
+from persistence.in_memory.models.user import IMUser
+from persistence.in_memory.models.note import IMNote
+from persistence.in_memory.models.attachment import IMAttachment
 
 
 class ChildrenInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.parent = Task('parent')
-        self.c1 = Task('c1')
-        self.c2 = Task('c2')
+        self.parent = IMTask('parent')
+        self.c1 = IMTask('c1')
+        self.c2 = IMTask('c2')
 
     def test_in(self):
         # precondition
@@ -91,7 +91,7 @@ class ChildrenInterlinkingTest(unittest.TestCase):
 
 class TaskTagsInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.task = Task('task')
+        self.task = IMTask('task')
         self.tag = Tag('tag')
 
     def test_in(self):
@@ -282,8 +282,8 @@ class TaskTagsInterlinkingTest(unittest.TestCase):
 
 class TaskUsersInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.task = Task('task')
-        self.user = User('user')
+        self.task = IMTask('task')
+        self.user = IMUser('user')
 
     def test_in(self):
         # precondition
@@ -473,8 +473,8 @@ class TaskUsersInterlinkingTest(unittest.TestCase):
 
 class DependeesDependantsInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.t1 = Task('t1')
-        self.t2 = Task('t2')
+        self.t1 = IMTask('t1')
+        self.t2 = IMTask('t2')
 
     def test_in(self):
         # precondition
@@ -664,8 +664,8 @@ class DependeesDependantsInterlinkingTest(unittest.TestCase):
 
 class PrioritizeBeforeAfterInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.t1 = Task('t1')
-        self.t2 = Task('t2')
+        self.t1 = IMTask('t1')
+        self.t2 = IMTask('t2')
 
     def test_in(self):
         # precondition
@@ -855,7 +855,7 @@ class PrioritizeBeforeAfterInterlinkingTest(unittest.TestCase):
 
 class NotesInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.task = Task('parent')
+        self.task = IMTask('parent')
         self.n1 = Note('n1')
         self.n2 = Note('n2')
 
@@ -935,7 +935,7 @@ class NotesInterlinkingTest(unittest.TestCase):
 
 class AttachmentsInterlinkingTest(unittest.TestCase):
     def setUp(self):
-        self.task = Task('parent')
+        self.task = IMTask('parent')
         self.n1 = Attachment('n1')
         self.n2 = Attachment('n2')
 

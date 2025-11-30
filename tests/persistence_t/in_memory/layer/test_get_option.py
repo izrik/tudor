@@ -29,4 +29,4 @@ class GetOptionTest(InMemoryTestBase):
         result = self.pl.get_option(option.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(option, result)
+        self.assertEqual(option.id, result.id)

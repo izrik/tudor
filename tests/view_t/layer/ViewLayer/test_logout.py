@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.user import User
+from persistence.in_memory.models.user import IMUser
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer, DefaultLoginSource
@@ -17,7 +17,7 @@ class LogoutTest(unittest.TestCase):
         self.ls = Mock(spec=DefaultLoginSource)
         self.vl = ViewLayer(self.ll, None, renderer=self.r,
                             login_src=self.ls)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=IMUser)
 
     def test_logs_out_user(self):
         # given

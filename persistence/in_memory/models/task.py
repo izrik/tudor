@@ -1,12 +1,10 @@
 import logging_util
 from models.task_base import TaskBase
 from persistence.in_memory.models.changeable import Changeable
-from persistence.in_memory.models.interlinking import OneToManySet, \
-    ManyToManySet
 
 
-class Task(Changeable, TaskBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Task')
+class IMTask(Changeable, TaskBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMTask')
 
     _id = None
     _summary = None
@@ -27,41 +25,14 @@ class Task(Changeable, TaskBase):
                  expected_duration_minutes=None, expected_cost=None,
                  is_public=False,
                  date_created=None,
-                 date_last_updated=None,
-                 lazy=None):
-        super(Task, self).__init__(
+                 date_last_updated=None):
+        super(IMTask, self).__init__(
             summary, description, is_done, is_deleted, deadline,
             expected_duration_minutes, expected_cost, is_public,
             date_created,
             date_last_updated)
-
         self._logger.debug('Task.__init__ %s', self)
 
-        if lazy is None:
-            lazy = {}
-
-        self._parent_lazy = lazy.get('parent')
-
-        # self depends on self.dependees
-        self._dependees = InterlinkedDependees(
-            self, lazy=lazy.get('dependees'))
-        # self.dependants depend on self
-        self._dependants = InterlinkedDependants(
-            self, lazy=lazy.get('dependants'))
-        # self is after self.prioritize_before's
-        # self has lower priority than self.prioritize_before's
-        self._prioritize_before = InterlinkedPrioritizeBefore(
-            self, lazy=lazy.get('prioritize_before'))
-        # self is before self.prioritize_after's
-        # self has higher priority than self.prioritize_after's
-        self._prioritize_after = InterlinkedPrioritizeAfter(
-            self, lazy=lazy.get('prioritize_after'))
-        self._tags = InterlinkedTags(self, lazy=lazy.get('tags'))
-        self._users = InterlinkedUsers(self, lazy=lazy.get('users'))
-        self._children = InterlinkedChildren(self, lazy=lazy.get('children'))
-        self._notes = InterlinkedNotes(self, lazy=lazy.get('notes'))
-        self._attachments = InterlinkedAttachments(
-            self, lazy=lazy.get('attachments'))
 
     @property
     def id(self):
@@ -184,73 +155,7 @@ class Task(Changeable, TaskBase):
             self._on_attr_changed(self.FIELD_EXPECTED_COST, self.OP_SET,
                                   self._expected_cost)
 
-    @property
-    def parent_id(self):
-        if self.parent:
-            return self.parent.id
-        return None
 
-    def _populate_parent(self):
-        if self._parent_lazy:
-            self._logger.debug('populating parent from lazy %s', self)
-            value = self._parent_lazy()
-            self._parent_lazy = None
-            self.parent = value
-
-    @property
-    def parent(self):
-        self._populate_parent()
-        return self._parent
-
-    @parent.setter
-    def parent(self, value):
-        self._logger.debug('%s', self)
-        self._populate_parent()
-        if value != self._parent:
-            self._logger.debug('%s: %s -> %s', self, self._parent, value)
-            self._on_attr_changing(self.FIELD_PARENT, self._parent)
-            if self._parent is not None:
-                self._parent.children.discard(self)
-            self._parent = value
-            if self._parent is not None:
-                self._parent.children.append(self)
-            self._on_attr_changed(self.FIELD_PARENT, self.OP_SET, self._parent)
-
-    @property
-    def children(self):
-        return self._children
-
-    @property
-    def tags(self):
-        return self._tags
-
-    @property
-    def users(self):
-        return self._users
-
-    @property
-    def dependees(self):
-        return self._dependees
-
-    @property
-    def dependants(self):
-        return self._dependants
-
-    @property
-    def prioritize_before(self):
-        return self._prioritize_before
-
-    @property
-    def prioritize_after(self):
-        return self._prioritize_after
-
-    @property
-    def notes(self):
-        return self._notes
-
-    @property
-    def attachments(self):
-        return self._attachments
 
     @property
     def is_public(self):
@@ -295,100 +200,6 @@ class Task(Changeable, TaskBase):
             self._on_attr_changed(self.FIELD_DATE_LAST_UPDATED, self.OP_SET,
                                   self._date_last_updated)
 
-    def contains_dependency_cycle(self, visited=None):
-        self._logger.debug('%s', self)
-        if visited is None:
-            visited = set()
-        if self in visited:
-            return True
-        visited = set(visited)
-        visited.add(self)
-        for dependee in self.dependees:
-            if dependee.contains_dependency_cycle(visited):
-                return True
-
-        return False
-
-    def contains_priority_cycle(self, visited=None):
-        self._logger.debug('%s', self)
-        if visited is None:
-            visited = set()
-        if self in visited:
-            return True
-        visited = set(visited)
-        visited.add(self)
-        for before in self.prioritize_before:
-            if before.contains_priority_cycle(visited):
-                return True
-        return False
-
-    def clear_relationships(self):
-        self._logger.debug('%s', self)
-        self.parent = None
-        self.children.clear()
-        self.tags.clear()
-        self.users.clear()
-        self.notes.clear()
-        self.attachments.clear()
-        self.dependees.clear()
-        self.dependants.clear()
-        self.prioritize_before.clear()
-        self.prioritize_after.clear()
 
 
-class InterlinkedChildren(OneToManySet):
-    __change_field__ = TaskBase.FIELD_CHILDREN
-    __attr_counterpart__ = 'parent'
-    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedChildren')
 
-
-class InterlinkedTags(ManyToManySet):
-    __change_field__ = TaskBase.FIELD_TAGS
-    __attr_counterpart__ = 'tasks'
-    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedTags')
-
-
-class InterlinkedUsers(ManyToManySet):
-    __change_field__ = TaskBase.FIELD_USERS
-    __attr_counterpart__ = 'tasks'
-    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedUsers')
-
-
-class InterlinkedDependees(ManyToManySet):
-    __change_field__ = TaskBase.FIELD_DEPENDEES
-    __attr_counterpart__ = 'dependants'
-    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedDependees')
-
-
-class InterlinkedDependants(ManyToManySet):
-    __change_field__ = TaskBase.FIELD_DEPENDANTS
-    __attr_counterpart__ = 'dependees'
-    _logger = logging_util.get_logger_by_name(__name__,
-                                              'InterlinkedDependants')
-
-
-class InterlinkedPrioritizeBefore(ManyToManySet):
-    __change_field__ = TaskBase.FIELD_PRIORITIZE_BEFORE
-    __attr_counterpart__ = 'prioritize_after'
-    _logger = logging_util.get_logger_by_name(__name__,
-                                              'InterlinkedPrioritizeBefore')
-
-
-class InterlinkedPrioritizeAfter(ManyToManySet):
-    __change_field__ = TaskBase.FIELD_PRIORITIZE_AFTER
-    __attr_counterpart__ = 'prioritize_before'
-    _logger = logging_util.get_logger_by_name(__name__,
-                                              'InterlinkedPrioritizeAfter')
-
-
-class InterlinkedNotes(OneToManySet):
-    __change_field__ = TaskBase.FIELD_NOTES
-    __attr_counterpart__ = 'task'
-    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedNotes')
-
-
-class InterlinkedAttachments(OneToManySet):
-    __change_field__ = TaskBase.FIELD_ATTACHMENTS
-    __attr_counterpart__ = 'task'
-    _logger = logging_util.get_logger_by_name(__name__,
-                                              'InterlinkedAttachments')

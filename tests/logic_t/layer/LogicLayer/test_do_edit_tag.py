@@ -41,6 +41,6 @@ class EditTagTest(unittest.TestCase):
         result = self.ll.do_edit_tag(tag.id, 'c', 'd')
         self.pl.commit()
         # then
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
         self.assertEqual('c', tag.value)
         self.assertEqual('d', tag.description)

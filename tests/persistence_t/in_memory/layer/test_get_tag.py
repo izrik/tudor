@@ -29,4 +29,4 @@ class GetTagTest(InMemoryTestBase):
         result = self.pl.get_tag(tag.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)
