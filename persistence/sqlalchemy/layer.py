@@ -425,7 +425,7 @@ class SqlAlchemyPersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
               order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
               limit=limit)
-        return (self.DbTask.from_dict(_.to_dict()) for _ in self.db.session.execute(query).scalars())
+        return (to_task2(_) for _ in self.db.session.execute(query).scalars())
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                             parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -467,7 +467,7 @@ class SqlAlchemyPersistenceLayer(object):
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)
         pager = self.db.paginate(query, page=page_num, per_page=tasks_per_page)
-        items = list(pager.items)
+        items = [to_task2(_) for _ in pager.items]
         return Pager(page=pager.page, per_page=pager.per_page,
                      items=items, total=pager.total,
                      num_pages=pager.pages, _pager=pager)
