@@ -83,11 +83,21 @@ class SqlAlchemyPersistenceLayer(object):
     def save(self, obj):
         self._logger.debug('begin, obj: %s', obj)
         if isinstance(obj, Task2):
+            date_created = obj.date_created
+            if date_created is not None and date_created.tzinfo is not None:
+                date_created = date_created.astimezone(UTC).replace(tzinfo=None)
+            date_last_updated = obj.date_last_updated
+            if date_last_updated is not None and date_last_updated.tzinfo is not None:
+                date_last_updated = date_last_updated.astimezone(UTC).replace(tzinfo=None)
             if obj.id is None:
-                db_obj = self.DbTask(summary=obj.summary, description=obj.description, is_done=obj.is_done, is_deleted=obj.is_deleted, deadline=obj.deadline, expected_duration_minutes=obj.expected_duration_minutes, expected_cost=obj.expected_cost, order_num=obj.order_num, parent_id=obj.parent_id, is_public=obj.is_public, date_created=obj.date_created, date_last_updated=obj.date_last_updated)
+                db_obj = self.DbTask(summary=obj.summary, description=obj.description, is_done=obj.is_done, is_deleted=obj.is_deleted, deadline=obj.deadline, expected_duration_minutes=obj.expected_duration_minutes, expected_cost=obj.expected_cost, is_public=obj.is_public, date_created=date_created, date_last_updated=date_last_updated)
+                db_obj.order_num = obj.order_num
+                db_obj.parent_id = obj.parent_id
                 self.db.session.add(db_obj)
                 self.db.session.commit()
                 obj.id = db_obj.id
+                obj.date_created = db_obj.date_created
+                obj.date_last_updated = db_obj.date_last_updated
             else:
                 db_obj = self._get_db_task(obj.id)
                 db_obj.summary = obj.summary
@@ -100,9 +110,11 @@ class SqlAlchemyPersistenceLayer(object):
                 db_obj.order_num = obj.order_num
                 db_obj.parent_id = obj.parent_id
                 db_obj.is_public = obj.is_public
-                db_obj.date_created = obj.date_created
-                db_obj.date_last_updated = obj.date_last_updated
+                db_obj.date_created = date_created
+                db_obj.date_last_updated = date_last_updated
                 self.db.session.commit()
+                obj.date_created = db_obj.date_created
+                obj.date_last_updated = db_obj.date_last_updated
         elif isinstance(obj, Tag2):
             if obj.id is None:
                 db_obj = self.DbTag(value=obj.value, description=obj.description)
@@ -259,13 +271,13 @@ class SqlAlchemyPersistenceLayer(object):
             date_created = datetime.now(UTC)
         if date_last_updated is None:
             date_last_updated = date_created
-        return self.DbTask(summary=summary, description=description,
-                           is_done=is_done, is_deleted=is_deleted,
-                           deadline=deadline,
-                           expected_duration_minutes=expected_duration_minutes,
-                           expected_cost=expected_cost, is_public=is_public,
-                           date_created=date_created,
-                           date_last_updated=date_last_updated)
+        return Task2(summary=summary, description=description,
+                     is_done=is_done, is_deleted=is_deleted,
+                     deadline=deadline,
+                     expected_duration_minutes=expected_duration_minutes,
+                     expected_cost=expected_cost, is_public=is_public,
+                     date_created=date_created,
+                     date_last_updated=date_last_updated)
 
     def get_task(self, task_id):
         db_task = self._get_db_task(task_id)

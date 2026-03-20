@@ -8,15 +8,14 @@ class GetTaskTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1')
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2', is_done=True)
-        self.pl.add(self.t2)
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3', is_deleted=True)
-        self.t3.parent = self.t2
-        self.pl.add(self.t3)
+        self.t3.parent_id = self.t2.id
+        self.pl.save(self.t3)
         self.t4 = self.pl.create_task('t4', is_done=True, is_deleted=True)
-        self.pl.add(self.t4)
-        self.pl.commit()
+        self.pl.save(self.t4)
 
     def test_get_tasks(self):
         # when
@@ -98,14 +97,11 @@ class GetTaskTest(PersistenceLayerTestBase):
         self.pl.add(user1)
         self.pl.add(user2)
         self.pl.add(user3)
-        self.t1.users.append(user1)
-        self.t2.users.append(user2)
-        self.t3.users.append(user1)
-        self.t3.users.append(user2)
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
         self.pl.commit()
+        self.pl.associate_user_with_task(self.t1.id, user1.id)
+        self.pl.associate_user_with_task(self.t2.id, user2.id)
+        self.pl.associate_user_with_task(self.t3.id, user1.id)
+        self.pl.associate_user_with_task(self.t3.id, user2.id)
 
         # when
         results = self.pl.get_tasks(users_contains=user1)
@@ -127,10 +123,9 @@ class GetTasksIsPublicTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1', is_public=True)
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2', is_public=False)
-        self.pl.add(self.t2)
-        self.pl.commit()
+        self.pl.save(self.t2)
 
     def test_get_tasks_is_public_not_specified_returns_all_tasks(self):
         # when
@@ -155,18 +150,14 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1', is_public=True)
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2', is_public=False)
-        self.pl.add(self.t2)
+        self.pl.save(self.t2)
         self.user = self.pl.create_user('email')
         self.pl.add(self.user)
         self.pl.commit()
 
     def test_user_not_authorized_returns_only_public_task(self):
-        # precondition
-        self.assertEqual(set(), set(self.t1.users))
-        self.assertEqual(set(), set(self.t2.users))
-        self.assertEqual(set(), set(self.user.tasks))
         # when
         result = self.pl.get_tasks(is_public_or_users_contains=self.user)
         # then
@@ -174,12 +165,7 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
 
     def test_user_authorized_on_public_task_returns_only_public_task(self):
         # given
-        self.t1.users.append(self.user)
-        self.pl.commit()
-        # precondition
-        self.assertEqual({self.user}, set(self.t1.users))
-        self.assertEqual(set(), set(self.t2.users))
-        self.assertEqual({self.t1}, set(self.user.tasks))
+        self.pl.associate_user_with_task(self.t1.id, self.user.id)
         # when
         result = self.pl.get_tasks(is_public_or_users_contains=self.user)
         # then
@@ -187,12 +173,7 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
 
     def test_user_authorized_on_private_task_returns_both_tasks(self):
         # given
-        self.t2.users.append(self.user)
-        self.pl.commit()
-        # precondition
-        self.assertEqual(set(), set(self.t1.users))
-        self.assertEqual({self.user}, set(self.t2.users))
-        self.assertEqual({self.t2}, set(self.user.tasks))
+        self.pl.associate_user_with_task(self.t2.id, self.user.id)
         # when
         result = self.pl.get_tasks(is_public_or_users_contains=self.user)
         # then
@@ -200,13 +181,8 @@ class GetTasksIsPublicOrUsersContainsTest(PersistenceLayerTestBase):
 
     def test_user_authorized_on_both_tasks_returns_both_tasks(self):
         # given
-        self.t1.users.append(self.user)
-        self.t2.users.append(self.user)
-        self.pl.commit()
-        # precondition
-        self.assertEqual({self.user}, set(self.t1.users))
-        self.assertEqual({self.user}, set(self.t2.users))
-        self.assertEqual({self.t1, self.t2}, set(self.user.tasks))
+        self.pl.associate_user_with_task(self.t1.id, self.user.id)
+        self.pl.associate_user_with_task(self.t2.id, self.user.id)
         # when
         result = self.pl.get_tasks(is_public_or_users_contains=self.user)
         # then
@@ -217,29 +193,18 @@ class OrderByTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1')
-        self.t1.id = 5
-        self.pl.add(self.t1)
-        self.t2 = self.pl.create_task('t2', is_done=True)
-        self.t2.id = 7
-        self.pl.add(self.t2)
-        self.t3 = self.pl.create_task('t3', is_deleted=True)
-        self.t3.parent = self.t2
-        self.t3.id = 11
-        self.pl.add(self.t3)
-        self.t4 = self.pl.create_task('t4', is_done=True, is_deleted=True)
-        self.t4.id = 13
-        self.pl.add(self.t4)
-
         self.t1.order_num = 1
+        self.pl.save(self.t1)
+        self.t2 = self.pl.create_task('t2', is_done=True)
         self.t2.order_num = 2
+        self.pl.save(self.t2)
+        self.t3 = self.pl.create_task('t3', is_deleted=True)
         self.t3.order_num = 3
+        self.t3.parent_id = self.t2.id
+        self.pl.save(self.t3)
+        self.t4 = self.pl.create_task('t4', is_done=True, is_deleted=True)
         self.t4.order_num = 4
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
-        self.pl.add(self.t4)
-
-        self.pl.commit()
+        self.pl.save(self.t4)
 
     def test_get_tasks_order_by_order_num_single(self):
 
@@ -320,15 +285,13 @@ class OrderByDeadlineTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1', deadline='2017-01-01')
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2', deadline='2017-01-02')
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3', deadline='2017-01-03')
+        self.pl.save(self.t3)
         self.t4 = self.pl.create_task('t4', deadline='2017-01-04')
-
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
-        self.pl.add(self.t4)
-        self.pl.commit()
+        self.pl.save(self.t4)
 
     def test_get_tasks_order_by_deadline_single(self):
 
@@ -358,13 +321,11 @@ class IdInTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1')
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2')
-        self.pl.add(self.t2)
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3')
-        self.pl.add(self.t3)
-
-        self.pl.commit()
+        self.pl.save(self.t3)
 
     def test_get_tasks_id_in(self):
         # when
@@ -405,12 +366,11 @@ class IdInTest(PersistenceLayerTestBase):
     def test_get_tasks_id_in_with_order_by(self):
         # given
         self.t1.order_num = 1
+        self.pl.save(self.t1)
         self.t2.order_num = 2
+        self.pl.save(self.t2)
         self.t3.order_num = 3
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
-        self.pl.commit()
+        self.pl.save(self.t3)
 
         # when
         results = self.pl.get_tasks(
@@ -473,12 +433,11 @@ class IdInTest(PersistenceLayerTestBase):
     def test_get_tasks_id_not_in_with_order_by(self):
         # given
         self.t1.order_num = 1
+        self.pl.save(self.t1)
         self.t2.order_num = 2
+        self.pl.save(self.t2)
         self.t3.order_num = 3
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
-        self.pl.commit()
+        self.pl.save(self.t3)
 
         # when
         results = self.pl.get_tasks(
@@ -508,15 +467,13 @@ class LimitTest(PersistenceLayerTestBase):
         super().setUp()
         self.t1 = self.pl.create_task('t1')
         self.t1.order_num = 1
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2')
         self.t2.order_num = 2
-        self.pl.add(self.t2)
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3')
         self.t3.order_num = 3
-        self.pl.add(self.t3)
-
-        self.pl.commit()
+        self.pl.save(self.t3)
 
     def test_get_tasks_no_limit(self):
         # when
@@ -553,13 +510,11 @@ class DeadLineIsNotNoneTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1', deadline=datetime(2017, 1, 1))
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2')
-        self.pl.add(self.t2)
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3', deadline=datetime(2017, 1, 2))
-        self.pl.add(self.t3)
-
-        self.pl.commit()
+        self.pl.save(self.t3)
 
     def test_get_tasks_not_specified_does_not_filter(self):
         # when
@@ -584,25 +539,23 @@ class ParentIdInTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1')
-        self.pl.add(self.t1)
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2')
-        self.pl.add(self.t2)
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3')
-        self.t3.parent = self.t2
-        self.pl.add(self.t3)
+        self.t3.parent_id = self.t2.id
+        self.pl.save(self.t3)
         self.t4 = self.pl.create_task('t4')
-        self.t4.parent = self.t3
-        self.pl.add(self.t4)
+        self.t4.parent_id = self.t3.id
+        self.pl.save(self.t4)
         self.t5 = self.pl.create_task('t5')
-        self.t5.parent = self.t2
-        self.pl.add(self.t5)
+        self.t5.parent_id = self.t2.id
+        self.pl.save(self.t5)
         self.t6 = self.pl.create_task('t6')
-        self.pl.add(self.t6)
+        self.pl.save(self.t6)
         self.t7 = self.pl.create_task('t7')
-        self.t7.parent = self.t6
-        self.pl.add(self.t7)
-
-        self.pl.commit()
+        self.t7.parent_id = self.t6.id
+        self.pl.save(self.t7)
 
     def test_get_tasks_parent_id_in(self):
         # when
@@ -640,12 +593,11 @@ class ParentIdInTest(PersistenceLayerTestBase):
     def test_get_tasks_parent_id_in_with_order_by(self):
         # given
         self.t3.order_num = 101
+        self.pl.save(self.t3)
         self.t4.order_num = 313
+        self.pl.save(self.t4)
         self.t5.order_num = 207
-        self.pl.add(self.t3)
-        self.pl.add(self.t4)
-        self.pl.add(self.t5)
-        self.pl.commit()
+        self.pl.save(self.t5)
 
         # when
         results = self.pl.get_tasks(
@@ -664,20 +616,20 @@ class TagsTest(PersistenceLayerTestBase):
     def setUp(self):
         super().setUp()
         self.t1 = self.pl.create_task('t1')
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2')
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3')
+        self.pl.save(self.t3)
         self.tag1 = self.pl.create_tag('tag1')
-        self.tag2 = self.pl.create_tag('tag2')
-        self.t2.tags.append(self.tag1)
-        self.t3.tags.append(self.tag1)
-        self.t3.tags.append(self.tag2)
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
         self.pl.add(self.tag1)
-        self.pl.add(self.tag2)
-
         self.pl.commit()
+        self.tag2 = self.pl.create_tag('tag2')
+        self.pl.add(self.tag2)
+        self.pl.commit()
+        self.pl.associate_tag_with_task(self.t2.id, self.tag1.id)
+        self.pl.associate_tag_with_task(self.t3.id, self.tag1.id)
+        self.pl.associate_tag_with_task(self.t3.id, self.tag2.id)
 
     def test_get_tasks_tag_unspecified_yields_all_tasks(self):
         # when
@@ -702,27 +654,25 @@ class SearchTermTest(PersistenceLayerTestBase):
         super().setUp()
 
         self.t1 = self.pl.create_task('t1', description='qwerty')
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2', description='abc')
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3 abc', description='qwerty')
+        self.pl.save(self.t3)
         self.t4 = self.pl.create_task('t4 abc', description='abc')
+        self.pl.save(self.t4)
         self.t5 = self.pl.create_task('t5', description='Qwerty')
+        self.pl.save(self.t5)
         self.t6 = self.pl.create_task('t6', description='Abc')
+        self.pl.save(self.t6)
         self.t7 = self.pl.create_task('t7 abc', description='Qwerty')
+        self.pl.save(self.t7)
         self.t8 = self.pl.create_task('t8 abc', description='Abc')
+        self.pl.save(self.t8)
         self.t9 = self.pl.create_task('t9 Abc', description='Qwerty')
+        self.pl.save(self.t9)
         self.t10 = self.pl.create_task('t10 Abc', description='Abc')
-
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
-        self.pl.add(self.t4)
-        self.pl.add(self.t5)
-        self.pl.add(self.t6)
-        self.pl.add(self.t7)
-        self.pl.add(self.t8)
-        self.pl.add(self.t9)
-        self.pl.add(self.t10)
-        self.pl.commit()
+        self.pl.save(self.t10)
 
     def test_specifying_search_term_yields_all_tasks_that_match(self):
         # when
@@ -759,18 +709,16 @@ class OrderNumberGreaterLessEqualTest(PersistenceLayerTestBase):
 
         self.t1 = self.pl.create_task('t1')
         self.t1.order_num = 2
+        self.pl.save(self.t1)
         self.t2 = self.pl.create_task('t2')
         self.t2.order_num = 3
+        self.pl.save(self.t2)
         self.t3 = self.pl.create_task('t3')
         self.t3.order_num = 5
+        self.pl.save(self.t3)
         self.t4 = self.pl.create_task('t4')
         self.t4.order_num = 7
-
-        self.pl.add(self.t1)
-        self.pl.add(self.t2)
-        self.pl.add(self.t3)
-        self.pl.add(self.t4)
-        self.pl.commit()
+        self.pl.save(self.t4)
 
     def test_unspecified_yields_all_tasks(self):
         # when

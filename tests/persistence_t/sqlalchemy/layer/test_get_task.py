@@ -19,8 +19,7 @@ class GetTaskTest(PersistenceLayerTestBase):
     def test_valid_task_returns_task(self):
         # given
         task = self.pl.create_task('task')
-        self.pl.add(task)
-        self.pl.commit()
+        self.pl.save(task)
         # when
         result = self.pl.get_task(1)
         # then

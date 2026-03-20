@@ -16,11 +16,13 @@ class GetUsersTest(PersistenceLayerTestBase):
         # when
         results = self.pl.get_user_by_email('admin@example.com')
         # then
-        self.assertIs(self.user1, results)
+        self.assertIsNotNone(results)
+        self.assertEqual(self.user1.id, results.id)
         # when
         results = self.pl.get_user_by_email('name@example.com')
         # then
-        self.assertIs(self.user2, results)
+        self.assertIsNotNone(results)
+        self.assertEqual(self.user2.id, results.id)
 
     def test_get_user_by_email_invalid_email_yields_none(self):
         # when
