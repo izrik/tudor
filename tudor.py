@@ -8,12 +8,13 @@ from functools import wraps
 from os import environ
 import os
 
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 from flask import Flask, request
 from flask import Markup
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
+import jwt
 import pycmarkgfm
 
 from conversions import bool_from_str, int_from_str
@@ -45,22 +46,28 @@ DEFAULT_TUDOR_DB_URI = 'sqlite:////tmp/test.db'
 DEFAULT_TUDOR_UPLOAD_FOLDER = '/tmp/tudor/uploads'
 DEFAULT_TUDOR_ALLOWED_EXTENSIONS = 'txt,pdf,png,jpg,jpeg,gif'
 DEFAULT_TUDOR_SECRET_KEY = None
+DEFAULT_JWT_SECRET_KEY = None
+DEFAULT_JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
+DEFAULT_JWT_ALGORITHM = 'HS256'
 
 
 class Config(object):
     def __init__(self,
-                 debug=None,
-                 host=None,
-                 port=None,
-                 db_uri=None,
-                 db_uri_file=None,
-                 db_options=None,
-                 db_options_file=None,
-                 upload_folder=None,
-                 allowed_extensions=None,
-                 secret_key=None,
-                 secret_key_file=None,
-                 args=None):
+                  debug=None,
+                  host=None,
+                  port=None,
+                  db_uri=None,
+                  db_uri_file=None,
+                  db_options=None,
+                  db_options_file=None,
+                  upload_folder=None,
+                  allowed_extensions=None,
+                  secret_key=None,
+                  secret_key_file=None,
+                  jwt_secret_key=None,
+                  jwt_access_token_expire_minutes=None,
+                  jwt_algorithm=None,
+                  args=None):
         self.DEBUG = debug
         self.HOST = host
         self.PORT = port
@@ -72,6 +79,9 @@ class Config(object):
         self.ALLOWED_EXTENSIONS = allowed_extensions  # TODO: remove this
         self.SECRET_KEY = secret_key
         self.SECRET_KEY_FILE = secret_key_file
+        self.JWT_SECRET_KEY = jwt_secret_key
+        self.JWT_ACCESS_TOKEN_EXPIRE_MINUTES = jwt_access_token_expire_minutes
+        self.JWT_ALGORITHM = jwt_algorithm
         self.args = args
 
     def __repr__(self):
@@ -89,6 +99,9 @@ class Config(object):
                 f'ALLOWED_EXTENSIONS: {self.ALLOWED_EXTENSIONS}, '
                 f'SECRET_KEY: {self.SECRET_KEY}, '
                 f'SECRET_KEY_FILE: {self.SECRET_KEY_FILE}, '
+                f'JWT_SECRET_KEY: {self.JWT_SECRET_KEY}, '
+                f'JWT_ACCESS_TOKEN_EXPIRE_MINUTES: {self.JWT_ACCESS_TOKEN_EXPIRE_MINUTES}, '
+                f'JWT_ALGORITHM: {self.JWT_ALGORITHM}, '
                 f'args: {self.args}')
 
     @staticmethod
@@ -107,7 +120,10 @@ class Config(object):
             upload_folder=environ.get('TUDOR_UPLOAD_FOLDER'),
             allowed_extensions=environ.get('TUDOR_ALLOWED_EXTENSIONS'),
             secret_key=environ.get('TUDOR_SECRET_KEY'),
-            secret_key_file=environ.get('TUDOR_SECRET_KEY_FILE'))
+            secret_key_file=environ.get('TUDOR_SECRET_KEY_FILE'),
+            jwt_secret_key=environ.get('TUDOR_JWT_SECRET_KEY'),
+            jwt_access_token_expire_minutes=int_from_str(environ.get('TUDOR_JWT_ACCESS_TOKEN_EXPIRE_MINUTES')),
+            jwt_algorithm=environ.get('TUDOR_JWT_ALGORITHM'))
 
     @staticmethod
     def from_defaults():
@@ -118,7 +134,10 @@ class Config(object):
             db_uri=DEFAULT_TUDOR_DB_URI,
             upload_folder=DEFAULT_TUDOR_UPLOAD_FOLDER,
             allowed_extensions=DEFAULT_TUDOR_ALLOWED_EXTENSIONS,
-            secret_key=DEFAULT_TUDOR_SECRET_KEY)
+            secret_key=DEFAULT_TUDOR_SECRET_KEY,
+            jwt_secret_key=DEFAULT_JWT_SECRET_KEY,
+            jwt_access_token_expire_minutes=DEFAULT_JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
+            jwt_algorithm=DEFAULT_JWT_ALGORITHM)
 
     @classmethod
     def combine(cls, first, second):
@@ -147,11 +166,39 @@ class Config(object):
             secret_key=ifn(first.SECRET_KEY, second.SECRET_KEY),
             secret_key_file=ifn(first.SECRET_KEY_FILE,
                                 second.SECRET_KEY_FILE),
+            jwt_secret_key=ifn(first.JWT_SECRET_KEY, second.JWT_SECRET_KEY),
+            jwt_access_token_expire_minutes=ifn(first.JWT_ACCESS_TOKEN_EXPIRE_MINUTES, second.JWT_ACCESS_TOKEN_EXPIRE_MINUTES),
+            jwt_algorithm=ifn(first.JWT_ALGORITHM, second.JWT_ALGORITHM),
             args=ifn(first.args, second.args))
 
 
 class ConfigError(Exception):
     pass
+
+
+def create_access_token(data: dict, jwt_secret_key: str, jwt_algorithm: str, expires_delta=None):
+    """Create a JWT access token"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + timedelta(minutes=expires_delta)
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=30)  # default 30 minutes
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, jwt_secret_key, algorithm=jwt_algorithm)
+    return encoded_jwt
+
+
+def verify_token(token: str, jwt_secret_key: str, jwt_algorithm: str):
+    """Verify and decode a JWT token"""
+    try:
+        payload = jwt.decode(token, jwt_secret_key, algorithms=[jwt_algorithm])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidSignatureError:
+        return None
+    except jwt.PyJWTError:
+        return None
 
 
 def get_config_from_command_line(argv, defaults=None):
@@ -172,6 +219,9 @@ def get_config_from_command_line(argv, defaults=None):
     parser.add_argument('--secret-key', action='store')
     parser.add_argument('--secret-key-file', action='store')
     parser.add_argument('--create-secret-key', action='store_true')
+    parser.add_argument('--jwt-secret-key', action='store')
+    parser.add_argument('--jwt-access-token-expire-minutes', action='store', type=int)
+    parser.add_argument('--jwt-algorithm', action='store')
     parser.add_argument('--hash-password', action='store')
     parser.add_argument('--make-public', metavar='TASK_ID', action='store',
                         help='Make a given task public, viewable by anyone.',
@@ -212,6 +262,9 @@ def get_config_from_command_line(argv, defaults=None):
         upload_folder=args.upload_folder,
         secret_key=args.secret_key,
         secret_key_file=args.secret_key_file,
+        jwt_secret_key=args.jwt_secret_key,
+        jwt_access_token_expire_minutes=args.jwt_access_token_expire_minutes,
+        jwt_algorithm=args.jwt_algorithm,
         allowed_extensions=args.allowed_extensions,
         args=args)
 
@@ -235,12 +288,15 @@ def split_db_options(db_options):
 
 
 def generate_app(db_uri=None,
-                 db_options=None,
-                 upload_folder=None,
-                 secret_key=None,
-                 allowed_extensions=None,
-                 ll=None, vl=None, pl=None, flask_configs=None,
-                 disable_admin_check=False):
+                  db_options=None,
+                  upload_folder=None,
+                  secret_key=None,
+                  jwt_secret_key=None,
+                  jwt_access_token_expire_minutes=None,
+                  jwt_algorithm=None,
+                  allowed_extensions=None,
+                  ll=None, vl=None, pl=None, flask_configs=None,
+                  disable_admin_check=False):
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = upload_folder
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -248,6 +304,9 @@ def generate_app(db_uri=None,
         for k, v in flask_configs.items():
             app.config[k] = v
     app.secret_key = secret_key
+    app.config['JWT_SECRET_KEY'] = jwt_secret_key
+    app.config['JWT_ACCESS_TOKEN_EXPIRE_MINUTES'] = jwt_access_token_expire_minutes
+    app.config['JWT_ALGORITHM'] = jwt_algorithm
     # ALLOWED_EXTENSIONS = set(ext for ext in re.split('[\s,]+',
     #                                                  allowed_extensions)
     #                          if ext is not None and ext != '')
@@ -322,10 +381,23 @@ def generate_app(db_uri=None,
         return pl.get_user_by_email(userid)
 
     @login_manager.request_loader
-    def load_user_with_basic_auth(request):
-        api_key = request.headers.get('Authorization')
-        if api_key:
-            api_key = api_key.replace('Basic ', '', 1)
+    def load_user_with_auth(request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return None
+
+        # Handle JWT Bearer tokens
+        if auth_header.startswith('Bearer '):
+            token = auth_header.replace('Bearer ', '', 1)
+            payload = verify_token(token, app.config['JWT_SECRET_KEY'], app.config['JWT_ALGORITHM'])
+            if payload and 'sub' in payload:
+                user = pl.get_user_by_email(payload['sub'])
+                return user
+            return None
+
+        # Handle HTTP Basic Authentication
+        elif auth_header.startswith('Basic '):
+            api_key = auth_header.replace('Basic ', '', 1)
             api_key = base64.b64decode(api_key).decode('utf-8')
             email, password = api_key.split(':', 1)
             user = pl.get_user_by_email(email)
@@ -338,6 +410,8 @@ def generate_app(db_uri=None,
                 return None
 
             return user
+
+        return None
 
     def admin_required(func):
         @wraps(func)
@@ -486,6 +560,47 @@ def generate_app(db_uri=None,
 
     def login():
         return vl.login(request, Options.get_user())
+
+    def api_login():
+        return vl.login(request, Options.get_user())
+
+    def api_me():
+        user = Options.get_user()
+        if not user or not user.is_authenticated:
+            return {'error': 'Not authenticated'}, 401
+        return {
+            'id': user.id,
+            'email': user.email,
+            'is_admin': user.is_admin
+        }
+
+    def api_refresh():
+        user = Options.get_user()
+        if not user or not user.is_authenticated:
+            return {'error': 'Not authenticated'}, 401
+
+        # Generate new token
+        token_data = {
+            "sub": user.email,
+            "user_id": user.id,
+            "is_admin": user.is_admin
+        }
+        token = create_access_token(
+            token_data,
+            app.config['JWT_SECRET_KEY'],
+            app.config['JWT_ALGORITHM'],
+            app.config['JWT_ACCESS_TOKEN_EXPIRE_MINUTES']
+        )
+
+        return {
+            'access_token': token,
+            'token_type': 'bearer',
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'is_admin': user.is_admin
+            }
+        }
 
     def logout():
         return vl.logout(request, Options.get_user())
@@ -655,6 +770,9 @@ def generate_app(db_uri=None,
     app.add_url_rule('/task/<int:task_id>/deauthorize_user/<int:user_id>',
                      None, deauthorize_user_for_task, methods=['GET', 'POST'])
     app.add_url_rule('/login', None, login, methods=['GET', 'POST'])
+    app.add_url_rule('/api/login', None, api_login, methods=['POST'])
+    app.add_url_rule('/api/refresh', None, api_refresh, methods=['POST'])
+    app.add_url_rule('/api/me', None, api_me, methods=['GET'])
     app.add_url_rule('/logout', None, logout)
     app.add_url_rule('/users', None, list_users, methods=['GET', 'POST'])
     app.add_url_rule('/users/<int:user_id>', None, view_user, methods=['GET'])
@@ -907,10 +1025,13 @@ def main(argv):
         print(f'SECRET_KEY: {arg_config.SECRET_KEY}', file=sys.stderr)
 
     app = generate_app(db_uri=arg_config.DB_URI,
-                       db_options=arg_config.DB_OPTIONS,
-                       upload_folder=arg_config.UPLOAD_FOLDER,
-                       secret_key=arg_config.SECRET_KEY,
-                       allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
+                        db_options=arg_config.DB_OPTIONS,
+                        upload_folder=arg_config.UPLOAD_FOLDER,
+                        secret_key=arg_config.SECRET_KEY,
+                        jwt_secret_key=arg_config.JWT_SECRET_KEY,
+                        jwt_access_token_expire_minutes=arg_config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES,
+                        jwt_algorithm=arg_config.JWT_ALGORITHM,
+                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
 
     print('Checking database schema version')
     from packaging.version import parse

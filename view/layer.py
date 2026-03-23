@@ -523,22 +523,56 @@ class ViewLayer(object):
 
     def login(self, request, current_user):
         if request.method == 'GET':
+            if self.wants_json(request):
+                return self.make_response({'error': 'Method not allowed'}, 405)
             return self.render_template('login.t.html')
+
         email = request.form['email']
         password = request.form['password']
         user = self.ll.pl_get_user_by_email(email)
 
         if user is None:
+            if self.wants_json(request):
+                return self.make_response({'error': 'Invalid credentials'}, 401)
             self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
         if user.hashed_password is None or user.hashed_password == '':
+            if self.wants_json(request):
+                return self.make_response({'error': 'Invalid credentials'}, 401)
             self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
         if not self.check_password_hash(user.hashed_password, password):
+            if self.wants_json(request):
+                return self.make_response({'error': 'Invalid credentials'}, 401)
             self.flash('Username or Password is invalid', 'error')
             return self.redirect(self.url_for('login'))
 
         self.login_user(user)
+
+        if self.wants_json(request):
+            # Import here to avoid circular imports
+            from tudor import create_access_token
+            token_data = {
+                "sub": user.email,
+                "user_id": user.id,
+                "is_admin": user.is_admin
+            }
+            token = create_access_token(
+                token_data,
+                request.app.config['JWT_SECRET_KEY'],
+                request.app.config['JWT_ALGORITHM'],
+                request.app.config['JWT_ACCESS_TOKEN_EXPIRE_MINUTES']
+            )
+            return self.make_response({
+                'access_token': token,
+                'token_type': 'bearer',
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'is_admin': user.is_admin
+                }
+            })
+
         self.flash('Logged in successfully')
         return self.redirect(request.args.get('next') or self.url_for('index'))
 
