@@ -3,7 +3,7 @@
 import unittest
 
 from persistence.in_memory.models.task import IMTask
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 
 
 class TaskIdTest(unittest.TestCase):

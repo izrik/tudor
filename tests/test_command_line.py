@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch, MagicMock
 
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line, create_user, get_db_uri, ConfigError, \
     get_secret_key, split_db_options, get_db_options

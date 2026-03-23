@@ -1,5 +1,5 @@
 from logic.layer import LogicLayer
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tudor import generate_app
 
 

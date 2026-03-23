@@ -6,14 +6,14 @@ from werkzeug.exceptions import NotFound
 from logic.layer import LogicLayer
 from persistence.in_memory.models.attachment import IMAttachment
 from persistence.in_memory.models.user import IMUser
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
 
 
 class AttachmentTest(unittest.TestCase):
     def setUp(self):
-        self.pl = Mock(spec=InMemoryPersistenceLayer)
+        self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)

@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tests.util import MockFileObject
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
@@ -12,7 +12,7 @@ from view.layer import ViewLayer, DefaultRenderer
 class ImportTest(unittest.TestCase):
     def setUp(self):
         self.ll = Mock(spec=LogicLayer)
-        self.pl = Mock(spec=InMemoryPersistenceLayer)
+        self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
 

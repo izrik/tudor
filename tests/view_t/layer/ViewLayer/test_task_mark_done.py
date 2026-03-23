@@ -4,14 +4,14 @@ import unittest
 from unittest.mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
 
 
 class TaskMarkDoneTest(unittest.TestCase):
     def setUp(self):
-        self.pl = Mock(spec=InMemoryPersistenceLayer)
+        self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.ll = Mock(spec=LogicLayer)
         self.ll.task_set_done = Mock()
         self.r = Mock(spec=DefaultRenderer)

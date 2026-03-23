@@ -2,13 +2,13 @@ import unittest
 
 from unittest.mock import Mock
 
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tudor import generate_app
 
 
 class AppOptionsTest(unittest.TestCase):
     def setUp(self):
-        self.pl = Mock(spec=InMemoryPersistenceLayer)
+        self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.pl.get_option.return_value = None
         self.app = generate_app(vl=Mock(), ll=Mock(), pl=self.pl,
                                 flask_configs={'LOGIN_DISABLED': True},
