@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from werkzeug.exceptions import BadRequest
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.util import MockFileObject
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
@@ -20,7 +20,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_creates_new_attachment(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id}
         f = MockFileObject('/filename.txt')
@@ -39,7 +39,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_description_none_yields_none(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': None}
@@ -59,7 +59,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_empty_description_yields_empty_description(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': ''}
@@ -79,7 +79,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_description_sets_description(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': 'asdf'}
@@ -99,7 +99,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_null_file_object_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': 'asdf'}
@@ -116,7 +116,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_null_filename_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': 'asdf'}
@@ -133,7 +133,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_empty_filename_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': 'asdf'}
@@ -151,7 +151,7 @@ class AttachmentNewTest(unittest.TestCase):
     @unittest.skip
     def test_extension_not_allowed_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {'task_id': task.id,
                 'description': 'asdf'}
@@ -169,7 +169,7 @@ class AttachmentNewTest(unittest.TestCase):
 
     def test_task_id_not_sepcified_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=IMTask)
         task.id = 123
         form = {}
         files = {'filename': MockFileObject('/filename.exe')}

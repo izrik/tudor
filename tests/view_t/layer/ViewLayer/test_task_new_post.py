@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.user import User
+from persistence.in_memory.models.user import IMUser
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
@@ -15,7 +15,7 @@ class TaskNewPostTest(unittest.TestCase):
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=IMUser)
 
     def test_creates_new_task(self):
         # given

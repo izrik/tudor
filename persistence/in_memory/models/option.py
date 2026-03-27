@@ -4,8 +4,8 @@ from models.option_base import OptionBase
 from persistence.in_memory.models.changeable import Changeable
 
 
-class Option(Changeable, OptionBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Option')
+class IMOption(Changeable, OptionBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMOption')
 
     _key = None
     _value = None

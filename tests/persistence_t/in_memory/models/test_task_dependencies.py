@@ -2,15 +2,15 @@
 
 import unittest
 
-from persistence.in_memory.models.task import Task
+from persistence.in_memory.models.task import IMTask
 
 
 class TaskDependenciesTest(unittest.TestCase):
 
     def test_setting_task_as_dependee_sets_other_task_as_dependant(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = IMTask('t1')
+        t2 = IMTask('t2')
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -31,8 +31,8 @@ class TaskDependenciesTest(unittest.TestCase):
 
     def test_setting_task_as_dependant_sets_other_task_as_dependee(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = IMTask('t1')
+        t2 = IMTask('t2')
 
         # precondition
         self.assertEqual(0, len(t1.dependants))
@@ -53,8 +53,8 @@ class TaskDependenciesTest(unittest.TestCase):
 
     def test_cycle_check_yields_false_for_no_cycles(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = IMTask('t1')
+        t2 = IMTask('t2')
         t1.dependants.append(t2)
 
         # expect
@@ -63,8 +63,8 @@ class TaskDependenciesTest(unittest.TestCase):
 
     def test_cycle_check_yields_true_for_cycles(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
+        t1 = IMTask('t1')
+        t2 = IMTask('t2')
         t1.dependants.append(t2)
         t2.dependants.append(t1)
 
@@ -74,12 +74,12 @@ class TaskDependenciesTest(unittest.TestCase):
 
     def test_cycle_check_yields_true_for_long_cycles(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
-        t3 = Task('t3')
-        t4 = Task('t4')
-        t5 = Task('t5')
-        t6 = Task('t6')
+        t1 = IMTask('t1')
+        t2 = IMTask('t2')
+        t3 = IMTask('t3')
+        t4 = IMTask('t4')
+        t5 = IMTask('t5')
+        t6 = IMTask('t6')
         t1.dependants.append(t2)
         t2.dependants.append(t3)
         t3.dependants.append(t4)
@@ -97,10 +97,10 @@ class TaskDependenciesTest(unittest.TestCase):
 
     def test_cycle_check_yields_false_for_trees(self):
         # given
-        t1 = Task('t1')
-        t2 = Task('t2')
-        t3 = Task('t3')
-        t4 = Task('t4')
+        t1 = IMTask('t1')
+        t2 = IMTask('t2')
+        t3 = IMTask('t3')
+        t4 = IMTask('t4')
         t1.dependants.append(t2)
         t1.dependants.append(t3)
         t2.dependants.append(t4)

@@ -29,4 +29,4 @@ class GetAttachmentTest(InMemoryTestBase):
         result = self.pl.get_attachment(attachment.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(attachment, result)
+        self.assertEqual(attachment.id, result.id)

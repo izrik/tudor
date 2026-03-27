@@ -29,4 +29,4 @@ class GetUserTest(InMemoryTestBase):
         result = self.pl.get_user(user.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(user, result)
+        self.assertEqual(user.id, result.id)

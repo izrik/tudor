@@ -145,4 +145,4 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         self.assertEqual(1, len(task.tags))
         self.assertIn(tag, task.tags)
         self.assertIn(task, tag.tasks)
-        self.assertIs(tag, result)
+        self.assertEqual(tag.id, result.id)

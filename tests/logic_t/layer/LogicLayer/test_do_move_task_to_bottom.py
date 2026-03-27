@@ -74,7 +74,7 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_to_bottom(t1.id, self.user)
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertEqual(3, t1.order_num)  #
         self.assertEqual(10, t2.order_num)
         self.assertEqual(5, t3.order_num)
@@ -137,7 +137,7 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_to_bottom(p1.id, self.user)
         # then
-        self.assertIs(p1, result)
+        self.assertEqual(p1.id, result.id)
         self.assertEqual(2, p1.order_num)   #
         self.assertEqual(9, c1.order_num)
         self.assertEqual(8, c2.order_num)
@@ -190,7 +190,7 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_to_bottom(c2.id, self.user)
         # then
-        self.assertIs(c2, result)
+        self.assertEqual(c2.id, result.id)
         self.assertEqual(7, p1.order_num)
         self.assertEqual(6, c1.order_num)
         self.assertEqual(0, c2.order_num)  #
@@ -230,7 +230,7 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_to_bottom(t3.id, self.user)
         # then
-        self.assertIs(t3, result)
+        self.assertEqual(t3.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(5, t2.order_num)
         self.assertEqual(0, t3.order_num)  #
@@ -254,7 +254,7 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_to_bottom(t2.id, self.user)
         # then
-        self.assertIs(t2, result)
+        self.assertEqual(t2.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(5, t2.order_num)
 
@@ -290,7 +290,7 @@ class DoMoveTaskToBottomTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_to_bottom(t3.id, self.user)
         # then
-        self.assertIs(t3, result)
+        self.assertEqual(t3.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(5, t2.order_num)
         self.assertEqual(0, t3.order_num)  #

@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import Mock
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.user import User
+from persistence.in_memory.models.user import IMUser
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer, DefaultLoginSource
@@ -17,7 +17,7 @@ class LoginTest(unittest.TestCase):
         self.ls = Mock(spec=DefaultLoginSource)
         self.vl = ViewLayer(self.ll, None, renderer=self.r,
                             login_src=self.ls)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=IMUser)
 
     def test_renders_template_on_get(self):
         # given
@@ -40,7 +40,7 @@ class LoginTest(unittest.TestCase):
         email = 'name@example.com'
         password = '12345'
         hashed_password = 'hashhashhash'
-        user = Mock(spec=User)
+        user = Mock(spec=IMUser)
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = True
@@ -92,7 +92,7 @@ class LoginTest(unittest.TestCase):
         email = 'name@example.com'
         password = '12345'
         hashed_password = None  #
-        user = Mock(spec=User)
+        user = Mock(spec=IMUser)
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = True
@@ -120,7 +120,7 @@ class LoginTest(unittest.TestCase):
         email = 'name@example.com'
         password = '12345'
         hashed_password = ''  #
-        user = Mock(spec=User)
+        user = Mock(spec=IMUser)
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = True
@@ -148,7 +148,7 @@ class LoginTest(unittest.TestCase):
         email = 'name@example.com'
         password = '12345'
         hashed_password = 'hashhashhash'
-        user = Mock(spec=User)
+        user = Mock(spec=IMUser)
         user.email = email
         user.hashed_password = hashed_password
         self.ls.check_password_hash.return_value = False  #

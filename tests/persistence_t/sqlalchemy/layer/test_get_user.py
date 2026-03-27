@@ -25,7 +25,7 @@ class GetUserTest(PersistenceLayerTestBase):
         result = self.pl.get_user(user.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(user, result)
+        self.assertEqual(user.id, result.id)
 
     def test_get_db_user_none_raises(self):
         # expect
@@ -46,4 +46,4 @@ class GetUserTest(PersistenceLayerTestBase):
         result = self.pl._get_db_user(dbuser.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(dbuser, result)
+        self.assertEqual(dbuser.id, result.id)

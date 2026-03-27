@@ -2,18 +2,18 @@
 
 import unittest
 
-from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.note import IMNote
 
 
 class NoteStrTest(unittest.TestCase):
     def test_generates_str_string(self):
         # given
-        note = Note(content='content')
+        note = IMNote(content='content')
         note.id = 123
         #when
         r = str(note)
         # then
-        fmt = 'Note(\'content\', note id=123, id=[{}])'
+        fmt = 'IMNote(\'content\', note id=123, id=[{}])'
         expected = fmt.format(id(note))
         self.assertEqual(expected, r)
 

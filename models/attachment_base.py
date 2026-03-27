@@ -1,4 +1,5 @@
 
+import logging_util
 from dateutil.parser import parse as dparse
 
 from conversions import str_from_datetime
@@ -6,6 +7,7 @@ from .object_types import ObjectTypes
 
 
 class AttachmentBase(object):
+    _logger = logging_util.get_logger_by_name(__name__, 'AttachmentBase')
 
     FIELD_ID = 'ID'
     FIELD_PATH = 'PATH'
@@ -21,6 +23,7 @@ class AttachmentBase(object):
         self.path = path
         self.filename = filename
         self.description = description
+        self.task_id = None
 
     @property
     def object_type(self):
@@ -34,6 +37,19 @@ class AttachmentBase(object):
         cls = type(self).__name__
         return '{}({}, attachment id={}, id=[{}])'.format(
             cls, repr(self.path), self.id, id(self))
+
+    def __eq__(self, other):
+        if not isinstance(other, AttachmentBase):
+            return False
+        return (self.path == other.path and
+                self.description == other.description and
+                self.timestamp == other.timestamp and
+                self.filename == other.filename and
+                self.task_id == other.task_id)
+
+    def __hash__(self):
+        return hash((self.path, self.description, self.timestamp,
+                     self.filename, self.task_id))
 
     @staticmethod
     def _clean_timestamp(timestamp):
@@ -56,32 +72,28 @@ class AttachmentBase(object):
             d['filename'] = self.filename
         if fields is None or self.FIELD_DESCRIPTION in fields:
             d['description'] = self.description
-        if fields is None or self.FIELD_TASK in fields:
-            d['task'] = self.task
+        if fields is None or 'task_id' in (fields or []):
+            d['task_id'] = getattr(self, 'task_id', None)
 
         return d
 
     def to_flat_dict(self, fields=None):
         d = self.to_dict(fields=fields)
-        if 'task' in d and d['task'] is not None:
-            d['task_id'] = d['task'].id
-            del d['task']
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         attachment_id = d.get('id', None)
         timestamp = d.get('timestamp', None)
         path = d.get('path')
         filename = d.get('filename', None)
         description = d.get('description', None)
-        task = d.get('task')
 
-        attachment = cls(path, description, timestamp, filename, lazy=lazy)
+        attachment = cls(path, description, timestamp, filename)
         if attachment_id is not None:
             attachment.id = attachment_id
-        if not lazy:
-            attachment.task = task
+        if 'task_id' in d:
+            attachment.task_id = d['task_id']
         return attachment
 
     def update_from_dict(self, d):
@@ -95,5 +107,24 @@ class AttachmentBase(object):
             self.filename = d['filename']
         if 'description' in d:
             self.description = d['description']
-        if 'task' in d:
-            self.task = d['task']
+        if 'task_id' in d:
+            self.task_id = d['task_id']
+
+
+class Attachment2(AttachmentBase):
+    def __init__(self, path, description='', timestamp=None,
+                 filename=None, task_id=None):
+        super().__init__(path=path, description=description,
+                         timestamp=timestamp, filename=filename)
+        self.task_id = task_id
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value

@@ -5,12 +5,12 @@ from numbers import Number
 
 import logging_util
 from models.object_types import ObjectTypes
-from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.note import Note
-from persistence.in_memory.models.option import Option
-from persistence.in_memory.models.tag import Tag
-from persistence.in_memory.models.task import Task
-from persistence.in_memory.models.user import User
+from models.attachment_base import Attachment2
+from models.note_base import Note2
+from models.option_base import Option2
+from models.tag_base import Tag2
+from models.task_base import Task2
+from models.user_base import User2
 from persistence.sqlalchemy.layer import is_iterable
 from persistence.pager import Pager
 
@@ -20,9 +20,9 @@ class InMemoryPersistenceLayer(object):
                                               'InMemoryPersistenceLayer')
 
     def __init__(self):
-        self._added_objects = set()
-        self._deleted_objects = set()
-        self._changed_objects = set()
+        self._added_objects = []
+        self._deleted_objects = []
+        self._changed_objects = []
         self._values_by_object = {}
 
         self._tasks = []  # TODO: change these to sets
@@ -45,6 +45,20 @@ class InMemoryPersistenceLayer(object):
         self._attachments = []
         self._attachments_by_id = {}
 
+        # Relationship dicts
+        self._task_tags = {}  # task_id -> set of tag_ids
+        self._tag_tasks = {}  # tag_id -> set of task_ids
+        self._task_users = {}  # task_id -> set of user_ids
+        self._user_tasks = {}  # user_id -> set of task_ids
+        self._task_children = {}  # parent_id -> set of child_ids
+        self._task_parent = {}  # child_id -> parent_id
+        self._task_dependees = {}  # task_id -> set of dependee_ids
+        self._dependee_dependants = {}  # dependee_id -> set of dependant_ids
+        self._task_prioritize_before = {}  # task_id -> set of before_ids
+        self._before_prioritize_after = {}  # before_id -> set of after_ids
+        self._task_notes = {}  # task_id -> set of note_ids
+        self._task_attachments = {}  # task_id -> set of attachment_ids
+
     UNSPECIFIED = object()
 
     ASCENDING = object()
@@ -62,23 +76,24 @@ class InMemoryPersistenceLayer(object):
                     expected_duration_minutes=None, expected_cost=None,
                     is_public=False,
                     date_created=None,
-                    date_last_updated=None,
-                    lazy=None):
+                    date_last_updated=None):
         if date_created is None:
             from datetime import datetime
             date_created = datetime.now(UTC)
         if date_last_updated is None:
             date_last_updated = date_created
-        return Task(summary=summary, description=description, is_done=is_done,
-                    is_deleted=is_deleted, deadline=deadline,
-                    expected_duration_minutes=expected_duration_minutes,
-                    expected_cost=expected_cost, is_public=is_public,
-                    date_created=date_created,
-                    date_last_updated=date_last_updated,
-                    lazy=lazy)
+        return Task2(summary=summary, description=description, is_done=is_done,
+                     is_deleted=is_deleted, deadline=deadline,
+                     expected_duration_minutes=expected_duration_minutes,
+                     expected_cost=expected_cost, is_public=is_public,
+                     date_created=date_created,
+                     date_last_updated=date_last_updated)
 
     def get_task(self, task_id):
-        return self._tasks_by_id.get(task_id)
+        stored = self._tasks_by_id.get(task_id)
+        if stored is None:
+            return None
+        return Task2.from_dict(stored.to_dict())
 
     def get_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
                   parent_id=UNSPECIFIED, parent_id_in=UNSPECIFIED,
@@ -104,19 +119,18 @@ class InMemoryPersistenceLayer(object):
 
         if parent_id is not self.UNSPECIFIED:
             if parent_id is None:
-                query = (_ for _ in query if _.parent_id is None)
+                query = (_ for _ in query if self._task_parent.get(_.id) is None)
             else:
-                query = (_ for _ in query if _.parent_id == parent_id)
+                query = (_ for _ in query if self._task_parent.get(_.id) == parent_id)
 
         if parent_id_in is not self.UNSPECIFIED:
-            query = (_ for _ in query if _.parent_id in parent_id_in)
+            query = (_ for _ in query if self._task_parent.get(_.id) in parent_id_in)
 
         if users_contains is not self.UNSPECIFIED:
-            query = (_ for _ in query if users_contains in _.users)
+            query = (_ for _ in query if users_contains.id in self._task_users.get(_.id, set()))
 
         if is_public_or_users_contains is not self.UNSPECIFIED:
-            query = (_ for _ in query if _.is_public or
-                     is_public_or_users_contains in _.users)
+            query = (_ for _ in query if _.is_public or is_public_or_users_contains.id in self._task_users.get(_.id, set()))
 
         if task_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in task_id_in)
@@ -128,7 +142,7 @@ class InMemoryPersistenceLayer(object):
             query = (_ for _ in query if _.deadline is not None)
 
         if tags_contains is not self.UNSPECIFIED:
-            query = (_ for _ in query if tags_contains in _.tags)
+            query = (_ for _ in query if tags_contains.id in self._task_tags.get(_.id, set()))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             term = summary_description_search_term
@@ -170,7 +184,7 @@ class InMemoryPersistenceLayer(object):
                 raise Exception('limit must not be negative')
             query = islice(query, limit)
 
-        return query
+        return (Task2.from_dict(_.to_dict()) for _ in query)
 
     def _get_sort_key_by_order_field(self, order_by):
         if order_by is self.ORDER_NUM:
@@ -254,13 +268,16 @@ class InMemoryPersistenceLayer(object):
             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
             limit=limit)))
 
-    def create_tag(self, value, description=None, lazy=None):
-        return Tag(value=value, description=description, lazy=lazy)
+    def create_tag(self, value, description=None):
+        return Tag2(value=value, description=description)
 
     def get_tag(self, tag_id):
         if tag_id is None:
             raise ValueError('No tag_id provided.')
-        return self._tags_by_id.get(tag_id)
+        stored = self._tags_by_id.get(tag_id)
+        if stored is None:
+            return None
+        return Tag2.from_dict(stored.to_dict())
 
     def get_tag_by_value(self, value):
         return self._tags_by_value.get(value)
@@ -271,15 +288,15 @@ class InMemoryPersistenceLayer(object):
             query = (_ for _ in query if _.value == value)
         if limit is not None:
             query = islice(query, limit)
-        return query
+        return (Tag2.from_dict(_.to_dict()) for _ in query)
 
     def count_tags(self, value=UNSPECIFIED, limit=None):
         return len(list(self.get_tags(value=value, limit=limit)))
 
     def create_attachment(self, path, description=None, timestamp=None,
-                          filename=None, lazy=None):
-        return Attachment(path=path, description=description,
-                          timestamp=timestamp, filename=filename, lazy=lazy)
+                          filename=None):
+        return Attachment2(path=path, description=description,
+                          timestamp=timestamp, filename=filename)
 
     def get_attachment(self, attachment_id):
         if attachment_id is None:
@@ -290,14 +307,14 @@ class InMemoryPersistenceLayer(object):
         query = (_ for _ in self._attachments)
         if attachment_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in attachment_id_in)
-        return query
+        return (Attachment2.from_dict(_.to_dict()) for _ in query)
 
     def count_attachments(self, attachment_id_in=UNSPECIFIED):
         return len(
             list(self.get_attachments(attachment_id_in=attachment_id_in)))
 
-    def create_note(self, content, timestamp=None, lazy=None):
-        return Note(content=content, timestamp=timestamp, lazy=lazy)
+    def create_note(self, content, timestamp=None):
+        return Note2(content=content, timestamp=timestamp)
 
     def get_note(self, note_id):
         if note_id is None:
@@ -308,13 +325,13 @@ class InMemoryPersistenceLayer(object):
         query = self._notes
         if note_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in note_id_in)
-        return query
+        return (Note2.from_dict(_.to_dict()) for _ in query)
 
     def count_notes(self, note_id_in=UNSPECIFIED):
         return len(list(self.get_notes(note_id_in=note_id_in)))
 
     def create_option(self, key, value):
-        return Option(key=key, value=value)
+        return Option2(key=key, value=value)
 
     def get_option(self, key):
         if key is None:
@@ -324,16 +341,94 @@ class InMemoryPersistenceLayer(object):
     def get_options(self, key_in=UNSPECIFIED):
         query = self._options
         if key_in is not self.UNSPECIFIED:
-            query = (_ for _ in query if _.id in key_in)
-        return query
+            query = (_ for _ in query if _.key in key_in)
+        return (Option2(key=_.key, value=_.value) for _ in query)
 
     def count_options(self, key_in=UNSPECIFIED):
         return len(list(self.get_options(key_in=key_in)))
 
-    def create_user(self, email, hashed_password=None, is_admin=False,
-                    lazy=None):
-        return User(email=email, hashed_password=hashed_password,
-                    is_admin=is_admin, lazy=lazy)
+    # Relationship getters
+    def get_task_tags(self, task_id):
+        return (Tag2.from_dict(self._tags_by_id[tag_id].to_dict()) for tag_id in self._task_tags.get(task_id, set()))
+
+    def get_task_users(self, task_id):
+        return (User2.from_dict(self._users_by_id[user_id].to_dict()) for user_id in self._task_users.get(task_id, set()))
+
+    def get_task_children(self, task_id):
+        return (Task2.from_dict(self._tasks_by_id[child_id].to_dict()) for child_id in self._task_children.get(task_id, set()))
+
+    def get_task_parent(self, task_id):
+        parent_id = self._task_parent.get(task_id)
+        if parent_id is None:
+            return None
+        return Task2.from_dict(self._tasks_by_id[parent_id].to_dict())
+
+    def get_task_dependees(self, task_id):
+        return (Task2.from_dict(self._tasks_by_id[dependee_id].to_dict()) for dependee_id in self._task_dependees.get(task_id, set()))
+
+    def get_task_dependants(self, task_id):
+        return (Task2.from_dict(self._tasks_by_id[dependant_id].to_dict()) for dependant_id in self._dependee_dependants.get(task_id, set()))
+
+    def get_task_prioritize_before(self, task_id):
+        return (Task2.from_dict(self._tasks_by_id[before_id].to_dict()) for before_id in self._task_prioritize_before.get(task_id, set()))
+
+    def get_task_prioritize_after(self, task_id):
+        return (Task2.from_dict(self._tasks_by_id[after_id].to_dict()) for after_id in self._before_prioritize_after.get(task_id, set()))
+
+    def get_task_notes(self, task_id):
+        return (Note2.from_dict(self._notes_by_id[note_id].to_dict()) for note_id in self._task_notes.get(task_id, set()))
+
+    def get_task_attachments(self, task_id):
+        return (Attachment2.from_dict(self._attachments_by_id[attachment_id].to_dict()) for attachment_id in self._task_attachments.get(task_id, set()))
+
+    def get_tag_tasks(self, tag_id):
+        return (Task2.from_dict(self._tasks_by_id[task_id].to_dict()) for task_id in self._tag_tasks.get(tag_id, set()))
+
+    def get_user_tasks(self, user_id):
+        return (Task2.from_dict(self._tasks_by_id[task_id].to_dict()) for task_id in self._user_tasks.get(user_id, set()))
+
+    # Relationship setters
+    def associate_tag_with_task(self, task_id, tag_id):
+        self._task_tags.setdefault(task_id, set()).add(tag_id)
+        self._tag_tasks.setdefault(tag_id, set()).add(task_id)
+
+    def disassociate_tag_from_task(self, task_id, tag_id):
+        self._task_tags.get(task_id, set()).discard(tag_id)
+        self._tag_tasks.get(tag_id, set()).discard(task_id)
+
+    def associate_user_with_task(self, task_id, user_id):
+        self._task_users.setdefault(task_id, set()).add(user_id)
+        self._user_tasks.setdefault(user_id, set()).add(task_id)
+
+    def disassociate_user_from_task(self, task_id, user_id):
+        self._task_users.get(task_id, set()).discard(user_id)
+        self._user_tasks.get(user_id, set()).discard(task_id)
+
+    def set_task_parent(self, task_id, parent_id):
+        old_parent = self._task_parent.get(task_id)
+        if old_parent:
+            self._task_children[old_parent].discard(task_id)
+        self._task_parent[task_id] = parent_id
+        if parent_id:
+            self._task_children.setdefault(parent_id, set()).add(task_id)
+
+    def associate_dependee_with_task(self, task_id, dependee_id):
+        self._task_dependees.setdefault(task_id, set()).add(dependee_id)
+        self._dependee_dependants.setdefault(dependee_id, set()).add(task_id)
+
+    def associate_prioritize_before_with_task(self, task_id, before_id):
+        self._task_prioritize_before.setdefault(task_id, set()).add(before_id)
+        self._before_prioritize_after.setdefault(before_id, set()).add(task_id)
+
+    def associate_note_with_task(self, task_id, note_id):
+        self._task_notes.setdefault(task_id, set()).add(note_id)
+
+    def associate_attachment_with_task(self, task_id, attachment_id):
+        self._task_attachments.setdefault(task_id, set()).add(attachment_id)
+
+    def create_user(self, email, hashed_password=None, is_admin=False):
+        return User2(email=email, hashed_password=hashed_password,
+                    is_admin=is_admin)
 
     _guest_user = None
 
@@ -357,10 +452,51 @@ class InMemoryPersistenceLayer(object):
         query = self._users
         if email_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.email in email_in)
-        return query
+        return (User2.from_dict(_.to_dict()) for _ in query)
 
     def count_users(self, email_in=UNSPECIFIED):
         return len(list(self.get_users(email_in=email_in)))
+
+    def save(self, obj):
+        if obj.id is None:
+            obj.id = self._get_next_id(obj.object_type)
+            self.add(obj)
+            self.commit()
+        else:
+            # update existing
+            tt = self._get_object_type(obj)
+            if tt == ObjectTypes.Task:
+                self._tasks_by_id[obj.id] = obj
+                for i, t in enumerate(self._tasks):
+                    if t.id == obj.id:
+                        self._tasks[i] = obj
+                        break
+            elif tt == ObjectTypes.Tag:
+                self._tags_by_id[obj.id] = obj
+                for i, t in enumerate(self._tags):
+                    if t.id == obj.id:
+                        self._tags[i] = obj
+                        break
+            elif tt == ObjectTypes.Note:
+                self._notes_by_id[obj.id] = obj
+                for i, n in enumerate(self._notes):
+                    if n.id == obj.id:
+                        self._notes[i] = obj
+                        break
+            elif tt == ObjectTypes.Attachment:
+                self._attachments_by_id[obj.id] = obj
+                for i, a in enumerate(self._attachments):
+                    if a.id == obj.id:
+                        self._attachments[i] = obj
+                        break
+            elif tt == ObjectTypes.User:
+                self._users_by_id[obj.id] = obj
+                for i, u in enumerate(self._users):
+                    if u.id == obj.id:
+                        self._users[i] = obj
+                        break
+            elif tt == ObjectTypes.Option:
+                self._options[obj.key] = obj
 
     def add(self, obj):
         if obj in self._added_objects:
@@ -374,7 +510,7 @@ class InMemoryPersistenceLayer(object):
             return
         d = obj.to_dict()
         self._values_by_object[obj] = d
-        self._added_objects.add(obj)
+        self._added_objects.append(obj)
 
     def delete(self, obj):
         if obj in self._deleted_objects:
@@ -382,10 +518,10 @@ class InMemoryPersistenceLayer(object):
         if obj in self._added_objects:
             raise Exception(
                 'The object (id={}) has already been added.'.format(obj.id))
-        self._deleted_objects.add(obj)
+        self._deleted_objects.append(obj)
 
     def commit(self):
-        for domobj in list(self._added_objects):
+        for domobj in self._added_objects[:]:
             tt = self._get_object_type(domobj)
             if tt != ObjectTypes.Option and domobj.id is None:
                 domobj.id = self._get_next_id(tt)
@@ -426,10 +562,12 @@ class InMemoryPersistenceLayer(object):
                 self._tags_by_id[domobj.id] = domobj
                 self._tags_by_value[domobj.value] = domobj
             elif tt == ObjectTypes.Option:
+                if domobj.id is None:
+                    domobj.id = domobj.key
                 if domobj.key in self._options_by_key:
                     raise Exception(
                         'There already exists an option with key {}'.format(
-                            domobj.id))
+                            domobj.key))
                 self._options.append(domobj)
                 self._options_by_key[domobj.id] = domobj
             else:  # tt == ObjectTypes.User
@@ -450,7 +588,6 @@ class InMemoryPersistenceLayer(object):
 
         for domobj in list(self._deleted_objects):
             tt = self._get_object_type(domobj)
-            domobj.clear_relationships()
             if tt == ObjectTypes.Attachment:
                 self._attachments.remove(domobj)
                 del self._attachments_by_id[domobj.id]
@@ -589,3 +726,34 @@ class InMemoryPersistenceLayer(object):
                 'Unknown object type: {}, {}, "{}"'.format(
                     domobj, type(domobj).__name__, tt))
         return tt
+
+    def get_task_children(self, task_id):
+        return [t for t in self._tasks if t.parent_id == task_id]
+
+    def get_task_parent(self, task_id):
+        task = self._tasks_by_id.get(task_id)
+        if task and task.parent_id:
+            return self.get_task(task.parent_id)
+        return None
+
+    def get_task_dependees(self, task_id):
+        # Not implemented for simplicity
+        return []
+
+    def get_task_dependants(self, task_id):
+        # Not implemented
+        return []
+
+    def get_task_prioritize_before(self, task_id):
+        # Not implemented
+        return []
+
+    def get_task_prioritize_after(self, task_id):
+        # Not implemented
+        return []
+
+    def get_task_notes(self, task_id):
+        return [n for n in self._notes if n.task_id == task_id]
+
+    def get_task_attachments(self, task_id):
+        return [a for a in self._attachments if a.task_id == task_id]

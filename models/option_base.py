@@ -24,6 +24,15 @@ class OptionBase(object):
         return '{}(key={}, value={}, id=[{}])'.format(
             cls, repr(self.key), repr(self.value), id(self))
 
+    def __eq__(self, other):
+        if not isinstance(other, OptionBase):
+            return False
+        return (self.key == other.key and
+                self.value == other.value)
+
+    def __hash__(self):
+        return hash((self.key, self.value))
+
     @property
     def id(self):
         return self.key
@@ -43,7 +52,7 @@ class OptionBase(object):
         return d
 
     @classmethod
-    def from_dict(cls, d, lazy=None):
+    def from_dict(cls, d):
         key = d.get('key')
         value = d.get('value', None)
         return cls(key, value)
@@ -53,3 +62,19 @@ class OptionBase(object):
             self.key = d['key']
         if 'value' in d:
             self.value = d['value']
+
+
+class Option2(OptionBase):
+    def __init__(self, key, value):
+        super().__init__(key=key, value=value)
+        self._id = None
+
+    @property
+    def id(self):
+        return self._id
+
+    @id.setter
+    def id(self, value):
+        if self._id is not None:
+            raise ValueError("id already set")
+        self._id = value

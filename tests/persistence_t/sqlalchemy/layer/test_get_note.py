@@ -25,7 +25,7 @@ class GetNoteTest(PersistenceLayerTestBase):
         result = self.pl.get_note(note.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(note, result)
+        self.assertEqual(note.id, result.id)
 
     def test_get_db_note_none_raises(self):
         # expect
@@ -46,4 +46,4 @@ class GetNoteTest(PersistenceLayerTestBase):
         result = self.pl._get_db_note(dbnote.id)
         # then
         self.assertIsNotNone(result)
-        self.assertIs(dbnote, result)
+        self.assertEqual(dbnote.id, result.id)

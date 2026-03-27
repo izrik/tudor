@@ -778,7 +778,7 @@ def make_task_public(pl, task_id, printer=default_printer, descendants=False):
         else:
             task.is_public = True
             printer('Made task {}, "{}", public'.format(task.id, task.summary))
-        pl.commit()
+        pl.save(task)
 
 
 def make_task_private(pl, task_id, printer=default_printer,
@@ -793,7 +793,9 @@ def make_task_private(pl, task_id, printer=default_printer,
                 printer(
                     'Made task {}, "{}", private'.format(task.id,
                                                          task.summary))
-                for child in task.children:
+                pl.save(task)
+                children = pl.get_task_children(task.id)
+                for child in children:
                     recurse(child)
 
             recurse(task)
@@ -801,7 +803,7 @@ def make_task_private(pl, task_id, printer=default_printer,
             task.is_public = False
             printer('Made task {}, "{}", private'.format(task.id,
                                                          task.summary))
-        pl.commit()
+            pl.save(task)
 
 
 def test_db_conn(pl, debug):

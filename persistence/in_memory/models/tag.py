@@ -5,8 +5,8 @@ from persistence.in_memory.models.changeable import Changeable
 from persistence.in_memory.models.interlinking import ManyToManySet
 
 
-class Tag(Changeable, TagBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Tag')
+class IMTag(Changeable, TagBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'IMTag')
 
     _id = None
     _value = None
@@ -14,14 +14,9 @@ class Tag(Changeable, TagBase):
 
     _tasks = None
 
-    def __init__(self, value, description=None, lazy=None):
-        super(Tag, self).__init__(value=value, description=description)
+    def __init__(self, value, description=None):
+        super(IMTag, self).__init__(value=value, description=description)
         self._logger.debug('Tag.__init__ %s', self)
-
-        if lazy is None:
-            lazy = {}
-
-        self._tasks = InterlinkedTasks(self, lazy=lazy.get('tasks'))
 
     @property
     def id(self):

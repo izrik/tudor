@@ -69,7 +69,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(t2.id, False, self.user)
         # then
-        self.assertIs(t2, result)
+        self.assertEqual(t2.id, result.id)
         self.assertEqual(5, t1.order_num)
         self.assertEqual(10, t2.order_num)
 
@@ -114,7 +114,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(p2.id, False, self.user)
         # then
-        self.assertIs(p2, result)
+        self.assertEqual(p2.id, result.id)
         self.assertEqual(4, p1.order_num)  #
         self.assertEqual(6, c1.order_num)
         self.assertEqual(5, c2.order_num)
@@ -164,7 +164,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(c3.id, False, self.user)
         # then
-        self.assertIs(c3, result)
+        self.assertEqual(c3.id, result.id)
         self.assertEqual(7, p1.order_num)
         self.assertEqual(6, c1.order_num)
         self.assertEqual(4, c2.order_num)  #
@@ -204,7 +204,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(t3.id, False, self.user)
         # then
-        self.assertIs(t3, result)
+        self.assertEqual(t3.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(4, t2.order_num)  #
         self.assertEqual(5, t3.order_num)  #
@@ -228,7 +228,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(t1.id, False, self.user)
         # then
-        self.assertIs(t1, result)
+        self.assertEqual(t1.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(5, t2.order_num)
 
@@ -264,7 +264,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(t4.id, False, self.user)
         # then
-        self.assertIs(t4, result)
+        self.assertEqual(t4.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(3, t2.order_num)  #
         self.assertEqual(4, t3.order_num)  #
@@ -303,7 +303,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(t4.id, True, self.user)
         # then
-        self.assertIs(t4, result)
+        self.assertEqual(t4.id, result.id)
         self.assertEqual(6, t1.order_num)
         self.assertEqual(5, t2.order_num)
         self.assertEqual(3, t3.order_num)  #
@@ -342,7 +342,7 @@ class DoMoveTaskUpTest(unittest.TestCase):
         # when
         result = self.ll.do_move_task_up(t3.id, False, self.user)
         # then
-        self.assertIs(t3, result)
+        self.assertEqual(t3.id, result.id)
         self.assertEqual(10, t1.order_num)
         self.assertEqual(6, t2.order_num)
         self.assertEqual(8, t3.order_num)
