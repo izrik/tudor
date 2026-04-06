@@ -5,7 +5,7 @@ from conversions import str_from_datetime
 from models.object_types import ObjectTypes
 
 
-class NoteBase(object):
+class CommentBase(object):
 
     FIELD_ID = 'ID'
     FIELD_CONTENT = 'CONTENT'
@@ -18,7 +18,7 @@ class NoteBase(object):
 
     @property
     def object_type(self):
-        return ObjectTypes.Note
+        return ObjectTypes.Comment
 
     def __repr__(self):
         cls = type(self).__name__
@@ -27,9 +27,9 @@ class NoteBase(object):
     def __str__(self):
         cls = type(self).__name__
         if self.content is not None and len(self.content) > 20:
-            return '{}({}..., note id={}, id=[{}])'.format(
+            return '{}({}..., comment id={}, id=[{}])'.format(
                 cls, repr(self.content[:20]), self.id, id(self))
-        return '{}({}, note id={}, id=[{}])'.format(
+        return '{}({}, comment id={}, id=[{}])'.format(
             cls, repr(self.content), self.id, id(self))
 
     @staticmethod
@@ -63,17 +63,17 @@ class NoteBase(object):
 
     @classmethod
     def from_dict(cls, d, lazy=None):
-        note_id = d.get('id', None)
+        comment_id = d.get('id', None)
         content = d.get('content')
         timestamp = d.get('timestamp', None)
         task = d.get('task')
 
-        note = cls(content, timestamp, lazy=lazy)
-        if note_id is not None:
-            note.id = note_id
+        comment = cls(content, timestamp, lazy=lazy)
+        if comment_id is not None:
+            comment.id = comment_id
         if not lazy:
-            note.task = task
-        return note
+            comment.task = task
+        return comment
 
     def update_from_dict(self, d):
         if 'id' in d and d['id'] is not None:

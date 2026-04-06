@@ -180,39 +180,39 @@ class DatabaseInteractionTest(InMemoryTestBase):
         # then
         self.assertRaises(Exception, self.pl.commit)
 
-    def test_adding_note_does_not_create_id(self):
+    def test_adding_comment_does_not_create_id(self):
         # given
-        note = self.pl.create_note('note')
+        comment = self.pl.create_comment('comment')
         # precondition
-        self.assertIsNone(note.id)
+        self.assertIsNone(comment.id)
         # when
-        self.pl.add(note)
+        self.pl.add(comment)
         # then
-        self.assertIsNone(note.id)
+        self.assertIsNone(comment.id)
 
-    def test_committing_note_creates_id(self):
+    def test_committing_comment_creates_id(self):
         # given
-        note = self.pl.create_note('note')
-        self.pl.add(note)
+        comment = self.pl.create_comment('comment')
+        self.pl.add(comment)
         # precondition
-        self.assertIsNone(note.id)
+        self.assertIsNone(comment.id)
         # when
         self.pl.commit()
         # then
-        self.assertIsNotNone(note.id)
+        self.assertIsNotNone(comment.id)
 
-    def test_committing_note_with_same_id_raises(self):
+    def test_committing_comment_with_same_id_raises(self):
         # given
-        note = self.pl.create_note('summary')
-        note.id = 1
-        self.pl.add(note)
+        comment = self.pl.create_comment('summary')
+        comment.id = 1
+        self.pl.add(comment)
         self.pl.commit()
         # precondition
-        self.assertEqual(1, note.id)
+        self.assertEqual(1, comment.id)
         # when
-        note2 = self.pl.create_note('note2')
-        note2.id = 1
-        self.pl.add(note2)
+        comment2 = self.pl.create_comment('comment2')
+        comment2.id = 1
+        self.pl.add(comment2)
         # then
         self.assertRaises(Exception, self.pl.commit)
 

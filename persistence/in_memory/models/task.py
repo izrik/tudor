@@ -59,7 +59,7 @@ class Task(Changeable, TaskBase):
         self._tags = InterlinkedTags(self, lazy=lazy.get('tags'))
         self._users = InterlinkedUsers(self, lazy=lazy.get('users'))
         self._children = InterlinkedChildren(self, lazy=lazy.get('children'))
-        self._notes = InterlinkedNotes(self, lazy=lazy.get('notes'))
+        self._comments = InterlinkedComments(self, lazy=lazy.get('comments'))
         self._attachments = InterlinkedAttachments(
             self, lazy=lazy.get('attachments'))
 
@@ -245,8 +245,8 @@ class Task(Changeable, TaskBase):
         return self._prioritize_after
 
     @property
-    def notes(self):
-        return self._notes
+    def comments(self):
+        return self._comments
 
     @property
     def attachments(self):
@@ -328,7 +328,7 @@ class Task(Changeable, TaskBase):
         self.children.clear()
         self.tags.clear()
         self.users.clear()
-        self.notes.clear()
+        self.comments.clear()
         self.attachments.clear()
         self.dependees.clear()
         self.dependants.clear()
@@ -381,10 +381,10 @@ class InterlinkedPrioritizeAfter(ManyToManySet):
                                               'InterlinkedPrioritizeAfter')
 
 
-class InterlinkedNotes(OneToManySet):
-    __change_field__ = TaskBase.FIELD_NOTES
+class InterlinkedComments(OneToManySet):
+    __change_field__ = TaskBase.FIELD_COMMENTS
     __attr_counterpart__ = 'task'
-    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedNotes')
+    _logger = logging_util.get_logger_by_name(__name__, 'InterlinkedComments')
 
 
 class InterlinkedAttachments(OneToManySet):

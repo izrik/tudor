@@ -73,11 +73,11 @@
 .attachment_section {
 }
 
-.note_panel {
+.comment_panel {
     padding: 10px;
 }
 
-.note_panel form textarea {
+.comment_panel form textarea {
     width: 100%;
 }
 
@@ -507,23 +507,23 @@ a.attachment_list_item {
 
 </div>
 
-<div class="note_panel col-md-12">
-    <h4>Notes</h4>
-    <div class="task_notes list-group">
-        {% for note in task.notes %}
+<div class="comment_panel col-md-12">
+    <h4>Comments</h4>
+    <div class="task_comments list-group">
+        {% for comment in task.comments %}
         <div class="list-group-item row">
-            <div class="col-md-1">{{ note.id }}</div>
-            <div class="col-md-3">{{ note.timestamp }}</div>
-            <div class="note_content col-md-8">{{ note.content|gfm if note.content != None }}</div>
+            <div class="col-md-1">{{ comment.id }}</div>
+            <div class="col-md-3">{{ comment.timestamp }}</div>
+            <div class="comment_content col-md-8">{{ comment.content|gfm if comment.content != None }}</div>
         </div>
         {% endfor %}
         {% if can_edit %}
         <div class="list-group-item row">
             <div class="col-md-12">
-                <form action="{{ url_for('new_note') }}" method="post">
+                <form action="{{ url_for('new_comment') }}" method="post">
                     <input type="hidden" name="task_id" value="{{ task.id }}" />
                     <textarea name="content"></textarea><br/>
-                    <input type="submit" value="Add New Note">
+                    <input type="submit" value="Add New Comment">
                 </form>
             </div>
         </div>

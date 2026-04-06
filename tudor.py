@@ -422,8 +422,8 @@ def generate_app(db_uri=None,
         return vl.task_hierarchy(request, Options.get_user(), id)
 
     @login_required
-    def new_note():
-        return vl.note_new_post(request, Options.get_user())
+    def new_comment():
+        return vl.comment_new_post(request, Options.get_user())
 
     @login_required
     def edit_task(id):
@@ -616,7 +616,7 @@ def generate_app(db_uri=None,
     app.add_url_rule('/purge_all', None, purge_deleted_tasks)
     app.add_url_rule('/task/<int:id>', None, view_task)
     app.add_url_rule('/task/<int:id>/hierarchy', None, view_task_hierarchy)
-    app.add_url_rule('/note/new', None, new_note, methods=['POST'])
+    app.add_url_rule('/comment/new', None, new_comment, methods=['POST'])
     app.add_url_rule('/task/<int:id>/edit', None, edit_task,
                      methods=['GET', 'POST'])
     app.add_url_rule('/attachment/new', None, new_attachment,
@@ -959,7 +959,7 @@ def main(argv):
                     is_admin=is_admin)
     elif args.export_db:
         with app.app_context():
-            types_to_export = ('tasks', 'tags', 'notes', 'attachments',
+            types_to_export = ('tasks', 'tags', 'comments', 'attachments',
                                'users', 'options')
             result = app.ll.do_export_data(types_to_export)
             import json

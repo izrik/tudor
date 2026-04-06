@@ -1,13 +1,13 @@
 
 import logging_util
-from models.note_base import NoteBase
+from models.comment_base import CommentBase
 
 
-def generate_note_class(db):
-    class DbNote(db.Model, NoteBase):
-        _logger = logging_util.get_logger_by_name(__name__, 'DbNote')
+def generate_comment_class(db):
+    class DbComment(db.Model, CommentBase):
+        _logger = logging_util.get_logger_by_name(__name__, 'DbComment')
 
-        __tablename__ = 'note'
+        __tablename__ = 'comment'
 
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.Text)
@@ -15,22 +15,22 @@ def generate_note_class(db):
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
         task = db.relationship('DbTask',
-                               backref=db.backref('notes', lazy='dynamic',
+                               backref=db.backref('comments', lazy='dynamic',
                                                   order_by=timestamp))
 
         def __init__(self, content, timestamp=None, lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
-            NoteBase.__init__(self, content, timestamp)
+            CommentBase.__init__(self, content, timestamp)
 
         @classmethod
         def from_dict(cls, d, lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
-            return super(DbNote, cls).from_dict(d=d, lazy=None)
+            return super(DbComment, cls).from_dict(d=d, lazy=None)
 
         def clear_relationships(self):
             self.task = None
 
-    return DbNote
+    return DbComment

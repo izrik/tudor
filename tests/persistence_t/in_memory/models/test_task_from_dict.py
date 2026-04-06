@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.comment import Comment
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
@@ -489,39 +489,39 @@ class TaskFromDictTest(unittest.TestCase):
         self.assertIsInstance(result, Task)
         self.assertEqual([prioritize_after2], list(result.prioritize_after))
 
-    def test_notes_none_yields_empty(self):
+    def test_comments_none_yields_empty(self):
         # when
-        result = Task.from_dict({'notes': None})
+        result = Task.from_dict({'comments': None})
         # then
         self.assertIsInstance(result, Task)
-        self.assertEqual([], list(result.notes))
+        self.assertEqual([], list(result.comments))
 
-    def test_notes_empty_yields_empty(self):
+    def test_comments_empty_yields_empty(self):
         # when
-        result = Task.from_dict({'notes': []})
+        result = Task.from_dict({'comments': []})
         # then
         self.assertIsInstance(result, Task)
-        self.assertEqual([], list(result.notes))
+        self.assertEqual([], list(result.comments))
 
-    def test_notes_non_empty_yields_same(self):
+    def test_comments_non_empty_yields_same(self):
         # given
-        note = Note('note')
+        comment = Comment('comment')
         # when
-        result = Task.from_dict({'notes': [note]})
+        result = Task.from_dict({'comments': [comment]})
         # then
         self.assertIsInstance(result, Task)
-        self.assertEqual([note], list(result.notes))
+        self.assertEqual([comment], list(result.comments))
 
-    def test_lazy_overrides_non_lazy_notes(self):
+    def test_lazy_overrides_non_lazy_comments(self):
         # given
-        note = Note('note')
-        note2 = Note('note2')
+        comment = Comment('comment')
+        comment2 = Comment('comment2')
         # when
-        result = Task.from_dict({'notes': [note]},
-                                lazy={'notes': [note2]})
+        result = Task.from_dict({'comments': [comment]},
+                                lazy={'comments': [comment2]})
         # then
         self.assertIsInstance(result, Task)
-        self.assertEqual([note2], list(result.notes))
+        self.assertEqual([comment2], list(result.comments))
 
     def test_attachments_none_yields_empty(self):
         # when
@@ -560,11 +560,11 @@ class TaskFromDictTest(unittest.TestCase):
     def test_lazy_overrides_all_non_lazy_properties(self):
         # given
         attachment = Attachment('attachment')
-        note = Note('note')
+        comment = Comment('comment')
         # when
         result = Task.from_dict({'attachments': [attachment]},
-                                lazy={'notes': [note]})
+                                lazy={'comments': [comment]})
         # then
         self.assertIsInstance(result, Task)
         self.assertEqual([], list(result.attachments))
-        self.assertEqual([note], list(result.notes))
+        self.assertEqual([comment], list(result.comments))

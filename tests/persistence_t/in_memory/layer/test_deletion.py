@@ -49,18 +49,18 @@ class DeletionTest(InMemoryTestBase):
         # then
         self.assertEqual(0, self.pl.count_attachments())
 
-    def test_deleting_note_reduces_count(self):
+    def test_deleting_comment_reduces_count(self):
         # given
-        note = self.pl.create_note('note')
-        self.pl.add(note)
+        comment = self.pl.create_comment('comment')
+        self.pl.add(comment)
         self.pl.commit()
         # precondition
-        self.assertEqual(1, self.pl.count_notes())
+        self.assertEqual(1, self.pl.count_comments())
         # when
-        self.pl.delete(note)
+        self.pl.delete(comment)
         self.pl.commit()
         # then
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
 
     def test_deleting_user_reduces_count(self):
         # given
@@ -470,15 +470,15 @@ class DeletionTest(InMemoryTestBase):
         # then
         self.assertNotIn(t1, t2.prioritize_before)
 
-    def test_deleting_task_removes_all_notes(self):
+    def test_deleting_task_removes_all_comments(self):
         # given
         task = self.pl.create_task('task')
-        n1 = self.pl.create_note('n1')
-        n2 = self.pl.create_note('n2')
-        n3 = self.pl.create_note('n3')
-        task.notes.append(n1)
-        task.notes.append(n2)
-        task.notes.append(n3)
+        n1 = self.pl.create_comment('n1')
+        n2 = self.pl.create_comment('n2')
+        n3 = self.pl.create_comment('n3')
+        task.comments.append(n1)
+        task.comments.append(n2)
+        task.comments.append(n3)
         self.pl.add(task)
         self.pl.add(n1)
         self.pl.add(n2)
@@ -486,29 +486,29 @@ class DeletionTest(InMemoryTestBase):
         self.pl.commit()
 
         # precondition
-        self.assertIn(n1, task.notes)
-        self.assertIn(n2, task.notes)
-        self.assertIn(n3, task.notes)
+        self.assertIn(n1, task.comments)
+        self.assertIn(n2, task.comments)
+        self.assertIn(n3, task.comments)
 
         # when
         self.pl.delete(task)
         self.pl.commit()
 
         # then
-        self.assertNotIn(n1, task.notes)
-        self.assertNotIn(n2, task.notes)
-        self.assertNotIn(n3, task.notes)
-        self.assertEqual(0, len(task.notes))
+        self.assertNotIn(n1, task.comments)
+        self.assertNotIn(n2, task.comments)
+        self.assertNotIn(n3, task.comments)
+        self.assertEqual(0, len(task.comments))
 
-    def test_deleting_task_of_notes_nullifies_task_and_task_id(self):
+    def test_deleting_task_of_comments_nullifies_task_and_task_id(self):
         # given
         task = self.pl.create_task('task')
-        n1 = self.pl.create_note('n1')
-        n2 = self.pl.create_note('n2')
-        n3 = self.pl.create_note('n3')
-        task.notes.append(n1)
-        task.notes.append(n2)
-        task.notes.append(n3)
+        n1 = self.pl.create_comment('n1')
+        n2 = self.pl.create_comment('n2')
+        n3 = self.pl.create_comment('n3')
+        task.comments.append(n1)
+        task.comments.append(n2)
+        task.comments.append(n3)
         self.pl.add(task)
         self.pl.add(n1)
         self.pl.add(n2)
@@ -666,8 +666,8 @@ class AddDeleteTest(InMemoryTestBase):
         self.pl.add(tag)
         attachment = self.pl.create_attachment('attachment')
         self.pl.add(attachment)
-        note = self.pl.create_note('note')
-        self.pl.add(note)
+        comment = self.pl.create_comment('comment')
+        self.pl.add(comment)
         user = self.pl.create_user('user')
         self.pl.add(user)
         option = self.pl.create_option('key', 'value')
@@ -683,9 +683,9 @@ class AddDeleteTest(InMemoryTestBase):
         self.assertIsNotNone(attachment.id)
         attachment2 = self.pl.get_attachment(attachment.id)
         self.assertIs(attachment2, attachment)
-        self.assertIsNotNone(note.id)
-        note2 = self.pl.get_note(note.id)
-        self.assertIs(note2, note)
+        self.assertIsNotNone(comment.id)
+        comment2 = self.pl.get_comment(comment.id)
+        self.assertIs(comment2, comment)
         self.assertIsNotNone(user.id)
         user2 = self.pl.get_user(user.id)
         self.assertIs(user2, user)
@@ -705,9 +705,9 @@ class AddDeleteTest(InMemoryTestBase):
         # then
         self.assertNotIn(attachment, self.pl._added_objects)
         # when
-        self.pl.add(note)
+        self.pl.add(comment)
         # then
-        self.assertNotIn(note, self.pl._added_objects)
+        self.assertNotIn(comment, self.pl._added_objects)
         # when
         self.pl.add(user)
         # then

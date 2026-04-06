@@ -1,11 +1,11 @@
 
 import logging_util
-from models.note_base import NoteBase
+from models.comment_base import CommentBase
 from persistence.in_memory.models.changeable import Changeable
 
 
-class Note(Changeable, NoteBase):
-    _logger = logging_util.get_logger_by_name(__name__, 'Note')
+class Comment(Changeable, CommentBase):
+    _logger = logging_util.get_logger_by_name(__name__, 'Comment')
 
     _id = None
     _content = ''
@@ -14,8 +14,8 @@ class Note(Changeable, NoteBase):
     _task = None
 
     def __init__(self, content, timestamp=None, lazy=None):
-        super(Note, self).__init__(content, timestamp)
-        self._logger.debug('Note.__init__ %s', self)
+        super(Comment, self).__init__(content, timestamp)
+        self._logger.debug('Comment.__init__ %s', self)
 
         if lazy is None:
             lazy = {}
@@ -81,10 +81,10 @@ class Note(Changeable, NoteBase):
         if value != self._task:
             self._on_attr_changing(self.FIELD_TASK, self._task)
             if self._task is not None:
-                self._task.notes.discard(self)
+                self._task.comments.discard(self)
             self._task = value
             if self._task is not None:
-                self._task.notes.add(self)
+                self._task.comments.add(self)
             self._on_attr_changed(self.FIELD_TASK, self.OP_SET, self._task)
 
     def clear_relationships(self):

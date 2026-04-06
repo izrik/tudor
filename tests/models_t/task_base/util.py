@@ -20,7 +20,7 @@ class GenericTask(TaskBase):
     prioritize_after = None
     tags = None
     users = None
-    notes = None
+    comments = None
     attachments = None
     is_public = None
 
@@ -31,7 +31,7 @@ class GenericTask(TaskBase):
                  expected_duration_minutes=None, expected_cost=None,
                  is_public=None, id=None, parent=None, children=None,
                  dependees=None, dependants=None, prioritize_before=None,
-                 prioritize_after=None, tags=None, users=None, notes=None,
+                 prioritize_after=None, tags=None, users=None, comments=None,
                  attachments=None):
         super(GenericTask, self).__init__(
             summary=summary, description=description, is_done=is_done,
@@ -48,7 +48,7 @@ class GenericTask(TaskBase):
         self.prioritize_after = []
         self.tags = []
         self.users = []
-        self.notes = []
+        self.comments = []
         self.attachments = []
 
         if children:
@@ -65,8 +65,8 @@ class GenericTask(TaskBase):
             self.tags.extend(tags)
         if users:
             self.users.extend(users)
-        if notes:
-            self.notes.extend(notes)
+        if comments:
+            self.comments.extend(comments)
         if attachments:
             self.attachments.extend(attachments)
 

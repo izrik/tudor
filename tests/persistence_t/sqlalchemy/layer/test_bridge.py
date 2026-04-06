@@ -22,11 +22,11 @@ class BridgeTest(PersistenceLayerTestBase):
         # expect
         self.assertTrue(self.pl._is_db_object(tag))
 
-    def test_db_note_is_db_object(self):
+    def test_db_comment_is_db_object(self):
         # given
-        note = self.pl.DbNote('note')
+        comment = self.pl.DbComment('comment')
         # expect
-        self.assertTrue(self.pl._is_db_object(note))
+        self.assertTrue(self.pl._is_db_object(comment))
 
     def test_db_attachment_is_db_object(self):
         # given

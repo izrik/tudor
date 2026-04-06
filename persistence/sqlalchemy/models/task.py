@@ -86,7 +86,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
             self.children = []
             self.tags = []
             self.users = []
-            self.notes = []
+            self.comments = []
             self.attachments = []
             self.dependees = []
             self.dependants = []
