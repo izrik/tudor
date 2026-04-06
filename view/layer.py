@@ -328,6 +328,17 @@ class ViewLayer(object):
 
         return self.redirect(self.url_for('view_task', id=task_id))
 
+    def comment_edit(self, request, current_user, comment_id):
+        if request.method == 'GET':
+            comment = self.ll.pl.get_comment(comment_id)
+            if comment is None:
+                return ('Not found', 404)
+            return self.render_template('edit_comment.t.html', comment=comment)
+
+        content = request.form.get('content', '')
+        comment = self.ll.edit_comment(comment_id, content, current_user)
+        return self.redirect(self.url_for('view_task', id=comment.task_id))
+
     def task_edit(self, request, current_user, task_id):
 
         def render_get_response():

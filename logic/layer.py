@@ -326,6 +326,18 @@ class LogicLayer(object):
         self.pl.commit()
         return comment
 
+    def edit_comment(self, comment_id, content, current_user):
+        comment = self.pl.get_comment(comment_id)
+        if comment is None:
+            raise werkzeug.exceptions.NotFound()
+        task = self.pl.get_task(comment.task_id)
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+        comment.content = content
+        comment.date_last_updated = datetime.now(UTC)
+        self.pl.commit()
+        return comment
+
     def set_task(self, task_id, current_user, summary, description,
                  deadline=None, is_done=False, is_deleted=False,
                  order_num=None, duration=None, expected_cost=None,

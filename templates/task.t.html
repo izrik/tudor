@@ -514,7 +514,8 @@ a.attachment_list_item {
         <div class="list-group-item row">
             <div class="col-md-1">{{ comment.id }}</div>
             <div class="col-md-3">{{ comment.timestamp }}</div>
-            <div class="comment_content col-md-8">{{ comment.content|gfm if comment.content != None }}</div>
+            <div class="comment_content col-md-7">{{ comment.content|gfm if comment.content != None }}</div>
+            {% if can_edit %}<div class="col-md-1"><a href="{{ url_for('edit_comment', id=comment.id) }}">Edit</a></div>{% endif %}
         </div>
         {% endfor %}
         {% if can_edit %}
