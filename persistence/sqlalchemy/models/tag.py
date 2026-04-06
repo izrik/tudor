@@ -11,7 +11,7 @@ def generate_tag_class(db, tags_tasks_table):
 
         id = db.Column(db.Integer, primary_key=True)
         value = db.Column(db.String(100), nullable=False, unique=True)
-        description = db.Column(db.String(4000), nullable=True)
+        description = db.Column(db.Text, nullable=True)
 
         tasks = db.relationship('DbTask', secondary=tags_tasks_table,
                                 back_populates='tags')
