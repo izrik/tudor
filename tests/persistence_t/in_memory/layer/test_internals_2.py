@@ -35,13 +35,13 @@ class GetObjectTypeTest(InMemoryTestBase):
         # then
         self.assertEqual(ObjectTypes.Attachment, result)
 
-    def test_get_object_type_note_returns_note(self):
+    def test_get_object_type_comment_returns_comment(self):
         # given
-        note = self.pl.create_note('note1')
+        comment = self.pl.create_comment('comment1')
         # when
-        result = self.pl._get_object_type(note)
+        result = self.pl._get_object_type(comment)
         # then
-        self.assertEqual(ObjectTypes.Note, result)
+        self.assertEqual(ObjectTypes.Comment, result)
 
     def test_get_object_type_user_returns_user(self):
         # given
@@ -139,25 +139,25 @@ class GetNextObjectIdsTest(InMemoryTestBase):
         # then
         self.assertEqual(4, result)
 
-    def test_get_next_note_id_no_notes_returns_one(self):
+    def test_get_next_comment_id_no_comments_returns_one(self):
         # precondition
-        self.assertEqual(0, len(self.pl._notes))
+        self.assertEqual(0, len(self.pl._comments))
         # when
-        result = self.pl._get_next_note_id()
+        result = self.pl._get_next_comment_id()
         # then
         self.assertEqual(1, result)
 
-    def test_get_next_note_id_some_notes_returns_max_plus_one(self):
+    def test_get_next_comment_id_some_comments_returns_max_plus_one(self):
         # given
-        note = self.pl.create_note('note')
-        note.id = 3
-        self.pl.add(note)
+        comment = self.pl.create_comment('comment')
+        comment.id = 3
+        self.pl.add(comment)
         self.pl.commit()
         # precondition
-        self.assertEqual(1, len(self.pl._notes))
-        self.assertEqual(3, self.pl._notes[0].id)
+        self.assertEqual(1, len(self.pl._comments))
+        self.assertEqual(3, self.pl._comments[0].id)
         # when
-        result = self.pl._get_next_note_id()
+        result = self.pl._get_next_comment_id()
         # then
         self.assertEqual(4, result)
 
@@ -197,9 +197,9 @@ class GetNextIdTest(InMemoryTestBase):
         attachment = self.pl.create_attachment('attachment')
         attachment.id = 7
         self.pl.add(attachment)
-        note = self.pl.create_note('note')
-        note.id = 9
-        self.pl.add(note)
+        comment = self.pl.create_comment('comment')
+        comment.id = 9
+        self.pl.add(comment)
         user = self.pl.create_user('user')
         user.id = 11
         self.pl.add(user)
@@ -223,9 +223,9 @@ class GetNextIdTest(InMemoryTestBase):
         # then
         self.assertEqual(8, result)
 
-    def test_get_next_id_note_returns_max_note_id_plus_one(self):
+    def test_get_next_id_comment_returns_max_comment_id_plus_one(self):
         # when
-        result = self.pl._get_next_id(ObjectTypes.Note)
+        result = self.pl._get_next_id(ObjectTypes.Comment)
         # then
         self.assertEqual(10, result)
 

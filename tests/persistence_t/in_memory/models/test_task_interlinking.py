@@ -5,7 +5,7 @@ import unittest
 from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.user import User
-from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.comment import Comment
 from persistence.in_memory.models.attachment import Attachment
 
 
@@ -853,82 +853,82 @@ class PrioritizeBeforeAfterInterlinkingTest(unittest.TestCase):
         self.assertNotIn(self.t1, self.t2.prioritize_before)
 
 
-class NotesInterlinkingTest(unittest.TestCase):
+class CommentsInterlinkingTest(unittest.TestCase):
     def setUp(self):
         self.task = Task('parent')
-        self.n1 = Note('n1')
-        self.n2 = Note('n2')
+        self.n1 = Comment('n1')
+        self.n2 = Comment('n2')
 
     def test_in(self):
         # precondition
-        self.assertEqual(0, len(self.task.notes))
+        self.assertEqual(0, len(self.task.comments))
         self.assertIsNone(self.n1.task)
         self.assertIsNone(self.n2.task)
-        self.assertNotIn(self.n1, self.task.notes)
-        self.assertNotIn(self.n2, self.task.notes)
+        self.assertNotIn(self.n1, self.task.comments)
+        self.assertNotIn(self.n2, self.task.comments)
         # when
-        self.task.notes.set.add(self.n1)
+        self.task.comments.set.add(self.n1)
         self.n1._parent = self.task
         # then
-        self.assertIn(self.n1, self.task.notes)
-        self.assertNotIn(self.n2, self.task.notes)
+        self.assertIn(self.n1, self.task.comments)
+        self.assertNotIn(self.n2, self.task.comments)
 
     def test_append(self):
         # precondition
-        self.assertEqual(0, len(self.task.notes))
+        self.assertEqual(0, len(self.task.comments))
         self.assertIsNone(self.n1.task)
         self.assertIsNone(self.n2.task)
         # when
-        self.task.notes.append(self.n1)
+        self.task.comments.append(self.n1)
         # then
-        self.assertIn(self.n1, self.task.notes)
-        self.assertEqual(1, len(self.task.notes))
-        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIn(self.n1, self.task.comments)
+        self.assertEqual(1, len(self.task.comments))
+        self.assertEqual([self.n1], list(self.task.comments))
         self.assertIs(self.task, self.n1.task)
         self.assertIsNone(self.n2.task)
 
     def test_add_already_in_silently_ignored(self):
         # given
-        self.task.notes.add(self.n1)
+        self.task.comments.add(self.n1)
         # precondition
-        self.assertIn(self.n1, self.task.notes)
-        self.assertEqual(1, len(self.task.notes))
-        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIn(self.n1, self.task.comments)
+        self.assertEqual(1, len(self.task.comments))
+        self.assertEqual([self.n1], list(self.task.comments))
         self.assertIs(self.task, self.n1.task)
         self.assertIsNone(self.n2.task)
         # when
-        self.task.notes.append(self.n1)
+        self.task.comments.append(self.n1)
         # then
-        self.assertIn(self.n1, self.task.notes)
-        self.assertEqual(1, len(self.task.notes))
-        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIn(self.n1, self.task.comments)
+        self.assertEqual(1, len(self.task.comments))
+        self.assertEqual([self.n1], list(self.task.comments))
         self.assertIs(self.task, self.n1.task)
         self.assertIsNone(self.n2.task)
 
     def test_discard(self):
         # given
-        self.task.notes.append(self.n1)
+        self.task.comments.append(self.n1)
         # precondition
-        self.assertIn(self.n1, self.task.notes)
-        self.assertEqual([self.n1], list(self.task.notes))
+        self.assertIn(self.n1, self.task.comments)
+        self.assertEqual([self.n1], list(self.task.comments))
         self.assertIs(self.task, self.n1.task)
         self.assertIsNone(self.n2.task)
         # when
-        self.task.notes.remove(self.n1)
+        self.task.comments.remove(self.n1)
         # then
-        self.assertEqual(0, len(self.task.notes))
+        self.assertEqual(0, len(self.task.comments))
         self.assertIsNone(self.n1.task)
         self.assertIsNone(self.n2.task)
 
     def test_discard_not_already_in_silently_ignored(self):
         # precondition
-        self.assertEqual(0, len(self.task.notes))
+        self.assertEqual(0, len(self.task.comments))
         self.assertIsNone(self.n1.task)
         self.assertIsNone(self.n2.task)
         # when
-        self.task.notes.discard(self.n1)
+        self.task.comments.discard(self.n1)
         # then
-        self.assertEqual(0, len(self.task.notes))
+        self.assertEqual(0, len(self.task.comments))
         self.assertIsNone(self.n1.task)
         self.assertIsNone(self.n2.task)
 

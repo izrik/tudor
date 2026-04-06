@@ -318,13 +318,13 @@ class ViewLayer(object):
                                     ops=TaskUserOps,
                                     show_hierarchy=True)
 
-    def note_new_post(self, request, current_user):
+    def comment_new_post(self, request, current_user):
         if 'task_id' not in request.form:
             return ('No task_id specified', 400)
         task_id = request.form['task_id']
         content = request.form['content']
 
-        self.ll.create_new_note(task_id, content, current_user)
+        self.ll.create_new_comment(task_id, content, current_user)
 
         return self.redirect(self.url_for('view_task', id=task_id))
 

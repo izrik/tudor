@@ -42,7 +42,7 @@ class RouteTest(unittest.TestCase):
         vl.task_crud = Mock(return_value=('', 606))
         vl.import_ = Mock(return_value=('', 606))
         vl.task_undelete = Mock(return_value=('', 606))
-        vl.note_new_post = Mock(return_value=('', 606))
+        vl.comment_new_post = Mock(return_value=('', 606))
         vl.task_mark_done = Mock(return_value=('', 606))
         vl.task_delete_tag = Mock(return_value=('', 606))
         vl.attachment = Mock(return_value=('', 606))
@@ -195,15 +195,15 @@ class RouteTest(unittest.TestCase):
         self.assertEqual(405, resp.status_code)
         self.vl.task_hierarchy.assert_not_called()
 
-    def test_note_new_post_get(self):
-        resp = self.client.get('/note/new')
+    def test_comment_new_post_get(self):
+        resp = self.client.get('/comment/new')
         self.assertEqual(405, resp.status_code)
-        self.vl.note_new_post.assert_not_called()
+        self.vl.comment_new_post.assert_not_called()
 
-    def test_note_new_post_post(self):
-        resp = self.client.post('/note/new')
+    def test_comment_new_post_post(self):
+        resp = self.client.post('/comment/new')
         self.assertEqual(606, resp.status_code)
-        self.vl.note_new_post.assert_called()
+        self.vl.comment_new_post.assert_called()
 
     def test_task_edit_get(self):
         resp = self.client.get('/task/1/edit')
@@ -730,10 +730,10 @@ class RouteTest(unittest.TestCase):
         self.assertEqual(405, resp.status_code)
         self.vl.task_hierarchy.assert_not_called()
 
-    def test_note_new_post_put(self):
-        resp = self.client.put('/note/new')
+    def test_comment_new_post_put(self):
+        resp = self.client.put('/comment/new')
         self.assertEqual(405, resp.status_code)
-        self.vl.note_new_post.assert_not_called()
+        self.vl.comment_new_post.assert_not_called()
 
     def test_task_edit_put(self):
         resp = self.client.put('/task/1/edit')

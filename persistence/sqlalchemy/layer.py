@@ -5,7 +5,7 @@ from numbers import Number
 from sqlalchemy import or_, select, exists, false, func
 
 from persistence.sqlalchemy.models.attachment import generate_attachment_class
-from persistence.sqlalchemy.models.note import generate_note_class
+from persistence.sqlalchemy.models.comment import generate_comment_class
 from persistence.sqlalchemy.models.option import generate_option_class
 from persistence.sqlalchemy.models.tag import generate_tag_class
 from persistence.sqlalchemy.models.task import generate_task_class
@@ -70,7 +70,7 @@ class SqlAlchemyPersistenceLayer(object):
                                           users_tasks_table,
                                           task_dependencies_table,
                                           task_prioritize_table)
-        self.DbNote = generate_note_class(db)
+        self.DbComment = generate_comment_class(db)
         self.DbAttachment = generate_attachment_class(db)
         self.DbUser = generate_user_class(db, users_tasks_table)
         self.DbOption = generate_option_class(db)
@@ -444,39 +444,39 @@ class SqlAlchemyPersistenceLayer(object):
         return self.db.session.execute(query).scalars().first()
 
     @property
-    def note_query(self):
-        return self.DbNote.query
+    def comment_query(self):
+        return self.DbComment.query
 
-    def create_note(self, content, timestamp=None, lazy=None):
-        return self.DbNote(content=content, timestamp=timestamp, lazy=lazy)
+    def create_comment(self, content, timestamp=None, lazy=None):
+        return self.DbComment(content=content, timestamp=timestamp, lazy=lazy)
 
-    def _get_db_note(self, note_id):
-        if note_id is None:
-            raise ValueError('note_id acannot be None')
-        stmt = select(self.DbNote).where(self.DbNote.id == note_id)
+    def _get_db_comment(self, comment_id):
+        if comment_id is None:
+            raise ValueError('comment_id acannot be None')
+        stmt = select(self.DbComment).where(self.DbComment.id == comment_id)
         return self.db.session.execute(stmt).scalar_one_or_none()
 
-    def get_note(self, note_id):
-        if note_id is None:
-            raise ValueError('note_id acannot be None')
-        return self._get_db_note(note_id)
+    def get_comment(self, comment_id):
+        if comment_id is None:
+            raise ValueError('comment_id acannot be None')
+        return self._get_db_comment(comment_id)
 
-    def _get_notes_query(self, note_id_in=UNSPECIFIED):
-        query = select(self.DbNote)
-        if note_id_in is not self.UNSPECIFIED:
-            if note_id_in:
-                query = query.where(self.DbNote.id.in_(note_id_in))
+    def _get_comments_query(self, comment_id_in=UNSPECIFIED):
+        query = select(self.DbComment)
+        if comment_id_in is not self.UNSPECIFIED:
+            if comment_id_in:
+                query = query.where(self.DbComment.id.in_(comment_id_in))
             else:
                 # performance improvement
                 query = query.where(false())
         return query
 
-    def get_notes(self, note_id_in=UNSPECIFIED):
-        query = self._get_notes_query(note_id_in=note_id_in)
+    def get_comments(self, comment_id_in=UNSPECIFIED):
+        query = self._get_comments_query(comment_id_in=comment_id_in)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_notes(self, note_id_in=UNSPECIFIED):
-        query = self._get_notes_query(note_id_in=note_id_in)
+    def count_comments(self, comment_id_in=UNSPECIFIED):
+        query = self._get_comments_query(comment_id_in=comment_id_in)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 

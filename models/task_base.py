@@ -25,7 +25,7 @@ class TaskBase(object):
     FIELD_PRIORITIZE_AFTER = 'PRIORITIZE_AFTER'
     FIELD_TAGS = 'TAGS'
     FIELD_USERS = 'USERS'
-    FIELD_NOTES = 'NOTES'
+    FIELD_COMMENTS = 'COMMENTS'
     FIELD_ATTACHMENTS = 'ATTACHMENTS'
     FIELD_IS_PUBLIC = 'IS_PUBLIC'
     FIELD_DATE_CREATED = 'DATE_CREATED'
@@ -116,8 +116,8 @@ class TaskBase(object):
             d['tags'] = list(self.tags)
         if fields is None or self.FIELD_USERS in fields:
             d['users'] = list(self.users)
-        if fields is None or self.FIELD_NOTES in fields:
-            d['notes'] = list(self.notes)
+        if fields is None or self.FIELD_COMMENTS in fields:
+            d['comments'] = list(self.comments)
         if fields is None or self.FIELD_ATTACHMENTS in fields:
             d['attachments'] = list(self.attachments)
 
@@ -149,9 +149,9 @@ class TaskBase(object):
         if 'users' in d:
             d['user_ids'] = [x.id for x in d['users']]
             del d['users']
-        if 'notes' in d:
-            d['note_ids'] = [x.id for x in d['notes']]
-            del d['notes']
+        if 'comments' in d:
+            d['comment_ids'] = [x.id for x in d['comments']]
+            del d['comments']
         if 'attachments' in d:
             d['attachment_ids'] = [x.id for x in d['attachments']]
             del d['attachments']
@@ -203,8 +203,8 @@ class TaskBase(object):
                 assign(task.prioritize_before, d['prioritize_before'])
             if 'prioritize_after' in d:
                 assign(task.prioritize_after, d['prioritize_after'])
-            if 'notes' in d:
-                assign(task.notes, d['notes'])
+            if 'comments' in d:
+                assign(task.comments, d['comments'])
             if 'attachments' in d:
                 assign(task.attachments, d['attachments'])
         return task
@@ -245,8 +245,8 @@ class TaskBase(object):
             assign(self.prioritize_before, d['prioritize_before'])
         if 'prioritize_after' in d:
             assign(self.prioritize_after, d['prioritize_after'])
-        if 'notes' in d:
-            assign(self.notes, d['notes'])
+        if 'comments' in d:
+            assign(self.comments, d['comments'])
         if 'attachments' in d:
             assign(self.attachments, d['attachments'])
         if 'is_public' in d:

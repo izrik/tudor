@@ -18,12 +18,12 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty(self):
         # given
-        src = '{"format_version":1}'
+        src = '{"format_version":2}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -34,19 +34,19 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_empty_tasks(self):
         # given
-        src = '{"tasks":[],"format_version":1}'
+        src = '{"tasks":[],"format_version":2}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -57,14 +57,14 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_single_task(self):
         # given
-        src = '''{"format_version":1,
+        src = '''{"format_version":2,
         "tasks":[{
             "id": 1,
             "summary":"summary"
@@ -73,7 +73,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -105,14 +105,14 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual([], list(task.prioritize_before))
         self.assertEqual([], list(task.prioritize_after))
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_single_task_set_all_fields(self):
         # given
-        src = '''{"format_version":1,
+        src = '''{"format_version":2,
         "tasks":[{
             "id": 1,
             "summary":"summary",
@@ -128,7 +128,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -159,14 +159,14 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual([], list(task.prioritize_before))
         self.assertEqual([], list(task.prioritize_after))
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_tasks_child_and_parent(self):
         # given
-        src = '''{"format_version":1,
+        src = '''{"format_version":2,
         "tasks":[{
             "id": 1,
             "summary": "summary"
@@ -180,7 +180,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -241,7 +241,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         t0 = self.pl.create_task('pre-existing')
         self.pl.add(t0)
         self.pl.commit()
-        src = '{"format_version":1,"tasks":[{"id": ' + str(t0.id) + \
+        src = '{"format_version":2,"tasks":[{"id": ' + str(t0.id) + \
               ',"summary":"summary"}]}'
 
         # precondition
@@ -250,7 +250,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertIsNotNone(t0_)
         self.assertIs(t0, t0_)
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -265,7 +265,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_imports_task_with_a_tag(self):
         # given
-        src = '''{"format_version":1,
+        src = '''{"format_version":2,
         "tasks":[{
             "id": 1,
             "summary":"summary",
@@ -280,7 +280,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -305,14 +305,14 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual('tag', tag.value)
         self.assertEqual([task], list(tag.tasks))
 
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_tag_of_task_not_found_raises(self):
         # given
-        src = '''{"format_version":1,
+        src = '''{"format_version":2,
         "tasks":[{
             "id": 1,
             "summary":"summary",
@@ -322,7 +322,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -338,19 +338,19 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # and
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_empty_tags(self):
         # given
-        src = '{"tags":[],"format_version":1}'
+        src = '{"tags":[],"format_version":2}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -361,14 +361,14 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_imports_single_tag(self):
         # given
-        src = '{"format_version":1,' \
+        src = '{"format_version":2,' \
               '"tags":[{' \
               '"id":123,' \
               '"value":"tag",' \
@@ -377,7 +377,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -395,19 +395,19 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual('tag', tag.value)
         self.assertEqual('description', tag.description)
         self.assertEqual(set(), set(tag.tasks))
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
-    def test_do_import_data_empty_notes(self):
+    def test_do_import_data_empty_comments(self):
         # given
-        src = '{"format_version":1,"notes":[]}'
+        src = '{"format_version":2,"comments":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -418,21 +418,21 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
-    def test_imports_single_note(self):
+    def test_imports_single_comment(self):
         # given
-        src = '''{"format_version":1,
+        src = '''{"format_version":2,
         "tasks":[{
             "id": 1,
             "summary":"summary"
         }],
-        "notes":[{
+        "comments":[{
             "id":2,
-            "content":"note",
+            "content":"content!",
             "timestamp": "2018-01-01",
             "task_id": 1
         }]}'''
@@ -440,7 +440,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -453,25 +453,25 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         task = self.pl.get_task(1)
         self.assertIsNotNone(task)
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(1, self.pl.count_notes())
-        note = self.pl.get_note(2)
-        self.assertIsNotNone(note)
-        self.assertEqual('note', note.content)
-        self.assertEqual(datetime(2018, 1, 1), note.timestamp)
-        self.assertIs(task, note.task)
-        self.assertEqual([note], list(task.notes))
+        self.assertEqual(1, self.pl.count_comments())
+        comment = self.pl.get_comment(2)
+        self.assertIsNotNone(comment)
+        self.assertEqual('content!', comment.content)
+        self.assertEqual(datetime(2018, 1, 1), comment.timestamp)
+        self.assertIs(task, comment.task)
+        self.assertEqual([comment], list(task.comments))
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_empty_attachments(self):
         # given
-        src = '{"format_version":1,"attachments":[]}'
+        src = '{"format_version":2,"attachments":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -482,7 +482,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -490,7 +490,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_do_import_data_single_attachment(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "tasks": [{
                 "id": 1,
                 "summary": "summary"
@@ -507,7 +507,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -520,7 +520,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         task = self.pl.get_task(1)
         self.assertIsNotNone(task)
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(1, self.pl.count_attachments())
         attachment = self.pl.get_attachment(2)
         self.assertIsNotNone(attachment)
@@ -534,12 +534,12 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_users(self):
         # given
-        src = '{"format_version":1,"users":[]}'
+        src = '{"format_version":2,"users":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -550,7 +550,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -558,7 +558,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_do_import_data_single_user(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "users": [{
                 "id": 1,
                 "email": "name@example.com",
@@ -569,7 +569,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -580,7 +580,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(1, self.pl.count_users())
         user = self.pl.get_user(1)
@@ -592,12 +592,12 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_empty_options(self):
         # given
-        src = '{"format_version":1,"options":[]}'
+        src = '{"format_version":2,"options":[]}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -608,7 +608,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -616,7 +616,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_imports_task_with_a_user(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "tasks": [{
                 "id": 1,
                 "summary": "summary",
@@ -631,7 +631,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -643,7 +643,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(1, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(1, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -663,7 +663,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_do_import_data_single_option(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "options": [{
                 "key": "key",
                 "value": "value"}]}
@@ -671,7 +671,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -682,7 +682,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # then
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(1, self.pl.count_options())
@@ -698,7 +698,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -713,19 +713,19 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # and
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
 
     def test_do_import_data_wrong_format_version_raises(self):
         # given
-        src = '{"format_version":2}'
+        src = '{"format_version":3}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -740,7 +740,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # and
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -752,7 +752,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -767,7 +767,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # and
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -779,7 +779,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -794,7 +794,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         # and
         self.assertEqual(0, self.pl.count_tasks())
         self.assertEqual(0, self.pl.count_tags())
-        self.assertEqual(0, self.pl.count_notes())
+        self.assertEqual(0, self.pl.count_comments())
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
@@ -802,7 +802,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_task_missing_id_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tasks': [
                 {'summary': 'this is a task'}]}
         self.ll._logger = Mock()
@@ -818,7 +818,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_tag_missing_id_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tags': [
                 {'value': 'this is a tag'}]}
         self.ll._logger = Mock()
@@ -834,7 +834,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_user_missing_id_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'users': [
                 {'email': 'name@example.com'}]}
         self.ll._logger = Mock()
@@ -850,7 +850,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_task_missing_summary_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tasks': [
                 {'id': 123}]}
         self.ll._logger = Mock()
@@ -867,7 +867,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_tag_missing_value_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tags': [
                 {'id': 123,
                  'description': 'desc'}]}
@@ -882,11 +882,11 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
             'Exception while importing data: Error loading tag: '
             '{\'id\': 123, \'description\': \'desc\'}: \'value\'')
 
-    def test_note_missing_content_raises(self):
+    def test_comment_missing_content_raises(self):
         # given
         src = {
-            "format_version": 1,
-            'notes': [
+            "format_version": 2,
+            'comments': [
                 {'id': 123}]}
         self.ll._logger = Mock()
         # expect
@@ -896,13 +896,13 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(e.exception.description, 'The data was incorrect')
         # and
         self.ll._logger.error.assert_called_once_with(
-            'Exception while importing data: Error loading note: '
+            'Exception while importing data: Error loading comment: '
             '{\'id\': 123}: \'content\'')
 
     def test_attachment_missing_timestamp_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'attachments': [
                 {'id': 123}]}
         self.ll._logger = Mock()
@@ -919,7 +919,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_user_missing_email_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'users': [
                 {'id': 123}]}
         self.ll._logger = Mock()
@@ -936,7 +936,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_option_missing_key_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'options': [
                 {'value': 'abc'}]}
         self.ll._logger = Mock()

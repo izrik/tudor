@@ -13,7 +13,7 @@ class MainFunctionTests(unittest.TestCase):
             app = mock_generate.return_value
             from models.option_base import OptionBase
             app.pl.get_schema_version.return_value = \
-                OptionBase('__version__', __version__)
+                OptionBase('__version__', '0.0')
             folder = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..'))
 
@@ -21,7 +21,7 @@ class MainFunctionTests(unittest.TestCase):
             main([])
 
             # then
-            mock_print.assert_any_call('__version__: 0.9', file=sys.stderr)
+            mock_print.assert_any_call('__version__: unknown', file=sys.stderr)
 
             # These are brittle, less than ideal
             mock_print.assert_any_call(f'__revision__: {__revision__}',

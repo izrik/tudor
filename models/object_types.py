@@ -3,8 +3,8 @@ class ObjectTypes(object):
     Task = 'Task'
     Tag = 'Tag'
     Attachment = 'Attachment'
-    Note = 'Note'
+    Comment = 'Comment'
     User = 'User'
     Option = 'Option'
 
-    all = [Attachment, Task, Tag, Note, Option, User]
+    all = [Attachment, Task, Tag, Comment, Option, User]

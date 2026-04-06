@@ -12,14 +12,14 @@ class ExportDataTest(unittest.TestCase):
 
     def test_exports_data(self):
         # given
-        types_to_export = {'tasks', 'tags', 'notes', 'attachments', 'users',
+        types_to_export = {'tasks', 'tags', 'comments', 'attachments', 'users',
                            'options'}
         task = self.pl.create_task('task')
         self.pl.add(task)
         tag = self.pl.create_tag('tag')
         self.pl.add(tag)
-        note = self.pl.create_note('note')
-        self.pl.add(note)
+        comment = self.pl.create_comment('comment')
+        self.pl.add(comment)
         att = self.pl.create_attachment('attachment')
         self.pl.add(att)
         user = self.pl.create_user('user@example.com')
@@ -37,7 +37,7 @@ class ExportDataTest(unittest.TestCase):
         self.assertIsNotNone(result['tasks'][0]['date_last_updated'])
         del result['tasks'][0]['date_last_updated']
         self.assertEqual(result, {
-            'format_version': 1,
+            'format_version': 2,
             'tasks': [{
                 'id': task.id,
                 'summary': 'task',
@@ -57,7 +57,7 @@ class ExportDataTest(unittest.TestCase):
                 'prioritize_after_ids': [],
                 'tag_ids': [],
                 'user_ids': [],
-                'note_ids': [],
+                'comment_ids': [],
                 'attachment_ids': [],
             }],
             'tags': [{
@@ -66,14 +66,14 @@ class ExportDataTest(unittest.TestCase):
                 'description': None,
                 'task_ids': [],
             }],
-            'notes': [{
-                'id': note.id,
-                'content': 'note',
+            'comments': [{
+                'id': comment.id,
+                'content': 'comment',
                 'timestamp': None,
                 'task': None,
             }],
             'attachments': [{
-                'id': note.id,
+                'id': comment.id,
                 'timestamp': None,
                 'path': 'attachment',
                 'filename': None,

@@ -6,7 +6,7 @@ from numbers import Number
 import logging_util
 from models.object_types import ObjectTypes
 from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.note import Note
+from persistence.in_memory.models.comment import Comment
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
@@ -39,8 +39,8 @@ class InMemoryPersistenceLayer(object):
         self._options = []
         self._options_by_key = {}
 
-        self._notes = []
-        self._notes_by_id = {}
+        self._comments = []
+        self._comments_by_id = {}
 
         self._attachments = []
         self._attachments_by_id = {}
@@ -296,22 +296,22 @@ class InMemoryPersistenceLayer(object):
         return len(
             list(self.get_attachments(attachment_id_in=attachment_id_in)))
 
-    def create_note(self, content, timestamp=None, lazy=None):
-        return Note(content=content, timestamp=timestamp, lazy=lazy)
+    def create_comment(self, content, timestamp=None, lazy=None):
+        return Comment(content=content, timestamp=timestamp, lazy=lazy)
 
-    def get_note(self, note_id):
-        if note_id is None:
-            raise ValueError('No note_id provided.')
-        return self._notes_by_id.get(note_id)
+    def get_comment(self, comment_id):
+        if comment_id is None:
+            raise ValueError('No comment_id provided.')
+        return self._comments_by_id.get(comment_id)
 
-    def get_notes(self, note_id_in=UNSPECIFIED):
-        query = self._notes
-        if note_id_in is not self.UNSPECIFIED:
-            query = (_ for _ in query if _.id in note_id_in)
+    def get_comments(self, comment_id_in=UNSPECIFIED):
+        query = self._comments
+        if comment_id_in is not self.UNSPECIFIED:
+            query = (_ for _ in query if _.id in comment_id_in)
         return query
 
-    def count_notes(self, note_id_in=UNSPECIFIED):
-        return len(list(self.get_notes(note_id_in=note_id_in)))
+    def count_comments(self, comment_id_in=UNSPECIFIED):
+        return len(list(self.get_comments(comment_id_in=comment_id_in)))
 
     def create_option(self, key, value):
         return Option(key=key, value=value)
@@ -368,7 +368,7 @@ class InMemoryPersistenceLayer(object):
         if obj in self._deleted_objects:
             raise Exception(
                 'The object (id={}) has already been deleted.'.format(obj.id))
-        if (obj in self._tasks or obj in self._tags or obj in self._notes or
+        if (obj in self._tasks or obj in self._tags or obj in self._comments or
                 obj in self._attachments or obj in self._users or
                 obj in self._options):
             return
@@ -399,13 +399,13 @@ class InMemoryPersistenceLayer(object):
                         '{}'.format(domobj.id))
                 self._attachments.append(domobj)
                 self._attachments_by_id[domobj.id] = domobj
-            elif tt == ObjectTypes.Note:
-                if domobj.id in self._notes_by_id:
+            elif tt == ObjectTypes.Comment:
+                if domobj.id in self._comments_by_id:
                     raise Exception(
-                        'There already exists a note with id {}'.format(
+                        'There already exists a comment with id {}'.format(
                             domobj.id))
-                self._notes.append(domobj)
-                self._notes_by_id[domobj.id] = domobj
+                self._comments.append(domobj)
+                self._comments_by_id[domobj.id] = domobj
             elif tt == ObjectTypes.Task:
                 if domobj.id in self._tasks_by_id:
                     raise Exception(
@@ -454,9 +454,9 @@ class InMemoryPersistenceLayer(object):
             if tt == ObjectTypes.Attachment:
                 self._attachments.remove(domobj)
                 del self._attachments_by_id[domobj.id]
-            elif tt == ObjectTypes.Note:
-                self._notes.remove(domobj)
-                del self._notes_by_id[domobj.id]
+            elif tt == ObjectTypes.Comment:
+                self._comments.remove(domobj)
+                del self._comments_by_id[domobj.id]
             elif tt == ObjectTypes.Task:
                 self._tasks.remove(domobj)
                 del self._tasks_by_id[domobj.id]
@@ -501,10 +501,10 @@ class InMemoryPersistenceLayer(object):
             _process_changed_attr(domobj, new_values, 'tag', 'value',
                                   self._tags_by_value)
             self._values_by_object[domobj] = new_values
-        for domobj in self._notes:
+        for domobj in self._comments:
             new_values = domobj.to_dict()
-            _process_changed_attr(domobj, new_values, 'note', 'id',
-                                  self._notes_by_id)
+            _process_changed_attr(domobj, new_values, 'comment', 'id',
+                                  self._comments_by_id)
             self._values_by_object[domobj] = new_values
         for domobj in self._attachments:
             new_values = domobj.to_dict()
@@ -536,10 +536,10 @@ class InMemoryPersistenceLayer(object):
             return 1
         return max(self._tags_by_id.keys()) + 1
 
-    def _get_next_note_id(self):
-        if not self._notes_by_id:
+    def _get_next_comment_id(self):
+        if not self._comments_by_id:
             return 1
-        return max(self._notes_by_id.keys()) + 1
+        return max(self._comments_by_id.keys()) + 1
 
     def _get_next_attachment_id(self):
         if not self._attachments_by_id:
@@ -558,8 +558,8 @@ class InMemoryPersistenceLayer(object):
             return self._get_next_tag_id()
         if objtype == ObjectTypes.Attachment:
             return self._get_next_attachment_id()
-        if objtype == ObjectTypes.Note:
-            return self._get_next_note_id()
+        if objtype == ObjectTypes.Comment:
+            return self._get_next_comment_id()
         if objtype == ObjectTypes.User:
             return self._get_next_user_id()
         raise Exception(

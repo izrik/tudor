@@ -9,7 +9,7 @@ from models.object_types import ObjectTypes
 from .util import generate_ll
 
 
-class CreateNewNoteTest(unittest.TestCase):
+class CreateNewCommentTest(unittest.TestCase):
     def setUp(self):
         self.ll = generate_ll()
         self.pl = self.ll.pl
@@ -20,7 +20,7 @@ class CreateNewNoteTest(unittest.TestCase):
     def test_id_none_raises(self):
         self.assertRaises(
             NotFound,
-            self.ll.create_new_note,
+            self.ll.create_new_comment,
             None, 'content', self.user)
 
     def test_non_existent_task(self):
@@ -30,7 +30,7 @@ class CreateNewNoteTest(unittest.TestCase):
         # expect
         self.assertRaises(
             NotFound,
-            self.ll.create_new_note,
+            self.ll.create_new_comment,
             self.task.id + 1, 'content', self.user)
 
     def test_user_none_raises(self):
@@ -40,7 +40,7 @@ class CreateNewNoteTest(unittest.TestCase):
         # expect
         self.assertRaises(
             Forbidden,
-            self.ll.create_new_note,
+            self.ll.create_new_comment,
             self.task.id, 'content', None)
 
     def test_not_authorized_user_raises(self):
@@ -51,7 +51,7 @@ class CreateNewNoteTest(unittest.TestCase):
         # expect
         self.assertRaises(
             Forbidden,
-            self.ll.create_new_note,
+            self.ll.create_new_comment,
             self.task.id, 'content', self.user)
 
     def test_authorized_user_does_not_raise(self):
@@ -61,10 +61,10 @@ class CreateNewNoteTest(unittest.TestCase):
         self.task.users.append(self.user)
         self.pl.commit()
         # when
-        result = self.ll.create_new_note(self.task.id, 'content', self.user)
+        result = self.ll.create_new_comment(self.task.id, 'content', self.user)
         # then
         self.assertIsNotNone(result)
-        self.assertEqual(result.object_type, ObjectTypes.Note)
+        self.assertEqual(result.object_type, ObjectTypes.Comment)
         self.assertEqual('content', result.content)
         time_delta = (datetime.now(UTC) - result.timestamp)
         self.assertLessEqual(time_delta.total_seconds(), 1)

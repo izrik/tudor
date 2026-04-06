@@ -417,30 +417,30 @@ class DbTaskFromDictTest(PersistenceLayerTestBase):
         self.assertIsInstance(result, self.pl.DbTask)
         self.assertEqual([task], list(result.prioritize_after))
 
-    def test_notes_none_yields_empty(self):
+    def test_comments_none_yields_empty(self):
         # when
-        result = self.pl.DbTask.from_dict({'notes': None})
+        result = self.pl.DbTask.from_dict({'comments': None})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertEqual([], list(result.notes))
+        self.assertEqual([], list(result.comments))
 
-    def test_notes_empty_yields_empty(self):
+    def test_comments_empty_yields_empty(self):
         # when
-        result = self.pl.DbTask.from_dict({'notes': []})
+        result = self.pl.DbTask.from_dict({'comments': []})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertEqual([], list(result.notes))
+        self.assertEqual([], list(result.comments))
 
-    def test_notes_non_empty_yields_same(self):
+    def test_comments_non_empty_yields_same(self):
         # given
-        note = self.pl.DbNote('note')
-        self.pl.db.session.add(note)
+        comment = self.pl.DbComment('comment')
+        self.pl.db.session.add(comment)
         self.pl.db.session.commit()
         # when
-        result = self.pl.DbTask.from_dict({'notes': [note]})
+        result = self.pl.DbTask.from_dict({'comments': [comment]})
         # then
         self.assertIsInstance(result, self.pl.DbTask)
-        self.assertEqual([note], list(result.notes))
+        self.assertEqual([comment], list(result.comments))
 
     def test_attachments_none_yields_empty(self):
         # when

@@ -20,7 +20,7 @@ class TaskToFlatDictTest(unittest.TestCase):
             id=456, parent=parent, children=[c1, c2], dependees=[d1, d2],
             dependants=[d3, d4], prioritize_before=[p1, p2],
             prioritize_after=[p3, p4], tags=[t1, t2], users=[u1, u2],
-            notes=[n1, n2], attachments=[a1, a2])
+            comments=[n1, n2], attachments=[a1, a2])
         # precondition
         self.assertEqual(456, task.id)
         self.assertEqual('summary', task.summary)
@@ -39,7 +39,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([p3, p4], task.prioritize_after)
         self.assertEqual([t1, t2], task.tags)
         self.assertEqual([u1, u2], task.users)
-        self.assertEqual([n1, n2], task.notes)
+        self.assertEqual([n1, n2], task.comments)
         self.assertEqual([a1, a2], task.attachments)
         # when
         d = task.to_flat_dict(fields=None)
@@ -79,8 +79,8 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([t1.id, t2.id], d['tag_ids'])
         self.assertIn('user_ids', d)
         self.assertEqual([u1.id, u2.id], d['user_ids'])
-        self.assertIn('note_ids', d)
-        self.assertEqual([n1.id, n2.id], d['note_ids'])
+        self.assertIn('comment_ids', d)
+        self.assertEqual([n1.id, n2.id], d['comment_ids'])
         self.assertIn('attachment_ids', d)
         self.assertEqual([a1.id, a2.id], d['attachment_ids'])
 
@@ -99,7 +99,7 @@ class TaskToFlatDictTest(unittest.TestCase):
             id=456, parent=parent, children=[c1, c2], dependees=[d1, d2],
             dependants=[d3, d4], prioritize_before=[p1, p2],
             prioritize_after=[p3, p4], tags=[t1, t2], users=[u1, u2],
-            notes=[n1, n2], attachments=[a1, a2])
+            comments=[n1, n2], attachments=[a1, a2])
         # precondition
         self.assertEqual(456, task.id)
         self.assertEqual('summary', task.summary)
@@ -118,7 +118,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([p3, p4], task.prioritize_after)
         self.assertEqual([t1, t2], task.tags)
         self.assertEqual([u1, u2], task.users)
-        self.assertEqual([n1, n2], task.notes)
+        self.assertEqual([n1, n2], task.comments)
         self.assertEqual([a1, a2], task.attachments)
         # when
         d = task.to_flat_dict(fields=[task.FIELD_ID])
@@ -142,7 +142,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertNotIn('prioritize_after_ids', d)
         self.assertNotIn('tag_ids', d)
         self.assertNotIn('user_ids', d)
-        self.assertNotIn('note_ids', d)
+        self.assertNotIn('comment_ids', d)
         self.assertNotIn('attachments', d)
 
     def test_fields_children_exports_only_children_ids(self):
@@ -160,7 +160,7 @@ class TaskToFlatDictTest(unittest.TestCase):
             id=456, parent=parent, children=[c1, c2], dependees=[d1, d2],
             dependants=[d3, d4], prioritize_before=[p1, p2],
             prioritize_after=[p3, p4], tags=[t1, t2], users=[u1, u2],
-            notes=[n1, n2], attachments=[a1, a2])
+            comments=[n1, n2], attachments=[a1, a2])
         # precondition
         self.assertEqual(456, task.id)
         self.assertEqual('summary', task.summary)
@@ -179,7 +179,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([p3, p4], task.prioritize_after)
         self.assertEqual([t1, t2], task.tags)
         self.assertEqual([u1, u2], task.users)
-        self.assertEqual([n1, n2], task.notes)
+        self.assertEqual([n1, n2], task.comments)
         self.assertEqual([a1, a2], task.attachments)
         # when
         d = task.to_flat_dict(fields=[task.FIELD_CHILDREN])
@@ -203,7 +203,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertNotIn('prioritize_after_ids', d)
         self.assertNotIn('tag_ids', d)
         self.assertNotIn('user_ids', d)
-        self.assertNotIn('note_ids', d)
+        self.assertNotIn('comment_ids', d)
         self.assertNotIn('attachments', d)
 
     def test_multiple_fields_exports_those_indicated(self):
@@ -220,7 +220,7 @@ class TaskToFlatDictTest(unittest.TestCase):
             id=456, parent=parent, children=[c1, c2], dependees=[d1, d2],
             dependants=[d3, d4], prioritize_before=[p1, p2],
             prioritize_after=[p3, p4], tags=[t1, t2], users=[u1, u2],
-            notes=[n1, n2], attachments=[a1, a2])
+            comments=[n1, n2], attachments=[a1, a2])
         # precondition
         self.assertEqual(456, task.id)
         self.assertEqual('summary', task.summary)
@@ -239,7 +239,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([p3, p4], task.prioritize_after)
         self.assertEqual([t1, t2], task.tags)
         self.assertEqual([u1, u2], task.users)
-        self.assertEqual([n1, n2], task.notes)
+        self.assertEqual([n1, n2], task.comments)
         self.assertEqual([a1, a2], task.attachments)
         # when
         d = task.to_flat_dict(fields=[task.FIELD_CHILDREN, task.FIELD_SUMMARY,
@@ -266,7 +266,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertNotIn('tag_ids', d)
         self.assertIn('user_ids', d)
         self.assertEqual([u1.id, u2.id], d['user_ids'])
-        self.assertNotIn('note_ids', d)
+        self.assertNotIn('comment_ids', d)
         self.assertNotIn('attachments', d)
 
     def test_all_fields_exports_all(self):
@@ -283,7 +283,7 @@ class TaskToFlatDictTest(unittest.TestCase):
             id=456, parent=parent, children=[c1, c2], dependees=[d1, d2],
             dependants=[d3, d4], prioritize_before=[p1, p2],
             prioritize_after=[p3, p4], tags=[t1, t2], users=[u1, u2],
-            notes=[n1, n2], attachments=[a1, a2])
+            comments=[n1, n2], attachments=[a1, a2])
         # precondition
         self.assertEqual(456, task.id)
         self.assertEqual('summary', task.summary)
@@ -302,7 +302,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([p3, p4], task.prioritize_after)
         self.assertEqual([t1, t2], task.tags)
         self.assertEqual([u1, u2], task.users)
-        self.assertEqual([n1, n2], task.notes)
+        self.assertEqual([n1, n2], task.comments)
         self.assertEqual([a1, a2], task.attachments)
         # when
         d = task.to_flat_dict(
@@ -314,7 +314,7 @@ class TaskToFlatDictTest(unittest.TestCase):
                 task.FIELD_PARENT, task.FIELD_CHILDREN, task.FIELD_DEPENDEES,
                 task.FIELD_DEPENDANTS, task.FIELD_PRIORITIZE_BEFORE,
                 task.FIELD_PRIORITIZE_AFTER, task.FIELD_TAGS,
-                task.FIELD_USERS, task.FIELD_NOTES, task.FIELD_ATTACHMENTS,
+                task.FIELD_USERS, task.FIELD_COMMENTS, task.FIELD_ATTACHMENTS,
                 task.FIELD_IS_PUBLIC])
         # then
         self.assertEqual(20, len(d))
@@ -352,8 +352,8 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([t1.id, t2.id], d['tag_ids'])
         self.assertIn('user_ids', d)
         self.assertEqual([u1.id, u2.id], d['user_ids'])
-        self.assertIn('note_ids', d)
-        self.assertEqual([n1.id, n2.id], d['note_ids'])
+        self.assertIn('comment_ids', d)
+        self.assertEqual([n1.id, n2.id], d['comment_ids'])
         self.assertIn('attachment_ids', d)
         self.assertEqual([a1.id, a2.id], d['attachment_ids'])
 
@@ -371,7 +371,7 @@ class TaskToFlatDictTest(unittest.TestCase):
             id=456, parent=parent, children=[c1, c2], dependees=[d1, d2],
             dependants=[d3, d4], prioritize_before=[p1, p2],
             prioritize_after=[p3, p4], tags=[t1, t2], users=[u1, u2],
-            notes=[n1, n2], attachments=[a1, a2])
+            comments=[n1, n2], attachments=[a1, a2])
         # precondition
         self.assertEqual(456, task.id)
         self.assertEqual('summary', task.summary)
@@ -390,7 +390,7 @@ class TaskToFlatDictTest(unittest.TestCase):
         self.assertEqual([p3, p4], task.prioritize_after)
         self.assertEqual([t1, t2], task.tags)
         self.assertEqual([u1, u2], task.users)
-        self.assertEqual([n1, n2], task.notes)
+        self.assertEqual([n1, n2], task.comments)
         self.assertEqual([a1, a2], task.attachments)
         # when
         d = task.to_flat_dict(fields=[])
