@@ -490,7 +490,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_do_import_data_single_attachment(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "tasks": [{
                 "id": 1,
                 "summary": "summary"
@@ -558,7 +558,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_do_import_data_single_user(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "users": [{
                 "id": 1,
                 "email": "name@example.com",
@@ -616,7 +616,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_imports_task_with_a_user(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "tasks": [{
                 "id": 1,
                 "summary": "summary",
@@ -663,7 +663,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_do_import_data_single_option(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             "options": [{
                 "key": "key",
                 "value": "value"}]}
@@ -802,7 +802,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_task_missing_id_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tasks': [
                 {'summary': 'this is a task'}]}
         self.ll._logger = Mock()
@@ -818,7 +818,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_tag_missing_id_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tags': [
                 {'value': 'this is a tag'}]}
         self.ll._logger = Mock()
@@ -834,7 +834,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_user_missing_id_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'users': [
                 {'email': 'name@example.com'}]}
         self.ll._logger = Mock()
@@ -850,7 +850,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_task_missing_summary_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tasks': [
                 {'id': 123}]}
         self.ll._logger = Mock()
@@ -867,7 +867,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_tag_missing_value_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'tags': [
                 {'id': 123,
                  'description': 'desc'}]}
@@ -902,7 +902,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_attachment_missing_timestamp_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'attachments': [
                 {'id': 123}]}
         self.ll._logger = Mock()
@@ -919,7 +919,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_user_missing_email_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'users': [
                 {'id': 123}]}
         self.ll._logger = Mock()
@@ -936,7 +936,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_option_missing_key_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'options': [
                 {'value': 'abc'}]}
         self.ll._logger = Mock()
