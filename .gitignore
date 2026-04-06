@@ -79,3 +79,7 @@ instance/
 # npm
 package-lock.json
 node_modules/
+
+# misc
+.claude/
+
