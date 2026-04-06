@@ -943,7 +943,8 @@ def main(argv):
 
     if args.create_db:
         print('Setting up the database')
-        app.pl.create_all()
+        with app.app_context():
+            app.pl.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in range(48)))
