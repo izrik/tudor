@@ -1,0 +1,13 @@
+{% extends "base.t.html" %}
+{% block title %}Editing Comment (ID {{comment.id}}) - {{ super() }}{% endblock %}
+{% block header_sub_text %}Editing Comment (ID {{comment.id}}){% endblock %}
+{% block content %}
+<div class="container">
+    <form action="" method="post">
+        <textarea name="content" rows="8" cols="60">{{ comment.content if comment.content != None }}</textarea>
+        <p></p>
+        <input class="btn btn-primary" type="submit" value="Save"/>
+        <a class="btn btn-info" href="{{ url_for('view_task', id=comment.task_id) }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

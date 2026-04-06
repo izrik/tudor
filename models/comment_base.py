@@ -10,11 +10,13 @@ class CommentBase(object):
     FIELD_ID = 'ID'
     FIELD_CONTENT = 'CONTENT'
     FIELD_TIMESTAMP = 'TIMESTAMP'
+    FIELD_DATE_LAST_UPDATED = 'DATE_LAST_UPDATED'
     FIELD_TASK = 'TASK'
 
-    def __init__(self, content, timestamp=None):
+    def __init__(self, content, timestamp=None, date_last_updated=None):
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
+        self.date_last_updated = self._clean_timestamp(date_last_updated)
 
     @property
     def object_type(self):
@@ -47,6 +49,8 @@ class CommentBase(object):
             d['id'] = self.id
         if fields is None or self.FIELD_TIMESTAMP in fields:
             d['timestamp'] = str_from_datetime(self.timestamp)
+        if fields is None or self.FIELD_DATE_LAST_UPDATED in fields:
+            d['date_last_updated'] = str_from_datetime(self.date_last_updated)
         if fields is None or self.FIELD_CONTENT in fields:
             d['content'] = self.content
         if fields is None or self.FIELD_TASK in fields:
@@ -66,9 +70,11 @@ class CommentBase(object):
         comment_id = d.get('id', None)
         content = d.get('content')
         timestamp = d.get('timestamp', None)
+        date_last_updated = d.get('date_last_updated', None)
         task = d.get('task')
 
-        comment = cls(content, timestamp, lazy=lazy)
+        comment = cls(content, timestamp, date_last_updated=date_last_updated,
+                      lazy=lazy)
         if comment_id is not None:
             comment.id = comment_id
         if not lazy:
@@ -82,5 +88,7 @@ class CommentBase(object):
             self.content = d['content']
         if 'timestamp' in d:
             self.timestamp = self._clean_timestamp(d['timestamp'])
+        if 'date_last_updated' in d:
+            self.date_last_updated = self._clean_timestamp(d['date_last_updated'])
         if 'task' in d:
             self.task = d['task']

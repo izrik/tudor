@@ -12,17 +12,19 @@ def generate_comment_class(db):
         id = db.Column(db.Integer, primary_key=True)
         content = db.Column(db.Text)
         timestamp = db.Column(db.DateTime)
+        date_last_updated = db.Column(db.DateTime)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
         task = db.relationship('DbTask',
                                backref=db.backref('comments', lazy='dynamic',
                                                   order_by=timestamp))
 
-        def __init__(self, content, timestamp=None, lazy=None):
+        def __init__(self, content, timestamp=None, date_last_updated=None,
+                     lazy=None):
             if lazy:
                 raise ValueError('parameter \'lazy\' must be None or empty')
             db.Model.__init__(self)
-            CommentBase.__init__(self, content, timestamp)
+            CommentBase.__init__(self, content, timestamp, date_last_updated)
 
         @classmethod
         def from_dict(cls, d, lazy=None):

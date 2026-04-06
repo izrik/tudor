@@ -70,6 +70,7 @@ class ExportDataTest(unittest.TestCase):
                 'id': comment.id,
                 'content': 'comment',
                 'timestamp': None,
+                'date_last_updated': None,
                 'task': None,
             }],
             'attachments': [{

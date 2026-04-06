@@ -10,11 +10,13 @@ class Comment(Changeable, CommentBase):
     _id = None
     _content = ''
     _timestamp = None
+    _date_last_updated = None
 
     _task = None
 
-    def __init__(self, content, timestamp=None, lazy=None):
-        super(Comment, self).__init__(content, timestamp)
+    def __init__(self, content, timestamp=None, date_last_updated=None,
+                 lazy=None):
+        super(Comment, self).__init__(content, timestamp, date_last_updated)
         self._logger.debug('Comment.__init__ %s', self)
 
         if lazy is None:
@@ -56,6 +58,19 @@ class Comment(Changeable, CommentBase):
             self._timestamp = value
             self._on_attr_changed(self.FIELD_TIMESTAMP, self.OP_SET,
                                   self._timestamp)
+
+    @property
+    def date_last_updated(self):
+        return self._date_last_updated
+
+    @date_last_updated.setter
+    def date_last_updated(self, value):
+        if value != self._date_last_updated:
+            self._on_attr_changing(self.FIELD_DATE_LAST_UPDATED,
+                                   self._date_last_updated)
+            self._date_last_updated = value
+            self._on_attr_changed(self.FIELD_DATE_LAST_UPDATED, self.OP_SET,
+                                  self._date_last_updated)
 
     @property
     def task_id(self):

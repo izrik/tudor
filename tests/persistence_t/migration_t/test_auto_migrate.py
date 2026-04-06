@@ -3,6 +3,7 @@ import re
 from unittest.mock import Mock, call
 
 import pytest
+from sqlalchemy import text
 
 from persistence.migration import auto_migrate
 from models.option_base import OptionBase
@@ -21,9 +22,10 @@ def mock_pl(version=None):
     pl.get_schema_version.side_effect = get_schema_version
 
     def execute(sql):
-        if sql == 'do the thing;':
+        sql_str = str(sql)
+        if sql_str == 'do the thing;':
             return
-        m = re.search("value = '([\\d.]+)'", sql)
+        m = re.search("value = '([\\d.]+)'", sql_str)
         if m:
             pl.version = m.group(1)
             return
@@ -48,8 +50,8 @@ def test_upgrade_script_not_present():
     auto_migrate(pl, '0.2', _fs=fs, _print=_print)
     # then
     pl.get_schema_version.assert_called()
-    pl.execute.assert_called_with(
-        "update option set value = '0.2' where key = '__version__';")
+    executed = [str(c.args[0]) for c in pl.execute.call_args_list]
+    assert "update option set value = '0.2' where key = '__version__';" in executed
     pl.commit.assert_called()
 
 
@@ -124,8 +126,7 @@ def test_upgrade_script_present():
     # then
     pl.get_schema_version.assert_called()
     assert pl.execute.call_count == 2
-    assert call('do the thing;') in pl.execute.mock_calls
-    set_version = "update option set value = '0.2' " \
-                  "where key = '__version__';"
-    assert call(set_version) in pl.execute.mock_calls
+    executed = [str(c.args[0]) for c in pl.execute.call_args_list]
+    assert 'do the thing;' in executed
+    assert "update option set value = '0.2' where key = '__version__';" in executed
     pl.commit.assert_called()

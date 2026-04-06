@@ -426,6 +426,10 @@ def generate_app(db_uri=None,
         return vl.comment_new_post(request, Options.get_user())
 
     @login_required
+    def edit_comment(id):
+        return vl.comment_edit(request, Options.get_user(), id)
+
+    @login_required
     def edit_task(id):
         return vl.task_edit(request, Options.get_user(), id)
 
@@ -617,6 +621,8 @@ def generate_app(db_uri=None,
     app.add_url_rule('/task/<int:id>', None, view_task)
     app.add_url_rule('/task/<int:id>/hierarchy', None, view_task_hierarchy)
     app.add_url_rule('/comment/new', None, new_comment, methods=['POST'])
+    app.add_url_rule('/comment/<int:id>/edit', None, edit_comment,
+                     methods=['GET', 'POST'])
     app.add_url_rule('/task/<int:id>/edit', None, edit_task,
                      methods=['GET', 'POST'])
     app.add_url_rule('/attachment/new', None, new_attachment,
@@ -937,7 +943,8 @@ def main(argv):
 
     if args.create_db:
         print('Setting up the database')
-        app.pl.create_all()
+        with app.app_context():
+            app.pl.create_all()
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in range(48)))
