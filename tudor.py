@@ -10,7 +10,7 @@ import os
 
 from datetime import datetime, UTC
 from flask import Flask, request
-from flask import Markup
+from markupsafe import Markup
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
