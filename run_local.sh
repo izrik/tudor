@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//')
+VERSION=$(git describe --tags 2>/dev/null | sed 's/^v//' | sed 's/-[0-9]*-g/+g/')
 if [[ -z "$VERSION" ]]; then
   VERSION="0.0"
 fi
