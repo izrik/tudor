@@ -1,3 +1,6 @@
+from sqlalchemy import text
+
+
 def auto_migrate(pl, desired_version, *, _fs=None, _print=None):
     if _fs is None:
         _fs = Filesystem()
@@ -15,8 +18,8 @@ def auto_migrate(pl, desired_version, *, _fs=None, _print=None):
     if not current_version:
         current_version = '0.0'
         # create the value
-        pl.execute("insert into option (key, value) "
-                   "values ('__version__', '0.0');")
+        pl.execute(text("insert into option (key, value) "
+                        "values ('__version__', '0.0');"))
         pl.commit()
 
     current_version_t = list(parse(current_version).release)
@@ -34,21 +37,21 @@ def auto_migrate(pl, desired_version, *, _fs=None, _print=None):
             with _fs.open(filename) as f:
                 script = f.read()
                 _print(f'Running migration script for v{current_version}')
-                pl.execute(script)
+                pl.execute(text(script))
                 pl.commit()
         else:
             _print(f'No migration script found for v{current_version}')
-            pl.execute("update option "
-                       f"set value = '{current_version}' "
-                       "where key = '__version__';")
+            pl.execute(text("update option "
+                            f"set value = '{current_version}' "
+                            "where key = '__version__';"))
             pl.commit()
 
     current_version = pl.get_schema_version().value
     if current_version != desired_version:
         # set the value
-        pl.execute("update option "
-                   f"set value = '{desired_version}' "
-                   "where key = '__version__';")
+        pl.execute(text("update option "
+                        f"set value = '{desired_version}' "
+                        "where key = '__version__';"))
         pl.commit()
 
 
