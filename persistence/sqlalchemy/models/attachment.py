@@ -13,7 +13,7 @@ def generate_attachment_class(db):
         path = db.Column(db.String(1000), nullable=False)
         timestamp = db.Column(db.DateTime)
         filename = db.Column(db.String(100))
-        description = db.Column(db.String(100), default=None)
+        description = db.Column(db.Text, default=None)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
         task = db.relationship('DbTask',

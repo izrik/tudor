@@ -10,7 +10,7 @@ def generate_note_class(db):
         __tablename__ = 'note'
 
         id = db.Column(db.Integer, primary_key=True)
-        content = db.Column(db.String(4000))
+        content = db.Column(db.Text)
         timestamp = db.Column(db.DateTime)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))
