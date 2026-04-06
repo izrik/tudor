@@ -913,7 +913,7 @@ def main(argv):
                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
 
     print('Checking database schema version')
-    from packaging.version import parse
+    from packaging.version import parse, InvalidVersion
     with app.app_context():
         current = app.pl.get_schema_version()
         if current:
@@ -921,7 +921,10 @@ def main(argv):
         if not current:
             current = '0.0'
         current = parse(parse(current).base_version)
-        desired = parse(parse(__version__).base_version)
+        try:
+            desired = parse(parse(__version__).base_version)
+        except InvalidVersion:
+            desired = current
         if current < desired:
             print(f'Wrong DB schema version. Expected {desired.public} but got '
                   f'{current.public}. Will auto-migrate.')
