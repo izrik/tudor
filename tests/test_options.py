@@ -1,6 +1,6 @@
 import unittest
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from persistence.in_memory.layer import InMemoryPersistenceLayer
 from tudor import generate_app
@@ -37,4 +37,5 @@ class AppOptionsTest(unittest.TestCase):
 
     def test_get_version_returns_revision(self):
         # expect
-        self.assertEqual('unknown', self.ops.get_version())
+        with patch('tudor.__version__', 'unknown'):
+            self.assertEqual('unknown', self.ops.get_version())

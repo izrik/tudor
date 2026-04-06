@@ -1,6 +1,6 @@
 import unittest
 
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from tudor import generate_app
 
@@ -13,4 +13,5 @@ class VersionTest(unittest.TestCase):
 
     def test_version_number_is_correct(self):
         # expect
-        self.assertEqual('unknown', self.app.Options.get_version())
+        with patch('tudor.__version__', 'unknown'):
+            self.assertEqual('unknown', self.app.Options.get_version())

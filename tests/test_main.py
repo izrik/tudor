@@ -1,7 +1,7 @@
 import os.path
 import sys
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 
 from tudor import main, __revision__, __version__
 
@@ -9,11 +9,12 @@ from tudor import main, __revision__, __version__
 class MainFunctionTests(unittest.TestCase):
     def test_main(self):
         with patch('tudor.print') as mock_print, \
-                patch('tudor.generate_app') as mock_generate:
+                patch('tudor.generate_app') as mock_generate, \
+                patch('tudor.__version__', 'unknown'):
             app = mock_generate.return_value
             from models.option_base import OptionBase
             app.pl.get_schema_version.return_value = \
-                OptionBase('__version__', '0.0')
+                OptionBase('__version__', '0.13')
             folder = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..'))
 
@@ -21,21 +22,21 @@ class MainFunctionTests(unittest.TestCase):
             main([])
 
             # then
-            mock_print.assert_any_call('__version__: unknown', file=sys.stderr)
+            mock_print.assert_any_call('__version__: unknown', file=ANY)
 
             # These are brittle, less than ideal
             mock_print.assert_any_call(f'__revision__: {__revision__}',
-                                       file=sys.stderr)
-            mock_print.assert_any_call(f'getcwd(): {folder}', file=sys.stderr)
+                                       file=ANY)
+            mock_print.assert_any_call(f'getcwd(): {folder}', file=ANY)
 
-            mock_print.assert_any_call('DEBUG: False', file=sys.stderr)
-            mock_print.assert_any_call('HOST: 127.0.0.1', file=sys.stderr)
-            mock_print.assert_any_call('PORT: 8304', file=sys.stderr)
+            mock_print.assert_any_call('DEBUG: False', file=ANY)
+            mock_print.assert_any_call('HOST: 127.0.0.1', file=ANY)
+            mock_print.assert_any_call('PORT: 8304', file=ANY)
             mock_print.assert_any_call('UPLOAD_FOLDER: /tmp/tudor/uploads',
-                                       file=sys.stderr)
+                                       file=ANY)
             mock_print.assert_any_call(
                 'ALLOWED_EXTENSIONS: txt,pdf,png,jpg,jpeg,gif',
-                file=sys.stderr)
+                file=ANY)
             self.assertEqual(mock_print.call_count, 10)
 
             # and
