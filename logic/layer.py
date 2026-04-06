@@ -12,6 +12,7 @@ from werkzeug.utils import secure_filename
 import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
+from .data_import_error import DataImportError
 from models.object_types import ObjectTypes
 from models.task_user_ops import TaskUserOps
 
@@ -860,14 +861,24 @@ class LogicLayer(object):
         if 'format_version' not in src:
             raise werkzeug.exceptions.BadRequest('Missing format_version')
 
-        if src['format_version'] == 1:
-            import import_v1
-            return import_v1.import_data(src, keep_id_numbers)
-        elif src['format_version'] == 2:
-            import import_v2
-            return import_v2.import_data(src, keep_id_numbers)
-        else:
-            raise werkzeug.exceptions.BadRequest('Bad format_version')
+        try:
+            if src['format_version'] == 1:
+                from . import import_v1
+                return import_v1.import_data(self.pl, src, keep_id_numbers)
+            elif src['format_version'] == 2:
+                from . import import_v2
+                return import_v2.import_data(self.pl, src, keep_id_numbers)
+            else:
+                raise werkzeug.exceptions.BadRequest('Bad format_version')
+        except werkzeug.exceptions.HTTPException as e:
+            self._logger.error(f'Exception while importing data: {e}')
+            raise
+        except DataImportError as e:
+            self._logger.error(f'Exception while importing data: {e}')
+            raise werkzeug.exceptions.BadRequest('The data was incorrect')
+        except Exception as e:
+            self._logger.error(f'Exception while importing data: {e}')
+            raise werkzeug.exceptions.InternalServerError
 
 
     def get_task_crud_data(self, current_user):

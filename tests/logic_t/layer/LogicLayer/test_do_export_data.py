@@ -37,7 +37,7 @@ class ExportDataTest(unittest.TestCase):
         self.assertIsNotNone(result['tasks'][0]['date_last_updated'])
         del result['tasks'][0]['date_last_updated']
         self.assertEqual(result, {
-            'format_version': 1,
+            'format_version': 2,
             'tasks': [{
                 'id': task.id,
                 'summary': 'task',

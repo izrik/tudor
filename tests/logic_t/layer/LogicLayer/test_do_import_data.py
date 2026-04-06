@@ -720,7 +720,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
 
     def test_do_import_data_wrong_format_version_raises(self):
         # given
-        src = '{"format_version":2}'
+        src = '{"format_version":3}'
 
         # precondition
         self.assertEqual(0, self.pl.count_tasks())
@@ -885,7 +885,7 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
     def test_comment_missing_content_raises(self):
         # given
         src = {
-            "format_version": 1,
+            "format_version": 2,
             'comments': [
                 {'id': 123}]}
         self.ll._logger = Mock()
