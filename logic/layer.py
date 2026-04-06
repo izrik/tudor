@@ -839,7 +839,7 @@ class LogicLayer(object):
         return tasks_h
 
     def do_export_data(self, types_to_export):
-        results = {'format_version': 1}
+        results = {'format_version': 2}
         if 'tasks' in types_to_export:
             results['tasks'] = [t.to_flat_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
@@ -857,8 +857,18 @@ class LogicLayer(object):
         return results
 
     def do_import_data(self, src, keep_id_numbers=True):
-        import import_v1
-        return import_v1.import_data(src, keep_id_numbers)
+        if 'format_version' not in src:
+            raise werkzeug.exceptions.BadRequest('Missing format_version')
+
+        if src['format_version'] == 1:
+            import import_v1
+            return import_v1.import_data(src, keep_id_numbers)
+        elif src['format_version'] == 2:
+            import import_v2
+            return import_v2.import_data(src, keep_id_numbers)
+        else:
+            raise werkzeug.exceptions.BadRequest('Bad format_version')
+
 
     def get_task_crud_data(self, current_user):
         return self.load_no_hierarchy(current_user, include_done=True,
