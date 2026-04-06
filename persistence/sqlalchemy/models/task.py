@@ -14,7 +14,7 @@ def generate_task_class(pl, tags_tasks_table, users_tasks_table,
 
         id = db.Column(db.Integer, primary_key=True)
         summary = db.Column(db.String(100))
-        description = db.Column(db.String(4000))
+        description = db.Column(db.Text)
         is_done = db.Column(db.Boolean)
         is_deleted = db.Column(db.Boolean)
         order_num = db.Column(db.Integer, nullable=False, default=0)
