@@ -312,18 +312,18 @@ class LogicLayer(object):
             'descendants': descendants,
         }
 
-    def create_new_note(self, task_id, content, current_user):
+    def create_new_comment(self, task_id, content, current_user):
         task = self.pl.get_task(task_id)
         if task is None:
             raise werkzeug.exceptions.NotFound()
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
         timestamp = datetime.now(UTC)
-        note = self.pl.create_note(content, timestamp)
-        note.task = task
-        self.pl.add(note)
+        comment = self.pl.create_comment(content, timestamp)
+        comment.task = task
+        self.pl.add(comment)
         self.pl.commit()
-        return note
+        return comment
 
     def set_task(self, task_id, current_user, summary, description,
                  deadline=None, is_done=False, is_deleted=False,
@@ -844,8 +844,8 @@ class LogicLayer(object):
             results['tasks'] = [t.to_flat_dict() for t in self.pl.get_tasks()]
         if 'tags' in types_to_export:
             results['tags'] = [t.to_flat_dict() for t in self.pl.get_tags()]
-        if 'notes' in types_to_export:
-            results['notes'] = [t.to_flat_dict() for t in self.pl.get_notes()]
+        if 'comments' in types_to_export:
+            results['comments'] = [t.to_flat_dict() for t in self.pl.get_comments()]
         if 'attachments' in types_to_export:
             results['attachments'] = [t.to_flat_dict() for t in
                                       self.pl.get_attachments()]

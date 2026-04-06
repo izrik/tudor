@@ -105,17 +105,17 @@ def import_data(pl, src, keep_id_numbers=True):
                 raise DataImportError('Error loading tag', tag, exc=e)
             db_objects.append(t)
 
-        for note in src['notes']:
+        for comment in src['notes']:
             try:
-                content = note['content']
-                timestamp = note['timestamp']
-                n = pl.create_note(content=content,
+                content = comment['content']
+                timestamp = comment['timestamp']
+                n = pl.create_comment(content=content,
                                    timestamp=timestamp)
                 if keep_id_numbers:
-                    n.id = note['id']
-                note['__object__'] = n
+                    n.id = comment['id']
+                comment['__object__'] = n
             except Exception as e:
-                raise DataImportError('Error loading note', note, exc=e)
+                raise DataImportError('Error loading note/comment', comment, exc=e)
             db_objects.append(n)
 
         for attachment in src['attachments']:
@@ -180,12 +180,12 @@ def import_data(pl, src, keep_id_numbers=True):
             except Exception as e:
                 raise DataImportError('Error connecting task', task, exc=e)
 
-        for note in src['notes']:
+        for comment in src['notes']:
             try:
-                task_map = tasks_by_id[note['task_id']]
-                note['__object__'].task = task_map['__object__']
+                task_map = tasks_by_id[comment['task_id']]
+                comment['__object__'].task = task_map['__object__']
             except Exception as e:
-                raise DataImportError('Error connecting note', note, exc=e)
+                raise DataImportError('Error connecting note/comment', comment, exc=e)
 
         for attachment in src['attachments']:
             try:

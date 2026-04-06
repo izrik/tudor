@@ -8,7 +8,7 @@ class BridgeTest(PersistenceLayerTestBase):
 
     def test_str_is_not_db_object(self):
         # expect
-        self.assertFalse(self.pl._is_db_object('note'))
+        self.assertFalse(self.pl._is_db_object('comment'))
 
     def test_db_task_is_db_object(self):
         # given
