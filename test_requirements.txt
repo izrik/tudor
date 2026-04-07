@@ -2,3 +2,4 @@ GitPython==3.1.46
 coveralls==4.1.0
 pytest==9.0.2
 pytest-postgresql==8.0.0
+pytest-xdist==3.8.0

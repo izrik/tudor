@@ -17,6 +17,9 @@ Tudor is a task management web application built with Flask and SQLAlchemy. It s
 # Run all tests (no coverage)
 pytest tests/
 
+# Run all tests in parallel (significantly faster)
+pytest tests/ -n auto
+
 # Run a specific test file
 pytest tests/test_conversions.py -v
 
