@@ -1,14 +1,12 @@
 FROM python:3.12-alpine
 
-ARG VERSION=unknown
-ARG REVISION=unknown
-
-LABEL Name=tudor
-LABEL Version=$VERSION
-
 RUN mkdir -p /opt/tudor
 
 WORKDIR /opt/tudor
+
+EXPOSE 8080
+ENV TUDOR_PORT=8080 \
+    TUDOR_HOST=0.0.0.0
 
 RUN apk add --no-cache bash
 
@@ -45,11 +43,17 @@ COPY static static
 COPY templates templates
 COPY view view
 
-EXPOSE 8080
-ENV TUDOR_PORT=8080 \
-    TUDOR_HOST=0.0.0.0
+ARG VERSION=unknown
+ARG REVISION=unknown
 
 RUN echo "__version__ = '$VERSION'" > __version__.py
 ENV TUDOR_REVISION="$REVISION"
+
+LABEL \
+    Name="tudor" \
+    Version="$VERSION" \
+    Summary="A task manager app." \
+    Description="A task manager app." \
+    maintaner="izrik <izrik@izrik.com>"
 
 CMD ["/opt/tudor/start.sh"]
