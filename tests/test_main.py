@@ -14,7 +14,7 @@ class MainFunctionTests(unittest.TestCase):
             app = mock_generate.return_value
             from models.option_base import OptionBase
             app.pl.get_schema_version.return_value = \
-                OptionBase('__version__', '0.13')
+                OptionBase('__version__', '0.16')
             folder = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..'))
 
