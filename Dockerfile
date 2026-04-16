@@ -14,7 +14,7 @@ RUN apk add --no-cache bash
 
 RUN apk add --virtual .build-deps gcc musl-dev libffi-dev postgresql-dev g++ && \
     pip install --upgrade pip setuptools wheel  --no-cache-dir && \
-    pip install gunicorn==20.1.0                --no-cache-dir && \
+    pip install gunicorn==25.3.0                --no-cache-dir && \
     pip install psycopg2==2.9.11                --no-cache-dir && \
     apk --purge del .build-deps
 RUN apk add libpq
