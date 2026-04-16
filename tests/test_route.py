@@ -9,71 +9,40 @@ from view.layer import ViewLayer
 
 
 class RouteTest(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         vl = Mock(spec=ViewLayer)
 
-        vl.index = Mock(return_value=('', 606))
-        vl.task_id_add_prioritize_after = Mock(return_value=('', 606))
-        vl.hierarchy = Mock(return_value=('', 606))
-        vl.task_id_add_dependant = Mock(return_value=('', 606))
-        vl.task_purge = Mock(return_value=('', 606))
-        vl.task_up = Mock(return_value=('', 606))
-        vl.task_down = Mock(return_value=('', 606))
-        vl.long_order_change = Mock(return_value=('', 606))
-        vl.deadlines = Mock(return_value=('', 606))
-        vl.task_hierarchy = Mock(return_value=('', 606))
-        vl.task_id_add_dependee = Mock(return_value=('', 606))
-        vl.task_bottom = Mock(return_value=('', 606))
-        vl.task_add_tag = Mock(return_value=('', 606))
-        vl.reset_order_nums = Mock(return_value=('', 606))
-        vl.purge_all = Mock(return_value=('', 606))
-        vl.task_id_add_prioritize_before = Mock(return_value=('', 606))
-        vl.task_mark_undone = Mock(return_value=('', 606))
-        vl.task_id_convert_to_tag = Mock(return_value=('', 606))
-        vl.task_id_remove_dependee = Mock(return_value=('', 606))
-        vl.task_pick_user = Mock(return_value=('', 606))
-        vl.show_hide_done = Mock(return_value=('', 606))
-        vl.export = Mock(return_value=('', 606))
-        vl.task_id_remove_prioritize_after = Mock(return_value=('', 606))
-        vl.task_edit = Mock(return_value=('', 606))
-        vl.task_new_post = Mock(return_value=('', 606))
-        vl.index = Mock(return_value=('', 606))
-        vl.option_delete = Mock(return_value=('', 606))
-        vl.task_crud = Mock(return_value=('', 606))
-        vl.import_ = Mock(return_value=('', 606))
-        vl.task_undelete = Mock(return_value=('', 606))
-        vl.comment_new_post = Mock(return_value=('', 606))
-        vl.task_mark_done = Mock(return_value=('', 606))
-        vl.task_delete_tag = Mock(return_value=('', 606))
-        vl.attachment = Mock(return_value=('', 606))
-        vl.task_id_remove_dependant = Mock(return_value=('', 606))
-        vl.task_id_remove_prioritize_before = Mock(return_value=('', 606))
-        vl.task_authorize_user_user = Mock(return_value=('', 606))
-        vl.tags_id_get = Mock(return_value=('', 606))
-        vl.users = Mock(return_value=('', 606))
-        vl.tags = Mock(return_value=('', 606))
-        vl.task_authorize_user = Mock(return_value=('', 606))
-        vl.users_user_get = Mock(return_value=('', 606))
-        vl.attachment_new = Mock(return_value=('', 606))
-        vl.show_hide_deleted = Mock(return_value=('', 606))
-        vl.logout = Mock(return_value=('', 606))
-        vl.task_delete = Mock(return_value=('', 606))
-        vl.task_new_get = Mock(return_value=('', 606))
-        vl.search = Mock(return_value=('', 606))
-        vl.task = Mock(return_value=('', 606))
-        vl.task_top = Mock(return_value=('', 606))
-        vl.tags_id_edit = Mock(return_value=('', 606))
-        vl.login = Mock(return_value=('', 606))
-        vl.options = Mock(return_value=('', 606))
-        vl.task_deauthorize_user = Mock(return_value=('', 606))
+        for name in [
+            'index', 'task_id_add_prioritize_after', 'hierarchy',
+            'task_id_add_dependant', 'task_purge', 'task_up', 'task_down',
+            'long_order_change', 'deadlines', 'task_hierarchy',
+            'task_id_add_dependee', 'task_bottom', 'task_add_tag',
+            'reset_order_nums', 'purge_all', 'task_id_add_prioritize_before',
+            'task_mark_undone', 'task_id_convert_to_tag',
+            'task_id_remove_dependee', 'task_pick_user', 'show_hide_done',
+            'export', 'task_id_remove_prioritize_after', 'task_edit',
+            'task_new_post', 'option_delete', 'task_crud', 'import_',
+            'task_undelete', 'comment_new_post', 'task_mark_done',
+            'task_delete_tag', 'attachment', 'task_id_remove_dependant',
+            'task_id_remove_prioritize_before', 'task_authorize_user_user',
+            'tags_id_get', 'users', 'tags', 'task_authorize_user',
+            'users_user_get', 'attachment_new', 'show_hide_deleted', 'logout',
+            'task_delete', 'task_new_get', 'search', 'task', 'task_top',
+            'tags_id_edit', 'login', 'options', 'task_deauthorize_user',
+        ]:
+            getattr(vl, name).return_value = ('', 606)
 
         ll = Mock()
         pl = Mock()
-        self.app = generate_app(vl=vl, ll=ll, pl=pl,
-                                flask_configs={'LOGIN_DISABLED': True},
-                                secret_key='12345', disable_admin_check=True)
-        self.client = self.app.test_client()
-        self.vl = vl
+        cls.app = generate_app(vl=vl, ll=ll, pl=pl,
+                               flask_configs={'LOGIN_DISABLED': True},
+                               secret_key='12345', disable_admin_check=True)
+        cls.client = cls.app.test_client()
+        cls.vl = vl
+
+    def setUp(self):
+        self.vl.reset_mock(return_value=False, side_effect=False)
 
     def test_index_get(self):
         resp = self.client.get('/')
