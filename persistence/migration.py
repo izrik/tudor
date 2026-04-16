@@ -1,4 +1,19 @@
+import os
+import re
 from sqlalchemy import text
+
+
+def get_highest_migration_version():
+    from packaging.version import parse
+    migrations_dir = os.path.join(os.path.dirname(__file__), 'migrations')
+    highest = None
+    for fname in os.listdir(migrations_dir):
+        m = re.match(r'^v(\d+\.\d+)\.sql$', fname)
+        if m:
+            v = parse(m.group(1))
+            if highest is None or v > highest:
+                highest = v
+    return highest.public if highest else None
 
 
 def auto_migrate(pl, desired_version, *, _fs=None, _print=None):
@@ -38,19 +53,10 @@ def auto_migrate(pl, desired_version, *, _fs=None, _print=None):
                 script = f.read()
                 _print(f'Running migration script for v{current_version}')
                 pl.execute(text(script))
-                pl.commit()
         else:
             _print(f'No migration script found for v{current_version}')
-            pl.execute(text("update option "
-                            f"set value = '{current_version}' "
-                            "where key = '__version__';"))
-            pl.commit()
-
-    current_version = pl.get_schema_version().value
-    if current_version != desired_version:
-        # set the value
         pl.execute(text("update option "
-                        f"set value = '{desired_version}' "
+                        f"set value = '{current_version}' "
                         "where key = '__version__';"))
         pl.commit()
 

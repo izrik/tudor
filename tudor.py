@@ -927,9 +927,11 @@ def main(argv):
         if not current:
             current = '0.0'
         current = parse(parse(current).base_version)
-        try:
-            desired = parse(parse(__version__).base_version)
-        except InvalidVersion:
+        from persistence.migration import get_highest_migration_version
+        highest = get_highest_migration_version()
+        if highest:
+            desired = parse(highest)
+        else:
             desired = current
         if current < desired:
             print(f'Wrong DB schema version. Expected {desired.public} but got '
