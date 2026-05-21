@@ -30,6 +30,7 @@ COPY collections_util.py \
      gtudor.py \
      LICENSE \
      logging_util.py \
+     markdown_util.py \
      README.md \
      requirements.txt \
      tudor.py \

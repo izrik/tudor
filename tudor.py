@@ -14,7 +14,7 @@ from markupsafe import Markup
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager, login_required, current_user
 from flask_sqlalchemy import SQLAlchemy
-import pycmarkgfm
+from markdown_util import gfm_to_html
 
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
@@ -603,9 +603,7 @@ def generate_app(db_uri=None,
 
     @app.template_filter(name='gfm')
     def render_gfm(s):
-        output = pycmarkgfm.gfm_to_html(s)
-        moutput = Markup(output)
-        return moutput
+        return Markup(gfm_to_html(s))
 
     app.add_url_rule('/', None, index)
     app.add_url_rule('/hierarchy', None, hierarchy)
