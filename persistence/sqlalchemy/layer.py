@@ -231,37 +231,6 @@ class SqlAlchemyPersistenceLayer(object):
             apply_option_to_db(option, db_option)
         return db_option
 
-    def _get_db_tag(self, tag_id):
-        if tag_id is None:
-            return None
-        stmt = select(self.DbTag).where(self.DbTag.id == tag_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_comment(self, comment_id):
-        if comment_id is None:
-            return None
-        stmt = select(self.DbComment).where(self.DbComment.id == comment_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_attachment(self, attachment_id):
-        if attachment_id is None:
-            return None
-        stmt = select(self.DbAttachment).where(
-            self.DbAttachment.id == attachment_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_user(self, user_id):
-        if user_id is None:
-            return None
-        stmt = select(self.DbUser).where(self.DbUser.id == user_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_option(self, key):
-        if key is None:
-            return None
-        stmt = select(self.DbOption).where(self.DbOption.key == key)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
     def commit(self):
         self._logger.debug('begin')
         ###############
