@@ -813,3 +813,85 @@ class InMemoryPersistenceLayer(object):
                 'Unknown object type: {}, {}, "{}"'.format(
                     domobj, type(domobj).__name__, tt))
         return tt
+
+    # Association setters
+
+    def add_tag_to_task(self, task_id, tag_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_tag = self._tags_by_id.get(tag_id)
+        if stored_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if stored_tag not in stored_task.tags:
+            stored_task.tags.append(stored_tag)
+
+    def remove_tag_from_task(self, task_id, tag_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_tag = self._tags_by_id.get(tag_id)
+        if stored_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if stored_tag in stored_task.tags:
+            stored_task.tags.remove(stored_tag)
+
+    def add_user_to_task(self, task_id, user_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_user = self._users_by_id.get(user_id)
+        if stored_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if stored_user not in stored_task.users:
+            stored_task.users.append(stored_user)
+
+    def remove_user_from_task(self, task_id, user_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_user = self._users_by_id.get(user_id)
+        if stored_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if stored_user in stored_task.users:
+            stored_task.users.remove(stored_user)
+
+    def add_dependency(self, dependant_id, dependee_id):
+        stored_dependant = self._tasks_by_id.get(dependant_id)
+        if stored_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        stored_dependee = self._tasks_by_id.get(dependee_id)
+        if stored_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if stored_dependee not in stored_dependant.dependees:
+            stored_dependant.dependees.append(stored_dependee)
+
+    def remove_dependency(self, dependant_id, dependee_id):
+        stored_dependant = self._tasks_by_id.get(dependant_id)
+        if stored_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        stored_dependee = self._tasks_by_id.get(dependee_id)
+        if stored_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if stored_dependee in stored_dependant.dependees:
+            stored_dependant.dependees.remove(stored_dependee)
+
+    def add_priority(self, before_id, after_id):
+        stored_after = self._tasks_by_id.get(after_id)
+        if stored_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        stored_before = self._tasks_by_id.get(before_id)
+        if stored_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if stored_before not in stored_after.prioritize_before:
+            stored_after.prioritize_before.append(stored_before)
+
+    def remove_priority(self, before_id, after_id):
+        stored_after = self._tasks_by_id.get(after_id)
+        if stored_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        stored_before = self._tasks_by_id.get(before_id)
+        if stored_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if stored_before in stored_after.prioritize_before:
+            stored_after.prioritize_before.remove(stored_before)

@@ -801,3 +801,93 @@ class SqlAlchemyPersistenceLayer(object):
         query = self._get_options_query(key_in=key_in)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
+
+    # Association setters
+
+    def add_tag_to_task(self, task_id, tag_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_tag = self._get_db_tag(tag_id)
+        if db_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if db_tag not in db_task.tags:
+            db_task.tags.append(db_tag)
+        self.db.session.commit()
+
+    def remove_tag_from_task(self, task_id, tag_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_tag = self._get_db_tag(tag_id)
+        if db_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if db_tag in db_task.tags:
+            db_task.tags.remove(db_tag)
+        self.db.session.commit()
+
+    def add_user_to_task(self, task_id, user_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_user = self._get_db_user(user_id)
+        if db_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if db_user not in db_task.users:
+            db_task.users.append(db_user)
+        self.db.session.commit()
+
+    def remove_user_from_task(self, task_id, user_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_user = self._get_db_user(user_id)
+        if db_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if db_user in db_task.users:
+            db_task.users.remove(db_user)
+        self.db.session.commit()
+
+    def add_dependency(self, dependant_id, dependee_id):
+        db_dependant = self._get_db_task(dependant_id)
+        if db_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        db_dependee = self._get_db_task(dependee_id)
+        if db_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if db_dependee not in db_dependant.dependees:
+            db_dependant.dependees.append(db_dependee)
+        self.db.session.commit()
+
+    def remove_dependency(self, dependant_id, dependee_id):
+        db_dependant = self._get_db_task(dependant_id)
+        if db_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        db_dependee = self._get_db_task(dependee_id)
+        if db_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if db_dependee in db_dependant.dependees:
+            db_dependant.dependees.remove(db_dependee)
+        self.db.session.commit()
+
+    def add_priority(self, before_id, after_id):
+        db_after = self._get_db_task(after_id)
+        if db_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        db_before = self._get_db_task(before_id)
+        if db_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if db_before not in db_after.prioritize_before:
+            db_after.prioritize_before.append(db_before)
+        self.db.session.commit()
+
+    def remove_priority(self, before_id, after_id):
+        db_after = self._get_db_task(after_id)
+        if db_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        db_before = self._get_db_task(before_id)
+        if db_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if db_before in db_after.prioritize_before:
+            db_after.prioritize_before.remove(db_before)
+        self.db.session.commit()
