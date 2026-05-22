@@ -1021,16 +1021,16 @@ class LogicLayer(object):
         current_timestamp = datetime.now(UTC)
         original_tags = list(self.pl.get_tags(task_id=task.id))
         children = list(self.pl.get_tasks(parent_id=task.id))
-        original_parent = task.parent
+        original_parent_id = task.parent_id
         for child in children:
             self.pl.add_tag_to_task(child.id, tag.id)
-            child.parent = original_parent
+            self.pl.set_parent(child.id, original_parent_id)
             for tag2 in original_tags:
                 self.pl.add_tag_to_task(child.id, tag2.id)
             child.date_last_updated = current_timestamp
             self.pl.add(child)
 
-        task.parent = None
+        self.pl.set_parent(task.id, None)
 
         self.pl.delete(task)
 
