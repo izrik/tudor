@@ -296,15 +296,20 @@ class InMemoryPersistenceLayer(object):
             raise ValueError('No attachment_id provided.')
         return self._attachments_by_id.get(attachment_id)
 
-    def get_attachments(self, attachment_id_in=UNSPECIFIED):
+    def get_attachments(self, attachment_id_in=UNSPECIFIED,
+                        task_id=UNSPECIFIED):
         query = (_ for _ in self._attachments)
         if attachment_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in attachment_id_in)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if _.task is not None and _.task.id == task_id)
         return query
 
-    def count_attachments(self, attachment_id_in=UNSPECIFIED):
-        return len(
-            list(self.get_attachments(attachment_id_in=attachment_id_in)))
+    def count_attachments(self, attachment_id_in=UNSPECIFIED,
+                          task_id=UNSPECIFIED):
+        return len(list(self.get_attachments(
+            attachment_id_in=attachment_id_in, task_id=task_id)))
 
     def create_comment(self, content, timestamp=None, lazy=None):
         return Comment(content=content, timestamp=timestamp, lazy=lazy)
@@ -314,14 +319,18 @@ class InMemoryPersistenceLayer(object):
             raise ValueError('No comment_id provided.')
         return self._comments_by_id.get(comment_id)
 
-    def get_comments(self, comment_id_in=UNSPECIFIED):
+    def get_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
         query = self._comments
         if comment_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in comment_id_in)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if _.task is not None and _.task.id == task_id)
         return query
 
-    def count_comments(self, comment_id_in=UNSPECIFIED):
-        return len(list(self.get_comments(comment_id_in=comment_id_in)))
+    def count_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        return len(list(self.get_comments(
+            comment_id_in=comment_id_in, task_id=task_id)))
 
     def create_option(self, key, value):
         return Option(key=key, value=value)

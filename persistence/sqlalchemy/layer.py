@@ -596,7 +596,8 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('comment_id acannot be None')
         return self._get_db_comment(comment_id)
 
-    def _get_comments_query(self, comment_id_in=UNSPECIFIED):
+    def _get_comments_query(self, comment_id_in=UNSPECIFIED,
+                            task_id=UNSPECIFIED):
         query = select(self.DbComment)
         if comment_id_in is not self.UNSPECIFIED:
             if comment_id_in:
@@ -604,14 +605,18 @@ class SqlAlchemyPersistenceLayer(object):
             else:
                 # performance improvement
                 query = query.where(false())
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbComment.task_id == task_id)
         return query
 
-    def get_comments(self, comment_id_in=UNSPECIFIED):
-        query = self._get_comments_query(comment_id_in=comment_id_in)
+    def get_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_comments_query(comment_id_in=comment_id_in,
+                                         task_id=task_id)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_comments(self, comment_id_in=UNSPECIFIED):
-        query = self._get_comments_query(comment_id_in=comment_id_in)
+    def count_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_comments_query(comment_id_in=comment_id_in,
+                                         task_id=task_id)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -636,7 +641,8 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('attachment_id acannot be None')
         return self._get_db_attachment(attachment_id)
 
-    def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
+    def _get_attachments_query(self, attachment_id_in=UNSPECIFIED,
+                               task_id=UNSPECIFIED):
         query = select(self.DbAttachment)
         if attachment_id_in is not self.UNSPECIFIED:
             if attachment_id_in:
@@ -644,15 +650,20 @@ class SqlAlchemyPersistenceLayer(object):
                     self.DbAttachment.id.in_(attachment_id_in))
             else:
                 query = query.where(false())
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbAttachment.task_id == task_id)
         return query
 
-    def get_attachments(self, attachment_id_in=UNSPECIFIED):
-        query = self._get_attachments_query(attachment_id_in=attachment_id_in)
+    def get_attachments(self, attachment_id_in=UNSPECIFIED,
+                        task_id=UNSPECIFIED):
+        query = self._get_attachments_query(
+            attachment_id_in=attachment_id_in, task_id=task_id)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_attachments(self, attachment_id_in=UNSPECIFIED):
+    def count_attachments(self, attachment_id_in=UNSPECIFIED,
+                          task_id=UNSPECIFIED):
         query = self._get_attachments_query(
-            attachment_id_in=attachment_id_in)
+            attachment_id_in=attachment_id_in, task_id=task_id)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
