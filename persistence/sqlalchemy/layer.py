@@ -331,6 +331,7 @@ class SqlAlchemyPersistenceLayer(object):
                          summary_description_search_term=UNSPECIFIED,
                          order_num_greq_than=UNSPECIFIED,
                          order_num_lesseq_than=UNSPECIFIED,
+                         tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
                          order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
@@ -406,6 +407,12 @@ class SqlAlchemyPersistenceLayer(object):
         if tags_contains is not self.UNSPECIFIED:
             query = query.where(self.DbTask.tags.any(id=tags_contains.id))
 
+        if tag_id is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.tags.any(id=tag_id))
+
+        if user_id is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.users.any(id=user_id))
+
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
             query = query.where(
@@ -454,8 +461,9 @@ class SqlAlchemyPersistenceLayer(object):
                   is_public_or_users_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
-                  order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
-                  limit=UNSPECIFIED):
+                  order_num_lesseq_than=UNSPECIFIED,
+                  tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -465,8 +473,9 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-             limit=limit)
+            order_num_lesseq_than=order_num_lesseq_than,
+            tag_id=tag_id, user_id=user_id,
+            order_by=order_by, limit=limit)
         return (_ for _ in self.db.session.execute(query).scalars())
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
@@ -522,8 +531,9 @@ class SqlAlchemyPersistenceLayer(object):
                     is_public_or_users_contains=UNSPECIFIED,
                     summary_description_search_term=UNSPECIFIED,
                     order_num_greq_than=UNSPECIFIED,
-                    order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
-                    limit=UNSPECIFIED):
+                    order_num_lesseq_than=UNSPECIFIED,
+                    tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                    order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -533,8 +543,9 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-            limit=limit)
+            order_num_lesseq_than=order_num_lesseq_than,
+            tag_id=tag_id, user_id=user_id,
+            order_by=order_by, limit=limit)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -557,20 +568,23 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('tag_id cannot be None')
         return self._get_db_tag(tag_id)
 
-    def _get_tags_query(self, value=UNSPECIFIED, limit=None):
+    def _get_tags_query(self, value=UNSPECIFIED, task_id=UNSPECIFIED,
+                        limit=None):
         query = select(self.DbTag)
         if value is not self.UNSPECIFIED:
             query = query.where(self.DbTag.value == value)
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbTag.tasks.any(id=task_id))
         if limit is not None:
             query = query.limit(limit)
         return query
 
-    def get_tags(self, value=UNSPECIFIED, limit=None):
-        query = self._get_tags_query(value=value, limit=limit)
+    def get_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
+        query = self._get_tags_query(value=value, task_id=task_id, limit=limit)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_tags(self, value=UNSPECIFIED, limit=None):
-        query = self._get_tags_query(value=value, limit=limit)
+    def count_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
+        query = self._get_tags_query(value=value, task_id=task_id, limit=limit)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -701,7 +715,7 @@ class SqlAlchemyPersistenceLayer(object):
         stmt = select(self.DbUser).where(self.DbUser.email == email)
         return self.db.session.execute(stmt).scalars().first()
 
-    def _get_users_query(self, email_in=UNSPECIFIED):
+    def _get_users_query(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
         query = select(self.DbUser)
         if email_in is not self.UNSPECIFIED:
             if email_in:
@@ -709,14 +723,16 @@ class SqlAlchemyPersistenceLayer(object):
             else:
                 # avoid performance penalty
                 query = query.where(false())
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbUser.tasks.any(id=task_id))
         return query
 
-    def get_users(self, email_in=UNSPECIFIED):
-        query = self._get_users_query(email_in=email_in)
+    def get_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_users_query(email_in=email_in, task_id=task_id)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_users(self, email_in=UNSPECIFIED):
-        query = self._get_users_query(email_in=email_in)
+    def count_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_users_query(email_in=email_in, task_id=task_id)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 

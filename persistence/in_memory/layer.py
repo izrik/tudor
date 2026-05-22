@@ -98,8 +98,9 @@ class InMemoryPersistenceLayer(object):
                   is_public_or_users_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
-                  order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
-                  limit=UNSPECIFIED):
+                  order_num_lesseq_than=UNSPECIFIED,
+                  tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         query = self._tasks
 
@@ -139,6 +140,14 @@ class InMemoryPersistenceLayer(object):
 
         if tags_contains is not self.UNSPECIFIED:
             query = (_ for _ in query if tags_contains in _.tags)
+
+        if tag_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == tag_id for t in _.tags))
+
+        if user_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(u.id == user_id for u in _.users))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             term = summary_description_search_term
@@ -275,16 +284,20 @@ class InMemoryPersistenceLayer(object):
     def get_tag_by_value(self, value):
         return self._tags_by_value.get(value)
 
-    def get_tags(self, value=UNSPECIFIED, limit=None):
+    def get_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
         query = self._tags
         if value is not self.UNSPECIFIED:
             query = (_ for _ in query if _.value == value)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == task_id for t in _.tasks))
         if limit is not None:
             query = islice(query, limit)
         return query
 
-    def count_tags(self, value=UNSPECIFIED, limit=None):
-        return len(list(self.get_tags(value=value, limit=limit)))
+    def count_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
+        return len(list(self.get_tags(
+            value=value, task_id=task_id, limit=limit)))
 
     def create_attachment(self, path, description=None, timestamp=None,
                           filename=None, lazy=None):
@@ -372,14 +385,18 @@ class InMemoryPersistenceLayer(object):
     def get_user_by_email(self, email):
         return self._users_by_email.get(email)
 
-    def get_users(self, email_in=UNSPECIFIED):
+    def get_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
         query = self._users
         if email_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.email in email_in)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == task_id for t in _.tasks))
         return query
 
-    def count_users(self, email_in=UNSPECIFIED):
-        return len(list(self.get_users(email_in=email_in)))
+    def count_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        return len(list(self.get_users(
+            email_in=email_in, task_id=task_id)))
 
     def add(self, obj):
         if obj in self._added_objects:
