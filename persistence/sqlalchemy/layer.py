@@ -332,6 +332,9 @@ class SqlAlchemyPersistenceLayer(object):
                          order_num_greq_than=UNSPECIFIED,
                          order_num_lesseq_than=UNSPECIFIED,
                          tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                         dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                         prioritized_before=UNSPECIFIED,
+                         prioritized_after=UNSPECIFIED,
                          order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
@@ -413,6 +416,20 @@ class SqlAlchemyPersistenceLayer(object):
         if user_id is not self.UNSPECIFIED:
             query = query.where(self.DbTask.users.any(id=user_id))
 
+        if dependee_of is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.dependants.any(id=dependee_of))
+
+        if dependant_of is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.dependees.any(id=dependant_of))
+
+        if prioritized_before is not self.UNSPECIFIED:
+            query = query.where(
+                self.DbTask.prioritize_after.any(id=prioritized_before))
+
+        if prioritized_after is not self.UNSPECIFIED:
+            query = query.where(
+                self.DbTask.prioritize_before.any(id=prioritized_after))
+
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
             query = query.where(
@@ -463,6 +480,9 @@ class SqlAlchemyPersistenceLayer(object):
                   order_num_greq_than=UNSPECIFIED,
                   order_num_lesseq_than=UNSPECIFIED,
                   tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                  dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                  prioritized_before=UNSPECIFIED,
+                  prioritized_after=UNSPECIFIED,
                   order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
@@ -475,6 +495,9 @@ class SqlAlchemyPersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than,
             tag_id=tag_id, user_id=user_id,
+            dependee_of=dependee_of, dependant_of=dependant_of,
+            prioritized_before=prioritized_before,
+            prioritized_after=prioritized_after,
             order_by=order_by, limit=limit)
         return (_ for _ in self.db.session.execute(query).scalars())
 
@@ -533,6 +556,9 @@ class SqlAlchemyPersistenceLayer(object):
                     order_num_greq_than=UNSPECIFIED,
                     order_num_lesseq_than=UNSPECIFIED,
                     tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                    dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                    prioritized_before=UNSPECIFIED,
+                    prioritized_after=UNSPECIFIED,
                     order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
@@ -545,6 +571,9 @@ class SqlAlchemyPersistenceLayer(object):
             order_num_greq_than=order_num_greq_than,
             order_num_lesseq_than=order_num_lesseq_than,
             tag_id=tag_id, user_id=user_id,
+            dependee_of=dependee_of, dependant_of=dependant_of,
+            prioritized_before=prioritized_before,
+            prioritized_after=prioritized_after,
             order_by=order_by, limit=limit)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()

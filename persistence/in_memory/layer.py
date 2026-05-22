@@ -100,6 +100,9 @@ class InMemoryPersistenceLayer(object):
                   order_num_greq_than=UNSPECIFIED,
                   order_num_lesseq_than=UNSPECIFIED,
                   tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                  dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                  prioritized_before=UNSPECIFIED,
+                  prioritized_after=UNSPECIFIED,
                   order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         query = self._tasks
@@ -148,6 +151,24 @@ class InMemoryPersistenceLayer(object):
         if user_id is not self.UNSPECIFIED:
             query = (_ for _ in query
                      if any(u.id == user_id for u in _.users))
+
+        if dependee_of is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == dependee_of for t in _.dependants))
+
+        if dependant_of is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == dependant_of for t in _.dependees))
+
+        if prioritized_before is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == prioritized_before
+                            for t in _.prioritize_after))
+
+        if prioritized_after is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == prioritized_after
+                            for t in _.prioritize_before))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             term = summary_description_search_term
