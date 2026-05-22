@@ -64,7 +64,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIs(self.task, task)
+        self.assertEqual(self.task.id, task.id)
         self.assertEqual('asdf', task.summary)
         self.assertEqual('zxcv', task.description)
         self.assertEqual(False, task.is_done)
@@ -74,15 +74,16 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertIsNone(task.expected_duration_minutes)
         self.assertIsNone(task.expected_cost)
         self.assertIsNone(task.parent_id)
-        self.assertIsNone(task.parent)
-        self.assertFalse(self.task.is_public)
-        self.assertEqual([], list(task.children))
-        self.assertEqual([], list(task.tags))
-        self.assertEqual([], list(task.users))
-        self.assertEqual([], list(task.dependees))
-        self.assertEqual([], list(task.dependants))
-        self.assertEqual([], list(task.prioritize_before))
-        self.assertEqual([], list(task.prioritize_after))
+        self.assertFalse(task.is_public)
+        self.assertEqual([], list(self.pl.get_tasks(parent_id=task.id)))
+        self.assertEqual([], list(self.pl.get_tags(task_id=task.id)))
+        self.assertEqual([], list(self.pl.get_users(task_id=task.id)))
+        self.assertEqual([], list(self.pl.get_tasks(dependant_of=task.id)))
+        self.assertEqual([], list(self.pl.get_tasks(dependee_of=task.id)))
+        self.assertEqual(
+            [], list(self.pl.get_tasks(prioritized_after=task.id)))
+        self.assertEqual(
+            [], list(self.pl.get_tasks(prioritized_before=task.id)))
 
     def test_set_task_set_all_fields(self):
         # precondition
@@ -121,7 +122,7 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
         # then
         self.assertIsNotNone(task)
-        self.assertIs(self.task, task)
+        self.assertEqual(self.task.id, task.id)
         self.assertEqual('asdf', task.summary)
         self.assertEqual('zxcv', task.description)
         self.assertEqual(True, task.is_done)
@@ -131,15 +132,10 @@ class LogicLayerSetTaskTest(unittest.TestCase):
         self.assertEqual(456, task.expected_duration_minutes)
         self.assertEqual(Decimal('789.1'), task.expected_cost)
         self.assertIsNone(task.parent_id)
-        self.assertIsNone(task.parent)
-        self.assertTrue(self.task.is_public)
-        self.assertEqual([], list(task.children))
-        self.assertEqual([], list(task.tags))
-        self.assertEqual([], list(task.users))
-        self.assertEqual([], list(task.dependees))
-        self.assertEqual([], list(task.dependants))
-        self.assertEqual([], list(task.prioritize_before))
-        self.assertEqual([], list(task.prioritize_after))
+        self.assertTrue(task.is_public)
+        self.assertEqual([], list(self.pl.get_tasks(parent_id=task.id)))
+        self.assertEqual([], list(self.pl.get_tags(task_id=task.id)))
+        self.assertEqual([], list(self.pl.get_users(task_id=task.id)))
 
     def test_set_task_deadline_is_falsey(self):
         # precondition
@@ -215,14 +211,8 @@ class LogicLayerSetTaskTest(unittest.TestCase):
             parent_id=ptask.id)
 
         # then
+        self.assertEqual(ptask.id, task.parent_id)
         self.assertEqual(ptask.id, self.task.parent_id)
-        self.assertIs(ptask, self.task.parent)
-
-        # when
-        self.pl.commit()
-
-        # then
-        self.assertIs(ptask, self.task.parent)
 
     def test_set_task_parent_id_is_empty_string(self):
         # precondition

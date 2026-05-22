@@ -341,10 +341,10 @@ class LogicLayer(object):
                  order_num=None, duration=None, expected_cost=None,
                  parent_id=None, is_public=False):
 
-        task = self.pl.get_task(task_id)
-        if task is None:
+        existing = self.pl.get_task(task_id)
+        if existing is None:
             raise werkzeug.exceptions.NotFound()
-        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
+        if not TaskUserOps.is_user_authorized_or_admin(existing, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         if deadline is None:
@@ -361,40 +361,28 @@ class LogicLayer(object):
         if order_num is None:
             order_num = 0
 
-        if parent_id is None:
-            parent = None
-        elif parent_id == '':
-            parent = None
+        if parent_id is None or parent_id == '':
+            parent_id = None
         else:
             parent = self.pl.get_task(parent_id)
-            if parent:
-                pass
-            else:
+            if parent is None:
                 parent_id = None
-                parent = None
 
-        task.summary = summary
-        task.description = description
-
-        task.deadline = deadline
-
-        task.is_done = is_done
-        task.is_deleted = is_deleted
-
-        task.order_num = order_num
-
-        task.expected_duration_minutes = duration
-
-        task.expected_cost = expected_cost
-
-        task.parent = parent
-
-        task.is_public = is_public
-
-        task.date_last_updated = datetime.now(UTC)
-
-        self.pl.commit()
-
+        task = Task(
+            id=task_id,
+            summary=summary,
+            description=description if description is not None else '',
+            deadline=deadline,
+            is_done=is_done,
+            is_deleted=is_deleted,
+            order_num=order_num,
+            expected_duration_minutes=duration,
+            expected_cost=expected_cost,
+            parent_id=parent_id,
+            is_public=is_public,
+            date_created=existing.date_created,
+            date_last_updated=datetime.now(UTC))
+        self.pl.save(task)
         return task
 
     def get_edit_task_data(self, id, current_user):
