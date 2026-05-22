@@ -164,7 +164,7 @@ class LogicLayer(object):
                 current_user=current_user
             )
             # copy tags
-            for tag in child.tags:
+            for tag in list(self.pl.get_tags(task_id=child.id)):
                 self.do_add_tag_to_task(new_child, tag.value, current_user)
             # recursively clone grandchildren
             self.clone_task_children_recursive(child.id, new_child.id, current_user)
@@ -752,10 +752,12 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if user_to_deauthorize not in task.users:
+        authorized_user_ids = [u.id for u in
+                               self.pl.get_users(task_id=task.id)]
+        if user_to_deauthorize.id not in authorized_user_ids:
             return task
 
-        if len(task.users) < 2:
+        if len(authorized_user_ids) < 2:
             # TODO: maybe re-think this. the task is never inaccessible to
             # admins, after all.
             raise werkzeug.exceptions.Conflict(
@@ -763,12 +765,7 @@ class LogicLayer(object):
                 "user for the task. De-authorizing the user would make the "
                 "task inaccessible.")
 
-        task.users.remove(user_to_deauthorize)
-        self.pl.add(task)
-        self.pl.add(user_to_deauthorize)
-
-        self.pl.commit()
-
+        self.pl.remove_user_from_task(task.id, user_to_deauthorize.id)
         return task
 
     def do_add_new_user(self, email, is_admin=False):
@@ -1019,13 +1016,17 @@ class LogicLayer(object):
 
         tag = self.pl.create_tag(task.summary, task.description)
         self.pl.add(tag)
+        self.pl.commit()
 
         current_timestamp = datetime.now(UTC)
-        for child in list(task.children):
-            child.tags.append(tag)
-            child.parent = task.parent
-            for tag2 in task.tags:
-                child.tags.append(tag2)
+        original_tags = list(self.pl.get_tags(task_id=task.id))
+        children = list(self.pl.get_tasks(parent_id=task.id))
+        original_parent = task.parent
+        for child in children:
+            self.pl.add_tag_to_task(child.id, tag.id)
+            child.parent = original_parent
+            for tag2 in original_tags:
+                self.pl.add_tag_to_task(child.id, tag2.id)
             child.date_last_updated = current_timestamp
             self.pl.add(child)
 
