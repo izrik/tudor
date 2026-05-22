@@ -648,13 +648,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
 
         tag = self.get_or_create_tag(value)
-
-        if tag not in task.tags:
-            task.tags.append(tag)
-            self.pl.add(task)
-
-        self.pl.commit()
-
+        self.pl.add_tag_to_task(task.id, tag.id)
         return tag
 
     def get_or_create_tag(self, value):
@@ -678,13 +672,7 @@ class LogicLayer(object):
 
         tag = self.pl.get_tag(tag_id)
         if tag is not None:
-            if tag in task.tags:
-                task.tags.remove(tag)
-                self.pl.add(task)
-                self.pl.add(tag)
-
-        self.pl.commit()
-
+            self.pl.remove_tag_from_task(task.id, tag.id)
         return tag
 
     def do_authorize_user_for_task(self, task, user_to_authorize,
@@ -698,11 +686,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if user_to_authorize not in task.users:
-            task.users.append(user_to_authorize)
-
-        self.pl.commit()
-
+        self.pl.add_user_to_task(task.id, user_to_authorize.id)
         return task
 
     def do_authorize_user_for_task_by_email(self, task_id, user_email,
@@ -1252,11 +1236,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(dependee, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if dependee not in task.dependees:
-            task.dependees.append(dependee)
-
-        self.pl.commit()
-
+        self.pl.add_dependency(task.id, dependee.id)
         return task, dependee
 
     def do_remove_dependee_from_task(self, task_id, dependee_id, current_user):
@@ -1281,13 +1261,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(dependee, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if dependee in task.dependees:
-            task.dependees.remove(dependee)
-            self.pl.add(task)
-            self.pl.add(dependee)
-
-        self.pl.commit()
-
+        self.pl.remove_dependency(task.id, dependee.id)
         return task, dependee
 
     def do_add_dependant_to_task(self, task_id, dependant_id, current_user):
@@ -1340,11 +1314,7 @@ class LogicLayer(object):
                                                        current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if prioritize_before not in task.prioritize_before:
-            task.prioritize_before.append(prioritize_before)
-
-        self.pl.commit()
-
+        self.pl.add_priority(prioritize_before.id, task.id)
         return task, prioritize_before
 
     def do_remove_prioritize_before_from_task(self, task_id,
@@ -1372,13 +1342,7 @@ class LogicLayer(object):
                                                        current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        if prioritize_before in task.prioritize_before:
-            task.prioritize_before.remove(prioritize_before)
-            self.pl.add(task)
-            self.pl.add(prioritize_before)
-
-        self.pl.commit()
-
+        self.pl.remove_priority(prioritize_before.id, task.id)
         return task, prioritize_before
 
     def do_add_prioritize_after_to_task(self, task_id, prioritize_after_id,
