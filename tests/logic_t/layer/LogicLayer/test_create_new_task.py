@@ -17,6 +17,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.pl.add(self.admin)
         self.user = self.pl.create_user('name2@example.org', None, False)
         self.pl.add(self.user)
+        self.pl.commit()
 
     def test_admin_adds_first_task(self):
         # when
@@ -26,7 +27,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.assertIsNotNone(task)
         self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('t1', task.summary)
-        self.assertIsNone(task.parent)
+        self.assertIsNone(task.parent_id)
         self.assertEqual(0, task.order_num)
 
     def test_admin_adds_second_task(self):
@@ -43,7 +44,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.assertIsNotNone(task)
         self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('t2', task.summary)
-        self.assertIsNone(task.parent)
+        self.assertIsNone(task.parent_id)
 
     def test_admin_adds_child_task_to_parent(self):
         # given
@@ -61,7 +62,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.assertIsNotNone(task)
         self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('c', task.summary)
-        self.assertIs(p, task.parent)
+        self.assertEqual(p.id, task.parent_id)
 
     def test_user_adds_task_to_authorized_parent_succeeds(self):
         # given
@@ -80,7 +81,7 @@ class CreateNewTaskTest(unittest.TestCase):
         self.assertIsNotNone(task)
         self.assertEqual(task.object_type, ObjectTypes.Task)
         self.assertEqual('c', task.summary)
-        self.assertIs(p, task.parent)
+        self.assertEqual(p.id, task.parent_id)
 
     def test_user_adds_task_to_non_authorized_parent_raises_403(self):
         # given

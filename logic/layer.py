@@ -14,6 +14,7 @@ from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
 from .data_import_error import DataImportError
 from models.object_types import ObjectTypes
+from models.task import Task
 from models.task_user_ops import TaskUserOps
 
 
@@ -96,17 +97,6 @@ class LogicLayer(object):
                         expected_duration_minutes=None, expected_cost=None,
                         order_num=None, parent_id=None, is_public=None):
         self._logger.debug('begin')
-        self._logger.debug('creating the new task')
-        date_created = datetime.now(UTC)
-        date_last_updated = date_created
-        task = self.pl.create_task(
-            summary=summary, description=description, is_done=is_done,
-            is_deleted=is_deleted, deadline=deadline,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, is_public=is_public,
-            date_created=date_created,
-            date_last_updated=date_last_updated,
-        )
 
         if order_num is None:
             self._logger.debug('order_num not set, calculating')
@@ -115,8 +105,6 @@ class LogicLayer(object):
                 order_num -= 2
             else:
                 order_num = 0
-
-        task.order_num = order_num
 
         if parent_id is not None:
             self._logger.debug('parent_id specified. looking it up (%d)',
@@ -128,16 +116,26 @@ class LogicLayer(object):
                 self._logger.debug('User (%d) not authorized for parent (%d)',
                                    current_user.id, parent_id)
                 raise werkzeug.exceptions.Forbidden()
-            task.parent = parent
 
+        date_created = datetime.now(UTC)
+        task = Task(
+            summary=summary,
+            description=description if description is not None else '',
+            is_done=is_done if is_done is not None else False,
+            is_deleted=is_deleted if is_deleted is not None else False,
+            deadline=deadline,
+            expected_duration_minutes=expected_duration_minutes,
+            expected_cost=expected_cost,
+            order_num=order_num,
+            parent_id=parent_id,
+            is_public=is_public if is_public is not None else False,
+            date_created=date_created,
+            date_last_updated=date_created)
+
+        self._logger.debug('saving the task')
+        self.pl.save(task)
         self._logger.debug('authorizing the current user for this task')
-        task.users.append(current_user)
-
-        self._logger.debug('adding the task to the session')
-        self.pl.add(task)
-        self._logger.debug('committing')
-        self.pl.commit()
-
+        self.pl.add_user_to_task(task.id, current_user.id)
         self._logger.debug('end')
         return task
 
