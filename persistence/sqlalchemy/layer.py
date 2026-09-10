@@ -4,6 +4,15 @@ from numbers import Number
 
 from sqlalchemy import or_, select, exists, false, func
 
+from models.attachment import Attachment
+from models.comment import Comment
+from models.option import Option
+from models.tag import Tag
+from models.task import Task
+from models.user import User
+from persistence.sqlalchemy.conversion import (
+    apply_attachment_to_db, apply_comment_to_db, apply_option_to_db,
+    apply_tag_to_db, apply_task_to_db, apply_user_to_db)
 from persistence.sqlalchemy.models.attachment import generate_attachment_class
 from persistence.sqlalchemy.models.comment import generate_comment_class
 from persistence.sqlalchemy.models.option import generate_option_class
@@ -13,6 +22,10 @@ from persistence.sqlalchemy.models.user import generate_user_class
 from persistence.pager import Pager
 
 import logging_util
+
+
+class RecordNotFound(Exception):
+    pass
 
 
 def is_iterable(x):
@@ -87,14 +100,167 @@ class SqlAlchemyPersistenceLayer(object):
         self.db.session.add(dbobj)
         self._logger.debug('end')
 
-    def delete(self, dbobj):
-        self._logger.debug('begin, dbobj: %s', dbobj)
-        if not self._is_db_object(dbobj):
-            raise Exception(
-                'The object is not compatible with the PL: {}'.format(dbobj))
-        dbobj.clear_relationships()
-        self.db.session.delete(dbobj)
-        self._logger.debug('end')
+    def delete(self, *objs):
+        if not objs:
+            return
+        for obj in objs:
+            dbobj = self._resolve_to_db_object(obj)
+            if dbobj is None:
+                raise RecordNotFound(
+                    'No record to delete for object: {}'.format(obj))
+            dbobj.clear_relationships()
+            self.db.session.delete(dbobj)
+        self.db.session.commit()
+
+    def save(self, *objs):
+        if not objs:
+            return
+        pending_id_writebacks = []
+        for obj in objs:
+            if isinstance(obj, Task):
+                dbobj = self._save_task(obj)
+            elif isinstance(obj, Tag):
+                dbobj = self._save_tag(obj)
+            elif isinstance(obj, Comment):
+                dbobj = self._save_comment(obj)
+            elif isinstance(obj, Attachment):
+                dbobj = self._save_attachment(obj)
+            elif isinstance(obj, User):
+                dbobj = self._save_user(obj)
+            elif isinstance(obj, Option):
+                dbobj = self._save_option(obj)
+            elif self._is_db_object(obj):
+                self.db.session.add(obj)
+                dbobj = obj
+            else:
+                raise Exception(
+                    'The object is not compatible with the PL: {}'.format(obj))
+            if obj.id is None and not isinstance(obj, Option):
+                pending_id_writebacks.append((obj, dbobj))
+        self.db.session.commit()
+        for obj, dbobj in pending_id_writebacks:
+            obj.id = dbobj.id
+
+    def _resolve_to_db_object(self, obj):
+        if self._is_db_object(obj):
+            return obj
+        if isinstance(obj, Task):
+            return self._get_db_task(obj.id)
+        if isinstance(obj, Tag):
+            return self._get_db_tag(obj.id)
+        if isinstance(obj, Comment):
+            return self._get_db_comment(obj.id)
+        if isinstance(obj, Attachment):
+            return self._get_db_attachment(obj.id)
+        if isinstance(obj, User):
+            return self._get_db_user(obj.id)
+        if isinstance(obj, Option):
+            return self._get_db_option(obj.key)
+        raise Exception(
+            'The object is not compatible with the PL: {}'.format(obj))
+
+    def _save_task(self, task):
+        if task.id is None:
+            db_task = self.DbTask(summary=task.summary)
+            apply_task_to_db(task, db_task)
+            self.db.session.add(db_task)
+        else:
+            db_task = self._get_db_task(task.id)
+            if db_task is None:
+                raise RecordNotFound(
+                    'No task with id {}'.format(task.id))
+            apply_task_to_db(task, db_task)
+        return db_task
+
+    def _save_tag(self, tag):
+        if tag.id is None:
+            db_tag = self.DbTag(value=tag.value)
+            apply_tag_to_db(tag, db_tag)
+            self.db.session.add(db_tag)
+        else:
+            db_tag = self._get_db_tag(tag.id)
+            if db_tag is None:
+                raise RecordNotFound('No tag with id {}'.format(tag.id))
+            apply_tag_to_db(tag, db_tag)
+        return db_tag
+
+    def _save_comment(self, comment):
+        if comment.id is None:
+            db_comment = self.DbComment(content=comment.content)
+            apply_comment_to_db(comment, db_comment)
+            self.db.session.add(db_comment)
+        else:
+            db_comment = self._get_db_comment(comment.id)
+            if db_comment is None:
+                raise RecordNotFound(
+                    'No comment with id {}'.format(comment.id))
+            apply_comment_to_db(comment, db_comment)
+        return db_comment
+
+    def _save_attachment(self, attachment):
+        if attachment.id is None:
+            db_attachment = self.DbAttachment(path=attachment.path)
+            apply_attachment_to_db(attachment, db_attachment)
+            self.db.session.add(db_attachment)
+        else:
+            db_attachment = self._get_db_attachment(attachment.id)
+            if db_attachment is None:
+                raise RecordNotFound(
+                    'No attachment with id {}'.format(attachment.id))
+            apply_attachment_to_db(attachment, db_attachment)
+        return db_attachment
+
+    def _save_user(self, user):
+        if user.id is None:
+            db_user = self.DbUser(email=user.email)
+            apply_user_to_db(user, db_user)
+            self.db.session.add(db_user)
+        else:
+            db_user = self._get_db_user(user.id)
+            if db_user is None:
+                raise RecordNotFound('No user with id {}'.format(user.id))
+            apply_user_to_db(user, db_user)
+        return db_user
+
+    def _save_option(self, option):
+        db_option = self._get_db_option(option.key)
+        if db_option is None:
+            db_option = self.DbOption(key=option.key, value=option.value)
+            self.db.session.add(db_option)
+        else:
+            apply_option_to_db(option, db_option)
+        return db_option
+
+    def _get_db_tag(self, tag_id):
+        if tag_id is None:
+            return None
+        stmt = select(self.DbTag).where(self.DbTag.id == tag_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
+
+    def _get_db_comment(self, comment_id):
+        if comment_id is None:
+            return None
+        stmt = select(self.DbComment).where(self.DbComment.id == comment_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
+
+    def _get_db_attachment(self, attachment_id):
+        if attachment_id is None:
+            return None
+        stmt = select(self.DbAttachment).where(
+            self.DbAttachment.id == attachment_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
+
+    def _get_db_user(self, user_id):
+        if user_id is None:
+            return None
+        stmt = select(self.DbUser).where(self.DbUser.id == user_id)
+        return self.db.session.execute(stmt).scalar_one_or_none()
+
+    def _get_db_option(self, key):
+        if key is None:
+            return None
+        stmt = select(self.DbOption).where(self.DbOption.key == key)
+        return self.db.session.execute(stmt).scalar_one_or_none()
 
     def commit(self):
         self._logger.debug('begin')

@@ -4,14 +4,24 @@ from itertools import islice
 from numbers import Number
 
 import logging_util
+from models.attachment import Attachment as DomainAttachment
+from models.comment import Comment as DomainComment
 from models.object_types import ObjectTypes
+from models.option import Option as DomainOption
+from models.tag import Tag as DomainTag
+from models.task import Task as DomainTask
+from models.user import User as DomainUser
+from persistence.in_memory.conversion import (
+    apply_attachment_to_stored, apply_comment_to_stored,
+    apply_option_to_stored, apply_tag_to_stored, apply_task_to_stored,
+    apply_user_to_stored)
 from persistence.in_memory.models.attachment import Attachment
 from persistence.in_memory.models.comment import Comment
 from persistence.in_memory.models.option import Option
 from persistence.in_memory.models.tag import Tag
 from persistence.in_memory.models.task import Task
 from persistence.in_memory.models.user import User
-from persistence.sqlalchemy.layer import is_iterable
+from persistence.sqlalchemy.layer import is_iterable, RecordNotFound
 from persistence.pager import Pager
 
 
@@ -376,13 +386,180 @@ class InMemoryPersistenceLayer(object):
         self._values_by_object[obj] = d
         self._added_objects.add(obj)
 
-    def delete(self, obj):
-        if obj in self._deleted_objects:
+    def delete(self, *objs):
+        if not objs:
             return
-        if obj in self._added_objects:
-            raise Exception(
-                'The object (id={}) has already been added.'.format(obj.id))
-        self._deleted_objects.add(obj)
+        if len(objs) == 1 and self._is_legacy_internal_object(objs[0]):
+            obj = objs[0]
+            if obj in self._deleted_objects:
+                return
+            if obj in self._added_objects:
+                raise Exception(
+                    'The object (id={}) has already been added.'.format(
+                        obj.id))
+            self._deleted_objects.add(obj)
+            return
+        for obj in objs:
+            stored = self._resolve_to_stored(obj)
+            if stored is None:
+                raise RecordNotFound(
+                    'No record to delete for object: {}'.format(obj))
+            self._remove_stored(stored)
+
+    def save(self, *objs):
+        if not objs:
+            return
+        for obj in objs:
+            if isinstance(obj, DomainTask):
+                self._save_task(obj)
+            elif isinstance(obj, DomainTag):
+                self._save_tag(obj)
+            elif isinstance(obj, DomainComment):
+                self._save_comment(obj)
+            elif isinstance(obj, DomainAttachment):
+                self._save_attachment(obj)
+            elif isinstance(obj, DomainUser):
+                self._save_user(obj)
+            elif isinstance(obj, DomainOption):
+                self._save_option(obj)
+            else:
+                raise Exception(
+                    'The object is not compatible with the PL: {}'.format(obj))
+
+    def _is_legacy_internal_object(self, obj):
+        return isinstance(obj, (Task, Tag, Comment, Attachment, User, Option))
+
+    def _resolve_to_stored(self, obj):
+        if isinstance(obj, DomainTask):
+            return self._tasks_by_id.get(obj.id)
+        if isinstance(obj, DomainTag):
+            return self._tags_by_id.get(obj.id)
+        if isinstance(obj, DomainComment):
+            return self._comments_by_id.get(obj.id)
+        if isinstance(obj, DomainAttachment):
+            return self._attachments_by_id.get(obj.id)
+        if isinstance(obj, DomainUser):
+            return self._users_by_id.get(obj.id)
+        if isinstance(obj, DomainOption):
+            return self._options_by_key.get(obj.key)
+        if self._is_legacy_internal_object(obj):
+            return obj
+        return None
+
+    def _remove_stored(self, stored):
+        if isinstance(stored, Task):
+            stored.clear_relationships()
+            self._tasks.remove(stored)
+            del self._tasks_by_id[stored.id]
+        elif isinstance(stored, Tag):
+            stored.clear_relationships()
+            self._tags.remove(stored)
+            del self._tags_by_id[stored.id]
+            if stored.value in self._tags_by_value:
+                del self._tags_by_value[stored.value]
+        elif isinstance(stored, Comment):
+            stored.clear_relationships()
+            self._comments.remove(stored)
+            del self._comments_by_id[stored.id]
+        elif isinstance(stored, Attachment):
+            stored.clear_relationships()
+            self._attachments.remove(stored)
+            del self._attachments_by_id[stored.id]
+        elif isinstance(stored, User):
+            stored.clear_relationships()
+            self._users.remove(stored)
+            del self._users_by_id[stored.id]
+            if stored.email in self._users_by_email:
+                del self._users_by_email[stored.email]
+        elif isinstance(stored, Option):
+            self._options.remove(stored)
+            del self._options_by_key[stored.key]
+
+    def _save_task(self, task):
+        if task.id is None:
+            stored = Task(summary=task.summary)
+            apply_task_to_stored(task, stored)
+            stored.id = self._get_next_id(ObjectTypes.Task)
+            self._tasks.append(stored)
+            self._tasks_by_id[stored.id] = stored
+            task.id = stored.id
+        else:
+            stored = self._tasks_by_id.get(task.id)
+            if stored is None:
+                raise RecordNotFound('No task with id {}'.format(task.id))
+            apply_task_to_stored(task, stored)
+
+    def _save_tag(self, tag):
+        if tag.id is None:
+            stored = Tag(value=tag.value, description=tag.description)
+            stored.id = self._get_next_id(ObjectTypes.Tag)
+            self._tags.append(stored)
+            self._tags_by_id[stored.id] = stored
+            self._tags_by_value[stored.value] = stored
+            tag.id = stored.id
+        else:
+            stored = self._tags_by_id.get(tag.id)
+            if stored is None:
+                raise RecordNotFound('No tag with id {}'.format(tag.id))
+            apply_tag_to_stored(tag, stored)
+
+    def _save_comment(self, comment):
+        if comment.id is None:
+            stored = Comment(content=comment.content,
+                             timestamp=comment.timestamp,
+                             date_last_updated=comment.date_last_updated)
+            stored.id = self._get_next_id(ObjectTypes.Comment)
+            self._comments.append(stored)
+            self._comments_by_id[stored.id] = stored
+            comment.id = stored.id
+        else:
+            stored = self._comments_by_id.get(comment.id)
+            if stored is None:
+                raise RecordNotFound(
+                    'No comment with id {}'.format(comment.id))
+            apply_comment_to_stored(comment, stored)
+
+    def _save_attachment(self, attachment):
+        if attachment.id is None:
+            stored = Attachment(path=attachment.path,
+                                description=attachment.description,
+                                timestamp=attachment.timestamp,
+                                filename=attachment.filename)
+            stored.id = self._get_next_id(ObjectTypes.Attachment)
+            self._attachments.append(stored)
+            self._attachments_by_id[stored.id] = stored
+            attachment.id = stored.id
+        else:
+            stored = self._attachments_by_id.get(attachment.id)
+            if stored is None:
+                raise RecordNotFound(
+                    'No attachment with id {}'.format(attachment.id))
+            apply_attachment_to_stored(attachment, stored)
+
+    def _save_user(self, user):
+        if user.id is None:
+            stored = User(email=user.email,
+                          hashed_password=user.hashed_password,
+                          is_admin=user.is_admin)
+            stored.id = self._get_next_id(ObjectTypes.User)
+            self._users.append(stored)
+            self._users_by_id[stored.id] = stored
+            self._users_by_email[stored.email] = stored
+            user.id = stored.id
+        else:
+            stored = self._users_by_id.get(user.id)
+            if stored is None:
+                raise RecordNotFound('No user with id {}'.format(user.id))
+            apply_user_to_stored(user, stored)
+
+    def _save_option(self, option):
+        stored = self._options_by_key.get(option.key)
+        if stored is None:
+            stored = Option(key=option.key, value=option.value)
+            self._options.append(stored)
+            self._options_by_key[stored.key] = stored
+        else:
+            apply_option_to_stored(option, stored)
 
     def commit(self):
         for domobj in list(self._added_objects):
