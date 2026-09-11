@@ -231,37 +231,6 @@ class SqlAlchemyPersistenceLayer(object):
             apply_option_to_db(option, db_option)
         return db_option
 
-    def _get_db_tag(self, tag_id):
-        if tag_id is None:
-            return None
-        stmt = select(self.DbTag).where(self.DbTag.id == tag_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_comment(self, comment_id):
-        if comment_id is None:
-            return None
-        stmt = select(self.DbComment).where(self.DbComment.id == comment_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_attachment(self, attachment_id):
-        if attachment_id is None:
-            return None
-        stmt = select(self.DbAttachment).where(
-            self.DbAttachment.id == attachment_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_user(self, user_id):
-        if user_id is None:
-            return None
-        stmt = select(self.DbUser).where(self.DbUser.id == user_id)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
-    def _get_db_option(self, key):
-        if key is None:
-            return None
-        stmt = select(self.DbOption).where(self.DbOption.key == key)
-        return self.db.session.execute(stmt).scalar_one_or_none()
-
     def commit(self):
         self._logger.debug('begin')
         ###############
@@ -362,6 +331,10 @@ class SqlAlchemyPersistenceLayer(object):
                          summary_description_search_term=UNSPECIFIED,
                          order_num_greq_than=UNSPECIFIED,
                          order_num_lesseq_than=UNSPECIFIED,
+                         tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                         dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                         prioritized_before=UNSPECIFIED,
+                         prioritized_after=UNSPECIFIED,
                          order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         """order_by is a list of order directives. Each such directive is
@@ -437,6 +410,26 @@ class SqlAlchemyPersistenceLayer(object):
         if tags_contains is not self.UNSPECIFIED:
             query = query.where(self.DbTask.tags.any(id=tags_contains.id))
 
+        if tag_id is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.tags.any(id=tag_id))
+
+        if user_id is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.users.any(id=user_id))
+
+        if dependee_of is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.dependants.any(id=dependee_of))
+
+        if dependant_of is not self.UNSPECIFIED:
+            query = query.where(self.DbTask.dependees.any(id=dependant_of))
+
+        if prioritized_before is not self.UNSPECIFIED:
+            query = query.where(
+                self.DbTask.prioritize_after.any(id=prioritized_before))
+
+        if prioritized_after is not self.UNSPECIFIED:
+            query = query.where(
+                self.DbTask.prioritize_before.any(id=prioritized_after))
+
         if summary_description_search_term is not self.UNSPECIFIED:
             like_term = '%{}%'.format(summary_description_search_term)
             query = query.where(
@@ -485,8 +478,12 @@ class SqlAlchemyPersistenceLayer(object):
                   is_public_or_users_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
-                  order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
-                  limit=UNSPECIFIED):
+                  order_num_lesseq_than=UNSPECIFIED,
+                  tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                  dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                  prioritized_before=UNSPECIFIED,
+                  prioritized_after=UNSPECIFIED,
+                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -496,8 +493,12 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-             order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-             limit=limit)
+            order_num_lesseq_than=order_num_lesseq_than,
+            tag_id=tag_id, user_id=user_id,
+            dependee_of=dependee_of, dependant_of=dependant_of,
+            prioritized_before=prioritized_before,
+            prioritized_after=prioritized_after,
+            order_by=order_by, limit=limit)
         return (_ for _ in self.db.session.execute(query).scalars())
 
     def get_paginated_tasks(self, is_done=UNSPECIFIED, is_deleted=UNSPECIFIED,
@@ -553,8 +554,12 @@ class SqlAlchemyPersistenceLayer(object):
                     is_public_or_users_contains=UNSPECIFIED,
                     summary_description_search_term=UNSPECIFIED,
                     order_num_greq_than=UNSPECIFIED,
-                    order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
-                    limit=UNSPECIFIED):
+                    order_num_lesseq_than=UNSPECIFIED,
+                    tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                    dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                    prioritized_before=UNSPECIFIED,
+                    prioritized_after=UNSPECIFIED,
+                    order_by=UNSPECIFIED, limit=UNSPECIFIED):
         query = self._get_tasks_query(
             is_done=is_done, is_deleted=is_deleted, parent_id=parent_id,
             parent_id_in=parent_id_in, users_contains=users_contains,
@@ -564,8 +569,12 @@ class SqlAlchemyPersistenceLayer(object):
             is_public_or_users_contains=is_public_or_users_contains,
             summary_description_search_term=summary_description_search_term,
             order_num_greq_than=order_num_greq_than,
-            order_num_lesseq_than=order_num_lesseq_than, order_by=order_by,
-            limit=limit)
+            order_num_lesseq_than=order_num_lesseq_than,
+            tag_id=tag_id, user_id=user_id,
+            dependee_of=dependee_of, dependant_of=dependant_of,
+            prioritized_before=prioritized_before,
+            prioritized_after=prioritized_after,
+            order_by=order_by, limit=limit)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -588,20 +597,23 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('tag_id cannot be None')
         return self._get_db_tag(tag_id)
 
-    def _get_tags_query(self, value=UNSPECIFIED, limit=None):
+    def _get_tags_query(self, value=UNSPECIFIED, task_id=UNSPECIFIED,
+                        limit=None):
         query = select(self.DbTag)
         if value is not self.UNSPECIFIED:
             query = query.where(self.DbTag.value == value)
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbTag.tasks.any(id=task_id))
         if limit is not None:
             query = query.limit(limit)
         return query
 
-    def get_tags(self, value=UNSPECIFIED, limit=None):
-        query = self._get_tags_query(value=value, limit=limit)
+    def get_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
+        query = self._get_tags_query(value=value, task_id=task_id, limit=limit)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_tags(self, value=UNSPECIFIED, limit=None):
-        query = self._get_tags_query(value=value, limit=limit)
+    def count_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
+        query = self._get_tags_query(value=value, task_id=task_id, limit=limit)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -627,7 +639,8 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('comment_id acannot be None')
         return self._get_db_comment(comment_id)
 
-    def _get_comments_query(self, comment_id_in=UNSPECIFIED):
+    def _get_comments_query(self, comment_id_in=UNSPECIFIED,
+                            task_id=UNSPECIFIED):
         query = select(self.DbComment)
         if comment_id_in is not self.UNSPECIFIED:
             if comment_id_in:
@@ -635,14 +648,18 @@ class SqlAlchemyPersistenceLayer(object):
             else:
                 # performance improvement
                 query = query.where(false())
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbComment.task_id == task_id)
         return query
 
-    def get_comments(self, comment_id_in=UNSPECIFIED):
-        query = self._get_comments_query(comment_id_in=comment_id_in)
+    def get_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_comments_query(comment_id_in=comment_id_in,
+                                         task_id=task_id)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_comments(self, comment_id_in=UNSPECIFIED):
-        query = self._get_comments_query(comment_id_in=comment_id_in)
+    def count_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_comments_query(comment_id_in=comment_id_in,
+                                         task_id=task_id)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -667,7 +684,8 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('attachment_id acannot be None')
         return self._get_db_attachment(attachment_id)
 
-    def _get_attachments_query(self, attachment_id_in=UNSPECIFIED):
+    def _get_attachments_query(self, attachment_id_in=UNSPECIFIED,
+                               task_id=UNSPECIFIED):
         query = select(self.DbAttachment)
         if attachment_id_in is not self.UNSPECIFIED:
             if attachment_id_in:
@@ -675,15 +693,20 @@ class SqlAlchemyPersistenceLayer(object):
                     self.DbAttachment.id.in_(attachment_id_in))
             else:
                 query = query.where(false())
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbAttachment.task_id == task_id)
         return query
 
-    def get_attachments(self, attachment_id_in=UNSPECIFIED):
-        query = self._get_attachments_query(attachment_id_in=attachment_id_in)
+    def get_attachments(self, attachment_id_in=UNSPECIFIED,
+                        task_id=UNSPECIFIED):
+        query = self._get_attachments_query(
+            attachment_id_in=attachment_id_in, task_id=task_id)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_attachments(self, attachment_id_in=UNSPECIFIED):
+    def count_attachments(self, attachment_id_in=UNSPECIFIED,
+                          task_id=UNSPECIFIED):
         query = self._get_attachments_query(
-            attachment_id_in=attachment_id_in)
+            attachment_id_in=attachment_id_in, task_id=task_id)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -721,7 +744,7 @@ class SqlAlchemyPersistenceLayer(object):
         stmt = select(self.DbUser).where(self.DbUser.email == email)
         return self.db.session.execute(stmt).scalars().first()
 
-    def _get_users_query(self, email_in=UNSPECIFIED):
+    def _get_users_query(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
         query = select(self.DbUser)
         if email_in is not self.UNSPECIFIED:
             if email_in:
@@ -729,14 +752,16 @@ class SqlAlchemyPersistenceLayer(object):
             else:
                 # avoid performance penalty
                 query = query.where(false())
+        if task_id is not self.UNSPECIFIED:
+            query = query.where(self.DbUser.tasks.any(id=task_id))
         return query
 
-    def get_users(self, email_in=UNSPECIFIED):
-        query = self._get_users_query(email_in=email_in)
+    def get_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_users_query(email_in=email_in, task_id=task_id)
         return (_ for _ in self.db.session.execute(query).scalars())
 
-    def count_users(self, email_in=UNSPECIFIED):
-        query = self._get_users_query(email_in=email_in)
+    def count_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        query = self._get_users_query(email_in=email_in, task_id=task_id)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
@@ -776,3 +801,93 @@ class SqlAlchemyPersistenceLayer(object):
         query = self._get_options_query(key_in=key_in)
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
+
+    # Association setters
+
+    def add_tag_to_task(self, task_id, tag_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_tag = self._get_db_tag(tag_id)
+        if db_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if db_tag not in db_task.tags:
+            db_task.tags.append(db_tag)
+        self.db.session.commit()
+
+    def remove_tag_from_task(self, task_id, tag_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_tag = self._get_db_tag(tag_id)
+        if db_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if db_tag in db_task.tags:
+            db_task.tags.remove(db_tag)
+        self.db.session.commit()
+
+    def add_user_to_task(self, task_id, user_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_user = self._get_db_user(user_id)
+        if db_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if db_user not in db_task.users:
+            db_task.users.append(db_user)
+        self.db.session.commit()
+
+    def remove_user_from_task(self, task_id, user_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        db_user = self._get_db_user(user_id)
+        if db_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if db_user in db_task.users:
+            db_task.users.remove(db_user)
+        self.db.session.commit()
+
+    def add_dependency(self, dependant_id, dependee_id):
+        db_dependant = self._get_db_task(dependant_id)
+        if db_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        db_dependee = self._get_db_task(dependee_id)
+        if db_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if db_dependee not in db_dependant.dependees:
+            db_dependant.dependees.append(db_dependee)
+        self.db.session.commit()
+
+    def remove_dependency(self, dependant_id, dependee_id):
+        db_dependant = self._get_db_task(dependant_id)
+        if db_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        db_dependee = self._get_db_task(dependee_id)
+        if db_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if db_dependee in db_dependant.dependees:
+            db_dependant.dependees.remove(db_dependee)
+        self.db.session.commit()
+
+    def add_priority(self, before_id, after_id):
+        db_after = self._get_db_task(after_id)
+        if db_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        db_before = self._get_db_task(before_id)
+        if db_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if db_before not in db_after.prioritize_before:
+            db_after.prioritize_before.append(db_before)
+        self.db.session.commit()
+
+    def remove_priority(self, before_id, after_id):
+        db_after = self._get_db_task(after_id)
+        if db_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        db_before = self._get_db_task(before_id)
+        if db_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if db_before in db_after.prioritize_before:
+            db_after.prioritize_before.remove(db_before)
+        self.db.session.commit()

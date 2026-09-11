@@ -98,8 +98,12 @@ class InMemoryPersistenceLayer(object):
                   is_public_or_users_contains=UNSPECIFIED,
                   summary_description_search_term=UNSPECIFIED,
                   order_num_greq_than=UNSPECIFIED,
-                  order_num_lesseq_than=UNSPECIFIED, order_by=UNSPECIFIED,
-                  limit=UNSPECIFIED):
+                  order_num_lesseq_than=UNSPECIFIED,
+                  tag_id=UNSPECIFIED, user_id=UNSPECIFIED,
+                  dependee_of=UNSPECIFIED, dependant_of=UNSPECIFIED,
+                  prioritized_before=UNSPECIFIED,
+                  prioritized_after=UNSPECIFIED,
+                  order_by=UNSPECIFIED, limit=UNSPECIFIED):
 
         query = self._tasks
 
@@ -139,6 +143,32 @@ class InMemoryPersistenceLayer(object):
 
         if tags_contains is not self.UNSPECIFIED:
             query = (_ for _ in query if tags_contains in _.tags)
+
+        if tag_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == tag_id for t in _.tags))
+
+        if user_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(u.id == user_id for u in _.users))
+
+        if dependee_of is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == dependee_of for t in _.dependants))
+
+        if dependant_of is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == dependant_of for t in _.dependees))
+
+        if prioritized_before is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == prioritized_before
+                            for t in _.prioritize_after))
+
+        if prioritized_after is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == prioritized_after
+                            for t in _.prioritize_before))
 
         if summary_description_search_term is not self.UNSPECIFIED:
             term = summary_description_search_term
@@ -275,16 +305,20 @@ class InMemoryPersistenceLayer(object):
     def get_tag_by_value(self, value):
         return self._tags_by_value.get(value)
 
-    def get_tags(self, value=UNSPECIFIED, limit=None):
+    def get_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
         query = self._tags
         if value is not self.UNSPECIFIED:
             query = (_ for _ in query if _.value == value)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == task_id for t in _.tasks))
         if limit is not None:
             query = islice(query, limit)
         return query
 
-    def count_tags(self, value=UNSPECIFIED, limit=None):
-        return len(list(self.get_tags(value=value, limit=limit)))
+    def count_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
+        return len(list(self.get_tags(
+            value=value, task_id=task_id, limit=limit)))
 
     def create_attachment(self, path, description=None, timestamp=None,
                           filename=None, lazy=None):
@@ -296,15 +330,20 @@ class InMemoryPersistenceLayer(object):
             raise ValueError('No attachment_id provided.')
         return self._attachments_by_id.get(attachment_id)
 
-    def get_attachments(self, attachment_id_in=UNSPECIFIED):
+    def get_attachments(self, attachment_id_in=UNSPECIFIED,
+                        task_id=UNSPECIFIED):
         query = (_ for _ in self._attachments)
         if attachment_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in attachment_id_in)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if _.task is not None and _.task.id == task_id)
         return query
 
-    def count_attachments(self, attachment_id_in=UNSPECIFIED):
-        return len(
-            list(self.get_attachments(attachment_id_in=attachment_id_in)))
+    def count_attachments(self, attachment_id_in=UNSPECIFIED,
+                          task_id=UNSPECIFIED):
+        return len(list(self.get_attachments(
+            attachment_id_in=attachment_id_in, task_id=task_id)))
 
     def create_comment(self, content, timestamp=None, lazy=None):
         return Comment(content=content, timestamp=timestamp, lazy=lazy)
@@ -314,14 +353,18 @@ class InMemoryPersistenceLayer(object):
             raise ValueError('No comment_id provided.')
         return self._comments_by_id.get(comment_id)
 
-    def get_comments(self, comment_id_in=UNSPECIFIED):
+    def get_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
         query = self._comments
         if comment_id_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.id in comment_id_in)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if _.task is not None and _.task.id == task_id)
         return query
 
-    def count_comments(self, comment_id_in=UNSPECIFIED):
-        return len(list(self.get_comments(comment_id_in=comment_id_in)))
+    def count_comments(self, comment_id_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        return len(list(self.get_comments(
+            comment_id_in=comment_id_in, task_id=task_id)))
 
     def create_option(self, key, value):
         return Option(key=key, value=value)
@@ -363,14 +406,18 @@ class InMemoryPersistenceLayer(object):
     def get_user_by_email(self, email):
         return self._users_by_email.get(email)
 
-    def get_users(self, email_in=UNSPECIFIED):
+    def get_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
         query = self._users
         if email_in is not self.UNSPECIFIED:
             query = (_ for _ in query if _.email in email_in)
+        if task_id is not self.UNSPECIFIED:
+            query = (_ for _ in query
+                     if any(t.id == task_id for t in _.tasks))
         return query
 
-    def count_users(self, email_in=UNSPECIFIED):
-        return len(list(self.get_users(email_in=email_in)))
+    def count_users(self, email_in=UNSPECIFIED, task_id=UNSPECIFIED):
+        return len(list(self.get_users(
+            email_in=email_in, task_id=task_id)))
 
     def add(self, obj):
         if obj in self._added_objects:
@@ -766,3 +813,85 @@ class InMemoryPersistenceLayer(object):
                 'Unknown object type: {}, {}, "{}"'.format(
                     domobj, type(domobj).__name__, tt))
         return tt
+
+    # Association setters
+
+    def add_tag_to_task(self, task_id, tag_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_tag = self._tags_by_id.get(tag_id)
+        if stored_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if stored_tag not in stored_task.tags:
+            stored_task.tags.append(stored_tag)
+
+    def remove_tag_from_task(self, task_id, tag_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_tag = self._tags_by_id.get(tag_id)
+        if stored_tag is None:
+            raise RecordNotFound('No tag with id {}'.format(tag_id))
+        if stored_tag in stored_task.tags:
+            stored_task.tags.remove(stored_tag)
+
+    def add_user_to_task(self, task_id, user_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_user = self._users_by_id.get(user_id)
+        if stored_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if stored_user not in stored_task.users:
+            stored_task.users.append(stored_user)
+
+    def remove_user_from_task(self, task_id, user_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        stored_user = self._users_by_id.get(user_id)
+        if stored_user is None:
+            raise RecordNotFound('No user with id {}'.format(user_id))
+        if stored_user in stored_task.users:
+            stored_task.users.remove(stored_user)
+
+    def add_dependency(self, dependant_id, dependee_id):
+        stored_dependant = self._tasks_by_id.get(dependant_id)
+        if stored_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        stored_dependee = self._tasks_by_id.get(dependee_id)
+        if stored_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if stored_dependee not in stored_dependant.dependees:
+            stored_dependant.dependees.append(stored_dependee)
+
+    def remove_dependency(self, dependant_id, dependee_id):
+        stored_dependant = self._tasks_by_id.get(dependant_id)
+        if stored_dependant is None:
+            raise RecordNotFound('No task with id {}'.format(dependant_id))
+        stored_dependee = self._tasks_by_id.get(dependee_id)
+        if stored_dependee is None:
+            raise RecordNotFound('No task with id {}'.format(dependee_id))
+        if stored_dependee in stored_dependant.dependees:
+            stored_dependant.dependees.remove(stored_dependee)
+
+    def add_priority(self, before_id, after_id):
+        stored_after = self._tasks_by_id.get(after_id)
+        if stored_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        stored_before = self._tasks_by_id.get(before_id)
+        if stored_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if stored_before not in stored_after.prioritize_before:
+            stored_after.prioritize_before.append(stored_before)
+
+    def remove_priority(self, before_id, after_id):
+        stored_after = self._tasks_by_id.get(after_id)
+        if stored_after is None:
+            raise RecordNotFound('No task with id {}'.format(after_id))
+        stored_before = self._tasks_by_id.get(before_id)
+        if stored_before is None:
+            raise RecordNotFound('No task with id {}'.format(before_id))
+        if stored_before in stored_after.prioritize_before:
+            stored_after.prioritize_before.remove(stored_before)
