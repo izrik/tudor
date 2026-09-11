@@ -59,7 +59,9 @@ class EditCommentTest(unittest.TestCase):
         result = self.ll.edit_comment(self.comment.id, 'new content', self.user)
         # then
         self.assertIsNotNone(result.date_last_updated)
-        time_delta = datetime.now(UTC) - result.date_last_updated
+        # the db stores naive datetimes, so compare without tzinfo
+        time_delta = (datetime.now(UTC).replace(tzinfo=None) -
+                      result.date_last_updated.replace(tzinfo=None))
         self.assertLessEqual(time_delta.total_seconds(), 1)
 
     def test_does_not_change_timestamp(self):

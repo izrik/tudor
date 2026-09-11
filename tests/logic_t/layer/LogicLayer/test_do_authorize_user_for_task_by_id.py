@@ -146,7 +146,7 @@ class AuthorizeUserForTaskByIdTest(unittest.TestCase):
         # and a non-admin user to attempt the authorization
         non_admin = self.pl.create_user('user2@example.com', is_admin=False)
         self.pl.add(non_admin)
-        task.users.add(non_admin)
+        task.users.append(non_admin)
         self.pl.commit()
         # precondition: the current_user is authorized for the task
         self.assertIn(non_admin, task.users)
