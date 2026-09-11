@@ -27,6 +27,13 @@ class LogicLayer(object):
         self.allowed_extensions = allowed_extensions
         self.pl = pl
 
+    def transaction(self):
+        """Group several logic-layer calls into one database transaction.
+
+        See SqlAlchemyPersistenceLayer.transaction().
+        """
+        return self.pl.transaction()
+
     def sort_by_hierarchy(self, tasks, root=None):
         tasks_by_parent = {}
 
@@ -132,10 +139,11 @@ class LogicLayer(object):
             date_created=date_created,
             date_last_updated=date_created)
 
-        self._logger.debug('saving the task')
-        self.pl.save(task)
-        self._logger.debug('authorizing the current user for this task')
-        self.pl.add_user_to_task(task.id, current_user.id)
+        with self.pl.transaction():
+            self._logger.debug('saving the task')
+            self.pl.save(task)
+            self._logger.debug('authorizing the current user for this task')
+            self.pl.add_user_to_task(task.id, current_user.id)
         self._logger.debug('end')
         return task
 
@@ -146,26 +154,29 @@ class LogicLayer(object):
             self._logger.warning('original task %d not found', original_task_id)
             return
         children = list(self.pl.get_tasks(parent_id=original_task_id))
-        for child in children:
-            self._logger.debug('cloning child task %d', child.id)
-            new_child = self.create_new_task(
-                summary=child.summary,
-                description=child.description,
-                is_done=False,
-                is_deleted=False,
-                deadline=child.deadline,
-                expected_duration_minutes=child.expected_duration_minutes,
-                expected_cost=child.expected_cost,
-                order_num=child.order_num,
-                parent_id=new_parent_id,
-                is_public=child.is_public,
-                current_user=current_user
-            )
-            # copy tags
-            for tag in list(self.pl.get_tags(task_id=child.id)):
-                self.do_add_tag_to_task(new_child, tag.value, current_user)
-            # recursively clone grandchildren
-            self.clone_task_children_recursive(child.id, new_child.id, current_user)
+        with self.pl.transaction():
+            for child in children:
+                self._logger.debug('cloning child task %d', child.id)
+                new_child = self.create_new_task(
+                    summary=child.summary,
+                    description=child.description,
+                    is_done=False,
+                    is_deleted=False,
+                    deadline=child.deadline,
+                    expected_duration_minutes=child.expected_duration_minutes,
+                    expected_cost=child.expected_cost,
+                    order_num=child.order_num,
+                    parent_id=new_parent_id,
+                    is_public=child.is_public,
+                    current_user=current_user
+                )
+                # copy tags
+                for tag in list(self.pl.get_tags(task_id=child.id)):
+                    self.do_add_tag_to_task(new_child, tag.value,
+                                            current_user)
+                # recursively clone grandchildren
+                self.clone_task_children_recursive(child.id, new_child.id,
+                                                   current_user)
 
     def get_lowest_order_num(self):
         self._logger.debug('getting lowest order task')
@@ -633,8 +644,9 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        tag = self.get_or_create_tag(value)
-        self.pl.add_tag_to_task(task.id, tag.id)
+        with self.pl.transaction():
+            tag = self.get_or_create_tag(value)
+            self.pl.add_tag_to_task(task.id, tag.id)
         return tag
 
     def get_or_create_tag(self, value):
@@ -1000,27 +1012,26 @@ class LogicLayer(object):
                 'A tag already exists with the name "{}"'.format(
                     task.summary))
 
-        tag = self.pl.create_tag(task.summary, task.description)
-        self.pl.add(tag)
-        self.pl.commit()
+        with self.pl.transaction():
+            tag = self.pl.create_tag(task.summary, task.description)
+            self.pl.add(tag)
+            self.pl.commit()
 
-        current_timestamp = datetime.now(UTC)
-        original_tags = list(self.pl.get_tags(task_id=task.id))
-        children = list(self.pl.get_tasks(parent_id=task.id))
-        original_parent_id = task.parent_id
-        for child in children:
-            self.pl.add_tag_to_task(child.id, tag.id)
-            self.pl.set_parent(child.id, original_parent_id)
-            for tag2 in original_tags:
-                self.pl.add_tag_to_task(child.id, tag2.id)
-            child.date_last_updated = current_timestamp
-            self.pl.add(child)
+            current_timestamp = datetime.now(UTC)
+            original_tags = list(self.pl.get_tags(task_id=task.id))
+            children = list(self.pl.get_tasks(parent_id=task.id))
+            original_parent_id = task.parent_id
+            for child in children:
+                self.pl.add_tag_to_task(child.id, tag.id)
+                self.pl.set_parent(child.id, original_parent_id)
+                for tag2 in original_tags:
+                    self.pl.add_tag_to_task(child.id, tag2.id)
+                child.date_last_updated = current_timestamp
+                self.pl.add(child)
 
-        self.pl.set_parent(task.id, None)
+            self.pl.set_parent(task.id, None)
 
-        self.pl.delete(task)
-
-        self.pl.commit()
+            self.pl.delete(task)
 
         return tag
 
@@ -1375,11 +1386,11 @@ class LogicLayer(object):
         if not current_user.is_admin:
             raise Forbidden('Current user is not authorized to purge tasks.')
         n = 0
-        deleted_tasks = list(self.pl.get_tasks(is_deleted=True))
-        for task in deleted_tasks:
-            self.purge_task(task, current_user)
-            n += 1
-        self.pl.commit()
+        with self.pl.transaction():
+            deleted_tasks = list(self.pl.get_tasks(is_deleted=True))
+            for task in deleted_tasks:
+                self.purge_task(task, current_user)
+                n += 1
         return n
 
     def pl_get_task(self, task_id):

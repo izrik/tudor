@@ -1,6 +1,7 @@
 import unittest
 
-from unittest.mock import Mock
+from contextlib import nullcontext
+from unittest.mock import Mock, MagicMock
 
 from logic.layer import LogicLayer
 from models.user_base import UserBase
@@ -13,6 +14,7 @@ class TaskNewPostTest(unittest.TestCase):
     def setUp(self):
         self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.ll = Mock(spec=LogicLayer)
+        self.ll.transaction.return_value = nullcontext()
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
         self.admin = Mock(spec=UserBase)
@@ -61,3 +63,21 @@ class TaskNewPostTest(unittest.TestCase):
         self.r.url_for.assert_called()
         self.r.redirect.assert_called()
         self.assertIs(self.r.redirect.return_value, result)
+
+    def test_creates_task_and_tags_in_one_transaction(self):
+        # given
+        events = []
+        tx = MagicMock()
+        tx.__enter__.side_effect = lambda: events.append('begin')
+        tx.__exit__.side_effect = lambda *args: events.append('end')
+        self.ll.transaction.return_value = tx
+        self.ll.create_new_task.side_effect = \
+            lambda **kwargs: events.append('create') or Mock()
+        self.ll.do_add_tag_to_task.side_effect = \
+            lambda *args: events.append('tag')
+        request = generate_mock_request(method="POST", form={'tags': 'tag1'})
+        self.ll.get_lowest_order_num.return_value = 0
+        # when
+        self.vl.task_new_post(request, self.admin)
+        # then
+        self.assertEqual(['begin', 'create', 'tag', 'end'], events)

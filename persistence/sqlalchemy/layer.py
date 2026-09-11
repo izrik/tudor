@@ -1,4 +1,5 @@
 import collections
+from contextlib import contextmanager
 from datetime import datetime, UTC
 from numbers import Number
 
@@ -26,6 +27,11 @@ import logging_util
 
 class RecordNotFound(Exception):
     pass
+
+
+# Key in session.info for the nesting depth of transaction() blocks. Kept
+# per session rather than on the PL, which is shared across requests.
+_TRANSACTION_DEPTH = 'tudor.transaction_depth'
 
 
 def is_iterable(x):
@@ -103,41 +109,45 @@ class SqlAlchemyPersistenceLayer(object):
     def delete(self, *objs):
         if not objs:
             return
-        for obj in objs:
-            dbobj = self._resolve_to_db_object(obj)
-            if dbobj is None:
-                raise RecordNotFound(
-                    'No record to delete for object: {}'.format(obj))
-            dbobj.clear_relationships()
-            self.db.session.delete(dbobj)
-        self.db.session.commit()
+        with self.transaction():
+            for obj in objs:
+                dbobj = self._resolve_to_db_object(obj)
+                if dbobj is None:
+                    raise RecordNotFound(
+                        'No record to delete for object: {}'.format(obj))
+                dbobj.clear_relationships()
+                self.db.session.delete(dbobj)
 
     def save(self, *objs):
         if not objs:
             return
         pending_id_writebacks = []
-        for obj in objs:
-            if isinstance(obj, Task):
-                dbobj = self._save_task(obj)
-            elif isinstance(obj, Tag):
-                dbobj = self._save_tag(obj)
-            elif isinstance(obj, Comment):
-                dbobj = self._save_comment(obj)
-            elif isinstance(obj, Attachment):
-                dbobj = self._save_attachment(obj)
-            elif isinstance(obj, User):
-                dbobj = self._save_user(obj)
-            elif isinstance(obj, Option):
-                dbobj = self._save_option(obj)
-            elif self._is_db_object(obj):
-                self.db.session.add(obj)
-                dbobj = obj
-            else:
-                raise Exception(
-                    'The object is not compatible with the PL: {}'.format(obj))
-            if obj.id is None and not isinstance(obj, Option):
-                pending_id_writebacks.append((obj, dbobj))
-        self.db.session.commit()
+        with self.transaction():
+            for obj in objs:
+                if isinstance(obj, Task):
+                    dbobj = self._save_task(obj)
+                elif isinstance(obj, Tag):
+                    dbobj = self._save_tag(obj)
+                elif isinstance(obj, Comment):
+                    dbobj = self._save_comment(obj)
+                elif isinstance(obj, Attachment):
+                    dbobj = self._save_attachment(obj)
+                elif isinstance(obj, User):
+                    dbobj = self._save_user(obj)
+                elif isinstance(obj, Option):
+                    dbobj = self._save_option(obj)
+                elif self._is_db_object(obj):
+                    self.db.session.add(obj)
+                    dbobj = obj
+                else:
+                    raise Exception(
+                        'The object is not compatible with the PL: {}'.format(
+                            obj))
+                if obj.id is None and not isinstance(obj, Option):
+                    pending_id_writebacks.append((obj, dbobj))
+            # Flush so new rows get ids even when an enclosing transaction()
+            # block defers the commit.
+            self.db.session.flush()
         for obj, dbobj in pending_id_writebacks:
             obj.id = dbobj.id
 
@@ -233,12 +243,41 @@ class SqlAlchemyPersistenceLayer(object):
 
     def commit(self):
         self._logger.debug('begin')
-        ###############
-        self._logger.debug('committing the db session/transaction')
-        self.db.session.commit()
-        self._logger.debug('committed the db session/transaction')
-        ###############
+        self._commit()
         self._logger.debug('end')
+
+    @contextmanager
+    def transaction(self):
+        """Group writes into a single database transaction.
+
+        Inside the block, save(), delete(), the association setters and
+        commit() only flush, so new rows still get ids immediately. The
+        outermost block commits when it exits normally, or rolls back if an
+        exception escapes it. Blocks may be nested.
+        """
+        info = self.db.session.info
+        info[_TRANSACTION_DEPTH] = info.get(_TRANSACTION_DEPTH, 0) + 1
+        try:
+            yield
+        except BaseException:
+            info[_TRANSACTION_DEPTH] -= 1
+            if info[_TRANSACTION_DEPTH] == 0:
+                self.db.session.rollback()
+            raise
+        info[_TRANSACTION_DEPTH] -= 1
+        if info[_TRANSACTION_DEPTH] == 0:
+            self._commit()
+
+    def _commit(self):
+        if self.db.session.info.get(_TRANSACTION_DEPTH, 0) > 0:
+            # The outermost transaction() block will commit.
+            self.db.session.flush()
+            return
+        try:
+            self.db.session.commit()
+        except BaseException:
+            self.db.session.rollback()
+            raise
 
     def rollback(self):
         self._logger.debug('begin')
@@ -813,7 +852,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No tag with id {}'.format(tag_id))
         if db_tag not in db_task.tags:
             db_task.tags.append(db_tag)
-        self.db.session.commit()
+        self._commit()
 
     def remove_tag_from_task(self, task_id, tag_id):
         db_task = self._get_db_task(task_id)
@@ -824,7 +863,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No tag with id {}'.format(tag_id))
         if db_tag in db_task.tags:
             db_task.tags.remove(db_tag)
-        self.db.session.commit()
+        self._commit()
 
     def add_user_to_task(self, task_id, user_id):
         db_task = self._get_db_task(task_id)
@@ -835,7 +874,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No user with id {}'.format(user_id))
         if db_user not in db_task.users:
             db_task.users.append(db_user)
-        self.db.session.commit()
+        self._commit()
 
     def remove_user_from_task(self, task_id, user_id):
         db_task = self._get_db_task(task_id)
@@ -846,7 +885,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No user with id {}'.format(user_id))
         if db_user in db_task.users:
             db_task.users.remove(db_user)
-        self.db.session.commit()
+        self._commit()
 
     def add_dependency(self, dependant_id, dependee_id):
         db_dependant = self._get_db_task(dependant_id)
@@ -857,7 +896,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No task with id {}'.format(dependee_id))
         if db_dependee not in db_dependant.dependees:
             db_dependant.dependees.append(db_dependee)
-        self.db.session.commit()
+        self._commit()
 
     def remove_dependency(self, dependant_id, dependee_id):
         db_dependant = self._get_db_task(dependant_id)
@@ -868,7 +907,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No task with id {}'.format(dependee_id))
         if db_dependee in db_dependant.dependees:
             db_dependant.dependees.remove(db_dependee)
-        self.db.session.commit()
+        self._commit()
 
     def add_priority(self, before_id, after_id):
         db_after = self._get_db_task(after_id)
@@ -879,7 +918,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No task with id {}'.format(before_id))
         if db_before not in db_after.prioritize_before:
             db_after.prioritize_before.append(db_before)
-        self.db.session.commit()
+        self._commit()
 
     def remove_priority(self, before_id, after_id):
         db_after = self._get_db_task(after_id)
@@ -890,7 +929,7 @@ class SqlAlchemyPersistenceLayer(object):
             raise RecordNotFound('No task with id {}'.format(before_id))
         if db_before in db_after.prioritize_before:
             db_after.prioritize_before.remove(db_before)
-        self.db.session.commit()
+        self._commit()
 
     def set_parent(self, task_id, parent_id):
         db_task = self._get_db_task(task_id)
@@ -904,4 +943,4 @@ class SqlAlchemyPersistenceLayer(object):
                 raise RecordNotFound(
                     'No task with id {}'.format(parent_id))
             db_task.parent_id = parent_id
-        self.db.session.commit()
+        self._commit()

@@ -97,3 +97,5 @@ Logic-layer tests and other tests that need a working PL use `generate_test_app(
 ## Active Refactoring
 
 The persistence layer is being actively refactored toward ID-based relationships (replacing ORM object references) with a new `save()` method pattern. New code should follow this paradigm rather than the older ORM relationship-loading approach.
+
+Each PL write (`save()`, `delete()`, the association setters) commits on its own. When one operation makes several writes, wrap them in `with self.pl.transaction():` so they commit together or roll back together; blocks nest, and `save()` still assigns ids inside a block.

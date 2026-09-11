@@ -210,24 +210,30 @@ class ViewLayer(object):
                 order_num = 0
         self._logger.debug('calculated order_num: %d', order_num)
 
-        self._logger.debug('creating the new task object via LL')
-        task = self.ll.create_new_task(
-            summary=summary, description=description, is_done=is_done,
-            is_deleted=is_deleted, deadline=deadline, order_num=order_num,
-            expected_duration_minutes=expected_duration_minutes,
-            expected_cost=expected_cost, parent_id=parent_id,
-            is_public=is_public, current_user=current_user)
-
-        if tags:
-            for tag_name in tags:
-                self._logger.debug('adding tag "%s"', tag_name)
-                self.ll.do_add_tag_to_task(task, tag_name, current_user)
-
         clone_id = self.get_form_or_arg(request, 'clone_id') or None
         clone_children = self.get_form_or_arg(request, 'clone_children') or None
-        if clone_id and clone_children:
-            self._logger.debug('cloning children of task %s to new task %s', clone_id, task.id)
-            self.ll.clone_task_children_recursive(int(clone_id), task.id, current_user)
+
+        # The task, its tags and any cloned children are saved together or
+        # not at all.
+        with self.ll.transaction():
+            self._logger.debug('creating the new task object via LL')
+            task = self.ll.create_new_task(
+                summary=summary, description=description, is_done=is_done,
+                is_deleted=is_deleted, deadline=deadline, order_num=order_num,
+                expected_duration_minutes=expected_duration_minutes,
+                expected_cost=expected_cost, parent_id=parent_id,
+                is_public=is_public, current_user=current_user)
+
+            if tags:
+                for tag_name in tags:
+                    self._logger.debug('adding tag "%s"', tag_name)
+                    self.ll.do_add_tag_to_task(task, tag_name, current_user)
+
+            if clone_id and clone_children:
+                self._logger.debug('cloning children of task %s to new task %s',
+                                   clone_id, task.id)
+                self.ll.clone_task_children_recursive(int(clone_id), task.id,
+                                                      current_user)
 
         self._logger.debug('getting next_url')
         next_url = self.get_form_or_arg(request, 'next_url')
