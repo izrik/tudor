@@ -685,7 +685,8 @@ class ViewLayer(object):
                                     tag_value=task.summary,
                                     tag_description=task.description,
                                     cycle=itertools.cycle,
-                                    tasks=task.children)
+                                    tasks=list(self.ll.pl.get_tasks(
+                                        parent_id=task.id)))
 
     def search(self, request, current_user, search_query):
         if search_query is None and request.method == 'POST':
@@ -833,7 +834,8 @@ class ViewLayer(object):
         expected_duration_minutes = task.expected_duration_minutes
         expected_cost = task.expected_cost
         parent_id = task.parent_id
-        tags = ','.join(tag.value.strip() for tag in task.tags)
+        tags = ','.join(tag.value.strip()
+                        for tag in self.ll.pl.get_tags(task_id=task.id))
 
         prev_url = self.get_form_or_arg(request, 'prev_url')
 
