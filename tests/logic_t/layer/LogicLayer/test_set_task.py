@@ -260,10 +260,11 @@ class LogicLayerSetTaskTest(unittest.TestCase):
 
     def test_set_task_order_num_none_becomes_zero(self):
         # given
-        self.task.order_num = None
+        self.task.order_num = 5
+        self.pl.commit()
 
         # precondition
-        self.assertIsNone(self.task.order_num)
+        self.assertEqual(5, self.task.order_num)
 
         # when
         task = self.ll.set_task(

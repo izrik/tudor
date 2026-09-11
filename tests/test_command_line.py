@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import patch, MagicMock
 
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from tests.util import generate_test_app
 from tudor import make_task_public, make_task_private, Config, \
     get_config_from_command_line, create_user, get_db_uri, ConfigError, \
     get_secret_key, split_db_options, get_db_options
@@ -10,8 +10,7 @@ from tudor import make_task_public, make_task_private, Config, \
 
 class CommandLineTests(unittest.TestCase):
     def setUp(self):
-        self.pl = InMemoryPersistenceLayer()
-        self.pl.create_all()
+        self.pl = generate_test_app().pl
 
     def test_make_task_public(self):
         # given

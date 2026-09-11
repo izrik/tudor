@@ -66,7 +66,9 @@ class CreateNewCommentTest(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertEqual(result.object_type, ObjectTypes.Comment)
         self.assertEqual('content', result.content)
-        time_delta = (datetime.now(UTC) - result.timestamp)
+        # the db stores naive datetimes, so compare without tzinfo
+        time_delta = (datetime.now(UTC).replace(tzinfo=None) -
+                      result.timestamp.replace(tzinfo=None))
         self.assertLessEqual(time_delta.total_seconds(), 1)
 
     # TODO: content of None?
