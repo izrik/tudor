@@ -535,6 +535,16 @@ class InMemoryPersistenceLayer(object):
             if stored is None:
                 raise RecordNotFound('No task with id {}'.format(task.id))
             apply_task_to_stored(task, stored)
+        # Resolve parent_id to the actual stored parent object (in-memory
+        # Task stores parent as object reference, not as id).
+        if task.parent_id is None:
+            stored.parent = None
+        else:
+            parent = self._tasks_by_id.get(task.parent_id)
+            if parent is None:
+                raise RecordNotFound(
+                    'No task with id {}'.format(task.parent_id))
+            stored.parent = parent
 
     def _save_tag(self, tag):
         if tag.id is None:
