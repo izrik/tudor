@@ -895,3 +895,16 @@ class InMemoryPersistenceLayer(object):
             raise RecordNotFound('No task with id {}'.format(before_id))
         if stored_before in stored_after.prioritize_before:
             stored_after.prioritize_before.remove(stored_before)
+
+    def set_parent(self, task_id, parent_id):
+        stored_task = self._tasks_by_id.get(task_id)
+        if stored_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        if parent_id is None:
+            stored_task.parent = None
+        else:
+            stored_parent = self._tasks_by_id.get(parent_id)
+            if stored_parent is None:
+                raise RecordNotFound(
+                    'No task with id {}'.format(parent_id))
+            stored_task.parent = stored_parent

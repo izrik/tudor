@@ -891,3 +891,17 @@ class SqlAlchemyPersistenceLayer(object):
         if db_before in db_after.prioritize_before:
             db_after.prioritize_before.remove(db_before)
         self.db.session.commit()
+
+    def set_parent(self, task_id, parent_id):
+        db_task = self._get_db_task(task_id)
+        if db_task is None:
+            raise RecordNotFound('No task with id {}'.format(task_id))
+        if parent_id is None:
+            db_task.parent_id = None
+        else:
+            db_parent = self._get_db_task(parent_id)
+            if db_parent is None:
+                raise RecordNotFound(
+                    'No task with id {}'.format(parent_id))
+            db_task.parent_id = parent_id
+        self.db.session.commit()
