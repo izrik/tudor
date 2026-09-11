@@ -4,20 +4,20 @@ from unittest.mock import Mock
 from werkzeug.exceptions import NotFound
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.attachment import Attachment
-from persistence.in_memory.models.user import User
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from models.attachment_base import AttachmentBase
+from models.user_base import UserBase
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
 
 
 class AttachmentTest(unittest.TestCase):
     def setUp(self):
-        self.pl = Mock(spec=InMemoryPersistenceLayer)
+        self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=UserBase)
 
     def test_gets_attachment(self):
         # given
@@ -25,7 +25,7 @@ class AttachmentTest(unittest.TestCase):
         self.ll.upload_folder = upload_folder
         attachment_id = 123
         attachment_path = 'this/is/the/path'
-        attachment = Mock(spec=Attachment)
+        attachment = Mock(spec=AttachmentBase)
         attachment.id = attachment_id
         attachment.path = attachment_path
         self.ll.pl_get_attachment.return_value = attachment

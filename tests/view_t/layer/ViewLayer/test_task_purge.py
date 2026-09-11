@@ -4,24 +4,24 @@ from unittest.mock import Mock
 from werkzeug.exceptions import NotFound, BadRequest
 
 from logic.layer import LogicLayer
-from persistence.in_memory.models.task import Task
-from persistence.in_memory.models.user import User
-from persistence.in_memory.layer import InMemoryPersistenceLayer
+from models.task_base import TaskBase
+from models.user_base import UserBase
+from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from tests.view_t.layer.ViewLayer.util import generate_mock_request
 from view.layer import ViewLayer, DefaultRenderer
 
 
 class TaskPurgeTest(unittest.TestCase):
     def setUp(self):
-        self.pl = Mock(spec=InMemoryPersistenceLayer)
+        self.pl = Mock(spec=SqlAlchemyPersistenceLayer)
         self.ll = Mock(spec=LogicLayer)
         self.r = Mock(spec=DefaultRenderer)
         self.vl = ViewLayer(self.ll, None, renderer=self.r)
-        self.admin = Mock(spec=User)
+        self.admin = Mock(spec=UserBase)
 
     def test_purges_deleted_task(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=TaskBase)
         task.is_deleted = True
         self.ll.pl_get_task.return_value = task
         request = generate_mock_request(method="GET")
@@ -57,7 +57,7 @@ class TaskPurgeTest(unittest.TestCase):
 
     def test_task_not_deleted_raises(self):
         # given
-        task = Mock(spec=Task)
+        task = Mock(spec=TaskBase)
         task.is_deleted = False
         self.ll.pl_get_task.return_value = task
         request = generate_mock_request(method="GET")
