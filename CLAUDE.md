@@ -68,9 +68,7 @@ Flask route handlers. Delegates all business logic to the logic layer. Supports 
 Business logic: task hierarchy sorting (recursive depth-first traversal), filtering, pagination, file upload validation, complex queries (deadlines, dependencies). Holds a reference to the persistence layer (`self.pl`).
 
 ### Persistence Layer (`persistence/`)
-Two implementations share the same interface:
-- **`SqlAlchemyPersistenceLayer`** — database-backed (PostgreSQL or SQLite)
-- **`InMemoryPersistenceLayer`** — in-memory storage used in tests
+**`SqlAlchemyPersistenceLayer`** (`persistence/sqlalchemy/`) is the only implementation — PostgreSQL in production, in-memory SQLite in most tests.
 
 Domain model classes (`Task2`, `User2`, `Tag2`, `Note2`, `Attachment2`, `Option2`) live in `persistence/` and use **ID-based relationships** (not object references) to avoid circular dependencies. A `save()` method is the primary way to persist changes.
 
@@ -90,10 +88,11 @@ Tests mirror the source structure:
 - `tests/logic_t/` — logic layer tests
 - `tests/models_t/` — domain model tests
 - `tests/persistence_t/sqlalchemy/` — SQL persistence tests (require live PostgreSQL via `pytest-postgresql`)
-- `tests/persistence_t/in_memory/` — in-memory persistence tests
 - `tests/view_t/` — view/route handler tests
 
-SQLAlchemy persistence tests use `PersistenceLayerTestBase` (in `tests/persistence_t/sqlalchemy/util.py`) which sets up a PostgreSQL fixture and manages app context.
+SQLAlchemy persistence-layer tests use `PersistenceLayerTestBase` (in `tests/persistence_t/sqlalchemy/util.py`) which sets up a PostgreSQL fixture and manages app context.
+
+Logic-layer tests and other tests that need a working PL use `generate_test_app()` (in `tests/util.py`, wrapped by `generate_ll()` for logic tests): a real app on in-memory SQLite with foreign keys enabled, cached per process with the schema reset per test. An autouse fixture in `tests/conftest.py` pops the app context afterward. View-layer tests mostly use `Mock(spec=SqlAlchemyPersistenceLayer)`.
 
 ## Active Refactoring
 
