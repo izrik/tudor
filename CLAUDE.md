@@ -70,10 +70,10 @@ Business logic: task hierarchy sorting (recursive depth-first traversal), filter
 ### Persistence Layer (`persistence/`)
 **`SqlAlchemyPersistenceLayer`** (`persistence/sqlalchemy/`) is the only implementation — PostgreSQL in production, in-memory SQLite in most tests.
 
-Domain model classes (`Task2`, `User2`, `Tag2`, `Note2`, `Attachment2`, `Option2`) live in `persistence/` and use **ID-based relationships** (not object references) to avoid circular dependencies. A `save()` method is the primary way to persist changes.
+Plain domain classes (`Task`, `User`, `Tag`, `Comment`, `Attachment`, `Option`) live in `models/` and use **ID-based relationships** (not object references) to avoid circular dependencies. `persistence/sqlalchemy/` maps them to the ORM `Db*` classes via the helpers in `conversion.py`. `save()` is the primary way to persist changes.
 
 ### Base Model Classes (`models/`)
-`TaskBase`, `UserBase`, `TagBase`, etc. define field constants and serialization (`to_dict()` / `from_dict()`). The `*2` classes in `persistence/` are the concrete implementations.
+`TaskBase`, `UserBase`, `TagBase`, etc. define field constants, serialization (`to_dict()` / `from_dict()`) and display helpers. The ORM `Db*` classes in `persistence/sqlalchemy/models/` inherit from them.
 
 ### Key Relationships
 - Tasks can have parent tasks (hierarchy)

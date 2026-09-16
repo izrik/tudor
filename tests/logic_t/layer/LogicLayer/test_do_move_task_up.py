@@ -2,6 +2,8 @@
 
 import unittest
 
+from datetime import datetime
+
 from werkzeug.exceptions import NotFound, Forbidden
 
 from .util import generate_ll
@@ -348,3 +350,23 @@ class DoMoveTaskUpTest(unittest.TestCase):
         self.assertEqual(8, t3.order_num)
         self.assertEqual(4, t4.order_num)
         self.assertEqual(2, t5.order_num)
+
+    def test_reorder_updates_date_last_updated_on_reordered_tasks(self):
+        # given tasks that share an order_num, forcing a reorder
+        old = datetime(2020, 1, 1)
+        tasks = []
+        for i, order_num in enumerate((6, 4, 4, 3, 2), start=1):
+            t = self.pl.create_task('t{}'.format(i))
+            t.order_num = order_num
+            t.date_last_updated = old
+            t.users.append(self.user)
+            self.pl.add(t)
+            tasks.append(t)
+        self.pl.commit()
+        moved, untouched = tasks[2], tasks[4]
+        # precondition
+        self.assertEqual(old, untouched.date_last_updated)
+        # when
+        self.ll.do_move_task_up(moved.id, False, self.user)
+        # then every task the reorder touched gets a new timestamp
+        self.assertNotEqual(old, untouched.date_last_updated)

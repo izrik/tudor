@@ -214,7 +214,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = True
         task.date_last_updated = datetime.now(UTC)
-        self.pl.commit()
+        self.pl.save(task)
         return task
 
     def task_unset_done(self, id, current_user):
@@ -225,7 +225,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         task.is_done = False
         task.date_last_updated = datetime.now(UTC)
-        self.pl.commit()
+        self.pl.save(task)
         return task
 
     def task_set_deleted(self, id, current_user):
@@ -236,7 +236,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = True
         task.date_last_updated = datetime.now(UTC)
-        self.pl.commit()
+        self.pl.save(task)
         return task
 
     def task_unset_deleted(self, id, current_user):
@@ -247,7 +247,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         task.is_deleted = False
         task.date_last_updated = datetime.now(UTC)
-        self.pl.commit()
+        self.pl.save(task)
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
@@ -331,8 +331,7 @@ class LogicLayer(object):
         timestamp = datetime.now(UTC)
         comment = self.pl.create_comment(content, timestamp)
         comment.task = task
-        self.pl.add(comment)
-        self.pl.commit()
+        self.pl.save(comment)
         return comment
 
     def edit_comment(self, comment_id, content, current_user):
@@ -344,7 +343,7 @@ class LogicLayer(object):
             raise werkzeug.exceptions.Forbidden()
         comment.content = content
         comment.date_last_updated = datetime.now(UTC)
-        self.pl.commit()
+        self.pl.save(comment)
         return comment
 
     def set_task(self, task_id, current_user, summary, description,
@@ -432,8 +431,7 @@ class LogicLayer(object):
                                         filename=filename)
         att.task = task
 
-        self.pl.add(att)
-        self.pl.commit()
+        self.pl.save(att)
 
         return att
 
@@ -442,7 +440,8 @@ class LogicLayer(object):
         N = len(tasks)
         for i in range(N):
             tasks[i].order_num = 2 * (N - i)
-            self.pl.add(tasks[i])
+        self.pl.save(*tasks)
+        return tasks
 
     def do_move_task_up(self, id, show_deleted, current_user):
         update_timestamp = datetime.now(UTC)
@@ -466,27 +465,23 @@ class LogicLayer(object):
         higher_siblings = list(self.pl.get_tasks(**kwargs))
         if higher_siblings:
             next_task = higher_siblings[0]
-            if task.order_num == next_task.order_num:
-                tasks_to_reorder = self.pl.get_tasks(
-                    parent_id=task.parent_id,
-                    order_by=[[
-                        self.pl.ORDER_NUM,
-                        self.pl.DESCENDING]])
-                self.reorder_tasks(tasks_to_reorder)
-                for ttr in tasks_to_reorder:
-                    ttr.date_last_updated = update_timestamp
-            if next_task.order_num > task.order_num:
-                new_order_num = next_task.order_num
-                task.order_num, next_task.order_num = \
-                    new_order_num, task.order_num
+            with self.pl.transaction():
+                if task.order_num == next_task.order_num:
+                    tasks_to_reorder = self.pl.get_tasks(
+                        parent_id=task.parent_id,
+                        order_by=[[
+                            self.pl.ORDER_NUM,
+                            self.pl.DESCENDING]])
+                    for ttr in self.reorder_tasks(tasks_to_reorder):
+                        ttr.date_last_updated = update_timestamp
+                if next_task.order_num > task.order_num:
+                    new_order_num = next_task.order_num
+                    task.order_num, next_task.order_num = \
+                        new_order_num, task.order_num
 
-            # TODO: remove all redundant add()'s everywhere
-            task.date_last_updated = update_timestamp
-            next_task.date_last_updated = update_timestamp
-            self.pl.add(task)
-            self.pl.add(next_task)
-
-        self.pl.commit()
+                task.date_last_updated = update_timestamp
+                next_task.date_last_updated = update_timestamp
+                self.pl.save(task, next_task)
 
         return task
 
@@ -506,9 +501,7 @@ class LogicLayer(object):
         if top_task and top_task[0] is not task:
             task.order_num = top_task[0].order_num + 1
             task.date_last_updated = datetime.now(UTC)
-            self.pl.add(task)
-
-        self.pl.commit()
+            self.pl.save(task)
 
         return task
 
@@ -534,26 +527,23 @@ class LogicLayer(object):
         lower_siblings = list(self.pl.get_tasks(**kwargs))
         if lower_siblings:
             next_task = lower_siblings[0]
-            if task.order_num == next_task.order_num:
-                tasks_to_reorder = self.pl.get_tasks(
-                    parent_id=task.parent_id,
-                    order_by=[[
-                        self.pl.ORDER_NUM,
-                        self.pl.DESCENDING]])
-                self.reorder_tasks(tasks_to_reorder)
-                for ttr in tasks_to_reorder:
-                    ttr.date_last_updated = update_timestamp
-            if next_task.order_num < task.order_num:
-                new_order_num = next_task.order_num
-                task.order_num, next_task.order_num = \
-                    new_order_num, task.order_num
+            with self.pl.transaction():
+                if task.order_num == next_task.order_num:
+                    tasks_to_reorder = self.pl.get_tasks(
+                        parent_id=task.parent_id,
+                        order_by=[[
+                            self.pl.ORDER_NUM,
+                            self.pl.DESCENDING]])
+                    for ttr in self.reorder_tasks(tasks_to_reorder):
+                        ttr.date_last_updated = update_timestamp
+                if next_task.order_num < task.order_num:
+                    new_order_num = next_task.order_num
+                    task.order_num, next_task.order_num = \
+                        new_order_num, task.order_num
 
-            task.date_last_updated = update_timestamp
-            next_task.date_last_updated = update_timestamp
-            self.pl.add(task)
-            self.pl.add(next_task)
-
-        self.pl.commit()
+                task.date_last_updated = update_timestamp
+                next_task.date_last_updated = update_timestamp
+                self.pl.save(task, next_task)
 
         return task
 
@@ -574,9 +564,7 @@ class LogicLayer(object):
         if bottom_task and bottom_task[0] is not task:
             task.order_num = bottom_task[0].order_num - 2
             task.date_last_updated = datetime.now(UTC)
-            self.pl.add(task)
-
-        self.pl.commit()
+            self.pl.save(task)
 
         return task
 
@@ -625,9 +613,8 @@ class LogicLayer(object):
             s.order_num = k
             s.date_last_updated = update_timestamp
             k -= 2
-            self.pl.add(s)
 
-        self.pl.commit()
+        self.pl.save(*siblings2)
 
         return task_to_move, target
 
@@ -653,8 +640,7 @@ class LogicLayer(object):
         tag = self.pl.get_tag_by_value(value)
         if tag is None:
             tag = self.pl.create_tag(value)
-            self.pl.add(tag)
-            self.pl.commit()
+            self.pl.save(tag)
         return tag
 
     def do_delete_tag_from_task(self, task_id, tag_id, current_user):
@@ -773,8 +759,7 @@ class LogicLayer(object):
                 "A user already exists with the email address '{}'".format(
                     email))
         user = self.pl.create_user(email=email, is_admin=is_admin)
-        self.pl.add(user)
-        self.pl.commit()
+        self.pl.save(user)
         return user
 
     def do_get_user_data(self, user_id, current_user):
@@ -799,8 +784,7 @@ class LogicLayer(object):
             option.value = value
         else:
             option = self.pl.create_option(key, value)
-        self.pl.add(option)
-        self.pl.commit()
+        self.pl.save(option)
         return option
 
     def do_delete_option(self, key):
@@ -808,7 +792,6 @@ class LogicLayer(object):
         if option is None:
             return None
         self.pl.delete(option)
-        self.pl.commit()
         return option
 
     def do_reset_order_nums(self, current_user):
@@ -818,15 +801,16 @@ class LogicLayer(object):
         tasks_h = self.sort_by_hierarchy(tasks_h)
 
         k = len(tasks_h) + 1
+        tasks_to_save = []
         for task in tasks_h:
             if task is None:
                 continue
             task.order_num = 2 * k
             task.date_last_updated = update_timestamp
-            self.pl.add(task)
+            tasks_to_save.append(task)
             k -= 1
 
-        self.pl.commit()
+        self.pl.save(*tasks_to_save)
 
         return tasks_h
 
@@ -949,9 +933,7 @@ class LogicLayer(object):
             if changed:
                 task.date_last_updated = current_timestamp
 
-            self.pl.add(task)
-
-        self.pl.commit()
+        self.pl.save(*tasks)
 
     def get_tags(self):
         return list(self.pl.get_tags())
@@ -982,8 +964,7 @@ class LogicLayer(object):
                 "No tag found for the id '{}'".format(tag_id))
         tag.value = value
         tag.description = description
-        self.pl.add(tag)
-        self.pl.commit()
+        self.pl.save(tag)
         return tag
 
     def get_task(self, task_id, current_user):
@@ -1014,8 +995,7 @@ class LogicLayer(object):
 
         with self.pl.transaction():
             tag = self.pl.create_tag(task.summary, task.description)
-            self.pl.add(tag)
-            self.pl.commit()
+            self.pl.save(tag)
 
             current_timestamp = datetime.now(UTC)
             original_tags = list(self.pl.get_tags(task_id=task.id))
@@ -1027,7 +1007,7 @@ class LogicLayer(object):
                 for tag2 in original_tags:
                     self.pl.add_tag_to_task(child.id, tag2.id)
                 child.date_last_updated = current_timestamp
-                self.pl.add(child)
+                self.pl.save(child)
 
             self.pl.set_parent(task.id, None)
 
@@ -1380,7 +1360,6 @@ class LogicLayer(object):
                 "Task (id {}) has not been deleted.".format(task.id))
 
         self.pl.delete(task)
-        self.pl.commit()
 
     def purge_all_deleted_tasks(self, current_user):
         if not current_user.is_admin:
