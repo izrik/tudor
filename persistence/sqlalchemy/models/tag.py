@@ -31,4 +31,8 @@ def generate_tag_class(db, tags_tasks_table):
         def clear_relationships(self):
             self.tasks = []
 
+        @property
+        def task_count(self):
+            return len(self.tasks)
+
     return DbTag
