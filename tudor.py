@@ -770,11 +770,13 @@ def make_task_public(pl, task_id, printer=default_printer, descendants=False):
     if not task:
         printer('No task found by the id "{}"'.format(task_id))
     else:
+        tasks = []
         if descendants:
             def recurse(task):
                 task.is_public = True
                 printer(
                     'Made task {}, "{}", public'.format(task.id, task.summary))
+                tasks.append(task)
                 for child in task.children:
                     recurse(child)
 
@@ -782,7 +784,8 @@ def make_task_public(pl, task_id, printer=default_printer, descendants=False):
         else:
             task.is_public = True
             printer('Made task {}, "{}", public'.format(task.id, task.summary))
-        pl.commit()
+            tasks.append(task)
+        pl.save(*tasks)
 
 
 def make_task_private(pl, task_id, printer=default_printer,
@@ -791,12 +794,14 @@ def make_task_private(pl, task_id, printer=default_printer,
     if not task:
         printer('No task found by the id "{}"'.format(task_id))
     else:
+        tasks = []
         if descendants:
             def recurse(task):
                 task.is_public = False
                 printer(
                     'Made task {}, "{}", private'.format(task.id,
                                                          task.summary))
+                tasks.append(task)
                 for child in task.children:
                     recurse(child)
 
@@ -805,7 +810,8 @@ def make_task_private(pl, task_id, printer=default_printer,
             task.is_public = False
             printer('Made task {}, "{}", private'.format(task.id,
                                                          task.summary))
-        pl.commit()
+            tasks.append(task)
+        pl.save(*tasks)
 
 
 def test_db_conn(pl, debug):
@@ -823,8 +829,7 @@ def test_db_conn(pl, debug):
 def create_user(pl, email, hashed_password, is_admin=False):
     user = pl.create_user(email=email, hashed_password=hashed_password,
                           is_admin=is_admin)
-    pl.add(user)
-    pl.commit()
+    pl.save(user)
 
 
 def get_db_uri(db_uri, db_uri_file):
