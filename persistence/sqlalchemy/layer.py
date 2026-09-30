@@ -316,6 +316,9 @@ class SqlAlchemyPersistenceLayer(object):
     ORDER_NUM = object()
     DEADLINE = object()
 
+    TAG_ID = object()
+    TAG_VALUE = object()
+
     def get_db_field_by_order_field(self, f):
         if f is self.ORDER_NUM:
             return self.DbTask.order_num
@@ -636,20 +639,74 @@ class SqlAlchemyPersistenceLayer(object):
             raise ValueError('tag_id cannot be None')
         return self._get_db_tag(tag_id)
 
+    def get_db_tag_field_by_order_field(self, f):
+        if f is self.TAG_ID:
+            return self.DbTag.id
+        if f is self.TAG_VALUE:
+            return self.DbTag.value
+        raise Exception('Unhandled tag order_by field: {}'.format(f))
+
     def _get_tags_query(self, value=UNSPECIFIED, task_id=UNSPECIFIED,
-                        limit=None):
+                        order_by=UNSPECIFIED, limit=None):
+        """order_by is a list of order directives, as with
+        _get_tasks_query, but using the TAG_ID and TAG_VALUE fields."""
         query = select(self.DbTag)
         if value is not self.UNSPECIFIED:
             query = query.where(self.DbTag.value == value)
         if task_id is not self.UNSPECIFIED:
             query = query.where(self.DbTag.tasks.any(id=task_id))
+        if order_by is not self.UNSPECIFIED:
+            if not is_iterable(order_by):
+                order_by = [order_by]
+            for ordering in order_by:
+                direction = self.ASCENDING
+                if is_iterable(ordering):
+                    field = ordering[0]
+                    if len(ordering) > 1:
+                        direction = ordering[1]
+                else:
+                    field = ordering
+                db_field = self.get_db_tag_field_by_order_field(field)
+                if direction is self.ASCENDING:
+                    query = query.order_by(db_field.asc())
+                elif direction is self.DESCENDING:
+                    query = query.order_by(db_field.desc())
+                else:
+                    raise Exception(
+                        'Unknown order_by direction: {}'.format(direction))
         if limit is not None:
             query = query.limit(limit)
         return query
 
-    def get_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
-        query = self._get_tags_query(value=value, task_id=task_id, limit=limit)
+    def get_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED,
+                 order_by=UNSPECIFIED, limit=None):
+        query = self._get_tags_query(value=value, task_id=task_id,
+                                     order_by=order_by, limit=limit)
         return (_ for _ in self.db.session.execute(query).scalars())
+
+    def get_paginated_tags(self, order_by=UNSPECIFIED, page_num=None,
+                           tags_per_page=None):
+        if page_num is not None and not isinstance(page_num, Number):
+            raise TypeError('page_num must be a number')
+        if page_num is not None and page_num < 1:
+            raise ValueError('page_num must be greater than zero')
+        if tags_per_page is not None and not isinstance(tags_per_page,
+                                                        Number):
+            raise TypeError('tags_per_page must be a number')
+        if tags_per_page is not None and tags_per_page < 1:
+            raise ValueError('tags_per_page must be greater than zero')
+
+        if page_num is None:
+            page_num = 1
+        if tags_per_page is None:
+            tags_per_page = 20
+
+        query = self._get_tags_query(order_by=order_by)
+        pager = self.db.paginate(query, page=page_num, per_page=tags_per_page)
+        items = list(pager.items)
+        return Pager(page=pager.page, per_page=pager.per_page,
+                     items=items, total=pager.total,
+                     num_pages=pager.pages, _pager=pager)
 
     def count_tags(self, value=UNSPECIFIED, task_id=UNSPECIFIED, limit=None):
         query = self._get_tags_query(value=value, task_id=task_id, limit=limit)
