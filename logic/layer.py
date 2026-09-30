@@ -938,6 +938,32 @@ class LogicLayer(object):
     def get_tags(self):
         return list(self.pl.get_tags())
 
+    TAG_SORT_FIELDS = ('name', 'id')
+    TAG_SORT_ORDERS = ('asc', 'desc')
+
+    def get_tags_data(self, page_num=None, tags_per_page=None, sort='name',
+                      order='asc'):
+        if sort not in self.TAG_SORT_FIELDS:
+            raise ValueError('Unknown sort field: {}'.format(sort))
+        if order not in self.TAG_SORT_ORDERS:
+            raise ValueError('Unknown sort order: {}'.format(order))
+        direction = (self.pl.ASCENDING if order == 'asc'
+                     else self.pl.DESCENDING)
+        if sort == 'name':
+            # Break ties by id so that paging is stable.
+            order_by = [[self.pl.TAG_VALUE, direction],
+                        [self.pl.TAG_ID, direction]]
+        else:
+            order_by = [[self.pl.TAG_ID, direction]]
+        pager = self.pl.get_paginated_tags(order_by=order_by,
+                                           page_num=page_num,
+                                           tags_per_page=tags_per_page)
+        return {
+            'pager': pager,
+            'sort': sort,
+            'order': order,
+        }
+
     def get_tag_data(self, tag_id, current_user):
         tag = self.pl.get_tag(tag_id)
         if not tag:

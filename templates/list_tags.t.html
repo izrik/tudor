@@ -3,19 +3,36 @@
 {% block header_sub_text %}Tags{% endblock %}
 {% block content %}
 <div class="container">
+{% macro sort_header(label, field) -%}
+    {%- if sort == field -%}
+        {%- set next_order = 'desc' if order == 'asc' else 'asc' -%}
+    {%- else -%}
+        {%- set next_order = 'asc' -%}
+    {%- endif -%}
+    <a href="{{ url_for('list_tags', sort=field, order=next_order, per_page=pager.per_page) }}">{{ label }}
+    {%- if sort == field %}
+        <span class="glyphicon glyphicon-triangle-{{ 'top' if order == 'asc' else 'bottom' }}"></span>
+    {%- endif -%}
+    </a>
+{%- endmacro %}
 <div>
+    {% if pager.pages > 1 %}
+        {% include 'page_links.fragment.html' %}
+    {% endif %}
     <table class="task_children">
         {% set odd_even = cycle(['odd', 'even']).__next__ %}
         <thead>
         <tr>
-            <th>ID</th>
-            <th>Value</th>
+            <th>{{ sort_header('ID', 'id') }}</th>
+            <th>{{ sort_header('Value', 'name') }}</th>
+            <th>Description</th>
         </tr>
         </thead>
-        {% for tag in tags %}
+        {% for tag in pager.items %}
         <tr class="{{ odd_even() }}">
             <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.id }}</a></td>
             <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a></td>
+            <td>{% if tag.description %}{{ tag.description|truncate(100, True, '…', 0) }}{% endif %}</td>
         </tr>
         {% endfor %}
         <!--<tfoot>-->
@@ -28,6 +45,9 @@
             <!--</td>-->
         <!--</tfoot>-->
     </table>
+    {% if pager.pages > 1 %}
+        {% include 'page_links.fragment.html' %}
+    {% endif %}
 </div>
 </div>
 {% endblock %}

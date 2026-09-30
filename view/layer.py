@@ -649,8 +649,34 @@ class ViewLayer(object):
         return self.redirect(self.url_for('task_crud'))
 
     def tags(self, request, current_user):
-        tags = self.ll.get_tags()
-        return self.render_template('list_tags.t.html', tags=tags,
+        try:
+            page_num = int(request.args.get('page', 1))
+        except Exception:
+            page_num = 1
+        if page_num < 1:
+            page_num = 1
+        try:
+            tags_per_page = int(request.args.get('per_page', 20))
+        except Exception:
+            tags_per_page = 20
+        if tags_per_page < 1:
+            tags_per_page = 20
+        sort = request.args.get('sort', 'name')
+        if sort not in ('name', 'id'):
+            sort = 'name'
+        order = request.args.get('order', 'asc')
+        if order not in ('asc', 'desc'):
+            order = 'asc'
+        data = self.ll.get_tags_data(page_num=page_num,
+                                     tags_per_page=tags_per_page,
+                                     sort=sort, order=order)
+        return self.render_template('list_tags.t.html',
+                                    pager=data['pager'],
+                                    sort=data['sort'],
+                                    order=data['order'],
+                                    pager_link_page='list_tags',
+                                    pager_link_args={'sort': data['sort'],
+                                                     'order': data['order']},
                                     cycle=itertools.cycle)
 
     def tags_id_get(self, request, current_user, tag_id):
