@@ -59,6 +59,18 @@
 .task_body_panel {
 }
 
+.tag_chips {
+    margin-bottom: 10px;
+}
+
+.tag_chip {
+    display: inline-block;
+    margin: 0 4px 4px 0;
+    padding: 4px 10px; /* csslint allow: box-model */
+    border-radius: 12px;
+    font-size: 85%;
+}
+
 .task_list_group {
     padding-left: 0px;
 }
@@ -175,6 +187,13 @@ a.attachment_list_item {
         <li class="active">{{ task.summary }}</li>
     </ol>
     <h1 class="info_panel_value {{ task.get_css_class()|safe }}">{{ task.summary|d }}</h1>
+    {% if task.tags %}
+    <div class="tag_chips">
+        {% for tag in task.tags %}
+        <a class="label label-info tag_chip" href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
     <p><br/></p>
 </div>
 
