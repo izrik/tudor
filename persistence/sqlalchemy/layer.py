@@ -713,6 +713,24 @@ class SqlAlchemyPersistenceLayer(object):
         count_query = select(func.count()).select_from(query.subquery())
         return self.db.session.execute(count_query).scalar()
 
+    def count_tasks_by_tag(self, tag_id_in, is_public=UNSPECIFIED,
+                           is_public_or_users_contains=UNSPECIFIED):
+        """Return a dict mapping each tag id in tag_id_in to the number of
+        tasks with that tag that match the given visibility filters. Tags
+        with no matching tasks are omitted."""
+        if not tag_id_in:
+            return {}
+        tasks = self._get_tasks_query(
+            is_public=is_public,
+            is_public_or_users_contains=is_public_or_users_contains).subquery()
+        tt = self.tags_tasks_table
+        query = (select(tt.c.tag_id, func.count())
+                 .where(tt.c.tag_id.in_(tag_id_in))
+                 .where(tt.c.task_id.in_(select(tasks.c.id)))
+                 .group_by(tt.c.tag_id))
+        return {tag_id: count
+                for tag_id, count in self.db.session.execute(query)}
+
     def get_tag_by_value(self, value):
         query = self._get_tags_query(value=value)
         return self.db.session.execute(query).scalars().first()

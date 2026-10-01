@@ -667,11 +667,13 @@ class ViewLayer(object):
         order = request.args.get('order', 'asc')
         if order not in ('asc', 'desc'):
             order = 'asc'
-        data = self.ll.get_tags_data(page_num=page_num,
+        data = self.ll.get_tags_data(current_user=current_user,
+                                     page_num=page_num,
                                      tags_per_page=tags_per_page,
                                      sort=sort, order=order)
         return self.render_template('list_tags.t.html',
                                     pager=data['pager'],
+                                    task_counts=data['task_counts'],
                                     sort=data['sort'],
                                     order=data['order'],
                                     pager_link_page='list_tags',

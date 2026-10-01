@@ -26,7 +26,7 @@
             <th>{{ sort_header('ID', 'id') }}</th>
             <th>{{ sort_header('Value', 'name') }}</th>
             <th>Description</th>
-            <th>Count</th>
+            <th>Tasks</th>
         </tr>
         </thead>
         {% for tag in pager.items %}
@@ -34,7 +34,7 @@
             <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.id }}</a></td>
             <td><a href="{{ url_for('view_tag', id=tag.id) }}">{{ tag.value }}</a></td>
             <td>{% if tag.description %}{{ tag.description|truncate(100, True, '…', 0) }}{% endif %}</td>
-            <td>{{ tag.task_count }}</td>
+            <td>{{ task_counts.get(tag.id, 0) }}</td>
         </tr>
         {% endfor %}
         <!--<tfoot>-->
