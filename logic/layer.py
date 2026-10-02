@@ -941,8 +941,8 @@ class LogicLayer(object):
     TAG_SORT_FIELDS = ('name', 'id')
     TAG_SORT_ORDERS = ('asc', 'desc')
 
-    def get_tags_data(self, page_num=None, tags_per_page=None, sort='name',
-                      order='asc'):
+    def get_tags_data(self, current_user=None, page_num=None,
+                      tags_per_page=None, sort='name', order='asc'):
         if sort not in self.TAG_SORT_FIELDS:
             raise ValueError('Unknown sort field: {}'.format(sort))
         if order not in self.TAG_SORT_ORDERS:
@@ -958,10 +958,20 @@ class LogicLayer(object):
         pager = self.pl.get_paginated_tags(order_by=order_by,
                                            page_num=page_num,
                                            tags_per_page=tags_per_page)
+        # Count the same tasks that the tag's own page would show: done and
+        # deleted tasks included, private tasks only if visible to the user.
+        kwargs = {}
+        if current_user is None or current_user.is_anonymous:
+            kwargs['is_public'] = True
+        elif not current_user.is_admin:
+            kwargs['is_public_or_users_contains'] = current_user
+        task_counts = self.pl.count_tasks_by_tag(
+            [tag.id for tag in pager.items], **kwargs)
         return {
             'pager': pager,
             'sort': sort,
             'order': order,
+            'task_counts': task_counts,
         }
 
     def get_tag_data(self, tag_id, current_user):
