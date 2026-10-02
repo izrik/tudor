@@ -765,7 +765,8 @@ class ViewLayer(object):
         results = self.ll.search(search_query, current_user)
 
         return self.render_template('search.t.html', query=search_query,
-                                    results=results)
+                                    results=results,
+                                    cycle=itertools.cycle)
 
     def task_id_add_dependee(self, request, current_user, task_id,
                              dependee_id):
