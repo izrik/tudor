@@ -30,7 +30,7 @@ class GetDeadlinesDataTest(unittest.TestCase):
         result = self.ll.get_deadlines_data(self.admin)
 
         # then
-        self.assertEqual(1, len(result))
+        self.assertEqual(3, len(result))
         self.assertIn('deadline_tasks', result)
         self.assertEqual([t2], result['deadline_tasks'])
 
@@ -49,7 +49,7 @@ class GetDeadlinesDataTest(unittest.TestCase):
         result = self.ll.get_deadlines_data(self.admin)
 
         # then
-        self.assertEqual(1, len(result))
+        self.assertEqual(3, len(result))
         self.assertIn('deadline_tasks', result)
         self.assertEqual([t1, t2], result['deadline_tasks'])
 
@@ -71,7 +71,7 @@ class GetDeadlinesDataTest(unittest.TestCase):
         result = self.ll.get_deadlines_data(self.user)
 
         # then
-        self.assertEqual(1, len(result))
+        self.assertEqual(3, len(result))
         self.assertIn('deadline_tasks', result)
         self.assertEqual([t2], result['deadline_tasks'])
 
@@ -93,6 +93,6 @@ class GetDeadlinesDataTest(unittest.TestCase):
         result = self.ll.get_deadlines_data(self.admin)
 
         # then
-        self.assertEqual(1, len(result))
+        self.assertEqual(3, len(result))
         self.assertIn('deadline_tasks', result)
         self.assertSetEqual({t1, t2}, set(result['deadline_tasks']))

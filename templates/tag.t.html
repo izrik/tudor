@@ -19,7 +19,9 @@
         page_url=url_for('view_tag', id=tag.id),
         child_task_view='view_task',
         show_move_links=False,
-        show_new_task_form=False) }}
+        show_new_task_form=False,
+        sort=sort, order=order,
+        sort_link_page=sort_link_page, sort_link_args=sort_link_args) }}
 
     <p><a class="btn btn-default" href="{{ url_for('new_task', tags=[tag.value]) }}"><span class="glyphicon glyphicon-plus"></span> New Task</a></p>
 

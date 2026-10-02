@@ -26,7 +26,7 @@ class GetTagDataTest(unittest.TestCase):
         results = self.ll.get_tag_data(tag.id, user)
         # then
         self.assertIsInstance(results, dict)
-        self.assertEqual(2, len(results.items()))
+        self.assertEqual(4, len(results.items()))
         self.assertIn('tag', results)
         self.assertIs(tag, results['tag'])
         self.assertIn('tasks', results)

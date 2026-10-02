@@ -9,7 +9,9 @@
     {{ render_task_table(deadline_tasks, root=None, cycle=cycle,
         page_url=url_for('deadlines'),
         child_task_view='view_task',
-        indent=False, show_expected_duration=True) }}
+        indent=False, show_expected_duration=True,
+        sort=sort, order=order,
+        sort_link_page=sort_link_page, sort_link_args=sort_link_args) }}
 </div>
 </div>
 {% endblock %}
