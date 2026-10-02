@@ -56,12 +56,43 @@ class LogicLayer(object):
 
         return list(get_sorted_order(root))
 
+    TASK_SORT_FIELDS = ('id', 'summary', 'deadline', 'is_done',
+                        'is_deleted', 'order_num', 'expected_duration',
+                        'expected_cost', 'parent_id')
+    TASK_SORT_ORDERS = ('asc', 'desc')
+
+    def get_task_order_by(self, sort, order):
+        if sort not in self.TASK_SORT_FIELDS:
+            raise ValueError('Unknown sort field: {}'.format(sort))
+        if order not in self.TASK_SORT_ORDERS:
+            raise ValueError('Unknown sort order: {}'.format(order))
+        direction = (self.pl.ASCENDING if order == 'asc'
+                     else self.pl.DESCENDING)
+        fields = {
+            'id': self.pl.TASK_ID,
+            'summary': self.pl.SUMMARY,
+            'deadline': self.pl.DEADLINE,
+            'is_done': self.pl.IS_DONE,
+            'is_deleted': self.pl.IS_DELETED,
+            'order_num': self.pl.ORDER_NUM,
+            'expected_duration': self.pl.EXPECTED_DURATION,
+            'expected_cost': self.pl.EXPECTED_COST,
+            'parent_id': self.pl.PARENT_ID,
+        }
+        order_by = [[fields[sort], direction]]
+        if sort != 'id':
+            # Break ties by id so that paging is stable.
+            order_by.append([self.pl.TASK_ID, direction])
+        return order_by
+
     def get_index_data(self, show_deleted, show_done,
-                       current_user, page_num=None, tasks_per_page=None):
+                       current_user, page_num=None, tasks_per_page=None,
+                       sort='order_num', order='desc'):
         _pager = []
         tasks = self.load_no_hierarchy(
             current_user=current_user, include_done=show_done,
-            include_deleted=show_deleted, order_by_order_num=True,
+            include_deleted=show_deleted,
+            order_by=self.get_task_order_by(sort, order),
             parent_id_is_none=True, paginate=True, pager=_pager,
             page_num=page_num, tasks_per_page=tasks_per_page)
         pager = _pager[0]
@@ -73,6 +104,8 @@ class LogicLayer(object):
             'tasks': tasks,
             'all_tags': all_tags,
             'pager': pager,
+            'sort': sort,
+            'order': order,
         }
 
     def get_index_hierarchy_data(self, show_deleted, show_done, current_user):
@@ -90,13 +123,16 @@ class LogicLayer(object):
             'all_tags': all_tags,
         }
 
-    def get_deadlines_data(self, current_user):
+    def get_deadlines_data(self, current_user, sort='deadline',
+                           order='asc'):
         deadline_tasks = self.load_no_hierarchy(
             current_user,
             exclude_undeadlined=True,
-            order_by_deadline=True)
+            order_by=self.get_task_order_by(sort, order))
         return {
             'deadline_tasks': deadline_tasks,
+            'sort': sort,
+            'order': order,
         }
 
     def create_new_task(self, summary, current_user, description=None,
@@ -251,7 +287,8 @@ class LogicLayer(object):
         return task
 
     def get_task_data(self, id, current_user, include_deleted=True,
-                      include_done=True, page_num=1, tasks_per_page=20):
+                      include_done=True, page_num=1, tasks_per_page=20,
+                      sort='order_num', order='desc'):
 
         if page_num is not None and not isinstance(page_num, Number):
             raise TypeError('page_num must be a number')
@@ -280,13 +317,16 @@ class LogicLayer(object):
         descendants = self.load_no_hierarchy(current_user=current_user,
                                              include_done=include_done,
                                              include_deleted=include_deleted,
-                                             order_by_order_num=True,
+                                             order_by=self.get_task_order_by(
+                                                 sort, order),
                                              parent_id=task.id, paginate=True,
                                              pager=_pager, page_num=page_num,
                                              tasks_per_page=tasks_per_page)
         pager = _pager[0]
 
-        hierarchy_sort = True
+        # sort_by_hierarchy re-sorts by order_num, so only use it for the
+        # default ordering.
+        hierarchy_sort = (sort == 'order_num' and order == 'desc')
         if hierarchy_sort:
             descendants = self.sort_by_hierarchy(descendants, root=task)
 
@@ -294,6 +334,8 @@ class LogicLayer(object):
             'task': task,
             'descendants': descendants,
             'pager': pager,
+            'sort': sort,
+            'order': order,
         }
 
     def get_task_hierarchy_data(self, id, current_user, include_deleted=True,
@@ -974,16 +1016,20 @@ class LogicLayer(object):
             'task_counts': task_counts,
         }
 
-    def get_tag_data(self, tag_id, current_user):
+    def get_tag_data(self, tag_id, current_user, sort='order_num',
+                     order='desc'):
         tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
-        tasks = self.load_no_hierarchy(current_user, include_done=True,
-                                       include_deleted=True, tag=tag)
+        tasks = self.load_no_hierarchy(
+            current_user, include_done=True, include_deleted=True, tag=tag,
+            order_by=self.get_task_order_by(sort, order))
         return {
             'tag': tag,
             'tasks': tasks,
+            'sort': sort,
+            'order': order,
         }
 
     def get_tag(self, tag_id):
@@ -1142,8 +1188,9 @@ class LogicLayer(object):
                           exclude_non_public=False,
                           tag=None, paginate=False, pager=None, page_num=None,
                           tasks_per_page=None, parent_id_is_none=False,
-                          parent_id=None, order_by_order_num=False,
-                          order_by_deadline=False):
+                          parent_id=None, order_by=None):
+        """order_by, if given, is a list of order directives as accepted by
+        the persistence layer (see get_task_order_by)."""
 
         kwargs = {}
 
@@ -1184,13 +1231,6 @@ class LogicLayer(object):
                     "Unknown type ('{}') of argument 'tag'".format(type(tag)))
 
             kwargs['tags_contains'] = tag
-
-        order_by = []
-        if order_by_order_num:
-            order_by.append([self.pl.ORDER_NUM, self.pl.DESCENDING])
-
-        if order_by_deadline:
-            order_by.append([self.pl.DEADLINE, self.pl.ASCENDING])
 
         if order_by:
             kwargs['order_by'] = order_by

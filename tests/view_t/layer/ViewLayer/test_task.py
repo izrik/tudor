@@ -20,6 +20,8 @@ class TaskTest(unittest.TestCase):
             'task': None,
             'descendants': [],
             'pager': None,
+            'sort': 'order_num',
+            'order': 'desc',
         }
         self.ll.get_task_data = Mock(return_value=self.return_value)
         self.r = Mock(spec=DefaultRenderer)
@@ -37,7 +39,8 @@ class TaskTest(unittest.TestCase):
         self.ll.get_task_data.assert_called_with(TASK_ID, user,
                                                  include_deleted=None,
                                                  include_done=None,
-                                                 page_num=1, tasks_per_page=20)
+                                                 page_num=1, tasks_per_page=20,
+                                                 sort='order_num', order='desc')
         self.r.render_template.assert_called()
 
     def test_page_num_not_int_defaults_to_one(self):
@@ -52,7 +55,8 @@ class TaskTest(unittest.TestCase):
         self.ll.get_task_data.assert_called_with(TASK_ID, user,
                                                  include_deleted=None,
                                                  include_done=None,
-                                                 page_num=1, tasks_per_page=20)
+                                                 page_num=1, tasks_per_page=20,
+                                                 sort='order_num', order='desc')
         self.r.render_template.assert_called()
 
     def test_task_per_page_not_int_default_to_twenty(self):
@@ -67,7 +71,8 @@ class TaskTest(unittest.TestCase):
         self.ll.get_task_data.assert_called_with(TASK_ID, user,
                                                  include_deleted=None,
                                                  include_done=None,
-                                                 page_num=1, tasks_per_page=20)
+                                                 page_num=1, tasks_per_page=20,
+                                                 sort='order_num', order='desc')
         self.r.render_template.assert_called()
 
 

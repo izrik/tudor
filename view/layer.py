@@ -7,6 +7,7 @@ from werkzeug.exceptions import NotFound, BadRequest
 
 import logging_util
 from conversions import int_from_str, money_from_str, bool_from_str
+from logic.layer import LogicLayer
 
 from models.task_user_ops import TaskUserOps
 
@@ -97,6 +98,15 @@ class ViewLayer(object):
             return request.form[name]
         return request.args.get(name)
 
+    def get_task_sort_args(self, request, default_sort, default_order):
+        sort = request.args.get('sort', default_sort)
+        if sort not in LogicLayer.TASK_SORT_FIELDS:
+            sort = default_sort
+        order = request.args.get('order', default_order)
+        if order not in LogicLayer.TASK_SORT_ORDERS:
+            order = default_order
+        return sort, order
+
     def index(self, request, current_user):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
@@ -110,10 +120,13 @@ class ViewLayer(object):
             tasks_per_page = int(self.get_form_or_arg(request, 'per_page'))
         except:
             pass
+        sort, order = self.get_task_sort_args(request, 'order_num', 'desc')
 
         data = self.ll.get_index_data(show_deleted, show_done, current_user,
                                       page_num=page_num,
-                                      tasks_per_page=tasks_per_page)
+                                      tasks_per_page=tasks_per_page,
+                                      sort=sort, order=order)
+        sort_args = {'sort': data['sort'], 'order': data['order']}
 
         resp = self.make_response(
             self.render_template('index.t.html',
@@ -125,7 +138,11 @@ class ViewLayer(object):
                                  tags=data['all_tags'],
                                  pager=data['pager'],
                                  pager_link_page='index',
-                                 pager_link_args={}))
+                                 pager_link_args=sort_args,
+                                 sort=data['sort'],
+                                 order=data['order'],
+                                 sort_link_page='index',
+                                 sort_link_args={}))
         return resp
 
     def hierarchy(self, request, current_user):
@@ -146,12 +163,18 @@ class ViewLayer(object):
         return resp
 
     def deadlines(self, request, current_user):
-        data = self.ll.get_deadlines_data(current_user)
+        sort, order = self.get_task_sort_args(request, 'deadline', 'asc')
+        data = self.ll.get_deadlines_data(current_user, sort=sort,
+                                          order=order)
         return self.make_response(
             self.render_template(
                 'deadlines.t.html',
                 cycle=itertools.cycle,
-                deadline_tasks=data['deadline_tasks']))
+                deadline_tasks=data['deadline_tasks'],
+                sort=data['sort'],
+                order=data['order'],
+                sort_link_page='deadlines',
+                sort_link_args={}))
 
     def task_new_get(self, request, current_user):
         summary = self.get_form_or_arg(request, 'summary')
@@ -289,11 +312,13 @@ class ViewLayer(object):
             tasks_per_page = int(request.args.get('per_page', 20))
         except Exception:
             tasks_per_page = 20
+        sort, order = self.get_task_sort_args(request, 'order_num', 'desc')
         data = self.ll.get_task_data(task_id, current_user,
                                      include_deleted=show_deleted,
                                      include_done=show_done,
                                      page_num=page_num,
-                                     tasks_per_page=tasks_per_page)
+                                     tasks_per_page=tasks_per_page,
+                                     sort=sort, order=order)
 
         return self.render_template('task.t.html',
                                     task=data['task'],
@@ -303,7 +328,13 @@ class ViewLayer(object):
                                     show_done=show_done,
                                     pager=data['pager'],
                                     pager_link_page='view_task',
-                                    pager_link_args={'id': task_id},
+                                    pager_link_args={'id': task_id,
+                                                     'sort': data['sort'],
+                                                     'order': data['order']},
+                                    sort=data['sort'],
+                                    order=data['order'],
+                                    sort_link_page='view_task',
+                                    sort_link_args={'id': task_id},
                                     current_user=current_user,
                                     ops=TaskUserOps,
                                     show_hierarchy=False)
@@ -682,9 +713,14 @@ class ViewLayer(object):
                                     cycle=itertools.cycle)
 
     def tags_id_get(self, request, current_user, tag_id):
-        data = self.ll.get_tag_data(tag_id, current_user)
+        sort, order = self.get_task_sort_args(request, 'order_num', 'desc')
+        data = self.ll.get_tag_data(tag_id, current_user, sort=sort,
+                                    order=order)
         return self.render_template('tag.t.html', tag=data['tag'],
-                                    tasks=data['tasks'], cycle=itertools.cycle)
+                                    tasks=data['tasks'], cycle=itertools.cycle,
+                                    sort=data['sort'], order=data['order'],
+                                    sort_link_page='view_tag',
+                                    sort_link_args={'id': tag_id})
 
     def tags_id_edit(self, request, current_user, tag_id):
 

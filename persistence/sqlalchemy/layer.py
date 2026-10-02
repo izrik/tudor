@@ -315,6 +315,12 @@ class SqlAlchemyPersistenceLayer(object):
     TASK_ID = object()
     ORDER_NUM = object()
     DEADLINE = object()
+    SUMMARY = object()
+    IS_DONE = object()
+    IS_DELETED = object()
+    EXPECTED_DURATION = object()
+    EXPECTED_COST = object()
+    PARENT_ID = object()
 
     TAG_ID = object()
     TAG_VALUE = object()
@@ -326,6 +332,18 @@ class SqlAlchemyPersistenceLayer(object):
             return self.DbTask.id
         if f is self.DEADLINE:
             return self.DbTask.deadline
+        if f is self.SUMMARY:
+            return self.DbTask.summary
+        if f is self.IS_DONE:
+            return self.DbTask.is_done
+        if f is self.IS_DELETED:
+            return self.DbTask.is_deleted
+        if f is self.EXPECTED_DURATION:
+            return self.DbTask.expected_duration_minutes
+        if f is self.EXPECTED_COST:
+            return self.DbTask.expected_cost
+        if f is self.PARENT_ID:
+            return self.DbTask.parent_id
         raise Exception('Unhandled order_by field: {}'.format(f))
 
     @property

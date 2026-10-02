@@ -77,7 +77,7 @@ class GetTaskDataTest(unittest.TestCase):
         result = self.ll.get_task_data(self.task.id, self.user)
         # then
         self.assertIsNotNone(result)
-        self.assertEqual(3, len(result))
+        self.assertEqual(5, len(result))
         self.assertIn('task', result)
         self.assertIsNotNone(result['task'])
         self.assertIs(self.task, result['task'])
@@ -95,7 +95,7 @@ class GetTaskDataTest(unittest.TestCase):
         result = self.ll.get_task_data(self.task.id, self.user)
         # then
         self.assertIsNotNone(result)
-        self.assertEqual(3, len(result))
+        self.assertEqual(5, len(result))
 
     def test_not_authorized_admin_can_see_tasks(self):
         # given
@@ -109,7 +109,7 @@ class GetTaskDataTest(unittest.TestCase):
         result = self.ll.get_task_data(self.task.id, admin)
         # then
         self.assertIsNotNone(result)
-        self.assertEqual(3, len(result))
+        self.assertEqual(5, len(result))
 
     # TODO: is_done and is_deleted
 
