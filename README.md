@@ -28,4 +28,5 @@ See [CLAUDE.md](CLAUDE.md) for the full list of environment variables.
 
 - [CLAUDE.md](CLAUDE.md) — agent guidance, commands, and architecture overview
 - [docs/architecture.md](docs/architecture.md) — detailed architecture and test structure
+- [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [RELEASING.md](RELEASING.md) — release process
