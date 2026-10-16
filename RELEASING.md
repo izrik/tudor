@@ -1,3 +1,13 @@
+# Version numbers
+
+Releases are tagged `vX.Y` — two components, no patch number, as every tag in this repo has been.
+
+**A missing patch number is implicitly zero.** `v1.0` and `1.0.0` are the same version, so a release can be referred to either way. This is also how Python itself compares them: under PEP 440, `Version('1.0') == Version('1.0.0')`.
+
+Which component to bump follows [semver](https://semver.org/)'s rules as far as the two-component form allows: incompatible or removed behavior bumps the first, backward-compatible features and fixes the second. Versions before `v1.0` were a plain series and didn't claim semver.
+
+# Cutting a release
+
 To create a new release for version `X.Y`:
  * Merge all relevant branches into `master`
  * Create a `prep-x.y` branch for the new version
