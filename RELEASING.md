@@ -1,11 +1,22 @@
+# Version numbers
+
+Releases are tagged `vX.Y` — two components, no patch number, as every tag in this repo has been.
+
+**A missing patch number is implicitly zero.** `v1.0` and `1.0.0` are the same version, so a release can be referred to either way. This is also how Python itself compares them: under PEP 440, `Version('1.0') == Version('1.0.0')`.
+
+Which component to bump follows [semver](https://semver.org/)'s rules as far as the two-component form allows: incompatible or removed behavior bumps the first, backward-compatible features and fixes the second. Versions before `v1.0` were a plain series and didn't claim semver.
+
+# Cutting a release
+
 To create a new release for version `X.Y`:
  * Merge all relevant branches into `master`
  * Create a `prep-x.y` branch for the new version
-   * Update the `__version__`
    * In `CHANGELOG.md`, rename the `## [Unreleased]` heading to `## [vX.Y] - YYYY-MM-DD`, using the date the release is tagged, and start a fresh empty `## [Unreleased]` section above it. Add the `[vX.Y]` compare link at the bottom of the file and point `[Unreleased]` at the new tag.
    * Make any necessary minor fixes
    * Merge `prep-x.y` into `master`
  * Build the docker image and do any appropriate manual testing. Give it a tag of the form `x.y`.
+   * There is no version to edit in the repo. `build_docker.sh` passes the version to the Dockerfile as the `VERSION` build argument, which writes `__version__.py` into the image; outside the image, `run_local.sh` generates that file from `git describe`. Neither is checked in.
+   * The tag doesn't exist yet at this point, so the version `build_docker.sh` derives from `git describe --tags` would be something like `0.16-48-g94205fd`. Pass it explicitly instead: `./build_docker.sh x.y`.
  * Create a new release in github.
    * The "Tag version" should be of the form `vx.y`
    * Include a release title summarizing the main changes or purpose of the release.

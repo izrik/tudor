@@ -6,12 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [v1.0] - 2026-10-16
+
 Task lists get easier to work through: every task table sorts by clicking
 a column header, the tags page paginates and sorts, search results come
 back in the same table as everywhere else, and a task's tags are links on
 its own page. Underneath, an operation that writes several rows now
 commits as a unit instead of leaving half of itself behind when something
 fails part way.
+
+The version number leaves the `0.x` series, which records that Tudor has
+been running in production for years rather than any break in
+compatibility. Upgrading from v0.16 is like any other upgrade: pull the
+new image, and there is nothing else to do.
 
 ### Added
 
@@ -54,6 +61,7 @@ fails part way.
 - **Search results are shown as a task table** (#147, closes #146) — the
   same table as the index and deadlines pages, instead of an unstyled
   list. The page has a title and a heading now too.
+- The copyright line in the page footer reads 2017-2026 (#137).
 
 ### Fixed
 
@@ -419,7 +427,8 @@ what it could do by the time it was given a version number.
 - A Dockerfile that runs the app under gunicorn, creating the database
   schema on startup if it isn't there.
 
-[Unreleased]: https://github.com/izrik/tudor/compare/v0.16...HEAD
+[Unreleased]: https://github.com/izrik/tudor/compare/v1.0...HEAD
+[v1.0]: https://github.com/izrik/tudor/compare/v0.16...v1.0
 [v0.16]: https://github.com/izrik/tudor/compare/v0.15...v0.16
 [v0.15]: https://github.com/izrik/tudor/compare/v0.14...v0.15
 [v0.14]: https://github.com/izrik/tudor/compare/v0.13...v0.14
