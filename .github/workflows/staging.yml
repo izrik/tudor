@@ -1,0 +1,28 @@
+---
+# Tudor's staging workflow. Copy to .github/workflows/staging.yml in
+# izrik/tudor; see docs/CI_CD_INTEGRATION.md for what it needs set up first.
+#
+# Every push to a PR builds izrik/tudor:<head sha>, pushes it to Docker Hub
+# and points the PR's stagee at it. Closing the PR deletes the stagee, which
+# drops its cloned `tudor_staging_<pr>` database with it.
+name: Staging
+
+on:
+  pull_request:
+    # `closed` is what triggers tear-down; without it stagees pile up.
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: read
+
+jobs:
+  staging:
+    uses: izrik/stager/.github/workflows/stagee.yml@10-phase-4-ci-cd-integration
+    with:
+      project: tudor
+      stager-url: https://stager.re.metaindu.com
+      image-name: izrik/tudor
+    secrets:
+      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+
