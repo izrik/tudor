@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   staging:
-    uses: izrik/stager/.github/workflows/stagee.yml@10-phase-4-ci-cd-integration
+    uses: izrik/stager/.github/workflows/stagee.yml@9a7d656f045b5754784268d9596f98c0e9df2266
     with:
       project: tudor
       stager-url: https://stager.re.metaindu.com
