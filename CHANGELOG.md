@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Creating or cloning a task with a tag on it works again** (#157).
+  Saving the new-task form with anything in the Tags field, or cloning a
+  task whose children carry tags, failed with an Internal Server Error
+  (`'Task' object has no attribute 'is_user_authorized'`): the newly
+  created task was handed to the tag code as a plain domain object,
+  which carries no list of authorized users for the permission check to
+  read. The task is now looked up in the database first.
+
 ## [v1.0] - 2026-10-16
 
 Task lists get easier to work through: every task table sorts by clicking
