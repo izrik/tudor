@@ -41,6 +41,15 @@ class SaveTest(PersistenceLayerTestBase):
         with self.assertRaises(RecordNotFound):
             self.pl.save(t)
 
+    def test_save_attachment_with_a_long_path_and_filename(self):
+        # a name longer than the column used to allow, see #158
+        name = 'a' * 500 + '.pdf'
+        a = Attachment(path=name, filename=name)
+        self.pl.save(a)
+        db_attachment = self.pl._get_db_attachment(a.id)
+        self.assertEqual(name, db_attachment.path)
+        self.assertEqual(name, db_attachment.filename)
+
     def test_save_option_uses_key(self):
         o = Option(key='k', value='v')
         self.pl.save(o)

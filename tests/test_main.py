@@ -13,8 +13,12 @@ class MainFunctionTests(unittest.TestCase):
                 patch('tudor.__version__', 'unknown'):
             app = mock_generate.return_value
             from models.option_base import OptionBase
+            from persistence.migration import \
+                get_highest_migration_version
+            # an up-to-date schema, so main() doesn't migrate and print
+            # about it
             app.pl.get_schema_version.return_value = \
-                OptionBase('__version__', '0.16')
+                OptionBase('__version__', get_highest_migration_version())
             folder = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..'))
 
