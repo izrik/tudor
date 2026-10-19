@@ -2,7 +2,7 @@
 
 import unittest
 
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, NotFound
 
 from models.object_types import ObjectTypes
 from tests.logic_t.layer.LogicLayer.util import generate_ll
@@ -146,3 +146,27 @@ class LogicLayerTaskTagsTest(unittest.TestCase):
         self.assertIn(tag, task.tags)
         self.assertIn(task, tag.tasks)
         self.assertIs(tag, result)
+
+    def test_add_tag_to_newly_created_task_adds_tag(self):
+        # create_new_task returns a plain domain object, which carries no
+        # users relationship of its own
+        # given
+        task = self.ll.create_new_task(summary='task',
+                                       current_user=self.user)
+
+        # when
+        tag = self.ll.do_add_tag_to_task(task, 'vwx', self.user)
+
+        # then
+        self.assertIsNotNone(tag)
+        self.assertEqual('vwx', tag.value)
+        self.assertEqual([tag], list(self.pl.get_tags(task_id=task.id)))
+
+    def test_add_tag_to_task_not_in_db_raises_not_found(self):
+        # given
+        task = self.pl.create_task('task')
+
+        # expect
+        self.assertRaises(NotFound,
+                          self.ll.do_add_tag_to_task,
+                          task, 'abc', self.admin)

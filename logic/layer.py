@@ -670,12 +670,19 @@ class LogicLayer(object):
     def do_add_tag_to_task(self, task, value, current_user):
         if task is None:
             raise ValueError('No task specified')
-        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
+        # The task may be a plain domain object, e.g. the one returned by
+        # create_new_task, which doesn't carry the users relationship that
+        # the authorization check needs. Re-resolve it through the PL.
+        db_task = self.pl.get_task(task.id)
+        if db_task is None:
+            raise werkzeug.exceptions.NotFound(
+                "No task found for the id '{}'".format(task.id))
+        if not TaskUserOps.is_user_authorized_or_admin(db_task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
         with self.pl.transaction():
             tag = self.get_or_create_tag(value)
-            self.pl.add_tag_to_task(task.id, tag.id)
+            self.pl.add_tag_to_task(db_task.id, tag.id)
         return tag
 
     def get_or_create_tag(self, value):
