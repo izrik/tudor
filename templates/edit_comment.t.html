@@ -3,6 +3,10 @@
 {% block header_sub_text %}Editing Comment (ID {{comment.id}}){% endblock %}
 {% block content %}
 <div class="container">
+    <p>
+        By {% if comment.author %}{{ comment.author.email }}{% else %}<span class="text-muted">unknown</span>{% endif %}
+        on {{ comment.timestamp }}
+    </p>
     <form action="" method="post">
         <textarea name="content" rows="8" cols="60">{{ comment.content if comment.content != None }}</textarea>
         <p></p>

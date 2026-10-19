@@ -34,5 +34,7 @@ def generate_user_class(db, users_tasks_table):
 
         def clear_relationships(self):
             self.tasks = []
+            # Comments outlive their author; they just lose the attribution.
+            self.authored_comments = []
 
     return DbUser

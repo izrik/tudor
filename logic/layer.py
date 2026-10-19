@@ -13,6 +13,7 @@ import logging_util
 from conversions import int_from_str, money_from_str
 from exception import UserCannotViewTaskException
 from .data_import_error import DataImportError
+from models.comment_user_ops import CommentUserOps
 from models.object_types import ObjectTypes
 from models.task import Task
 from models.task_user_ops import TaskUserOps
@@ -379,15 +380,29 @@ class LogicLayer(object):
         timestamp = datetime.now(UTC)
         comment = self.pl.create_comment(content, timestamp)
         comment.task = task
+        comment.author = current_user
         self.pl.save(comment)
         return comment
+
+    def get_edit_comment_data(self, comment_id, current_user):
+        comment = self.pl.get_comment(comment_id)
+        if comment is None:
+            raise werkzeug.exceptions.NotFound()
+        task = self.pl.get_task(comment.task_id)
+        if not CommentUserOps.user_can_edit_comment(comment, task,
+                                                    current_user):
+            raise werkzeug.exceptions.Forbidden()
+        return {
+            'comment': comment,
+        }
 
     def edit_comment(self, comment_id, content, current_user):
         comment = self.pl.get_comment(comment_id)
         if comment is None:
             raise werkzeug.exceptions.NotFound()
         task = self.pl.get_task(comment.task_id)
-        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
+        if not CommentUserOps.user_can_edit_comment(comment, task,
+                                                    current_user):
             raise werkzeug.exceptions.Forbidden()
         comment.content = content
         comment.date_last_updated = datetime.now(UTC)

@@ -183,6 +183,9 @@ def import_data(pl, src, keep_id_numbers=True):
         try:
             task_map = tasks_by_id[comment['task_id']]
             comment['__object__'].task = task_map['__object__']
+            if comment.get('author_id') is not None:
+                author_map = users_by_id[comment['author_id']]
+                comment['__object__'].author = author_map['__object__']
         except Exception as e:
             raise DataImportError('Error connecting comment', comment, exc=e)
 

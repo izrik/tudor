@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Comments have an author** (closes #155). The author's email address is
+  shown next to each comment on the task page, and whoever posts a comment
+  is recorded as its author.
+
+### Changed
+
+- **Only the author of a comment can edit it** (closes #155). Until now any
+  user authorized on the task could change anyone's comment. The Edit link
+  now appears only on your own comments, and the edit page refuses anyone
+  else. Admins can still edit any comment, which is also how the comments
+  that pre-date this change — they have no author and are shown as
+  "unknown" — can be edited at all. The database gains a `comment.author_id`
+  column; upgrading applies it automatically at start-up, as with any other
+  schema change.
+
 ### Fixed
 
 - **Creating or cloning a task with a tag on it works again** (#157).

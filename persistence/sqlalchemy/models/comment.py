@@ -19,6 +19,12 @@ def generate_comment_class(db):
                                backref=db.backref('comments', lazy='dynamic',
                                                   order_by=timestamp))
 
+        author_id = db.Column(db.Integer, db.ForeignKey('user.id'),
+                              nullable=True)
+        author = db.relationship(
+            'DbUser', backref=db.backref('authored_comments', lazy='dynamic',
+                                         order_by=timestamp))
+
         def __init__(self, content, timestamp=None, date_last_updated=None,
                      lazy=None):
             if lazy:
@@ -34,5 +40,6 @@ def generate_comment_class(db):
 
         def clear_relationships(self):
             self.task = None
+            self.author = None
 
     return DbComment

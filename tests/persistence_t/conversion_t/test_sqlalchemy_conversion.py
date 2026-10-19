@@ -66,17 +66,20 @@ class SqlAlchemyConversionTest(unittest.TestCase):
 
     def test_to_comment(self):
         db = SimpleNamespace(id=1, content='c', timestamp=None,
-                             date_last_updated=None, task_id=7)
+                             date_last_updated=None, task_id=7, author_id=3)
         c = to_comment(db)
         self.assertIsInstance(c, Comment)
         self.assertEqual(c.task_id, 7)
+        self.assertEqual(c.author_id, 3)
 
     def test_apply_comment_to_db(self):
         db = SimpleNamespace(id=None, content=None, timestamp=None,
-                             date_last_updated=None, task_id=None)
-        apply_comment_to_db(Comment(content='c', task_id=7), db)
+                             date_last_updated=None, task_id=None,
+                             author_id=None)
+        apply_comment_to_db(Comment(content='c', task_id=7, author_id=3), db)
         self.assertEqual(db.task_id, 7)
         self.assertEqual(db.content, 'c')
+        self.assertEqual(db.author_id, 3)
 
     def test_to_attachment(self):
         db = SimpleNamespace(id=1, path='/p', description='d', timestamp=None,
