@@ -27,6 +27,8 @@ Plain domain classes (`Task`, `User`, `Tag`, `Comment`, `Attachment`, `Option`) 
 - Tasks can prioritize before/after other tasks
 - Tags and users have many-to-many relationships with tasks
 - Notes and attachments have one-to-many relationships with tasks
+- Comments have an author (a user), who is the only one allowed to edit
+  them; see `models/comment_user_ops.py`
 
 ## Test Structure
 

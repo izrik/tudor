@@ -460,9 +460,39 @@ class LogicLayerDoImportDataTest(unittest.TestCase):
         self.assertEqual(datetime(2018, 1, 1), comment.timestamp)
         self.assertIs(task, comment.task)
         self.assertEqual([comment], list(task.comments))
+        self.assertIsNone(comment.author)
         self.assertEqual(0, self.pl.count_attachments())
         self.assertEqual(0, self.pl.count_users())
         self.assertEqual(0, self.pl.count_options())
+
+    def test_imports_comment_author(self):
+        # given
+        src = '''{"format_version":2,
+        "tasks":[{
+            "id": 1,
+            "summary":"summary"
+        }],
+        "users":[{
+            "id": 3,
+            "email": "name@example.com",
+            "hashed_password": "hashed",
+            "is_admin": false
+        }],
+        "comments":[{
+            "id":2,
+            "content":"content!",
+            "timestamp": "2018-01-01",
+            "task_id": 1,
+            "author_id": 3
+        }]}'''
+
+        # when
+        self.ll.do_import_data(json.loads(src))
+
+        # then
+        comment = self.pl.get_comment(2)
+        self.assertIsNotNone(comment)
+        self.assertIs(self.pl.get_user(3), comment.author)
 
     def test_do_import_data_empty_attachments(self):
         # given

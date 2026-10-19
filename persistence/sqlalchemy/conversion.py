@@ -63,7 +63,8 @@ def to_comment(db_comment):
         content=db_comment.content,
         timestamp=db_comment.timestamp,
         date_last_updated=db_comment.date_last_updated,
-        task_id=db_comment.task_id)
+        task_id=db_comment.task_id,
+        author_id=db_comment.author_id)
 
 
 def apply_comment_to_db(comment, db_comment):
@@ -73,6 +74,7 @@ def apply_comment_to_db(comment, db_comment):
     db_comment.timestamp = comment.timestamp
     db_comment.date_last_updated = comment.date_last_updated
     db_comment.task_id = comment.task_id
+    db_comment.author_id = comment.author_id
 
 
 def to_attachment(db_attachment):

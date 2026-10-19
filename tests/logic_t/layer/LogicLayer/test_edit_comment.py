@@ -20,6 +20,7 @@ class EditCommentTest(unittest.TestCase):
         self.task.users.append(self.user)
         self.comment = self.pl.create_comment('original content')
         self.comment.task = self.task
+        self.comment.author = self.user
         self.pl.add(self.comment)
         self.pl.commit()
 
@@ -45,6 +46,45 @@ class EditCommentTest(unittest.TestCase):
             Forbidden,
             self.ll.edit_comment,
             self.comment.id, 'new content', other_user)
+
+    def test_authorized_user_who_is_not_the_author_raises(self):
+        # given
+        other_user = self.pl.create_user('other@example.com')
+        self.pl.add(other_user)
+        self.task.users.append(other_user)
+        self.pl.commit()
+        # expect
+        self.assertRaises(
+            Forbidden,
+            self.ll.edit_comment,
+            self.comment.id, 'new content', other_user)
+
+    def test_comment_without_an_author_cannot_be_edited_by_user(self):
+        # given
+        self.comment.author = None
+        self.pl.commit()
+        # expect
+        self.assertRaises(
+            Forbidden,
+            self.ll.edit_comment,
+            self.comment.id, 'new content', self.user)
+
+    def test_admin_can_edit_someone_elses_comment(self):
+        # given
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
+        self.pl.add(admin)
+        self.pl.commit()
+        # when
+        result = self.ll.edit_comment(self.comment.id, 'new content', admin)
+        # then
+        self.assertEqual('new content', result.content)
+
+    def test_editing_does_not_change_the_author(self):
+        # when
+        result = self.ll.edit_comment(self.comment.id, 'new content',
+                                      self.user)
+        # then
+        self.assertIs(self.user, result.author)
 
     def test_updates_content(self):
         # when

@@ -10,14 +10,16 @@ class Comment(object):
     FIELD_TIMESTAMP = 'TIMESTAMP'
     FIELD_DATE_LAST_UPDATED = 'DATE_LAST_UPDATED'
     FIELD_TASK_ID = 'TASK_ID'
+    FIELD_AUTHOR_ID = 'AUTHOR_ID'
 
     def __init__(self, content, timestamp=None, date_last_updated=None,
-                 task_id=None, id=None):
+                 task_id=None, author_id=None, id=None):
         self.id = id
         self.content = content
         self.timestamp = self._clean_timestamp(timestamp)
         self.date_last_updated = self._clean_timestamp(date_last_updated)
         self.task_id = task_id
+        self.author_id = author_id
 
     @property
     def object_type(self):
@@ -46,6 +48,8 @@ class Comment(object):
             d['content'] = self.content
         if fields is None or self.FIELD_TASK_ID in fields:
             d['task_id'] = self.task_id
+        if fields is None or self.FIELD_AUTHOR_ID in fields:
+            d['author_id'] = self.author_id
         return d
 
     @classmethod
@@ -55,4 +59,5 @@ class Comment(object):
             content=d.get('content'),
             timestamp=d.get('timestamp'),
             date_last_updated=d.get('date_last_updated'),
-            task_id=d.get('task_id'))
+            task_id=d.get('task_id'),
+            author_id=d.get('author_id'))

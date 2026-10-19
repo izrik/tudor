@@ -76,6 +76,22 @@ class DbCommentFromDictTest(PersistenceLayerTestBase):
         self.assertIsInstance(result, self.pl.DbComment)
         self.assertIs(task, result.task)
 
+    def test_author_none_yields_empty(self):
+        # when
+        result = self.pl.DbComment.from_dict({'author': None})
+        # then
+        self.assertIsInstance(result, self.pl.DbComment)
+        self.assertIsNone(result.author)
+
+    def test_author_not_none_yields_same(self):
+        # given
+        user = self.pl.DbUser('name@example.org')
+        # when
+        result = self.pl.DbComment.from_dict({'author': user})
+        # then
+        self.assertIsInstance(result, self.pl.DbComment)
+        self.assertIs(user, result.author)
+
     def test_none_lazy_does_not_raise(self):
         # when
         result = self.pl.DbComment.from_dict({}, lazy=None)

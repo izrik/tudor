@@ -71,4 +71,27 @@ class CreateNewCommentTest(unittest.TestCase):
                       result.timestamp.replace(tzinfo=None))
         self.assertLessEqual(time_delta.total_seconds(), 1)
 
+    def test_sets_author_to_current_user(self):
+        # given
+        self.pl.add(self.user)
+        self.pl.add(self.task)
+        self.task.users.append(self.user)
+        self.pl.commit()
+        # when
+        result = self.ll.create_new_comment(self.task.id, 'content', self.user)
+        # then
+        self.assertIs(self.user, result.author)
+        self.assertEqual(self.user.id, result.author_id)
+
+    def test_admin_becomes_the_author(self):
+        # given
+        admin = self.pl.create_user('admin@example.com', is_admin=True)
+        self.pl.add(admin)
+        self.pl.add(self.task)
+        self.pl.commit()
+        # when
+        result = self.ll.create_new_comment(self.task.id, 'content', admin)
+        # then
+        self.assertIs(admin, result.author)
+
     # TODO: content of None?

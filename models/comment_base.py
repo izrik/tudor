@@ -12,6 +12,7 @@ class CommentBase(object):
     FIELD_TIMESTAMP = 'TIMESTAMP'
     FIELD_DATE_LAST_UPDATED = 'DATE_LAST_UPDATED'
     FIELD_TASK = 'TASK'
+    FIELD_AUTHOR = 'AUTHOR'
 
     def __init__(self, content, timestamp=None, date_last_updated=None):
         self.content = content
@@ -55,6 +56,8 @@ class CommentBase(object):
             d['content'] = self.content
         if fields is None or self.FIELD_TASK in fields:
             d['task'] = self.task
+        if fields is None or self.FIELD_AUTHOR in fields:
+            d['author'] = self.author
 
         return d
 
@@ -63,6 +66,9 @@ class CommentBase(object):
         if 'task' in d and d['task'] is not None:
             d['task_id'] = d['task'].id
             del d['task']
+        if 'author' in d:
+            author = d.pop('author')
+            d['author_id'] = author.id if author is not None else None
         return d
 
     @classmethod
@@ -72,6 +78,7 @@ class CommentBase(object):
         timestamp = d.get('timestamp', None)
         date_last_updated = d.get('date_last_updated', None)
         task = d.get('task')
+        author = d.get('author')
 
         comment = cls(content, timestamp, date_last_updated=date_last_updated,
                       lazy=lazy)
@@ -79,6 +86,7 @@ class CommentBase(object):
             comment.id = comment_id
         if not lazy:
             comment.task = task
+            comment.author = author
         return comment
 
     def update_from_dict(self, d):
@@ -92,3 +100,5 @@ class CommentBase(object):
             self.date_last_updated = self._clean_timestamp(d['date_last_updated'])
         if 'task' in d:
             self.task = d['task']
+        if 'author' in d:
+            self.author = d['author']

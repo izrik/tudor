@@ -9,6 +9,7 @@ import logging_util
 from conversions import int_from_str, money_from_str, bool_from_str
 from logic.layer import LogicLayer
 
+from models.comment_user_ops import CommentUserOps
 from models.task_user_ops import TaskUserOps
 
 
@@ -337,6 +338,7 @@ class ViewLayer(object):
                                     sort_link_args={'id': task_id},
                                     current_user=current_user,
                                     ops=TaskUserOps,
+                                    comment_ops=CommentUserOps,
                                     show_hierarchy=False)
 
     def task_hierarchy(self, request, current_user, task_id):
@@ -353,6 +355,7 @@ class ViewLayer(object):
                                     show_deleted=show_deleted,
                                     show_done=show_done,
                                     ops=TaskUserOps,
+                                    comment_ops=CommentUserOps,
                                     show_hierarchy=True)
 
     def comment_new_post(self, request, current_user):
@@ -367,10 +370,9 @@ class ViewLayer(object):
 
     def comment_edit(self, request, current_user, comment_id):
         if request.method == 'GET':
-            comment = self.ll.pl.get_comment(comment_id)
-            if comment is None:
-                return ('Not found', 404)
-            return self.render_template('edit_comment.t.html', comment=comment)
+            data = self.ll.get_edit_comment_data(comment_id, current_user)
+            return self.render_template('edit_comment.t.html',
+                                        comment=data['comment'])
 
         content = request.form.get('content', '')
         comment = self.ll.edit_comment(comment_id, content, current_user)
