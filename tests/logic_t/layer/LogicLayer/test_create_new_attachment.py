@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import os
 import unittest
 
 from datetime import datetime
 from werkzeug.exceptions import NotFound, Forbidden
 
+from logic.layer import MAX_FILENAME_LENGTH
 from models.object_types import ObjectTypes
 from tests.util import MockFileObject
 from .util import generate_ll
@@ -110,6 +112,40 @@ class CreateNewAttachmentTest(unittest.TestCase):
             Forbidden,
             self.ll.create_new_attachment,
             self.task.id, self.f, 'test attachment', self.user)
+
+    def test_long_filename_is_kept_whole(self):
+        # given
+        self.pl.add(self.user)
+        self.pl.add(self.task)
+        self.task.users.append(self.user)
+        self.pl.commit()
+        name = 'a' * 200 + '.pdf'
+        f = MockFileObject('/' + name)
+        # when
+        result = self.ll.create_new_attachment(self.task.id, f,
+                                               'test attachment', self.user)
+        # then
+        self.assertEqual(name, result.path)
+        self.assertEqual(name, result.filename)
+        self.assertEqual([os.path.join(self.ll.upload_folder, name)],
+                         f.save_calls)
+
+    def test_filename_too_long_for_the_file_system_gets_shortened(self):
+        # given
+        self.pl.add(self.user)
+        self.pl.add(self.task)
+        self.task.users.append(self.user)
+        self.pl.commit()
+        f = MockFileObject('/' + 'a' * 300 + '.pdf')
+        # when
+        result = self.ll.create_new_attachment(self.task.id, f,
+                                               'test attachment', self.user)
+        # then
+        expected = 'a' * (MAX_FILENAME_LENGTH - 4) + '.pdf'
+        self.assertEqual(expected, result.path)
+        self.assertEqual(expected, result.filename)
+        self.assertEqual([os.path.join(self.ll.upload_folder, expected)],
+                         f.save_calls)
 
     def test_timestamp_sets_timestamp(self):
         # given

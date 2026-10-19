@@ -10,9 +10,9 @@ def generate_attachment_class(db):
         __tablename__ = 'attachment'
 
         id = db.Column(db.Integer, primary_key=True)
-        path = db.Column(db.String(1000), nullable=False)
+        path = db.Column(db.Text, nullable=False)
         timestamp = db.Column(db.DateTime)
-        filename = db.Column(db.String(100))
+        filename = db.Column(db.Text)
         description = db.Column(db.Text, default=None)
 
         task_id = db.Column(db.Integer, db.ForeignKey('task.id'))

@@ -17,6 +17,12 @@ from models.object_types import ObjectTypes
 from models.task import Task
 from models.task_user_ops import TaskUserOps
 
+# Most file systems reject a path component longer than 255 bytes, so an
+# upload whose name is longer than that has to be shortened before it can be
+# written to disk. secure_filename() yields ascii only, so a character is a
+# byte.
+MAX_FILENAME_LENGTH = 255
+
 
 class LogicLayer(object):
     _logger = logging_util.get_logger_by_name(__name__, 'LogicLayer')
@@ -455,6 +461,19 @@ class LogicLayer(object):
         ext = filename.rsplit('.', 1)[1]
         return (ext in self.allowed_extensions)
 
+    @staticmethod
+    def _shorten_filename(filename, max_length=MAX_FILENAME_LENGTH):
+        """Trim a file name down to what the file system will accept.
+
+        The extension is kept, so the shortened name still says what kind
+        of file it is.
+        """
+        if len(filename) <= max_length:
+            return filename
+        stem, ext = os.path.splitext(filename)
+        ext = ext[:max_length]
+        return stem[:max_length - len(ext)] + ext
+
     def create_new_attachment(self, task_id, f, description, current_user,
                               timestamp=None):
 
@@ -465,7 +484,7 @@ class LogicLayer(object):
         if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
             raise werkzeug.exceptions.Forbidden()
 
-        path = secure_filename(f.filename)
+        path = self._shorten_filename(secure_filename(f.filename))
         f.save(os.path.join(self.upload_folder, path))
 
         filename = os.path.split(path)[1]
