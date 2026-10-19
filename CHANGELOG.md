@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   created task was handed to the tag code as a plain domain object,
   which carries no list of authorized users for the permission check to
   read. The task is now looked up in the database first.
-- **Attaching a file with a long name works** (#159, closes #158). The
+- **Attaching a file with a long name works** (#161, closes #158). The
   attachment table stored the name in a `varchar(100)`, so a longer name
   — one copied from a browser's suggested download name, say — failed the
   upload with an Internal Server Error and no file attached. The name and
