@@ -2,6 +2,14 @@
 # Tudor's staging workflow. Copy to .github/workflows/staging.yml in
 # izrik/tudor; see docs/CI_CD_INTEGRATION.md for what it needs set up first.
 #
+# This one is self-contained — plain docker and curl, no reusable workflow and
+# no composite action — because **tudor is public and Stager is private**, and
+# a public repository cannot resolve a private one's workflows or actions no
+# matter what the private one's Actions access setting says. Any other public
+# repository starts from this file too: change PROJECT, IMAGE_NAME and
+# STAGER_URL and it works for any project Stager knows. A private repository
+# has the shorter option; see lorto-staging.yml.
+#
 # Every push to a PR builds izrik/tudor:<head sha>, pushes it to Docker Hub
 # and points the PR's stagee at it. Closing the PR deletes the stagee, which
 # drops its cloned `tudor_staging_<pr>` database with it.
@@ -15,14 +23,108 @@ on:
 permissions:
   contents: read
 
-jobs:
-  staging:
-    uses: izrik/stager/.github/workflows/stagee.yml@9a7d656f045b5754784268d9596f98c0e9df2266
-    with:
-      project: tudor
-      stager-url: https://stager.re.metaindu.com
-      image-name: izrik/tudor
-    secrets:
-      registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
-      registry-password: ${{ secrets.DOCKERHUB_TOKEN }}
+env:
+  STAGER_URL: https://stager.re.metaindu.com
+  PROJECT: tudor
+  IMAGE_NAME: izrik/tudor
 
+concurrency:
+  group: staging-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and stage
+    # A pull request from a fork gets none of this repository's secrets, so
+    # it could not push an image even if staging a fork's code were a good
+    # idea. Skip rather than fail.
+    if: >-
+      github.event.action != 'closed'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      # The head of the PR branch, not the merge commit checkout defaults to:
+      # the stagee runs the branch as it stands.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push the image
+        env:
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          docker build -t "$IMAGE_NAME:$SHA" .
+          docker push "$IMAGE_NAME:$SHA"
+
+      # POST creates a stagee; it answers 409 once the PR has one, and then
+      # the push is an update, so this falls back to PUT with the same body
+      # (PUT reads only the image, commit and branch from it). Values the PR
+      # controls go in through the environment rather than being pasted into
+      # the script.
+      - name: Create or update the stagee
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+          stagees="$STAGER_URL/api/projects/$PROJECT/stagees"
+          body=$(jq -n \
+            --argjson pr "$PR" \
+            --arg branch "$BRANCH" \
+            --arg commit "$SHA" \
+            --arg image "$IMAGE_NAME:$SHA" \
+            --arg pr_url "$PR_URL" \
+            '{pr_number: $pr, branch_name: $branch, commit_hash: $commit,
+              image_tag: $image, github_pr_url: $pr_url}')
+
+          code=$(curl -sS -o response.json -w '%{http_code}' \
+            -X POST "$stagees" \
+            -H 'Content-Type: application/json' -d "$body")
+
+          if [ "$code" = 409 ]; then
+            echo "PR #$PR already has a stagee; updating it."
+            code=$(curl -sS -o response.json -w '%{http_code}' \
+              -X PUT "$stagees/$PR" \
+              -H 'Content-Type: application/json' -d "$body")
+          fi
+
+          cat response.json
+          case "$code" in
+            200 | 201) ;;
+            *) echo "::error::Stager answered HTTP $code"; exit 1 ;;
+          esac
+
+          url=$(jq -r '.stagee_url // empty' response.json)
+          if [ -n "$url" ]; then
+            echo "Staging environment: <https://$url>" \
+              >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  cleanup:
+    name: Tear down
+    if: >-
+      github.event.action == 'closed'
+      && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      # A PR whose stagee was never created, or was already deleted, answers
+      # 404 — not a failure worth failing the run over.
+      - name: Delete the stagee
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o response.json -w '%{http_code}' \
+            -X DELETE "$STAGER_URL/api/projects/$PROJECT/stagees/$PR")
+          cat response.json
+          case "$code" in
+            200 | 404) ;;
+            *) echo "::error::Stager answered HTTP $code"; exit 1 ;;
+          esac
