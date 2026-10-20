@@ -61,6 +61,27 @@ jobs:
           docker build -t "$IMAGE_NAME:$SHA" .
           docker push "$IMAGE_NAME:$SHA"
 
+      # While Stager's certificate is self-signed, curl has to be told what
+      # signed it. The repository variable holds the PEM — a certificate is
+      # not a secret — and appending it to a copy of the runner's own bundle
+      # leaves every other CA trusted, which replacing the bundle would not.
+      # An empty variable leaves curl's defaults alone, so this step needs no
+      # changing when Stager gets a certificate the world already trusts.
+      - name: Trust Stager's certificate
+        env:
+          CA_PEM: ${{ vars.STAGER_CA_CERT }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CA_PEM:-}" ]; then
+            echo "No STAGER_CA_CERT; using the runner's own CA bundle."
+            exit 0
+          fi
+          bundle="$RUNNER_TEMP/stager-ca-bundle.pem"
+          cat /etc/ssl/certs/ca-certificates.crt > "$bundle"
+          printf '%s\n' "$CA_PEM" >> "$bundle"
+          echo "CURL_CA_BUNDLE=$bundle" >> "$GITHUB_ENV"
+
+
       # POST creates a stagee; it answers 409 once the PR has one, and then
       # the push is an update, so this falls back to PUT with the same body
       # (PUT reads only the image, commit and branch from it). Values the PR
