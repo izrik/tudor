@@ -13,12 +13,12 @@ class MainFunctionTests(unittest.TestCase):
                 patch('tudor.__version__', 'unknown'):
             app = mock_generate.return_value
             from models.option_base import OptionBase
-            from persistence.migration import \
-                get_highest_migration_version
+            from persistence.migration import (
+                SCHEMA_VERSION_KEY, get_highest_migration_version)
             # an up-to-date schema, so main() doesn't migrate and print
             # about it
-            app.pl.get_schema_version.return_value = \
-                OptionBase('__version__', get_highest_migration_version())
+            app.pl.get_schema_version.return_value = OptionBase(
+                SCHEMA_VERSION_KEY, str(get_highest_migration_version()))
             folder = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..'))
 
@@ -58,3 +58,45 @@ class MainFunctionTests(unittest.TestCase):
             app.bcrypt.generate_password_hash.assert_not_called()
             app.ll.do_export_data.assert_not_called()
             app.ll.do_import_data.assert_not_called()
+
+    def test_out_of_date_schema_is_migrated(self):
+        with patch('tudor.print'), \
+                patch('tudor.generate_app') as mock_generate, \
+                patch('tudor.auto_migrate') as mock_auto_migrate, \
+                patch('tudor.set_schema_version') as mock_set_version:
+            app = mock_generate.return_value
+            from models.option_base import OptionBase
+            from persistence.migration import get_highest_migration_version
+            # a schema from before the version numbers were a plain
+            # sequence, and well behind the latest
+            app.pl.get_schema_version.return_value = \
+                OptionBase('__version__', '0.10')
+
+            # when
+            main([])
+
+            # then
+            mock_auto_migrate.assert_called_once_with(
+                app.pl, get_highest_migration_version())
+            mock_set_version.assert_not_called()
+
+    def test_create_db_stamps_the_schema_version(self):
+        with patch('tudor.print'), \
+                patch('tudor.generate_app') as mock_generate, \
+                patch('tudor.auto_migrate') as mock_auto_migrate, \
+                patch('tudor.set_schema_version') as mock_set_version:
+            app = mock_generate.return_value
+            from persistence.migration import get_highest_migration_version
+            # a database with nothing in it yet
+            app.pl.get_schema_version.return_value = None
+
+            # when
+            main(['--create-db'])
+
+            # then the tables are created, and the schema is recorded as
+            # current rather than being migrated up from nothing
+            app.pl.create_all.assert_called_once_with()
+            mock_set_version.assert_called_once_with(
+                app.pl, get_highest_migration_version())
+            mock_auto_migrate.assert_not_called()
+            app.run.assert_not_called()

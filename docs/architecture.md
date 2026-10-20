@@ -16,6 +16,14 @@ Business logic: task hierarchy sorting (recursive depth-first traversal), filter
 
 Plain domain classes (`Task`, `User`, `Tag`, `Comment`, `Attachment`, `Option`) live in `models/` and use **ID-based relationships** (not object references) to avoid circular dependencies. `persistence/sqlalchemy/` maps them to the ORM `Db*` classes via the helpers in `conversion.py`. `save()` is the primary way to persist changes.
 
+## Schema Migrations (`persistence/migration.py`)
+
+Migration scripts live in `persistence/migrations/`, named for their place in the sequence with a short description after it: `0018-add-comment-author.sql`. The number is a plain counter, not a release number — it has nothing to do with Tudor's own version, and gaps in it are fine.
+
+At start-up `main()` compares the highest-numbered script against the number recorded in the `option` table under `__schema_version__`, and runs every script in between, in order, recording each as it goes. A database created from scratch with `--create-db` already matches the current models, so it is stamped with the highest number instead of having the scripts replayed against it; the scripts are not written to be re-runnable.
+
+To add a migration, write a script numbered one past the current highest. Databases written before the numbering changed hold a two-part value such as `0.17` under the key `__version__`; both are still read, and the value is rewritten under the new key the next time anything migrates.
+
 ## Base Model Classes (`models/`)
 
 `TaskBase`, `UserBase`, `TagBase`, etc. define field constants, serialization (`to_dict()` / `from_dict()`) and display helpers. The ORM `Db*` classes in `persistence/sqlalchemy/models/` inherit from them.

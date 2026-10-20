@@ -22,8 +22,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   "unknown" — can be edited at all. The database gains a `comment.author_id`
   column; upgrading applies it automatically at start-up, as with any other
   schema change.
+- **Schema migrations are numbered with a plain counter** (closes #162).
+  The scripts in `persistence/migrations/` were named like release
+  versions, `v0.17.sql`, and were applied by counting upwards from the
+  version the database was on — which meant the series could never leave
+  `0.x`, and that every gap in it was announced on start-up as a missing
+  script. They are now named for their place in a sequence that has no
+  upper bound, `0018-add-comment-author.sql`, and the ones a database
+  hasn't seen yet are applied in order. Nothing is needed from an
+  operator: the version a database already carries is still understood,
+  and is rewritten under the clearer name `__schema_version__` the next
+  time it migrates.
 
 ### Fixed
+
+- **Setting up a brand-new database works** (#162). `--create-db` against
+  an empty database failed, because the schema version was read, and the
+  migration attempted, before the tables it needed existed. The tables
+  are now created first, and a database created that way is recorded as
+  being at the current schema version rather than having every migration
+  script replayed against it.
 
 - **Creating or cloning a task with a tag on it works again** (#157).
   Saving the new-task form with anything in the Tags field, or cloning a
