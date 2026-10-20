@@ -79,6 +79,7 @@ jobs:
           bundle="$RUNNER_TEMP/stager-ca-bundle.pem"
           cat /etc/ssl/certs/ca-certificates.crt > "$bundle"
           printf '%s\n' "$CA_PEM" >> "$bundle"
+          printf '%s\n' "$CA_PEM"
           echo "CURL_CA_BUNDLE=$bundle" >> "$GITHUB_ENV"
 
 
