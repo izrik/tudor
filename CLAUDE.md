@@ -82,3 +82,4 @@ See [docs/architecture.md](docs/architecture.md) for the full breakdown.
 - [docs/architecture.md](docs/architecture.md) — full component breakdown, data flow, test structure, active refactoring notes
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [RELEASING.md](RELEASING.md) — release process and versioning
+- [SECURITY.md](SECURITY.md) — how to report a vulnerability, and what's in scope
