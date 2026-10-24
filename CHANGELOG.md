@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Comments have an author** (closes #155). The author's email address is
   shown next to each comment on the task page, and whoever posts a comment
   is recorded as its author.
+- **A security policy** (closes #165). [SECURITY.md](SECURITY.md) says where to
+  report a vulnerability — GitHub's private vulnerability reporting rather than
+  a public issue — what's in scope, and what a reporter can expect. The CI
+  workflow's token is also now scoped to `contents: read`, which is all it
+  needs.
 
 ### Changed
 

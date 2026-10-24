@@ -30,3 +30,4 @@ See [CLAUDE.md](CLAUDE.md) for the full list of environment variables.
 - [docs/architecture.md](docs/architecture.md) — detailed architecture and test structure
 - [CHANGELOG.md](CHANGELOG.md) — what changed in each release
 - [RELEASING.md](RELEASING.md) — release process
+- [SECURITY.md](SECURITY.md) — how to report a vulnerability
