@@ -11,6 +11,8 @@ from models.option import Option
 from models.tag import Tag
 from models.task import Task
 from models.user import User
+from persistence.migration import (LEGACY_SCHEMA_VERSION_KEY,
+                                   SCHEMA_VERSION_KEY)
 from persistence.sqlalchemy.conversion import (
     apply_attachment_to_db, apply_comment_to_db, apply_option_to_db,
     apply_tag_to_db, apply_task_to_db, apply_user_to_db)
@@ -288,14 +290,19 @@ class SqlAlchemyPersistenceLayer(object):
         self.db.session.execute(*args, **kwargs)
 
     def get_schema_version(self):
-        try:
-            stmt = select(self.DbOption).where(self.DbOption.key == '__version__')
-            dbopt = self.db.session.execute(stmt).scalar_one_or_none()
-        except Exception as e:
-            print(f'got exception {e}')
-            return None
-        else:
-            return dbopt
+        # The key was renamed; databases that pre-date the rename still
+        # hold the version under the old one.
+        for key in (SCHEMA_VERSION_KEY, LEGACY_SCHEMA_VERSION_KEY):
+            try:
+                stmt = select(self.DbOption).where(self.DbOption.key == key)
+                dbopt = self.db.session.execute(stmt).scalar_one_or_none()
+            except Exception as e:
+                print(f'got exception {e}')
+                self.db.session.rollback()
+                return None
+            if dbopt is not None:
+                return dbopt
+        return None
 
     def query(self, *args, **kwargs):
         # For backward compatibility, but deprecated in SQLAlchemy 2.0

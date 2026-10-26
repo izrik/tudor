@@ -18,7 +18,9 @@ from markdown_util import gfm_to_html
 
 from conversions import bool_from_str, int_from_str
 from logic.layer import LogicLayer
-from persistence.migration import auto_migrate
+from persistence.migration import (auto_migrate, get_current_schema_version,
+                                   get_highest_migration_version,
+                                   set_schema_version)
 from persistence.sqlalchemy.layer import SqlAlchemyPersistenceLayer
 from view.layer import ViewLayer
 
@@ -921,35 +923,37 @@ def main(argv):
                        secret_key=arg_config.SECRET_KEY,
                        allowed_extensions=arg_config.ALLOWED_EXTENSIONS)
 
-    print('Checking database schema version')
-    from packaging.version import parse, InvalidVersion
-    with app.app_context():
-        current = app.pl.get_schema_version()
-        if current:
-            current = current.value
-        if not current:
-            current = '0.0'
-        current = parse(parse(current).base_version)
-        from persistence.migration import get_highest_migration_version
-        highest = get_highest_migration_version()
-        if highest:
-            desired = parse(highest)
-        else:
-            desired = current
-        if current < desired:
-            print(f'Wrong DB schema version. Expected {desired.public} but got '
-                  f'{current.public}. Will auto-migrate.')
-            auto_migrate(app.pl, desired.public)
-            print('Migration complete.')
-        else:
-            print('Database schema version is up-to-date.')
-
     args = arg_config.args
 
+    # The database has to exist before its schema version can be read,
+    # let alone migrated.
     if args.create_db:
         print('Setting up the database')
         with app.app_context():
             app.pl.create_all()
+
+    print('Checking database schema version')
+    with app.app_context():
+        current = get_current_schema_version(app.pl)
+        desired = get_highest_migration_version()
+        if args.create_db and current == 0:
+            # The tables were just created from the current models, so
+            # the schema is already up to date and the scripts, which
+            # aren't written to be re-runnable, must not be run.
+            print('Newly created database. Recording schema version '
+                  f'{desired}.')
+            set_schema_version(app.pl, desired)
+        elif current < desired:
+            print(f'Wrong DB schema version. Expected {desired} but got '
+                  f'{current}. Will auto-migrate.')
+            auto_migrate(app.pl, desired)
+            print('Migration complete.')
+        else:
+            print('Database schema version is up-to-date.')
+
+    if args.create_db:
+        # Already done, above, before the schema version was checked.
+        pass
     elif args.create_secret_key:
         digits = '0123456789abcdef'
         key = ''.join((random.choice(digits) for x in range(48)))

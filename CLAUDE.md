@@ -70,7 +70,7 @@ See [docs/architecture.md](docs/architecture.md) for the full breakdown.
 ## Development Workflow
 
 1. Create a branch from `master` (use hyphens, not slashes: `feature-my-feature`)
-2. Implement the change
+2. Implement the change. If it changes the database schema, add a script to `persistence/migrations/`, numbered one past the highest already there: `0019-whatever-it-does.sql`. The number is a counter, not a release version — see [docs/architecture.md](docs/architecture.md).
 3. Run tests: `pytest tests/ -n auto`
 4. Add an entry under `## [Unreleased]` in [CHANGELOG.md](CHANGELOG.md) for anything a user or an operator would notice — a new page or command, a changed default, a new environment variable, a fixed bug. Say what someone using or operating Tudor can now do, or no longer has to do, and cite the issue or PR number. Internal refactors with no outward effect don't need an entry. `RELEASING.md` takes the release description from that section, so the entry written now is the release note later.
 5. Commit with a clear message
