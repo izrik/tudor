@@ -967,15 +967,17 @@ def main(argv):
         make_task_private(app.pl, args.make_private,
                           descendants=args.descendants)
     elif args.test_db_conn:
-        test_db_conn(app.pl, args.debug)
+        with app.app_context():
+            test_db_conn(app.pl, args.debug)
     elif args.create_user:
         email = args.create_user[0]
         hashed_password = args.create_user[1]
         is_admin = False
         if len(args.create_user) > 2 and bool_from_str(args.create_user[2]):
             is_admin = True
-        create_user(app.pl, email=email, hashed_password=hashed_password,
-                    is_admin=is_admin)
+        with app.app_context():
+            create_user(app.pl, email=email, hashed_password=hashed_password,
+                        is_admin=is_admin)
     elif args.export_db:
         with app.app_context():
             types_to_export = ('tasks', 'tags', 'comments', 'attachments',
