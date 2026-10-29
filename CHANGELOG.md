@@ -41,6 +41,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Attachment borders align with child tasks** (#173), leaving space between
+  the attachments section and the info panel.
+
 - **Setting up a brand-new database works** (#162). `--create-db` against
   an empty database failed, because the schema version was read, and the
   migration attempted, before the tables it needed existed. The tables
