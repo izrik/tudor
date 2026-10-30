@@ -14,6 +14,21 @@
 </div>
 <div>
     <h4>Tasks</h4>
+    {% set filter_return_url = url_for('view_tag', id=tag.id, sort=sort, order=order) %}
+    <p>
+        {% if show_deleted %}
+        <a href="{{ url_for('show_hide_deleted', show_deleted=0, next=filter_return_url) }}">hide deleted</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_deleted', show_deleted=1, next=filter_return_url) }}">show deleted</a>
+        {% endif %}
+    </p>
+    <p>
+        {% if show_done %}
+        <a href="{{ url_for('show_hide_done', show_done=0, next=filter_return_url) }}">hide done</a>
+        {% else %}
+        <a href="{{ url_for('show_hide_done', show_done=1, next=filter_return_url) }}">show done</a>
+        {% endif %}
+    </p>
 
     {{ render_task_table(tasks, None, cycle,
         page_url=url_for('view_tag', id=tag.id),

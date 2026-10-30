@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Filter tasks on tag pages** (#175). Show or hide done and deleted tasks
+  using the same saved preferences as other task pages.
+
 - **Comments have an author** (closes #155). The author's email address is
   shown next to each comment on the task page, and whoever posts a comment
   is recorded as its author.
