@@ -92,7 +92,8 @@ class TaskSortingViewTest(unittest.TestCase):
         self.vl.tags_id_get(self.request({'sort': 'deadline'}), self.user, 5)
         # then
         self.ll.get_tag_data.assert_called_with(
-            5, self.user, sort='deadline', order='desc')
+            5, self.user, sort='deadline', order='desc',
+            include_done=None, include_deleted=None)
         kwargs = self.r.render_template.call_args.kwargs
         self.assertEqual('view_tag', kwargs['sort_link_page'])
         self.assertEqual({'id': 5}, kwargs['sort_link_args'])
