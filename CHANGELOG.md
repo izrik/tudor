@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Filter tasks on tag pages** (#175). Show or hide done and deleted tasks
   using the same saved preferences as other task pages.
 
+- **A second staging environment** (#178). Add the `stager2` label to a PR
+  to deploy it through `stager2.re.metaindu.com`. Removing the label or
+  closing the PR tears down its second staging environment.
+
 - **Comments have an author** (closes #155). The author's email address is
   shown next to each comment on the task page, and whoever posts a comment
   is recorded as its author.
