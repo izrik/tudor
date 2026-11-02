@@ -59,12 +59,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push the image
-        env:
-          SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          docker build -t "$IMAGE_NAME:$SHA" .
-          docker push "$IMAGE_NAME:$SHA"
+            #      - name: Build and push the image
+            #        env:
+            #          SHA: ${{ github.event.pull_request.head.sha }}
+            #        run: |
+            #          docker build -t "$IMAGE_NAME:$SHA" .
+            #          docker push "$IMAGE_NAME:$SHA"
 
       # While Stager's certificate is self-signed, curl has to be told what
       # signed it. The repository variable holds the PEM — a certificate is
