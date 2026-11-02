@@ -47,6 +47,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- **Transient staging gateway failures are retried** (#178). Deployment and
+  cleanup retry temporary HTTP errors with bounded connection and request
+  timeouts, instead of failing immediately on a gateway timeout.
+
 - **Staging API requests are authenticated** (#178). Deployment and cleanup
   now send the configured `STAGER_API_TOKEN` secret to Stager.
 

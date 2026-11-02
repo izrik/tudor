@@ -108,14 +108,20 @@ jobs:
             '{pr_number: $pr, branch_name: $branch, commit_hash: $commit,
               image_tag: $image, github_pr_url: $pr_url}')
 
-          code=$(curl -sS -o response.json -w '%{http_code}' \
+          # Retry transient gateway failures; a retried POST may return 409
+          # after creation succeeded, which the PUT fallback handles.
+          code=$(curl -sS --retry 3 --retry-delay 10 --retry-max-time 300 \
+            --connect-timeout 15 --max-time 90 \
+            -o response.json -w '%{http_code}' \
             -X POST "$stagees" \
             -H "Authorization: Bearer $STAGER_API_TOKEN" \
             -H 'Content-Type: application/json' -d "$body")
 
           if [ "$code" = 409 ]; then
             echo "PR #$PR already has a stagee; updating it."
-            code=$(curl -sS -o response.json -w '%{http_code}' \
+            code=$(curl -sS --retry 3 --retry-delay 10 --retry-max-time 300 \
+              --connect-timeout 15 --max-time 90 \
+              -o response.json -w '%{http_code}' \
               -X PUT "$stagees/$PR" \
               -H "Authorization: Bearer $STAGER_API_TOKEN" \
               -H 'Content-Type: application/json' -d "$body")
@@ -169,7 +175,9 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          code=$(curl -sS -o response.json -w '%{http_code}' \
+          code=$(curl -sS --retry 3 --retry-delay 10 --retry-max-time 300 \
+            --connect-timeout 15 --max-time 90 \
+            -o response.json -w '%{http_code}' \
             -X DELETE "$STAGER_URL/api/projects/$PROJECT/stagees/$PR" \
             -H "Authorization: Bearer $STAGER_API_TOKEN")
           cat response.json
