@@ -99,6 +99,8 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
           SHA: ${{ github.event.pull_request.head.sha }}
           PR_URL: ${{ github.event.pull_request.html_url }}
+          # Create a project-scoped token on this Stager instance's /api-tokens page.
+          STAGER_API_TOKEN: ${{ secrets.STAGER2_API_TOKEN }}
         run: |
           set -euo pipefail
           stagees="$STAGER_URL/api/projects/$PROJECT/stagees"
@@ -113,12 +115,14 @@ jobs:
 
           code=$(curl -sS -o response.json -w '%{http_code}' \
             -X POST "$stagees" \
+            -H "Authorization: Bearer $STAGER_API_TOKEN" \
             -H 'Content-Type: application/json' -d "$body")
 
           if [ "$code" = 409 ]; then
             echo "PR #$PR already has a stagee; updating it."
             code=$(curl -sS -o response.json -w '%{http_code}' \
               -X PUT "$stagees/$PR" \
+              -H "Authorization: Bearer $STAGER_API_TOKEN" \
               -H 'Content-Type: application/json' -d "$body")
           fi
 
@@ -169,11 +173,13 @@ jobs:
       # 404 — not a failure worth failing the run over.
       - name: Delete the stagee
         env:
+          STAGER_API_TOKEN: ${{ secrets.STAGER2_API_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
           code=$(curl -sS -o response.json -w '%{http_code}' \
-            -X DELETE "$STAGER_URL/api/projects/$PROJECT/stagees/$PR")
+            -X DELETE "$STAGER_URL/api/projects/$PROJECT/stagees/$PR" \
+            -H "Authorization: Bearer $STAGER_API_TOKEN")
           cat response.json
           case "$code" in
             200 | 404) ;;
