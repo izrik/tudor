@@ -55,6 +55,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   a token created by an administrator on Stager's `/api-tokens` page. The
   second staging environment uses its own `STAGER2_API_TOKEN` secret.
 
+- **Transient staging gateway failures are retried** (#178). Deployment and
+  cleanup retry temporary HTTP errors with bounded connection and request
+  timeouts, instead of failing immediately on a gateway timeout.
+
+
 - **Attachment borders align with child tasks** (#173), leaving space between
   the attachments section and the info panel.
 
