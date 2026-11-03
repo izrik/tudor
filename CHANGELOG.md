@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   using the same saved preferences as other task pages.
 
 - **A second staging environment** (#178). Add the `stager2` label to a PR
-  to deploy it through `stager2.re.metaindu.com`. Removing the label or
+  to deploy it through `staging2.re.metaindu.com`. Removing the label or
   closing the PR tears down its second staging environment. Configure the
   `STAGER2_API_TOKEN` repository secret with a token from that instance's
   `/api-tokens` page.
