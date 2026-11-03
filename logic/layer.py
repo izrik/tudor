@@ -1058,13 +1058,14 @@ class LogicLayer(object):
         }
 
     def get_tag_data(self, tag_id, current_user, sort='order_num',
-                     order='desc'):
+                     order='desc', include_done=True, include_deleted=True):
         tag = self.pl.get_tag(tag_id)
         if not tag:
             raise werkzeug.exceptions.NotFound(
                 "No tag found for the id '{}'".format(tag_id))
         tasks = self.load_no_hierarchy(
-            current_user, include_done=True, include_deleted=True, tag=tag,
+            current_user, include_done=include_done,
+            include_deleted=include_deleted, tag=tag,
             order_by=self.get_task_order_by(sort, order))
         return {
             'tag': tag,

@@ -715,10 +715,15 @@ class ViewLayer(object):
                                     cycle=itertools.cycle)
 
     def tags_id_get(self, request, current_user, tag_id):
+        show_deleted = request.cookies.get('show_deleted')
+        show_done = request.cookies.get('show_done')
         sort, order = self.get_task_sort_args(request, 'order_num', 'desc')
         data = self.ll.get_tag_data(tag_id, current_user, sort=sort,
-                                    order=order)
+                                    order=order, include_done=show_done,
+                                    include_deleted=show_deleted)
         return self.render_template('tag.t.html', tag=data['tag'],
+                                    show_done=show_done,
+                                    show_deleted=show_deleted,
                                     tasks=data['tasks'], cycle=itertools.cycle,
                                     sort=data['sort'], order=data['order'],
                                     sort_link_page='view_tag',
