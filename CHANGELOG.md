@@ -11,6 +11,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **Filter tasks on tag pages** (#175). Show or hide done and deleted tasks
   using the same saved preferences as other task pages.
 
+- **A second staging environment** (#178). Add the `stager2` label to a PR
+  to deploy it through `staging2.re.metaindu.com`. Removing the label or
+  closing the PR tears down its second staging environment. Configure the
+  `STAGER2_API_TOKEN` repository secret with a token from that instance's
+  `/api-tokens` page.
+
 - **Comments have an author** (closes #155). The author's email address is
   shown next to each comment on the task page, and whoever posts a comment
   is recorded as its author.
@@ -44,9 +50,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
-- **Staging API authentication** (#176). Deployment and teardown now send the
-  Stager API token. Configure the `STAGER_API_TOKEN` repository secret with a
-  token created by an administrator on Stager's `/api-tokens` page.
+- **Staging API authentication** (#176, #178). Deployment and teardown now send
+  the Stager API token. Configure the `STAGER_API_TOKEN` repository secret with
+  a token created by an administrator on Stager's `/api-tokens` page. The
+  second staging environment uses its own `STAGER2_API_TOKEN` secret.
+
+- **Transient staging gateway failures are retried** (#178). Deployment and
+  cleanup retry temporary HTTP errors with bounded connection and request
+  timeouts, instead of failing immediately on a gateway timeout.
 
 - **Attachment borders align with child tasks** (#173), leaving space between
   the attachments section and the info panel.
