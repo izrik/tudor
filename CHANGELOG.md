@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Edit attachment descriptions** (#182). Task editors and administrators can
+  change or clear an attachment description from the task page.
+
 - **Filter tasks on tag pages** (#175). Show or hide done and deleted tasks
   using the same saved preferences as other task pages.
 

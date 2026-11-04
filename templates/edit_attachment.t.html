@@ -1,0 +1,15 @@
+{% extends "base.t.html" %}
+{% block title %}Editing Attachment (ID {{attachment.id}}) - {{ super() }}{% endblock %}
+{% block header_sub_text %}Editing Attachment (ID {{attachment.id}}){% endblock %}
+{% block content %}
+<div class="container">
+    <p>{{ attachment.filename if attachment.filename != None }}</p>
+    <form action="" method="post">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="4" cols="60">{{ attachment.description if attachment.description != None }}</textarea>
+        <p></p>
+        <input class="btn btn-primary" type="submit" value="Save"/>
+        <a class="btn btn-info" href="{{ url_for('view_task', id=attachment.task_id) }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

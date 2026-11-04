@@ -436,6 +436,10 @@ def generate_app(db_uri=None,
         return vl.task_edit(request, Options.get_user(), id)
 
     @login_required
+    def edit_attachment(aid):
+        return vl.attachment_edit(request, Options.get_user(), aid)
+
+    @login_required
     def new_attachment():
         return vl.attachment_new(request, Options.get_user(),
                                  timestamp=datetime.now(UTC))
@@ -624,6 +628,8 @@ def generate_app(db_uri=None,
     app.add_url_rule('/comment/<int:id>/edit', None, edit_comment,
                      methods=['GET', 'POST'])
     app.add_url_rule('/task/<int:id>/edit', None, edit_task,
+                     methods=['GET', 'POST'])
+    app.add_url_rule('/attachment/<int:aid>/edit', None, edit_attachment,
                      methods=['GET', 'POST'])
     app.add_url_rule('/attachment/new', None, new_attachment,
                      methods=['POST'])
