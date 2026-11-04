@@ -421,6 +421,17 @@ class ViewLayer(object):
 
         return self.redirect(self.url_for('view_task', id=task.id))
 
+    def attachment_edit(self, request, current_user, attachment_id):
+        if request.method == 'GET':
+            data = self.ll.get_edit_attachment_data(attachment_id, current_user)
+            return self.render_template('edit_attachment.t.html',
+                                        attachment=data['attachment'])
+
+        description = request.form.get('description', '')
+        attachment = self.ll.edit_attachment(attachment_id, description,
+                                             current_user)
+        return self.redirect(self.url_for('view_task', id=attachment.task_id))
+
     def attachment_new(self, request, current_user, timestamp=None):
         if 'task_id' not in request.form:
             raise BadRequest('No task_id specified')

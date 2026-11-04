@@ -27,7 +27,7 @@ class RouteTest(unittest.TestCase):
             'task_delete_tag', 'attachment', 'task_id_remove_dependant',
             'task_id_remove_prioritize_before', 'task_authorize_user_user',
             'tags_id_get', 'users', 'tags', 'task_authorize_user',
-            'users_user_get', 'attachment_new', 'show_hide_deleted', 'logout',
+            'users_user_get', 'attachment_edit', 'attachment_new', 'show_hide_deleted', 'logout',
             'task_delete', 'task_new_get', 'search', 'task', 'task_top',
             'tags_id_edit', 'login', 'options', 'task_deauthorize_user',
         ]:
@@ -903,3 +903,15 @@ class RouteTest(unittest.TestCase):
         resp = self.client.put('/task/1/remove_prioritize_after/2')
         self.assertEqual(405, resp.status_code)
         self.vl.task_id_remove_prioritize_after.assert_not_called()
+
+    def test_attachment_edit_get(self):
+        resp = self.client.get('/attachment/1/edit')
+        self.assertEqual(606, resp.status_code)
+        self.vl.attachment_edit.assert_called()
+        self.vl.attachment.assert_not_called()
+
+    def test_attachment_edit_post(self):
+        resp = self.client.post('/attachment/1/edit', data={'description': 'new'})
+        self.assertEqual(606, resp.status_code)
+        self.vl.attachment_edit.assert_called()
+        self.vl.attachment.assert_not_called()

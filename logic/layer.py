@@ -489,6 +489,24 @@ class LogicLayer(object):
         ext = ext[:max_length]
         return stem[:max_length - len(ext)] + ext
 
+    def get_edit_attachment_data(self, attachment_id, current_user):
+        attachment = self.pl.get_attachment(attachment_id)
+        if attachment is None:
+            raise werkzeug.exceptions.NotFound()
+        task = self.pl.get_task(attachment.task_id)
+        if task is None:
+            raise werkzeug.exceptions.NotFound()
+        if not TaskUserOps.is_user_authorized_or_admin(task, current_user):
+            raise werkzeug.exceptions.Forbidden()
+        return {'attachment': attachment}
+
+    def edit_attachment(self, attachment_id, description, current_user):
+        attachment = self.get_edit_attachment_data(
+            attachment_id, current_user)['attachment']
+        attachment.description = description
+        self.pl.save(attachment)
+        return attachment
+
     def create_new_attachment(self, task_id, f, description, current_user,
                               timestamp=None):
 
