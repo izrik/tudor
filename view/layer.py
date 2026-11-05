@@ -111,6 +111,7 @@ class ViewLayer(object):
     def index(self, request, current_user):
         show_deleted = request.cookies.get('show_deleted')
         show_done = request.cookies.get('show_done')
+        hide_task_ids = request.cookies.get('hide_task_ids')
         page_num = None
         try:
             page_num = int(self.get_form_or_arg(request, 'page'))
@@ -133,6 +134,7 @@ class ViewLayer(object):
             self.render_template('index.t.html',
                                  show_deleted=data['show_deleted'],
                                  show_done=data['show_done'],
+                                 hide_task_ids=hide_task_ids,
                                  cycle=itertools.cycle,
                                  user=current_user,
                                  tasks=data['tasks'],
@@ -627,6 +629,16 @@ class ViewLayer(object):
             resp.set_cookie('show_done', '1')
         else:
             resp.set_cookie('show_done', '')
+        return resp
+
+    def show_hide_task_ids(self, request, current_user):
+        hide_task_ids = request.args.get('hide_task_ids')
+        resp = self.make_response(
+            self.redirect(request.args.get('next') or self.url_for('index')))
+        if hide_task_ids and hide_task_ids != '0':
+            resp.set_cookie('hide_task_ids', '1')
+        else:
+            resp.set_cookie('hide_task_ids', '')
         return resp
 
     def options(self, request, current_user):

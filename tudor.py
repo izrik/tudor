@@ -518,6 +518,10 @@ def generate_app(db_uri=None,
         return vl.show_hide_done(request, Options.get_user())
 
     @login_required
+    def show_hide_task_ids():
+        return vl.show_hide_task_ids(request, Options.get_user())
+
+    @login_required
     @admin_required
     def view_options():
         return vl.options(request, Options.get_user())
@@ -672,6 +676,7 @@ def generate_app(db_uri=None,
     app.add_url_rule('/users/<int:user_id>', None, view_user, methods=['GET'])
     app.add_url_rule('/show_hide_deleted', None, show_hide_deleted)
     app.add_url_rule('/show_hide_done', None, show_hide_done)
+    app.add_url_rule('/show_hide_task_ids', None, show_hide_task_ids)
     app.add_url_rule('/options', None, view_options, methods=['GET', 'POST'])
     app.add_url_rule('/option/<path:key>/delete', None, delete_option)
     app.add_url_rule('/reset_order_nums', None, reset_order_nums)
