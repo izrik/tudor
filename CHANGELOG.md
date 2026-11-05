@@ -6,7 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [v2.0] - 2026-11-05
+
+Comments now record their authors and restrict editing to those authors and
+administrators. Attachment descriptions can be edited, tag pages gain task
+filters, and database setup and tagged-task creation are more reliable.
+
+The major version reflects the removed ability to edit other users' comments.
+On upgrade, existing comments remain unattributed and only administrators can
+edit them. Schema migrations run automatically; no manual SQL is needed.
+
 ### Added
+
+- **Automatic PR staging** (#164, #172). Pull requests deploy their commit's
+  image through `staging.re.metaindu.com`; closing a PR tears down its staging
+  environment. Configure `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` and
+  `STAGER_API_TOKEN` repository secrets, and `STAGER_CA_CERT` if the Stager
+  instance uses a private certificate authority.
 
 - **Edit attachment descriptions** (#182). Task editors and administrators can
   change or clear an attachment description from the task page.
@@ -18,7 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   to deploy it through `staging2.re.metaindu.com`. Removing the label or
   closing the PR tears down its second staging environment. Configure the
   `STAGER2_API_TOKEN` repository secret with a token from that instance's
-  `/api-tokens` page.
+  `/api-tokens` page. Its image-build step is currently disabled, so it
+  relies on the first staging workflow to publish the same commit's image.
 
 - **Comments have an author** (closes #155). The author's email address is
   shown next to each comment on the task page, and whoever posts a comment
@@ -55,6 +72,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   time it migrates.
 
 ### Fixed
+
+- **Creating a user and testing the database connection from the command
+  line work** (#164). `--create-user` and `--test-db-conn` now run inside a
+  Flask application context instead of raising a context error.
+
+- **Dependency security updates** (#169, #170, #171). Werkzeug is updated
+  from 3.1.8 to 3.1.9 and the test dependency GitPython from 3.1.46 to 3.2.1;
+  the dependency audit records the addressed advisories in
+  [the verification report](docs/dependency-audit-167.md).
 
 - **Staging API authentication** (#176, #178). Deployment and teardown now send
   the Stager API token. Configure the `STAGER_API_TOKEN` repository secret with
@@ -512,7 +538,8 @@ what it could do by the time it was given a version number.
 - A Dockerfile that runs the app under gunicorn, creating the database
   schema on startup if it isn't there.
 
-[Unreleased]: https://github.com/izrik/tudor/compare/v1.0...HEAD
+[Unreleased]: https://github.com/izrik/tudor/compare/v2.0...HEAD
+[v2.0]: https://github.com/izrik/tudor/compare/v1.0...v2.0
 [v1.0]: https://github.com/izrik/tudor/compare/v0.16...v1.0
 [v0.16]: https://github.com/izrik/tudor/compare/v0.15...v0.16
 [v0.15]: https://github.com/izrik/tudor/compare/v0.14...v0.15
