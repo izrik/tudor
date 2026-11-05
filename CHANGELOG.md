@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Add-task comes first in the navbar** (#184). The Task button now appears
+  to the left of Deadlines and Tags.
+
 - **Only the author of a comment can edit it** (closes #155). Until now any
   user authorized on the task could change anyone's comment. The Edit link
   now appears only on your own comments, and the edit page refuses anyone
