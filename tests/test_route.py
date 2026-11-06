@@ -21,6 +21,7 @@ class RouteTest(unittest.TestCase):
             'reset_order_nums', 'purge_all', 'task_id_add_prioritize_before',
             'task_mark_undone', 'task_id_convert_to_tag',
             'task_id_remove_dependee', 'task_pick_user', 'show_hide_done',
+            'show_hide_task_ids',
             'export', 'task_id_remove_prioritize_after', 'task_edit',
             'task_new_post', 'option_delete', 'task_crud', 'import_',
             'task_undelete', 'comment_new_post', 'task_mark_done',
@@ -414,6 +415,16 @@ class RouteTest(unittest.TestCase):
         self.assertEqual(405, resp.status_code)
         self.vl.show_hide_done.assert_not_called()
 
+    def test_show_hide_task_ids_get(self):
+        resp = self.client.get('/show_hide_task_ids')
+        self.assertEqual(606, resp.status_code)
+        self.vl.show_hide_task_ids.assert_called()
+
+    def test_show_hide_task_ids_post(self):
+        resp = self.client.post('/show_hide_task_ids')
+        self.assertEqual(405, resp.status_code)
+        self.vl.show_hide_task_ids.assert_not_called()
+
     def test_options_get(self):
         resp = self.client.get('/options')
         self.assertEqual(606, resp.status_code)
@@ -803,6 +814,11 @@ class RouteTest(unittest.TestCase):
         resp = self.client.put('/show_hide_done')
         self.assertEqual(405, resp.status_code)
         self.vl.show_hide_done.assert_not_called()
+
+    def test_show_hide_task_ids_put(self):
+        resp = self.client.put('/show_hide_task_ids')
+        self.assertEqual(405, resp.status_code)
+        self.vl.show_hide_task_ids.assert_not_called()
 
     def test_options_put(self):
         resp = self.client.put('/options')

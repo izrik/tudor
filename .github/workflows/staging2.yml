@@ -130,6 +130,35 @@ jobs:
               -X PUT "$stagees/$PR" \
               -H "Authorization: Bearer $STAGER_API_TOKEN" \
               -H 'Content-Type: application/json' -d "$body")
+
+            # A stagee can outlive the deployment it names, if the cluster is
+            # rebuilt or a create records the stagee and then fails partway.
+            # The update then has nothing to patch, while POST goes on
+            # answering 409, and the PR can never deploy again. Throw the
+            # orphan away and create it afresh — this push was replacing
+            # whatever it held anyway.
+            if [ "$code" != 200 ] &&
+                grep -q 'deployments.apps.*not found' response.json; then
+              echo "Stagee for PR #$PR has no deployment; recreating it."
+              cat response.json
+              code=$(curl -sS --retry 3 --retry-delay 10 \
+                --retry-max-time 300 --connect-timeout 15 --max-time 90 \
+                -o response.json -w '%{http_code}' \
+                -X DELETE "$stagees/$PR" \
+                -H "Authorization: Bearer $STAGER_API_TOKEN")
+              case "$code" in
+                200 | 404) ;;
+                *) cat response.json
+                   echo "::error::Deleting the orphaned stagee answered HTTP $code"
+                   exit 1 ;;
+              esac
+              code=$(curl -sS --retry 3 --retry-delay 10 \
+                --retry-max-time 300 --connect-timeout 15 --max-time 90 \
+                -o response.json -w '%{http_code}' \
+                -X POST "$stagees" \
+                -H "Authorization: Bearer $STAGER_API_TOKEN" \
+                -H 'Content-Type: application/json' -d "$body")
+            fi
           fi
 
           cat response.json

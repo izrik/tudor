@@ -9,6 +9,7 @@
     {{ render_task_table(pager.items, root=None, cycle=cycle,
         page_url=url_for('index'),
         child_task_view='view_task',
+        show_id=not hide_task_ids,
         show_move_links=True,
         show_order_num=True,
         sort=sort, order=order,
@@ -18,6 +19,16 @@
     <p><a class="btn btn-default" href="{{ url_for('new_task') }}"><span class="glyphicon glyphicon-plus"></span> New Task</a></p>
 </div>
 <div>
+    <form action="{{ url_for('show_hide_task_ids') }}" method="get">
+        <input type="hidden" name="next"
+               value="{{ url_for('index', sort=sort, order=order) }}" />
+        <label>
+            <input type="checkbox" name="hide_task_ids" value="1"
+                   {{ 'checked' if hide_task_ids }} />
+            hide ID numbers
+        </label>
+        <button type="submit" class="btn btn-default btn-xs">apply</button>
+    </form>
     <p>
         {%- if show_deleted %}
         <a href="{{ url_for('show_hide_deleted', show_deleted=0) }}">hide deleted</a>

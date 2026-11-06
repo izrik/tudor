@@ -20,6 +20,7 @@
     {%- endmacro %}
     {% macro render_task_table(descendants, root, cycle, page_url,
                 child_task_view,
+                show_id=True,
                 show_is_done=False,
                 show_is_deleted=False, show_deadline=True,
                 show_order_num=False, show_expected_duration=False,
@@ -37,7 +38,9 @@
         {% set odd_even = cycle(['odd', 'even']).__next__ %}
         <thead>
         <tr>
-            {{ th('ID', 'id') }}
+            {% if show_id %}
+                {{ th('ID', 'id') }}
+            {% endif %}
             {{ th('Summary', 'summary') }}
             {% if show_deadline %}
                 {{ th('Deadline', 'deadline') }}
@@ -77,7 +80,9 @@
         <form action="{{ url_for('long_order_change') }}" method="post">
         {% for child in descendants if child != root %}
         <tr class="{{ odd_even() }}">
-            <td><a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.id }}</a></td>
+            {% if show_id %}
+                <td><a href="{{ url_for(child_task_view, id=child.id) }}">{{ child.id }}</a></td>
+            {% endif %}
             {% set depth =
                     (child.depth-1
                         if root != None
@@ -147,7 +152,9 @@
         {% endfor %}
         </form>
         <tfoot>
-            <td></td>
+            {% if show_id %}
+                <td></td>
+            {% endif %}
             <td>
                 {% if show_new_task_form %}
                     <form action="{{ url_for('new_task') }}" method="post">

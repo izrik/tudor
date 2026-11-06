@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Hide task ID numbers** (#190). A checkbox on the task list page hides the
+  ID column, leaving more room for task summaries. The preference is
+  remembered between visits, like the done and deleted filters.
+
 ## [v2.0] - 2026-11-05
 
 Comments now record their authors and restrict editing to those authors and
