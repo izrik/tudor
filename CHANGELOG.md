@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- CI now checks runtime, development and test dependencies for published
+  vulnerabilities in a separate audit job (#194).
+
 - **Hide task ID numbers** (#190). A checkbox on the task list page hides the
   ID column, leaving more room for task summaries. The preference is
   remembered between visits, like the done and deleted filters.
