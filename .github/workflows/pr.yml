@@ -10,6 +10,23 @@ permissions:
   contents: read
 
 jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit declared dependencies
+        run: pip-audit -r requirements.txt -r dev-requirements.txt -r test_requirements.txt
+
   test:
     runs-on: ubuntu-latest
 
